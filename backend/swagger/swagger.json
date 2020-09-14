@@ -1,0 +1,351 @@
+{
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"STeam": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"required": ["id", "name"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"EWho": {
+				"enum": ["TEAM_1", "TEAM_2", "TEAM_X", "TEAM_Y"],
+				"type": "string"
+			},
+			"ESideFixed": {
+				"enum": [
+					"TEAM_1_CT",
+					"TEAM_1_T",
+					"TEAM_2_CT",
+					"TEAM_2_T",
+					"TEAM_X_CT",
+					"TEAM_X_T",
+					"TEAM_Y_CT",
+					"TEAM_Y_T"
+				],
+				"type": "string"
+			},
+			"ElectionStep": {
+				"properties": {
+					"map": {
+						"anyOf": [
+							{
+								"properties": {
+									"fixed": {
+										"type": "string"
+									},
+									"mode": {
+										"type": "string",
+										"enum": ["FIXED"],
+										"nullable": false
+									}
+								},
+								"required": ["fixed", "mode"],
+								"type": "object"
+							},
+							{
+								"properties": {
+									"who": {
+										"$ref": "#/components/schemas/EWho"
+									},
+									"mode": {
+										"anyOf": [
+											{
+												"type": "string",
+												"enum": ["BAN"],
+												"nullable": false
+											},
+											{
+												"type": "string",
+												"enum": ["RANDOM_BAN"],
+												"nullable": false
+											},
+											{
+												"type": "string",
+												"enum": ["PICK"],
+												"nullable": false
+											},
+											{
+												"type": "string",
+												"enum": ["RANDOM_PICK"],
+												"nullable": false
+											},
+											{
+												"type": "string",
+												"enum": ["AGREE"],
+												"nullable": false
+											}
+										]
+									}
+								},
+								"required": ["who", "mode"],
+								"type": "object"
+							}
+						]
+					},
+					"side": {
+						"anyOf": [
+							{
+								"properties": {
+									"fixed": {
+										"$ref": "#/components/schemas/ESideFixed"
+									},
+									"mode": {
+										"type": "string",
+										"enum": ["FIXED"],
+										"nullable": false
+									}
+								},
+								"required": ["fixed", "mode"],
+								"type": "object"
+							},
+							{
+								"properties": {
+									"who": {
+										"$ref": "#/components/schemas/EWho"
+									},
+									"mode": {
+										"anyOf": [
+											{
+												"type": "string",
+												"enum": ["PICK"],
+												"nullable": false
+											},
+											{
+												"type": "string",
+												"enum": ["RANDOM"],
+												"nullable": false
+											},
+											{
+												"type": "string",
+												"enum": ["KNIFE"],
+												"nullable": false
+											}
+										]
+									}
+								},
+								"required": ["who", "mode"],
+								"type": "object"
+							}
+						]
+					}
+				},
+				"required": ["map", "side"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MatchInitData": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"mapPool": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"minItems": 1
+					},
+					"team1": {
+						"$ref": "#/components/schemas/STeam"
+					},
+					"team2": {
+						"$ref": "#/components/schemas/STeam"
+					},
+					"electionSteps": {
+						"items": {
+							"$ref": "#/components/schemas/ElectionStep"
+						},
+						"type": "array",
+						"minItems": 1
+					},
+					"gameServer": {
+						"properties": {
+							"rconPassword": {
+								"type": "string"
+							},
+							"port": {
+								"type": "number",
+								"format": "double"
+							},
+							"ip": {
+								"type": "string"
+							}
+						},
+						"required": ["rconPassword", "port", "ip"],
+						"type": "object"
+					},
+					"webhookUrl": {
+						"type": "string"
+					},
+					"rconInit": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"rconConfig": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"rconEnd": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": ["id", "mapPool", "team1", "team2", "electionSteps", "gameServer"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IMatch": {
+				"properties": {
+					"matchInitData": {
+						"$ref": "#/components/schemas/MatchInitData"
+					}
+				},
+				"required": ["matchInitData"],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "tmt2-backend",
+		"version": "1.0.0",
+		"license": {
+			"name": "MIT"
+		},
+		"contact": {
+			"name": "Jens Forstmann"
+		}
+	},
+	"openapi": "3.0.0",
+	"paths": {
+		"/api/matches": {
+			"post": {
+				"operationId": "CreateMatch",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": ["id"],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/MatchInitData"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/matches/{id}": {
+			"get": {
+				"operationId": "GetMatches",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/IMatch"
+										},
+										{}
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/server/log/{secret}": {
+			"post": {
+				"operationId": "ReceiveLog",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "secret",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {}
+						}
+					}
+				}
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}
