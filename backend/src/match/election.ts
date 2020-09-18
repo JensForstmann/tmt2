@@ -29,8 +29,11 @@ export interface ElectionStep {
 				fixed: string;
 		  }
 		| {
-				mode: 'BAN' | 'RANDOM_BAN' | 'PICK' | 'RANDOM_PICK' | 'AGREE';
+				mode: 'BAN' | 'PICK';
 				who: EWho;
+		  }
+		| {
+				mode: 'RANDOM_BAN' | 'RANDOM_PICK' | 'AGREE';
 		  };
 	side:
 		| {
@@ -38,8 +41,11 @@ export interface ElectionStep {
 				fixed: ESideFixed;
 		  }
 		| {
-				mode: 'PICK' | 'RANDOM' | 'KNIFE';
+				mode: 'PICK';
 				who: EWho;
+		  }
+		| {
+				mode: 'RANDOM' | 'KNIFE';
 		  };
 }
 
@@ -60,7 +66,13 @@ export class Election {
 	remainingMaps: string[];
 	map: string = '';
 	maps: MatchMap[] = [];
-	currentAgree: Map<Team, string> = new Map();
+	currentAgree: {
+		team1: string | null;
+		team2: string | null;
+	} = {
+		team1: null,
+		team2: null,
+	};
 
 	constructor(match: Match) {
 		this.match = match;
@@ -159,10 +171,18 @@ export class Election {
 			const matchMap = this.remainingMaps.findIndex((mapName) => mapName === map);
 			if (matchMap > -1) {
 				this.state = ElectionState.IN_PROGRESS;
-				this.currentAgree.set(team, map);
-				const otherTeam = this.match.getOtherTeam(team);
-				if (this.currentAgree.get(team) === this.currentAgree.get(otherTeam)) {
+				if (team.isTeam1) {
+					this.currentAgree.team1 = map;
+				} else {
+					this.currentAgree.team2 = map;
+				}
+				if (
+					this.currentAgree.team1 !== null &&
+					this.currentAgree.team1 === this.currentAgree.team2
+				) {
 					this.map = this.remainingMaps[matchMap];
+					this.currentAgree.team1 = null;
+					this.currentAgree.team2 = null;
 					this.remainingMaps.splice(matchMap, 1);
 					this.next();
 				} else {
@@ -195,6 +215,7 @@ export class Election {
 			this.currentElectionStep = this.match.matchInitData.electionSteps[this.currentStep];
 			if (!this.currentElectionStep) {
 				this.state = ElectionState.FINISHED;
+				this.match.onElectionFinished();
 				return; // prevent this.auto()
 			}
 		}

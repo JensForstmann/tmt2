@@ -4,8 +4,8 @@ import { Team, ETeamSides } from './team';
 import { PlayerService } from './playerService';
 import { Player } from './player';
 import { commandMapping, ECommand } from './commands';
-import { MatchMap } from './matchMap';
-import { makeStringify } from '../utils';
+import { EMatchMapSate, MatchMap } from './matchMap';
+import { makeStringify, sleep } from '../utils';
 
 export interface STeam {
 	id: string;
@@ -30,9 +30,13 @@ export interface MatchInitData {
 		rconPassword: string;
 	};
 	webhookUrl?: string;
-	rconInit?: string[];
-	rconConfig?: string[];
-	rconEnd?: string[];
+	rcon?: {
+		init?: string[]; // executed once on match init
+		knife?: string[]; // executed before every knife round
+		match?: string[]; // executed before every match map start
+		end?: string[]; // executed after last match map
+	};
+	canClinch?: boolean;
 }
 
 export interface IMatch {
@@ -62,6 +66,7 @@ export class Match implements IMatch {
 	matchMaps: MatchMap[] = [];
 	currentMap: number = 0;
 	periodicTimerId?: NodeJS.Timeout;
+	canClinch: boolean = true;
 
 	constructor(matchInitData: MatchInitData) {
 		this.matchInitData = matchInitData;
@@ -83,6 +88,9 @@ export class Match implements IMatch {
 			this.matchInitData.team2.name
 		);
 		this.election = new Election(this);
+		if (typeof this.matchInitData.canClinch === 'boolean') {
+			this.canClinch = this.matchInitData.canClinch;
+		}
 	}
 
 	async init() {
@@ -92,14 +100,16 @@ export class Match implements IMatch {
 			`logaddress_add_http "http://localhost:8080/api/matches/${this.matchInitData.id}/server/log/${this.logSecret}"`
 		);
 		// logaddress_list_http
+		await this.loadInitConfig();
 		await this.rcon.send(`mp_teamname_1 "${this.team1.toIngameString()}"`);
 		await this.rcon.send(`mp_teamname_2 "${this.team2.toIngameString()}"`);
 
-		setTimeout(() => {
+		sleep(2000).then(() => {
 			this.parseIncomingLogs = true;
 			this.say('BOT IS ONLINE');
+			this.election.auto();
 			this.sayPeriodicMessage();
-		}, 10000);
+		});
 	}
 
 	sayPeriodicMessage() {
@@ -120,7 +130,24 @@ export class Match implements IMatch {
 		}
 	}
 
+	async loadInitConfig() {
+		await this.executeRconCommands(this.matchInitData.rcon?.init);
+	}
+
+	async loadEndConfig() {
+		await this.executeRconCommands(this.matchInitData.rcon?.end);
+	}
+
+	async executeRconCommands(commands?: string[]) {
+		if (commands) {
+			for (let i = 0; i < commands.length; i++) {
+				await this.rcon.send(commands[i]);
+			}
+		}
+	}
+
 	async say(message: string) {
+		console.log(message);
 		await this.rcon.send('say ' + message.replace(/;/g, ''));
 	}
 
@@ -150,7 +177,7 @@ export class Match implements IMatch {
 		this.logLineCounter++;
 
 		//09/14/2020 - 15:11:58.307 - "Yenz<2><STEAM_1:0:8520813><TERRORIST>" say "ajshdaosjkhdlaökjsdhlakjshd"
-		console.log('line:', line);
+		// console.log('line:', line);
 		const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
 
 		const playerPattern = /"(.*)<(\d+)><(.*)><(|Unassigned|CT|TERRORIST|Console)>" (.*)$/;
@@ -160,28 +187,26 @@ export class Match implements IMatch {
 			const ingamePlayerId = playerMatch[2];
 			const steamId = playerMatch[3];
 			const team = playerMatch[4];
-			const subline = playerMatch[5];
-			await this.onPlayerLogLine(name, ingamePlayerId, steamId, team, subline);
+			const remainingLine = playerMatch[5];
+			await this.onPlayerLogLine(name, ingamePlayerId, steamId, team, remainingLine);
 		}
 
-		const gameOverPattern = /Game Over: competitive (.*) score (\d+):(\d+) after (\d+) min$/;
-		const gameOverMatch = line.match(
-			new RegExp(dateTimePattern.source + gameOverPattern.source)
-		);
-		if (gameOverMatch) {
-			await this.getCurrentMatchMap()?.onGameOver();
+		const mapEndPattern = /Game Over: competitive (.*) score (\d+):(\d+) after (\d+) min$/;
+		const mapEndMatch = line.match(new RegExp(dateTimePattern.source + mapEndPattern.source));
+		if (mapEndMatch) {
+			this.onMapEnd();
 		}
 
-		const roundOverPattern = /Team "(CT|TERRORIST)" triggered "([a-zA-Z_]+)" \(CT "(\d+)"\) \(T "(\d+)"\)/;
-		const roundOverMatch = line.match(
-			new RegExp(dateTimePattern.source + roundOverPattern.source)
+		const roundEndPattern = /Team "(CT|TERRORIST)" triggered "([a-zA-Z_]+)" \(CT "(\d+)"\) \(T "(\d+)"\)/;
+		const roundEndMatch = line.match(
+			new RegExp(dateTimePattern.source + roundEndPattern.source)
 		);
-		if (roundOverMatch) {
-			const winningTeam = roundOverMatch[1];
-			const winningReason = roundOverMatch[2];
-			const ctScore = parseInt(roundOverMatch[3]);
-			const tScore = parseInt(roundOverMatch[4]);
-			await this.getCurrentMatchMap()?.onRoundOver(
+		if (roundEndMatch) {
+			const winningTeam = roundEndMatch[1];
+			const winningReason = roundEndMatch[2];
+			const ctScore = parseInt(roundEndMatch[3]);
+			const tScore = parseInt(roundEndMatch[4]);
+			await this.getCurrentMatchMap()?.onRoundEnd(
 				ctScore,
 				tScore,
 				winningTeam === 'CT' ? ETeamSides.CT : ETeamSides.T
@@ -194,19 +219,77 @@ export class Match implements IMatch {
 		// Team playing "TERRORIST": team2
 	}
 
+	async onMapEnd() {
+		await this.getCurrentMatchMap()?.onMapEnd();
+		if (this.getCurrentMatchMap()?.isDraw()) {
+			this.say(`${this.currentMap + 1}. MAP FINISHED (DRAW)`);
+		} else {
+			this.say(
+				`${
+					this.currentMap + 1
+				}. MAP FINISHED (WINNER: ${this.getCurrentMatchMap()
+					?.getWinner()
+					.toIngameString()})`
+			);
+		}
+
+		if (this.isMatchEnd()) {
+			this.onMatchEnd();
+		} else {
+			this.currentMap++;
+			const nextMap = this.getCurrentMatchMap();
+			if (nextMap) {
+				nextMap.loadMap();
+			} else {
+				this.onMatchEnd();
+			}
+		}
+	}
+
+	onMatchEnd() {
+		this.state = EMatchSate.FINISHED;
+		this.loadEndConfig();
+		// TODO webhook
+	}
+
+	isMatchEnd(): boolean {
+		if (this.canClinch) {
+			const team1Wins = this.matchMaps.reduce(
+				(pv: number, cv) =>
+					pv +
+					(cv.state === EMatchMapSate.FINISHED && cv.getWinner() === this.team1 ? 1 : 0),
+				0
+			);
+			const team2Wins = this.matchMaps.reduce(
+				(pv: number, cv) =>
+					pv +
+					(cv.state === EMatchMapSate.FINISHED && cv.getWinner() === this.team2 ? 1 : 0),
+				0
+			);
+			if (this.matchMaps.length / 2 < Math.max(team1Wins, team2Wins)) {
+				return true;
+			}
+		}
+
+		return this.matchMaps.reduce(
+			(pv: boolean, cv) => pv && cv.state === EMatchMapSate.FINISHED,
+			true
+		);
+	}
+
 	async onPlayerLogLine(
 		name: string,
 		ingamePlayerId: string,
 		steamId: string,
 		teamString: string,
-		subline: string
+		remainingLine: string
 	) {
 		//say "ajshdaosjkhdlaökjsdhlakjshd"
 		if (steamId === 'BOT') {
 		} else if (steamId === 'Console') {
 		} else {
 			const player = PlayerService.ensure(steamId);
-			const sayMatch = subline.match(/^say(_team)? "(.*)"$/);
+			const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
 			if (sayMatch) {
 				const isTeamChat = sayMatch[1] === '_team';
 				const message = sayMatch[2];
@@ -245,11 +328,12 @@ export class Match implements IMatch {
 		} else if (warnAboutTeam) {
 			this.sayNotAssigned();
 		}
-		if (this.state === EMatchSate.ELECTION && this.election.state === ElectionState.FINISHED) {
-			this.state = EMatchSate.MATCH_MAP;
-			this.matchMaps = this.election.maps;
-			await this.getCurrentMatchMap()?.loadMap();
-		}
+	}
+
+	async onElectionFinished() {
+		this.state = EMatchSate.MATCH_MAP;
+		this.matchMaps = this.election.maps;
+		await this.getCurrentMatchMap()?.loadMap();
 	}
 
 	sayNotAssigned() {

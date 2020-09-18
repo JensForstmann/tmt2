@@ -68,12 +68,22 @@
 											},
 											{
 												"type": "string",
-												"enum": ["RANDOM_BAN"],
+												"enum": ["PICK"],
 												"nullable": false
-											},
+											}
+										]
+									}
+								},
+								"required": ["who", "mode"],
+								"type": "object"
+							},
+							{
+								"properties": {
+									"mode": {
+										"anyOf": [
 											{
 												"type": "string",
-												"enum": ["PICK"],
+												"enum": ["RANDOM_BAN"],
 												"nullable": false
 											},
 											{
@@ -89,7 +99,7 @@
 										]
 									}
 								},
-								"required": ["who", "mode"],
+								"required": ["mode"],
 								"type": "object"
 							}
 						]
@@ -116,12 +126,18 @@
 										"$ref": "#/components/schemas/EWho"
 									},
 									"mode": {
+										"type": "string",
+										"enum": ["PICK"],
+										"nullable": false
+									}
+								},
+								"required": ["who", "mode"],
+								"type": "object"
+							},
+							{
+								"properties": {
+									"mode": {
 										"anyOf": [
-											{
-												"type": "string",
-												"enum": ["PICK"],
-												"nullable": false
-											},
 											{
 												"type": "string",
 												"enum": ["RANDOM"],
@@ -135,7 +151,7 @@
 										]
 									}
 								},
-								"required": ["who", "mode"],
+								"required": ["mode"],
 								"type": "object"
 							}
 						]
@@ -189,23 +205,37 @@
 					"webhookUrl": {
 						"type": "string"
 					},
-					"rconInit": {
-						"items": {
-							"type": "string"
+					"rcon": {
+						"properties": {
+							"end": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"match": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"knife": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"init": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
 						},
-						"type": "array"
+						"type": "object"
 					},
-					"rconConfig": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"rconEnd": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
+					"canClinch": {
+						"type": "boolean"
 					}
 				},
 				"required": ["id", "mapPool", "team1", "team2", "electionSteps", "gameServer"],

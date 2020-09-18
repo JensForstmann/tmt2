@@ -66,8 +66,19 @@ const models: TsoaRoute.Models = {
 								dataType: 'union',
 								subSchemas: [
 									{ dataType: 'enum', enums: ['BAN'] },
-									{ dataType: 'enum', enums: ['RANDOM_BAN'] },
 									{ dataType: 'enum', enums: ['PICK'] },
+								],
+								required: true,
+							},
+						},
+					},
+					{
+						dataType: 'nestedObjectLiteral',
+						nestedProperties: {
+							mode: {
+								dataType: 'union',
+								subSchemas: [
+									{ dataType: 'enum', enums: ['RANDOM_BAN'] },
 									{ dataType: 'enum', enums: ['RANDOM_PICK'] },
 									{ dataType: 'enum', enums: ['AGREE'] },
 								],
@@ -92,10 +103,15 @@ const models: TsoaRoute.Models = {
 						dataType: 'nestedObjectLiteral',
 						nestedProperties: {
 							who: { ref: 'EWho', required: true },
+							mode: { dataType: 'enum', enums: ['PICK'], required: true },
+						},
+					},
+					{
+						dataType: 'nestedObjectLiteral',
+						nestedProperties: {
 							mode: {
 								dataType: 'union',
 								subSchemas: [
-									{ dataType: 'enum', enums: ['PICK'] },
 									{ dataType: 'enum', enums: ['RANDOM'] },
 									{ dataType: 'enum', enums: ['KNIFE'] },
 								],
@@ -138,9 +154,16 @@ const models: TsoaRoute.Models = {
 				required: true,
 			},
 			webhookUrl: { dataType: 'string' },
-			rconInit: { dataType: 'array', array: { dataType: 'string' } },
-			rconConfig: { dataType: 'array', array: { dataType: 'string' } },
-			rconEnd: { dataType: 'array', array: { dataType: 'string' } },
+			rcon: {
+				dataType: 'nestedObjectLiteral',
+				nestedProperties: {
+					end: { dataType: 'array', array: { dataType: 'string' } },
+					match: { dataType: 'array', array: { dataType: 'string' } },
+					knife: { dataType: 'array', array: { dataType: 'string' } },
+					init: { dataType: 'array', array: { dataType: 'string' } },
+				},
+			},
+			canClinch: { dataType: 'boolean' },
 		},
 		additionalProperties: false,
 	},

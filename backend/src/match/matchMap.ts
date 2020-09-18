@@ -3,7 +3,7 @@ import { ECommand, getCommands } from './commands';
 import { Match, COMMAND_PREFIXES } from './match';
 import { Player } from './player';
 import { readlink } from 'fs';
-import { makeStringify } from '../utils';
+import { makeStringify, sleep } from '../utils';
 
 export enum EMatchMapSate {
 	PENDING = 'PENDING',
@@ -23,8 +23,17 @@ export class MatchMap {
 	match: Match;
 	state: EMatchMapSate = EMatchMapSate.PENDING;
 	knifeWinner?: Team;
-	readyTeams: Set<Team> = new Set();
-	score: Map<Team, number> = new Map();
+	readyTeams = {
+		team1: false,
+		team2: false,
+	};
+	score = {
+		team1: 0,
+		team2: 0,
+	};
+	overTimeEnabled: boolean = true;
+	overTimeMaxRounds: number = 6;
+	maxRounds: number = 30;
 
 	constructor(match: Match, name: string, knife: boolean);
 	constructor(match: Match, name: string, startAsCtTeam: Team);
@@ -49,7 +58,7 @@ export class MatchMap {
 	async loadMap() {
 		await this.match.say(`MAP WILL BE CHANGED TO ${this.name} IN 10 SECONDS`);
 		this.state = EMatchMapSate.MAP_CHANGE;
-		await new Promise((resolve) => setTimeout(resolve, 10000));
+		await sleep(10000);
 
 		if (this.match.team1 === this.startAsCtTeam) {
 			this.match.team1.currentSide = ETeamSides.CT;
@@ -69,15 +78,29 @@ export class MatchMap {
 
 	async startMatch() {
 		this.state = EMatchMapSate.IN_PROGRESS;
+		await this.loadMatchConfig();
 		this.match.rcon.send('mp_unpause_match');
 		this.match.rcon.send('mp_restartgame 10');
-		this.match.say('THE MATCH IS LIVE AFTER THE NEXT RESTART!');
+		this.overTimeEnabled = (await this.getConfigVar('mp_overtime_enable')) === '1';
+		this.overTimeMaxRounds = parseInt(await this.getConfigVar('mp_overtime_maxrounds'));
+		this.maxRounds = parseInt(await this.getConfigVar('mp_maxrounds'));
+		this.match.say('THE MAP IS LIVE AFTER THE NEXT RESTART!');
 		this.match.say('GL & HF EVERYBODY');
-		setTimeout(() => {
-			this.match.say('MATCH IS LIVE!');
-			this.match.say('MATCH IS LIVE!');
-			this.match.say('MATCH IS LIVE!');
-		}, 10000);
+		sleep(11000).then(() => {
+			this.match.say('MAP IS LIVE!');
+			this.match.say('MAP IS LIVE!');
+			this.match.say('MAP IS LIVE!');
+		});
+	}
+
+	async getConfigVar(configVar: string): Promise<string> {
+		const response = await this.match.rcon.send(configVar);
+		const configVarPattern = new RegExp(`^"${configVar}" = "(.*?)"`);
+		const configVarMatch = response.match(configVarPattern);
+		if (configVarMatch) {
+			return configVarMatch[1];
+		}
+		return '';
 	}
 
 	async onCommand(command: ECommand, team: Team, player: Player) {
@@ -98,6 +121,9 @@ export class MatchMap {
 						break;
 					case ECommand.T:
 						this.t(team);
+						break;
+					case ECommand.RESTART:
+						// this.restartKnife(team);
 						break;
 				}
 			}
@@ -128,80 +154,144 @@ export class MatchMap {
 		}
 	}
 
-	onGameOver() {
+	onMapEnd() {
 		if (this.state === EMatchMapSate.IN_PROGRESS || this.state === EMatchMapSate.PAUSED) {
-			// TODO
+			// TODO call webhook
 			this.state = EMatchMapSate.FINISHED;
+			this.match.say('MAP FINISHED');
 		}
 	}
 
-	onRoundOver(ctScore: number, tScore: number, winningTeamSide: ETeamSides) {
-		const ctTeam = this.match.getTeamBySide(ETeamSides.CT);
-		const tTeam = this.match.getTeamBySide(ETeamSides.T);
-		const winningTeam = this.match.getTeamBySide(winningTeamSide);
-		this.score.set(ctTeam, ctScore);
-		this.score.set(tTeam, tScore);
+	isFinished() {
+		return this.state === EMatchMapSate.FINISHED;
+	}
 
-		if (this.state === EMatchMapSate.KNIFE) {
-			this.knifeWinner = winningTeam;
-			this.state = EMatchMapSate.AFTER_KNIFE;
-			this.match.rcon.send('mp_pause_match');
-		} else if (
-			this.state === EMatchMapSate.IN_PROGRESS ||
-			this.state === EMatchMapSate.PAUSED
-		) {
-			// state will be set to pause during round
-			// TODO call webhook
-			if (this.isSideSwitch(ctScore + tScore)) {
-				this.match.say('SWITCHING SIDES');
-				if (this.match.team1.currentSide === ETeamSides.CT) {
-					this.match.team1.currentSide = ETeamSides.T;
-					this.match.team2.currentSide = ETeamSides.CT;
-				} else {
-					this.match.team1.currentSide = ETeamSides.CT;
-					this.match.team2.currentSide = ETeamSides.T;
+	isDraw() {
+		return this.score.team1 === this.score.team2;
+	}
+
+	getWinner() {
+		return this.score.team1 > this.score.team2 ? this.match.team1 : this.match.team2;
+	}
+
+	getLoser() {}
+
+	getMapResult() {
+		return;
+	}
+
+	onRoundEnd(ctScore: number, tScore: number, winningTeamSide: ETeamSides) {
+		if (this.state !== EMatchMapSate.FINISHED) {
+			const ctTeam = this.match.getTeamBySide(ETeamSides.CT);
+			const tTeam = this.match.getTeamBySide(ETeamSides.T);
+			const winningTeam = this.match.getTeamBySide(winningTeamSide);
+			const losingTeam = this.match.getOtherTeam(winningTeam);
+			this.score.team1 = ctTeam.isTeam1 ? ctScore : tScore;
+			this.score.team2 = ctTeam.isTeam2 ? ctScore : tScore;
+
+			if (this.state === EMatchMapSate.KNIFE) {
+				this.knifeWinner = winningTeam;
+				this.state = EMatchMapSate.AFTER_KNIFE;
+				this.match.rcon.send('mp_pause_match');
+				this.match.say(`${winningTeam.toIngameString()} WON THE KNIFE`);
+				this.match.sayPeriodicMessage();
+			} else if (
+				this.state === EMatchMapSate.IN_PROGRESS ||
+				this.state === EMatchMapSate.PAUSED
+			) {
+				// state will be set to pause during round
+				// TODO call webhook
+				this.match.say(
+					`${winningTeam.toIngameString()} SCORED (${
+						winningTeam.isTeam1 ? this.score.team1 : this.score.team2
+					})`
+				);
+				this.match.say(
+					`${losingTeam.toIngameString()} (${
+						losingTeam.isTeam1 ? this.score.team1 : this.score.team2
+					})`
+				);
+				if (this.isSideSwitch(ctScore + tScore)) {
+					this.match.say('SWITCHING SIDES');
+					this.switchTeamInternals();
 				}
 			}
 		}
 	}
 
-	isSideSwitch(roundsPlayer: number) {
-		const maxRounds = 10; // TODO read from rcon
-		const otMaxRounds = 10; // TODO read from rcon
-		const overtimeNumber = this.getOvertimeNumber(roundsPlayer);
-		const otHalftime = maxRounds + (Math.max(1, overtimeNumber) - 0.5) * otMaxRounds;
-		return roundsPlayer === maxRounds / 2 || roundsPlayer === Math.floor(otHalftime);
+	switchTeamInternals() {
+		if (this.match.team1.currentSide === ETeamSides.CT) {
+			this.match.team1.currentSide = ETeamSides.T;
+			this.match.team2.currentSide = ETeamSides.CT;
+		} else {
+			this.match.team1.currentSide = ETeamSides.CT;
+			this.match.team2.currentSide = ETeamSides.T;
+		}
 	}
 
-	getOvertimeNumber(roundsPlayer: number) {
-		const maxRounds = 10; // TODO read from rcon
-		const otMaxRounds = 10; // TODO read from rcon
-		const otEnabled = false; // TODO read from rcon
-		if (otMaxRounds <= 0 || otEnabled === false) {
+	isSideSwitch(roundsPlayer: number) {
+		const overtimeNumber = this.getOvertimeNumber(roundsPlayer);
+		const otHalftime =
+			this.maxRounds + (Math.max(1, overtimeNumber) - 0.5) * this.overTimeMaxRounds;
+		return roundsPlayer === this.maxRounds / 2 || roundsPlayer === Math.floor(otHalftime);
+	}
+
+	getOvertimeNumber(roundsPlayed: number) {
+		if (this.overTimeMaxRounds <= 0 || this.overTimeEnabled === false) {
 			return 0;
 		}
-		return Math.max(0, Math.ceil((roundsPlayer - maxRounds) / otMaxRounds));
+		return Math.max(0, Math.ceil((roundsPlayed - this.maxRounds) / this.overTimeMaxRounds));
 	}
 
-	stay(team: Team) {}
+	stay(team: Team) {
+		this.match.say(`${team.toIngameString()} WANTS TO STAY`);
+		this.startMatch();
+	}
 
-	switch(team: Team) {}
+	switch(team: Team) {
+		this.match.say(`${team.toIngameString()} WANTS TO SWITCH SIDES`);
+		this.match.rcon.send('mp_swapteams');
+		this.switchTeamInternals();
+		this.startMatch();
+	}
 
-	ct(team: Team) {}
+	ct(team: Team) {
+		if (team.currentSide !== ETeamSides.CT) {
+			this.switch(team);
+		} else {
+			this.stay(team);
+		}
+	}
 
-	t(team: Team) {}
+	t(team: Team) {
+		if (team.currentSide !== ETeamSides.T) {
+			this.switch(team);
+		} else {
+			this.stay(team);
+		}
+	}
 
 	async startKnifeRound() {
 		this.state = EMatchMapSate.KNIFE;
-		await this.loadConfig();
+		await this.loadKnifeConfig();
 		await this.match.rcon.send('mp_restartgame 3');
+		await sleep(4000);
+		this.match.say('KNIFE FOR SIDE');
+		this.match.say('KNIFE FOR SIDE');
+		this.match.say('KNIFE FOR SIDE');
 	}
 
-	async loadConfig() {}
+	async loadKnifeConfig() {
+		await this.match.executeRconCommands(this.match.matchInitData.rcon?.knife);
+	}
+
+	async loadMatchConfig() {
+		await this.match.executeRconCommands(this.match.matchInitData.rcon?.match);
+	}
 
 	async sayPeriodicMessage() {
 		await this.match.rcon.send('mp_warmup_pausetimer 1'); // infinite warmup, TODO: move this to a more suitable location
-		await this.match.rcon.send('mp_autokick 0'); // infinite warmup, TODO: move this to a more suitable location
+		await this.match.rcon.send('mp_autokick 0'); // never kick, TODO: move this to a more suitable location
 
 		switch (this.state) {
 			case EMatchMapSate.IN_PROGRESS:
@@ -213,12 +303,12 @@ export class MatchMap {
 			case EMatchMapSate.PAUSED:
 			case EMatchMapSate.PENDING:
 			case EMatchMapSate.WARMUP:
-				// TODO print only if there are any commands
-				this.match.say(
-					`COMMANDS: ${this.getAvailableCommands()
-						.map((c) => COMMAND_PREFIXES[0] + c)
-						.join(', ')}`
-				);
+				const commands = this.getAvailableCommands();
+				if (commands.length > 0) {
+					this.match.say(
+						`COMMANDS: ${commands.map((c) => COMMAND_PREFIXES[0] + c).join(', ')}`
+					);
+				}
 				break;
 		}
 	}
@@ -251,29 +341,43 @@ export class MatchMap {
 	}
 
 	async ready(team: Team) {
-		this.readyTeams.add(team);
-		if (this.readyTeams.size === 2) {
+		if (team.isTeam1) {
+			this.readyTeams.team1 = true;
+		} else {
+			this.readyTeams.team2 = true;
+		}
+		this.match.say(`${team.toIngameString()} IS READY`);
+		if (this.readyTeams.team1 && this.readyTeams.team2) {
 			if (this.state === EMatchMapSate.PAUSED) {
-				this.readyTeams.clear();
+				this.readyTeams.team1 = false;
+				this.readyTeams.team2 = false;
 				await this.match.rcon.send('mp_unpause_match');
+				this.match.say('CONTINUE MAP');
 				this.state = EMatchMapSate.IN_PROGRESS;
 			} else if (this.state === EMatchMapSate.WARMUP) {
 				this.match.rcon.send('mp_warmup_end');
 				if (this.knife) {
 					await this.startKnifeRound();
 				} else {
-					this.startMatch();
+					await this.startMatch();
 				}
 			}
 		}
 	}
 
 	unready(team: Team) {
-		this.readyTeams.delete(team);
+		this.match.say(`${team.toIngameString()} IS NOT READY`);
+		if (team.isTeam1) {
+			this.readyTeams.team1 = false;
+		} else {
+			this.readyTeams.team2 = false;
+		}
 	}
 
 	pause(team: Team) {
-		this.readyTeams.clear();
+		this.match.say(`${team.toIngameString()} PAUSED THE MAP`);
+		this.readyTeams.team1 = false;
+		this.readyTeams.team2 = false;
 		this.state = EMatchMapSate.PAUSED;
 		this.match.rcon.send('mp_pause_match');
 	}

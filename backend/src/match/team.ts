@@ -10,6 +10,7 @@ export class Team {
 	id: string;
 	currentSide: ETeamSides;
 	isTeam1: boolean;
+	isTeam2: boolean;
 	players: Set<Player> = new Set();
 	name: string;
 
@@ -17,6 +18,7 @@ export class Team {
 		this.id = id;
 		this.currentSide = currentSide;
 		this.isTeam1 = isTeam1;
+		this.isTeam2 = !isTeam1;
 		this.name = name;
 	}
 
