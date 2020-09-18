@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Path, Post, Query, Route, SuccessResponse } from 'tsoa';
-import { MatchInitData, Match, IMatch } from './match';
+import { IMatchInitData, Match, IMatch } from './match';
 import { MatchService } from './matchService';
 
 @Route('/api/matches')
 export class MatchesController extends Controller {
 	@Post()
-	async createMatch(@Body() requestBody: MatchInitData): Promise<{ id: string }> {
+	async createMatch(@Body() requestBody: IMatchInitData): Promise<{ id: string }> {
 		const id = await MatchService.create(requestBody);
 		this.setHeader('Location', `/api/matches/${id}`);
 		this.setStatus(201);

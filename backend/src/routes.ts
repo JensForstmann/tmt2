@@ -17,18 +17,91 @@ import * as express from 'express';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
-	STeam: {
+	ITeam: {
 		dataType: 'refObject',
 		properties: {
-			id: { dataType: 'string', required: true },
+			remoteId: { dataType: 'string' },
 			name: { dataType: 'string', required: true },
 		},
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	'EMapMode.FIXED': {
+		dataType: 'refEnum',
+		enums: ['FIXED'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IFixedMap: {
+		dataType: 'refObject',
+		properties: {
+			mode: { ref: 'EMapMode.FIXED', required: true },
+			fixed: { dataType: 'string', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	'EMapMode.BAN': {
+		dataType: 'refEnum',
+		enums: ['BAN'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	'EMapMode.PICK': {
+		dataType: 'refEnum',
+		enums: ['PICK'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	EWho: {
 		dataType: 'refEnum',
 		enums: ['TEAM_1', 'TEAM_2', 'TEAM_X', 'TEAM_Y'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IBanOrPickMap: {
+		dataType: 'refObject',
+		properties: {
+			mode: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'EMapMode.BAN' }, { ref: 'EMapMode.PICK' }],
+				required: true,
+			},
+			who: { ref: 'EWho', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	'EMapMode.RANDOM_BAN': {
+		dataType: 'refEnum',
+		enums: ['RANDOM_BAN'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	'EMapMode.RANDOM_PICK': {
+		dataType: 'refEnum',
+		enums: ['RANDOM_PICK'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	'EMapMode.AGREE': {
+		dataType: 'refEnum',
+		enums: ['AGREE'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IAgreeOrRandomMap: {
+		dataType: 'refObject',
+		properties: {
+			mode: {
+				dataType: 'union',
+				subSchemas: [
+					{ ref: 'EMapMode.RANDOM_BAN' },
+					{ ref: 'EMapMode.RANDOM_PICK' },
+					{ ref: 'EMapMode.AGREE' },
+				],
+				required: true,
+			},
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	'ESideMode.FIXED': {
+		dataType: 'refEnum',
+		enums: ['FIXED'],
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	ESideFixed: {
@@ -45,80 +118,69 @@ const models: TsoaRoute.Models = {
 		],
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	ElectionStep: {
+	IFixedSide: {
+		dataType: 'refObject',
+		properties: {
+			mode: { ref: 'ESideMode.FIXED', required: true },
+			fixed: { ref: 'ESideFixed', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	'ESideMode.PICK': {
+		dataType: 'refEnum',
+		enums: ['PICK'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IPickSide: {
+		dataType: 'refObject',
+		properties: {
+			mode: { ref: 'ESideMode.PICK', required: true },
+			who: { ref: 'EWho', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	'ESideMode.RANDOM': {
+		dataType: 'refEnum',
+		enums: ['RANDOM'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	'ESideMode.KNIFE': {
+		dataType: 'refEnum',
+		enums: ['KNIFE'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IRandomOrKnifeSide: {
+		dataType: 'refObject',
+		properties: {
+			mode: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'ESideMode.RANDOM' }, { ref: 'ESideMode.KNIFE' }],
+				required: true,
+			},
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IElectionStep: {
 		dataType: 'refObject',
 		properties: {
 			map: {
 				dataType: 'union',
 				subSchemas: [
-					{
-						dataType: 'nestedObjectLiteral',
-						nestedProperties: {
-							fixed: { dataType: 'string', required: true },
-							mode: { dataType: 'enum', enums: ['FIXED'], required: true },
-						},
-					},
-					{
-						dataType: 'nestedObjectLiteral',
-						nestedProperties: {
-							who: { ref: 'EWho', required: true },
-							mode: {
-								dataType: 'union',
-								subSchemas: [
-									{ dataType: 'enum', enums: ['BAN'] },
-									{ dataType: 'enum', enums: ['PICK'] },
-								],
-								required: true,
-							},
-						},
-					},
-					{
-						dataType: 'nestedObjectLiteral',
-						nestedProperties: {
-							mode: {
-								dataType: 'union',
-								subSchemas: [
-									{ dataType: 'enum', enums: ['RANDOM_BAN'] },
-									{ dataType: 'enum', enums: ['RANDOM_PICK'] },
-									{ dataType: 'enum', enums: ['AGREE'] },
-								],
-								required: true,
-							},
-						},
-					},
+					{ ref: 'IFixedMap' },
+					{ ref: 'IBanOrPickMap' },
+					{ ref: 'IAgreeOrRandomMap' },
 				],
 				required: true,
 			},
 			side: {
 				dataType: 'union',
 				subSchemas: [
-					{
-						dataType: 'nestedObjectLiteral',
-						nestedProperties: {
-							fixed: { ref: 'ESideFixed', required: true },
-							mode: { dataType: 'enum', enums: ['FIXED'], required: true },
-						},
-					},
-					{
-						dataType: 'nestedObjectLiteral',
-						nestedProperties: {
-							who: { ref: 'EWho', required: true },
-							mode: { dataType: 'enum', enums: ['PICK'], required: true },
-						},
-					},
-					{
-						dataType: 'nestedObjectLiteral',
-						nestedProperties: {
-							mode: {
-								dataType: 'union',
-								subSchemas: [
-									{ dataType: 'enum', enums: ['RANDOM'] },
-									{ dataType: 'enum', enums: ['KNIFE'] },
-								],
-								required: true,
-							},
-						},
-					},
+					{ ref: 'IFixedSide' },
+					{ ref: 'IPickSide' },
+					{ ref: 'IRandomOrKnifeSide' },
 				],
 				required: true,
 			},
@@ -126,21 +188,21 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	MatchInitData: {
+	IMatchInitData: {
 		dataType: 'refObject',
 		properties: {
-			id: { dataType: 'string', required: true },
+			remoteId: { dataType: 'string' },
 			mapPool: {
 				dataType: 'array',
 				array: { dataType: 'string' },
 				required: true,
 				validators: { minItems: { value: 1 } },
 			},
-			team1: { ref: 'STeam', required: true },
-			team2: { ref: 'STeam', required: true },
+			team1: { ref: 'ITeam', required: true },
+			team2: { ref: 'ITeam', required: true },
 			electionSteps: {
 				dataType: 'array',
-				array: { ref: 'ElectionStep' },
+				array: { ref: 'IElectionStep' },
 				required: true,
 				validators: { minItems: { value: 1 } },
 			},
@@ -171,7 +233,7 @@ const models: TsoaRoute.Models = {
 	IMatch: {
 		dataType: 'refObject',
 		properties: {
-			matchInitData: { ref: 'MatchInitData', required: true },
+			matchInitData: { ref: 'IMatchInitData', required: true },
 		},
 		additionalProperties: false,
 	},
@@ -188,7 +250,7 @@ export function RegisterRoutes(app: express.Express) {
 	// ###########################################################################################################
 	app.post('/api/matches', function (request: any, response: any, next: any) {
 		const args = {
-			requestBody: { in: 'body', name: 'requestBody', required: true, ref: 'MatchInitData' },
+			requestBody: { in: 'body', name: 'requestBody', required: true, ref: 'IMatchInitData' },
 		};
 
 		// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -7,15 +7,15 @@ export enum ETeamSides {
 }
 
 export class Team {
-	id: string;
+	remoteId?: string;
 	currentSide: ETeamSides;
 	isTeam1: boolean;
 	isTeam2: boolean;
 	players: Set<Player> = new Set();
 	name: string;
 
-	constructor(id: string, currentSide: ETeamSides, isTeam1: boolean, name: string) {
-		this.id = id;
+	constructor(currentSide: ETeamSides, isTeam1: boolean, name: string, remoteId?: string) {
+		this.remoteId = remoteId;
 		this.currentSide = currentSide;
 		this.isTeam1 = isTeam1;
 		this.isTeam2 = !isTeam1;

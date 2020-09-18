@@ -1,29 +1,33 @@
 import { Rcon } from 'rcon-client';
-import { ElectionStep, Election, ElectionState } from './election';
+import { IElectionStep, Election } from './election';
 import { Team, ETeamSides } from './team';
 import { PlayerService } from './playerService';
 import { Player } from './player';
 import { commandMapping, ECommand } from './commands';
 import { EMatchMapSate, MatchMap } from './matchMap';
 import { makeStringify, sleep } from '../utils';
+import { v4 as uuidv4 } from 'uuid';
+import Datastore from 'nedb';
 
-export interface STeam {
-	id: string;
+const db = new Datastore({ filename: 'nedb', autoload: true });
+
+export interface ITeam {
+	remoteId?: string;
 	name: string;
 }
 
-export interface MatchInitData {
-	id: string;
+export interface IMatchInitData {
+	remoteId?: string;
 	/**
 	 * @minItems 1
 	 */
 	mapPool: string[];
-	team1: STeam;
-	team2: STeam;
+	team1: ITeam;
+	team2: ITeam;
 	/**
 	 * @minItems 1
 	 */
-	electionSteps: ElectionStep[];
+	electionSteps: IElectionStep[];
 	gameServer: {
 		ip: string;
 		port: number;
@@ -40,7 +44,7 @@ export interface MatchInitData {
 }
 
 export interface IMatch {
-	matchInitData: MatchInitData;
+	matchInitData: IMatchInitData;
 }
 
 export enum EMatchSate {
@@ -53,13 +57,14 @@ export const COMMAND_PREFIXES = ['.', '!'];
 const PERIODIC_MESSAGE_FREQUENCY = 30000;
 
 export class Match implements IMatch {
-	matchInitData: MatchInitData;
+	id: string;
+	matchInitData: IMatchInitData;
 	state: EMatchSate = EMatchSate.ELECTION;
 	election: Election;
 	team1: Team;
 	team2: Team;
 	rcon: Rcon;
-	logSecret: string = '' + Math.random() * 1000000;
+	logSecret: string = uuidv4();
 	parseIncomingLogs: boolean = false;
 	logCounter: number = 0;
 	logLineCounter: number = 0;
@@ -68,7 +73,8 @@ export class Match implements IMatch {
 	periodicTimerId?: NodeJS.Timeout;
 	canClinch: boolean = true;
 
-	constructor(matchInitData: MatchInitData) {
+	constructor(id: string, matchInitData: IMatchInitData) {
+		this.id = id;
 		this.matchInitData = matchInitData;
 		this.rcon = new Rcon({
 			host: matchInitData.gameServer.ip,
@@ -76,16 +82,16 @@ export class Match implements IMatch {
 			password: matchInitData.gameServer.rconPassword,
 		});
 		this.team1 = new Team(
-			this.matchInitData.team1.id,
 			ETeamSides.CT,
 			true,
-			this.matchInitData.team1.name
+			this.matchInitData.team1.name,
+			this.matchInitData.team1.remoteId
 		);
 		this.team2 = new Team(
-			this.matchInitData.team2.id,
 			ETeamSides.T,
 			false,
-			this.matchInitData.team2.name
+			this.matchInitData.team2.name,
+			this.matchInitData.team2.remoteId
 		);
 		this.election = new Election(this);
 		if (typeof this.matchInitData.canClinch === 'boolean') {
@@ -97,7 +103,7 @@ export class Match implements IMatch {
 		await this.rcon.connect();
 		// TODO add other log options as well
 		await this.rcon.send(
-			`logaddress_add_http "http://localhost:8080/api/matches/${this.matchInitData.id}/server/log/${this.logSecret}"`
+			`logaddress_add_http "http://localhost:8080/api/matches/${this.id}/server/log/${this.logSecret}"`
 		);
 		// logaddress_list_http
 		await this.loadInitConfig();
@@ -212,11 +218,6 @@ export class Match implements IMatch {
 				winningTeam === 'CT' ? ETeamSides.CT : ETeamSides.T
 			);
 		}
-
-		// TODO:
-		// World triggered "Match_Start" on "de_dust2"
-		// Team playing "CT": team1
-		// Team playing "TERRORIST": team2
 	}
 
 	async onMapEnd() {
@@ -249,7 +250,6 @@ export class Match implements IMatch {
 	onMatchEnd() {
 		this.state = EMatchSate.FINISHED;
 		this.loadEndConfig();
-		// TODO webhook
 	}
 
 	isMatchEnd(): boolean {
@@ -355,7 +355,7 @@ export class Match implements IMatch {
 			const playerTeam = this.getTeamByPlayer(player);
 			if (playerTeam) {
 				this.say(
-					`YOU ARE CURRENTLY IN TEAM ${
+					`YOU ARE IN TEAM ${
 						playerTeam.isTeam1 ? 'A' : 'B'
 					}: ${playerTeam.toIngameString()}`
 				);

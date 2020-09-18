@@ -1,5 +1,5 @@
-import { Match, COMMAND_PREFIXES } from './match';
-import { Team, ETeamSides } from './team';
+import { Match, COMMAND_PREFIXES, EMatchSate } from './match';
+import { Team } from './team';
 import { getCommands, ECommand } from './commands';
 import { MatchMap } from './matchMap';
 import { makeStringify } from '../utils';
@@ -22,31 +22,53 @@ export enum ESideFixed {
 	TEAM_Y_T = 'TEAM_Y_T',
 }
 
-export interface ElectionStep {
-	map:
-		| {
-				mode: 'FIXED';
-				fixed: string;
-		  }
-		| {
-				mode: 'BAN' | 'PICK';
-				who: EWho;
-		  }
-		| {
-				mode: 'RANDOM_BAN' | 'RANDOM_PICK' | 'AGREE';
-		  };
-	side:
-		| {
-				mode: 'FIXED';
-				fixed: ESideFixed;
-		  }
-		| {
-				mode: 'PICK';
-				who: EWho;
-		  }
-		| {
-				mode: 'RANDOM' | 'KNIFE';
-		  };
+export enum EMapMode {
+	FIXED = 'FIXED',
+	BAN = 'BAN',
+	PICK = 'PICK',
+	RANDOM_BAN = 'RANDOM_BAN',
+	RANDOM_PICK = 'RANDOM_PICK',
+	AGREE = 'AGREE',
+}
+
+export interface IFixedMap {
+	mode: EMapMode.FIXED;
+	fixed: string;
+}
+
+export interface IBanOrPickMap {
+	mode: EMapMode.BAN | EMapMode.PICK;
+	who: EWho;
+}
+
+export interface IAgreeOrRandomMap {
+	mode: EMapMode.RANDOM_BAN | EMapMode.RANDOM_PICK | EMapMode.AGREE;
+}
+
+export enum ESideMode {
+	FIXED = 'FIXED',
+	PICK = 'PICK',
+	RANDOM = 'RANDOM',
+	KNIFE = 'KNIFE',
+}
+
+export interface IFixedSide {
+	mode: ESideMode.FIXED;
+	fixed: ESideFixed;
+}
+
+export interface IPickSide {
+	mode: ESideMode.PICK;
+	who: EWho;
+}
+
+export interface IRandomOrKnifeSide {
+	mode: ESideMode.RANDOM | ESideMode.KNIFE;
+}
+
+export interface IElectionStep {
+	map: IFixedMap | IBanOrPickMap | IAgreeOrRandomMap;
+	side: IFixedSide | IPickSide | IRandomOrKnifeSide;
 }
 
 export enum ElectionState {
@@ -55,12 +77,17 @@ export enum ElectionState {
 	FINISHED = 'FINISHED',
 }
 
+export enum EStep {
+	MAP = 'MAP',
+	SIDE = 'SIDE',
+}
+
 export class Election {
 	match: Match;
 	state: ElectionState = ElectionState.NOT_STARTED;
 	currentStep: number = 0;
-	currentElectionStep: ElectionStep;
-	currentSubStep: 'MAP' | 'SIDE' = 'MAP';
+	currentElectionStep: IElectionStep;
+	currentSubStep: EStep = EStep.MAP;
 	teamX?: Team;
 	teamY?: Team;
 	remainingMaps: string[];
@@ -93,7 +120,7 @@ export class Election {
 	ban(team: Team, map: string) {
 		map = map.toLowerCase();
 		if (
-			this.currentSubStep === 'MAP' &&
+			this.currentSubStep === EStep.MAP &&
 			this.currentElectionStep.map.mode === 'BAN' &&
 			this.isValidTeam(this.currentElectionStep.map.who, team)
 		) {
@@ -114,8 +141,8 @@ export class Election {
 	pick(team: Team, map: string) {
 		map = map.toLowerCase();
 		if (
-			this.currentSubStep === 'MAP' &&
-			this.currentElectionStep.map.mode === 'PICK' &&
+			this.currentSubStep === EStep.MAP &&
+			this.currentElectionStep.map.mode === EMapMode.PICK &&
 			this.isValidTeam(this.currentElectionStep.map.who, team)
 		) {
 			const matchMap = this.remainingMaps.findIndex((mapName) => mapName === map);
@@ -136,7 +163,7 @@ export class Election {
 	t(team: Team) {
 		if (
 			this.currentSubStep === 'SIDE' &&
-			this.currentElectionStep.side.mode === 'PICK' &&
+			this.currentElectionStep.side.mode === ESideMode.PICK &&
 			this.isValidTeam(this.currentElectionStep.side.who, team)
 		) {
 			this.ensureTeamXY(this.currentElectionStep.side.who, team);
@@ -152,7 +179,7 @@ export class Election {
 	ct(team: Team) {
 		if (
 			this.currentSubStep === 'SIDE' &&
-			this.currentElectionStep.side.mode === 'PICK' &&
+			this.currentElectionStep.side.mode === ESideMode.PICK &&
 			this.isValidTeam(this.currentElectionStep.side.who, team)
 		) {
 			this.ensureTeamXY(this.currentElectionStep.side.who, team);
@@ -167,7 +194,10 @@ export class Election {
 
 	agree(team: Team, map: string) {
 		map = map.toLowerCase();
-		if (this.currentSubStep === 'MAP' && this.currentElectionStep.map.mode === 'AGREE') {
+		if (
+			this.currentSubStep === EStep.MAP &&
+			this.currentElectionStep.map.mode === EMapMode.AGREE
+		) {
 			const matchMap = this.remainingMaps.findIndex((mapName) => mapName === map);
 			if (matchMap > -1) {
 				this.state = ElectionState.IN_PROGRESS;
@@ -178,6 +208,7 @@ export class Election {
 				}
 				if (
 					this.currentAgree.team1 !== null &&
+					this.currentAgree.team2 !== null &&
 					this.currentAgree.team1 === this.currentAgree.team2
 				) {
 					this.map = this.remainingMaps[matchMap];
@@ -202,15 +233,15 @@ export class Election {
 
 	next() {
 		if (
-			this.currentSubStep === 'MAP' &&
-			(this.currentElectionStep.map.mode === 'AGREE' ||
-				this.currentElectionStep.map.mode === 'FIXED' ||
-				this.currentElectionStep.map.mode === 'PICK' ||
-				this.currentElectionStep.map.mode === 'RANDOM_PICK')
+			this.currentSubStep === EStep.MAP &&
+			(this.currentElectionStep.map.mode === EMapMode.AGREE ||
+				this.currentElectionStep.map.mode === EMapMode.FIXED ||
+				this.currentElectionStep.map.mode === EMapMode.PICK ||
+				this.currentElectionStep.map.mode === EMapMode.RANDOM_PICK)
 		) {
-			this.currentSubStep = 'SIDE';
+			this.currentSubStep = EStep.SIDE;
 		} else {
-			this.currentSubStep = 'MAP';
+			this.currentSubStep = EStep.MAP;
 			this.currentStep++;
 			this.currentElectionStep = this.match.matchInitData.electionSteps[this.currentStep];
 			if (!this.currentElectionStep) {
@@ -224,7 +255,7 @@ export class Election {
 	}
 
 	auto() {
-		if (this.currentSubStep === 'MAP') {
+		if (this.currentSubStep === EStep.MAP) {
 			this.autoMap();
 		}
 		if (this.currentSubStep === 'SIDE') {
@@ -233,7 +264,7 @@ export class Election {
 	}
 
 	autoMap() {
-		if (this.currentElectionStep.map.mode === 'FIXED') {
+		if (this.currentElectionStep.map.mode === EMapMode.FIXED) {
 			this.map = this.currentElectionStep.map.fixed;
 			this.match.say(`${this.currentStep + 1}. MAP: ${this.map}`);
 			this.next();
@@ -241,13 +272,13 @@ export class Election {
 		}
 		if (
 			this.currentElectionStep.map.mode === 'RANDOM_BAN' ||
-			this.currentElectionStep.map.mode === 'RANDOM_PICK'
+			this.currentElectionStep.map.mode === EMapMode.RANDOM_PICK
 		) {
 			const matchMap = Math.min(
 				Math.floor(Math.random() * this.remainingMaps.length),
 				this.remainingMaps.length
 			);
-			if (this.currentElectionStep.map.mode === 'RANDOM_PICK') {
+			if (this.currentElectionStep.map.mode === EMapMode.RANDOM_PICK) {
 				this.match.say(`RANDOM ${this.currentStep + 1}. MAP: ${this.map}`);
 				this.map = this.remainingMaps[matchMap];
 			} else {
@@ -260,7 +291,7 @@ export class Election {
 	}
 
 	autoSide() {
-		if (this.currentElectionStep.side.mode === 'FIXED') {
+		if (this.currentElectionStep.side.mode === ESideMode.FIXED) {
 			if (
 				[ESideFixed.TEAM_1_CT, ESideFixed.TEAM_2_T].includes(
 					this.currentElectionStep.side.fixed
@@ -346,19 +377,19 @@ export class Election {
 		if (this.state === ElectionState.FINISHED) {
 			return [];
 		}
-		if (this.currentSubStep === 'MAP') {
+		if (this.currentSubStep === EStep.MAP) {
 			switch (this.currentElectionStep.map.mode) {
-				case 'AGREE':
+				case EMapMode.AGREE:
 					return [...getCommands(ECommand.AGREE), ...getCommands(ECommand.PICK)];
 				case 'BAN':
 					return getCommands(ECommand.BAN);
-				case 'PICK':
+				case EMapMode.PICK:
 					return getCommands(ECommand.PICK);
 			}
 		}
 		if (this.currentSubStep === 'SIDE') {
 			switch (this.currentElectionStep.side.mode) {
-				case 'PICK':
+				case ESideMode.PICK:
 					return [...getCommands(ECommand.T), ...getCommands(ECommand.CT)];
 			}
 		}

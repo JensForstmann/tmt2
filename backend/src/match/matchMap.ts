@@ -20,10 +20,15 @@ export class MatchMap {
 	name: string;
 	knife: boolean;
 	startAsCtTeam: Team;
+	startAsTTeam: Team;
 	match: Match;
 	state: EMatchMapSate = EMatchMapSate.PENDING;
 	knifeWinner?: Team;
 	readyTeams = {
+		team1: false,
+		team2: false,
+	};
+	knifeRestart = {
 		team1: false,
 		team2: false,
 	};
@@ -47,6 +52,7 @@ export class MatchMap {
 			this.knife = false;
 			this.startAsCtTeam = knifeOrStartAsCt;
 		}
+		this.startAsTTeam = this.match.getOtherTeam(this.startAsCtTeam);
 	}
 
 	toJSON() {
@@ -69,9 +75,8 @@ export class MatchMap {
 		}
 
 		await this.match.rcon.send(`mp_teamname_1 "${this.startAsCtTeam.toIngameString()}"`);
-		await this.match.rcon.send(
-			`mp_teamname_2 "${this.match.getOtherTeam(this.startAsCtTeam).toIngameString()}"`
-		);
+		await this.match.rcon.send(`mp_teamname_2 "${this.startAsTTeam.toIngameString()}"`);
+
 		await this.match.rcon.send(`changelevel ${this.name}`);
 		this.state = EMatchMapSate.WARMUP;
 	}
@@ -104,8 +109,8 @@ export class MatchMap {
 	}
 
 	async onCommand(command: ECommand, team: Team, player: Player) {
-		if (this.state === EMatchMapSate.KNIFE) {
-			// TODO: offer restart round (new knife round)
+		if (this.state === EMatchMapSate.KNIFE && command === ECommand.RESTART) {
+			this.restartKnife(team);
 		}
 		if (this.state === EMatchMapSate.AFTER_KNIFE) {
 			if (this.knifeWinner === team) {
@@ -123,7 +128,7 @@ export class MatchMap {
 						this.t(team);
 						break;
 					case ECommand.RESTART:
-						// this.restartKnife(team);
+						this.restartKnife(team);
 						break;
 				}
 			}
@@ -154,9 +159,25 @@ export class MatchMap {
 		}
 	}
 
+	restartKnife(team: Team) {
+		if (team.isTeam1) {
+			this.knifeRestart.team1 = true;
+		} else {
+			this.knifeRestart.team2 = true;
+		}
+
+		if (this.knifeRestart.team1 && this.knifeRestart.team2) {
+			this.knifeRestart.team1 = false;
+			this.knifeRestart.team2 = false;
+			this.startKnifeRound();
+		} else {
+			this.match.say(`${team.toIngameString()} WANTS TO RESTART THE KNIFE ROUND`);
+			this.match.say(`AGREE WITH ${getCommands(ECommand.RESTART)}`);
+		}
+	}
+
 	onMapEnd() {
 		if (this.state === EMatchMapSate.IN_PROGRESS || this.state === EMatchMapSate.PAUSED) {
-			// TODO call webhook
 			this.state = EMatchMapSate.FINISHED;
 			this.match.say('MAP FINISHED');
 		}
@@ -197,10 +218,8 @@ export class MatchMap {
 				this.match.sayPeriodicMessage();
 			} else if (
 				this.state === EMatchMapSate.IN_PROGRESS ||
-				this.state === EMatchMapSate.PAUSED
+				this.state === EMatchMapSate.PAUSED // state could be set to pause during round
 			) {
-				// state will be set to pause during round
-				// TODO call webhook
 				this.match.say(
 					`${winningTeam.toIngameString()} SCORED (${
 						winningTeam.isTeam1 ? this.score.team1 : this.score.team2

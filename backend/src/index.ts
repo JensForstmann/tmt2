@@ -3,8 +3,8 @@ import bodyParser from 'body-parser';
 import { RegisterRoutes } from './routes';
 import { ValidateError } from 'tsoa';
 import axios from 'axios';
-import { MatchInitData } from './match/match';
-import { ESideFixed, EWho } from './match/election';
+import { IMatchInitData } from './match/match';
+import { EMapMode, ESideFixed, EWho, ESideMode } from './match/election';
 
 const app = express();
 
@@ -51,45 +51,42 @@ app.listen(port, () => {
 	console.log(`App listening on port ${port}`);
 	if (process.env.DO_AXIOS) {
 		console.log('init match');
-		const matchInitData: MatchInitData = {
-			id: '1',
+		const matchInitData: IMatchInitData = {
 			mapPool: ['de_dust2'],
 			team1: {
-				id: '1',
 				name: 'team1',
 			},
 			team2: {
-				id: '2',
 				name: 'team2',
 			},
 			electionSteps: [
 				{
 					map: {
-						mode: 'FIXED',
+						mode: EMapMode.FIXED,
 						fixed: 'de_dust2',
 					},
 					side: {
-						mode: 'FIXED',
+						mode: ESideMode.FIXED,
 						fixed: ESideFixed.TEAM_1_CT,
 					},
 				},
 				{
 					map: {
-						mode: 'FIXED',
+						mode: EMapMode.FIXED,
 						fixed: 'de_dust2',
 					},
 					side: {
-						mode: 'FIXED',
+						mode: ESideMode.FIXED,
 						fixed: ESideFixed.TEAM_1_T,
 					},
 				},
 				{
 					map: {
-						mode: 'FIXED',
+						mode: EMapMode.FIXED,
 						fixed: 'de_dust2',
 					},
 					side: {
-						mode: 'RANDOM',
+						mode: ESideMode.RANDOM,
 					},
 				},
 			],
