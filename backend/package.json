@@ -7,7 +7,7 @@
 	"license": "MIT",
 	"scripts": {
 		"build": "tsoa spec-and-routes && tsc",
-		"dev": "concurrently \"nodemon\" \"nodemon -x tsoa spec-and-routes\"",
+		"dev": "NODE_ENV=development concurrently \"nodemon\" \"nodemon -x tsoa spec-and-routes\"",
 		"clean": "prettier --write .",
 		"start": "node ./dist/index.js"
 	},

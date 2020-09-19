@@ -11,15 +11,19 @@ import Datastore from 'nedb';
 
 const db = new Datastore({ filename: 'nedb', autoload: true });
 
-export interface ITeam {
-	remoteId?: string;
-	name: string;
-}
-
 export interface IMatchChange {
 	state?: EMatchSate;
 	currentMap?: number;
 	canClinch?: boolean;
+}
+
+export interface IMatch {
+	matchInitData: IMatchInitData;
+}
+
+interface ITeam {
+	remoteId?: string;
+	name: string;
 }
 
 export interface IMatchInitData {
@@ -47,10 +51,6 @@ export interface IMatchInitData {
 		end?: string[]; // executed after last match map
 	};
 	canClinch?: boolean;
-}
-
-export interface IMatch {
-	matchInitData: IMatchInitData;
 }
 
 export enum EMatchSate {
@@ -116,6 +116,13 @@ export class Match implements IMatch {
 		await this.rcon.send(`mp_teamname_1 "${this.team1.toIngameString()}"`);
 		await this.rcon.send(`mp_teamname_2 "${this.team2.toIngameString()}"`);
 
+		await this.rcon.send(`mp_backup_round_file "round_backup_${this.id}"`);
+		await this.rcon.send('mp_backup_restore_load_autopause 1');
+		await this.rcon.send('mp_backup_round_auto 1');
+		await this.rcon.send(
+			'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%team1%_%team2%_%map%_round%round%_score_%score1%_%score2%.txt"'
+		);
+
 		sleep(2000).then(() => {
 			this.parseIncomingLogs = true;
 			this.say('TMT IS ONLINE');
@@ -124,11 +131,35 @@ export class Match implements IMatch {
 		});
 	}
 
+	async getRoundBackups(count: number = 5) {
+		const response = await this.rcon.send(`mp_backup_restore_list_files ${count}`);
+		const lines = response.trim().split('\n');
+		const files = lines.filter((line) => line[0] === ' ').map((line) => line.trim());
+		const totalFiles = parseInt(lines[lines.length - 1].split(' ')[0]);
+		return {
+			latestFiles: files,
+			total: isNaN(totalFiles) ? 0 : totalFiles,
+		};
+	}
+
+	async loadRoundBackup(file: string) {
+		const response = await this.rcon.send(`mp_backup_restore_load_file "${file}"`);
+		if (response.includes('Failed to load file:')) {
+			return false;
+		} else {
+			const currentMatchMap = this.getCurrentMatchMap();
+			if (currentMatchMap) {
+				currentMatchMap.state = EMatchMapSate.PAUSED;
+			}
+			return true;
+		}
+	}
+
 	sayPeriodicMessage() {
 		if (this.periodicTimerId) {
 			clearTimeout(this.periodicTimerId);
 		}
-		
+
 		this.periodicTimerId = setTimeout(
 			() => this.sayPeriodicMessage(),
 			PERIODIC_MESSAGE_FREQUENCY
@@ -400,7 +431,7 @@ export class Match implements IMatch {
 		if (change.currentMap) {
 			this.changeCurrentMap(change.currentMap);
 		}
-		if (typeof change.canClinch === "boolean") {
+		if (typeof change.canClinch === 'boolean') {
 			this.canClinch = change.canClinch;
 		}
 	}

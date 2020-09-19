@@ -15,16 +15,12 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"name"
-				],
+				"required": ["name"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMapMode.FIXED": {
-				"enum": [
-					"FIXED"
-				],
+				"enum": ["FIXED"],
 				"type": "string"
 			},
 			"IFixedMap": {
@@ -36,32 +32,20 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"mode",
-					"fixed"
-				],
+				"required": ["mode", "fixed"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMapMode.BAN": {
-				"enum": [
-					"BAN"
-				],
+				"enum": ["BAN"],
 				"type": "string"
 			},
 			"EMapMode.PICK": {
-				"enum": [
-					"PICK"
-				],
+				"enum": ["PICK"],
 				"type": "string"
 			},
 			"EWho": {
-				"enum": [
-					"TEAM_1",
-					"TEAM_2",
-					"TEAM_X",
-					"TEAM_Y"
-				],
+				"enum": ["TEAM_1", "TEAM_2", "TEAM_X", "TEAM_Y"],
 				"type": "string"
 			},
 			"IBanOrPickMap": {
@@ -80,29 +64,20 @@
 						"$ref": "#/components/schemas/EWho"
 					}
 				},
-				"required": [
-					"mode",
-					"who"
-				],
+				"required": ["mode", "who"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMapMode.RANDOM_BAN": {
-				"enum": [
-					"RANDOM_BAN"
-				],
+				"enum": ["RANDOM_BAN"],
 				"type": "string"
 			},
 			"EMapMode.RANDOM_PICK": {
-				"enum": [
-					"RANDOM_PICK"
-				],
+				"enum": ["RANDOM_PICK"],
 				"type": "string"
 			},
 			"EMapMode.AGREE": {
-				"enum": [
-					"AGREE"
-				],
+				"enum": ["AGREE"],
 				"type": "string"
 			},
 			"IAgreeOrRandomMap": {
@@ -121,16 +96,12 @@
 						]
 					}
 				},
-				"required": [
-					"mode"
-				],
+				"required": ["mode"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"ESideMode.FIXED": {
-				"enum": [
-					"FIXED"
-				],
+				"enum": ["FIXED"],
 				"type": "string"
 			},
 			"ESideFixed": {
@@ -155,17 +126,12 @@
 						"$ref": "#/components/schemas/ESideFixed"
 					}
 				},
-				"required": [
-					"mode",
-					"fixed"
-				],
+				"required": ["mode", "fixed"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"ESideMode.PICK": {
-				"enum": [
-					"PICK"
-				],
+				"enum": ["PICK"],
 				"type": "string"
 			},
 			"IPickSide": {
@@ -177,23 +143,16 @@
 						"$ref": "#/components/schemas/EWho"
 					}
 				},
-				"required": [
-					"mode",
-					"who"
-				],
+				"required": ["mode", "who"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"ESideMode.RANDOM": {
-				"enum": [
-					"RANDOM"
-				],
+				"enum": ["RANDOM"],
 				"type": "string"
 			},
 			"ESideMode.KNIFE": {
-				"enum": [
-					"KNIFE"
-				],
+				"enum": ["KNIFE"],
 				"type": "string"
 			},
 			"IRandomOrKnifeSide": {
@@ -209,9 +168,7 @@
 						]
 					}
 				},
-				"required": [
-					"mode"
-				],
+				"required": ["mode"],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -244,10 +201,7 @@
 						]
 					}
 				},
-				"required": [
-					"map",
-					"side"
-				],
+				"required": ["map", "side"],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -289,11 +243,7 @@
 								"type": "string"
 							}
 						},
-						"required": [
-							"rconPassword",
-							"port",
-							"ip"
-						],
+						"required": ["rconPassword", "port", "ip"],
 						"type": "object"
 					},
 					"webhookUrl": {
@@ -332,13 +282,7 @@
 						"type": "boolean"
 					}
 				},
-				"required": [
-					"mapPool",
-					"team1",
-					"team2",
-					"electionSteps",
-					"gameServer"
-				],
+				"required": ["mapPool", "team1", "team2", "electionSteps", "gameServer"],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -348,18 +292,12 @@
 						"$ref": "#/components/schemas/IMatchInitData"
 					}
 				},
-				"required": [
-					"matchInitData"
-				],
+				"required": ["matchInitData"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMatchSate": {
-				"enum": [
-					"ELECTION",
-					"MATCH_MAP",
-					"FINISHED"
-				],
+				"enum": ["ELECTION", "MATCH_MAP", "FINISHED"],
 				"type": "string"
 			},
 			"IMatchChange": {
@@ -407,9 +345,7 @@
 											"type": "string"
 										}
 									},
-									"required": [
-										"id"
-									],
+									"required": ["id"],
 									"type": "object"
 								}
 							}
@@ -535,6 +471,102 @@
 					{
 						"in": "path",
 						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/server/round_backups": {
+			"get": {
+				"operationId": "GetRoundBackups",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"total": {
+													"type": "number",
+													"format": "double"
+												},
+												"latestFiles": {
+													"items": {
+														"type": "string"
+													},
+													"type": "array"
+												}
+											},
+											"required": ["total", "latestFiles"],
+											"type": "object"
+										},
+										{}
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "count",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/server/round_backups/{file}": {
+			"post": {
+				"operationId": "LoadRoundBackup",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"type": "boolean"
+										},
+										{}
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "file",
 						"required": true,
 						"schema": {
 							"type": "string"

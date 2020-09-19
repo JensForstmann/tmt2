@@ -5,7 +5,10 @@ const matches: Map<string, Match> = new Map();
 
 export class MatchService {
 	static async create(matchInitData: IMatchInitData): Promise<string> {
-		const id = uuidv4();
+		const id =
+			process.env.NODE_ENV === 'development'
+				? '00000000-0000-0000-0000-000000000000'
+				: uuidv4();
 		const match = new Match(id, matchInitData);
 		matches.set(id, match);
 		await match.init();

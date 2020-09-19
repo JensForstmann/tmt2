@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Path, Post, Put, Query, Route, SuccessResponse } from 'tsoa';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Path,
+	Post,
+	Put,
+	Query,
+	Route,
+	SuccessResponse,
+} from 'tsoa';
 import { IMatchInitData, IMatch, IMatchChange } from './match';
 import { MatchService } from './matchService';
 
@@ -17,6 +28,31 @@ export class MatchesController extends Controller {
 		const match = MatchService.get(id);
 		if (match) {
 			return match;
+		} else {
+			this.setStatus(404);
+			return;
+		}
+	}
+
+	@Get('{id}/server/round_backups')
+	async getRoundBackups(
+		id: string,
+		@Query('count') count?: number
+	): Promise<{ latestFiles: string[]; total: number } | void> {
+		const match = MatchService.get(id);
+		if (match) {
+			return await match.getRoundBackups(count);
+		} else {
+			this.setStatus(404);
+			return;
+		}
+	}
+
+	@Post('{id}/server/round_backups/{file}')
+	async loadRoundBackup(id: string, file: string): Promise<boolean | void> {
+		const match = MatchService.get(id);
+		if (match) {
+			return await match.loadRoundBackup(file);
 		} else {
 			this.setStatus(404);
 			return;
@@ -55,7 +91,7 @@ export class MatchesController extends Controller {
 			this.setStatus(200);
 			await match.onLog(requestBody.raw);
 		} else {
-			this.setStatus(410);
+			this.setStatus(410); // indicate the cs go server that we do not want to receive any more logs
 		}
 	}
 }

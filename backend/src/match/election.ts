@@ -117,7 +117,7 @@ export class Election {
 		this.match.say(`AVAILABLE MAPS: ${this.remainingMaps.join(', ')}`);
 	}
 
-	ban(team: Team, map: string) {
+	banCommand(team: Team, map: string) {
 		map = map.toLowerCase();
 		if (
 			this.currentSubStep === EStep.MAP &&
@@ -138,7 +138,7 @@ export class Election {
 		}
 	}
 
-	pick(team: Team, map: string) {
+	pickCommand(team: Team, map: string) {
 		map = map.toLowerCase();
 		if (
 			this.currentSubStep === EStep.MAP &&
@@ -160,7 +160,7 @@ export class Election {
 		}
 	}
 
-	t(team: Team) {
+	tCommand(team: Team) {
 		if (
 			this.currentSubStep === 'SIDE' &&
 			this.currentElectionStep.side.mode === ESideMode.PICK &&
@@ -176,7 +176,7 @@ export class Election {
 		}
 	}
 
-	ct(team: Team) {
+	ctCommand(team: Team) {
 		if (
 			this.currentSubStep === 'SIDE' &&
 			this.currentElectionStep.side.mode === ESideMode.PICK &&
@@ -192,7 +192,7 @@ export class Election {
 		}
 	}
 
-	agree(team: Team, map: string) {
+	agreeCommand(team: Team, map: string) {
 		map = map.toLowerCase();
 		if (
 			this.currentSubStep === EStep.MAP &&
@@ -435,19 +435,19 @@ export class Election {
 			const map = parameters[0] || '';
 			switch (command) {
 				case ECommand.AGREE:
-					this.agree(team, map);
+					this.agreeCommand(team, map);
 					break;
 				case ECommand.BAN:
-					this.ban(team, map);
+					this.banCommand(team, map);
 					break;
 				case ECommand.CT:
-					this.ct(team);
+					this.ctCommand(team);
 					break;
 				case ECommand.PICK:
-					this.pick(team, map);
+					this.pickCommand(team, map);
 					break;
 				case ECommand.T:
-					this.t(team);
+					this.tCommand(team);
 					break;
 			}
 		}
