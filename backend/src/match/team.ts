@@ -32,6 +32,6 @@ export class Team {
 	}
 
 	toIngameString(): string {
-		return this.name.replace(/"|;/g, '');
+		return this.name.replace(/[";]/g, '');
 	}
 }

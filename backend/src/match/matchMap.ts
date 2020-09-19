@@ -2,7 +2,6 @@ import { Team, ETeamSides } from './team';
 import { ECommand, getCommands } from './commands';
 import { Match, COMMAND_PREFIXES } from './match';
 import { Player } from './player';
-import { readlink } from 'fs';
 import { makeStringify, sleep } from '../utils';
 
 export enum EMatchMapSate {

@@ -16,6 +16,12 @@ export interface ITeam {
 	name: string;
 }
 
+export interface IMatchChange {
+	state?: EMatchSate;
+	currentMap?: number;
+	canClinch?: boolean;
+}
+
 export interface IMatchInitData {
 	remoteId?: string;
 	/**
@@ -58,7 +64,7 @@ const PERIODIC_MESSAGE_FREQUENCY = 30000;
 
 export class Match implements IMatch {
 	id: string;
-	matchInitData: IMatchInitData;
+	readonly matchInitData: IMatchInitData;
 	state: EMatchSate = EMatchSate.ELECTION;
 	election: Election;
 	team1: Team;
@@ -101,7 +107,7 @@ export class Match implements IMatch {
 
 	async init() {
 		await this.rcon.connect();
-		// TODO add other log options as well
+		// TODO add needed log options so that TMT can work
 		await this.rcon.send(
 			`logaddress_add_http "http://localhost:8080/api/matches/${this.id}/server/log/${this.logSecret}"`
 		);
@@ -112,7 +118,7 @@ export class Match implements IMatch {
 
 		sleep(2000).then(() => {
 			this.parseIncomingLogs = true;
-			this.say('BOT IS ONLINE');
+			this.say('TMT IS ONLINE');
 			this.election.auto();
 			this.sayPeriodicMessage();
 		});
@@ -122,6 +128,7 @@ export class Match implements IMatch {
 		if (this.periodicTimerId) {
 			clearTimeout(this.periodicTimerId);
 		}
+		
 		this.periodicTimerId = setTimeout(
 			() => this.sayPeriodicMessage(),
 			PERIODIC_MESSAGE_FREQUENCY
@@ -384,5 +391,38 @@ export class Match implements IMatch {
 		delete obj.rcon;
 		delete obj.periodicTimerId;
 		return obj;
+	}
+
+	change(change: IMatchChange) {
+		if (change.state) {
+			this.changeState(change.state);
+		}
+		if (change.currentMap) {
+			this.changeCurrentMap(change.currentMap);
+		}
+		if (typeof change.canClinch === "boolean") {
+			this.canClinch = change.canClinch;
+		}
+	}
+
+	changeState(state: EMatchSate) {
+		if (this.state !== state) {
+			this.state = state; // TODO: think about if further actions must take place
+		}
+	}
+
+	changeCurrentMap(currentMap: number) {
+		if (this.currentMap !== currentMap) {
+			this.currentMap = currentMap;
+			this.getCurrentMatchMap()?.loadMap();
+		}
+	}
+
+	stop() {
+		if (this.periodicTimerId) {
+			clearTimeout(this.periodicTimerId);
+		}
+		this.say(`TMT IS OFFLINE`);
+		this.rcon.end();
 	}
 }

@@ -15,12 +15,16 @@
 						"type": "string"
 					}
 				},
-				"required": ["name"],
+				"required": [
+					"name"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMapMode.FIXED": {
-				"enum": ["FIXED"],
+				"enum": [
+					"FIXED"
+				],
 				"type": "string"
 			},
 			"IFixedMap": {
@@ -32,20 +36,32 @@
 						"type": "string"
 					}
 				},
-				"required": ["mode", "fixed"],
+				"required": [
+					"mode",
+					"fixed"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMapMode.BAN": {
-				"enum": ["BAN"],
+				"enum": [
+					"BAN"
+				],
 				"type": "string"
 			},
 			"EMapMode.PICK": {
-				"enum": ["PICK"],
+				"enum": [
+					"PICK"
+				],
 				"type": "string"
 			},
 			"EWho": {
-				"enum": ["TEAM_1", "TEAM_2", "TEAM_X", "TEAM_Y"],
+				"enum": [
+					"TEAM_1",
+					"TEAM_2",
+					"TEAM_X",
+					"TEAM_Y"
+				],
 				"type": "string"
 			},
 			"IBanOrPickMap": {
@@ -64,20 +80,29 @@
 						"$ref": "#/components/schemas/EWho"
 					}
 				},
-				"required": ["mode", "who"],
+				"required": [
+					"mode",
+					"who"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMapMode.RANDOM_BAN": {
-				"enum": ["RANDOM_BAN"],
+				"enum": [
+					"RANDOM_BAN"
+				],
 				"type": "string"
 			},
 			"EMapMode.RANDOM_PICK": {
-				"enum": ["RANDOM_PICK"],
+				"enum": [
+					"RANDOM_PICK"
+				],
 				"type": "string"
 			},
 			"EMapMode.AGREE": {
-				"enum": ["AGREE"],
+				"enum": [
+					"AGREE"
+				],
 				"type": "string"
 			},
 			"IAgreeOrRandomMap": {
@@ -96,12 +121,16 @@
 						]
 					}
 				},
-				"required": ["mode"],
+				"required": [
+					"mode"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"ESideMode.FIXED": {
-				"enum": ["FIXED"],
+				"enum": [
+					"FIXED"
+				],
 				"type": "string"
 			},
 			"ESideFixed": {
@@ -126,12 +155,17 @@
 						"$ref": "#/components/schemas/ESideFixed"
 					}
 				},
-				"required": ["mode", "fixed"],
+				"required": [
+					"mode",
+					"fixed"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"ESideMode.PICK": {
-				"enum": ["PICK"],
+				"enum": [
+					"PICK"
+				],
 				"type": "string"
 			},
 			"IPickSide": {
@@ -143,16 +177,23 @@
 						"$ref": "#/components/schemas/EWho"
 					}
 				},
-				"required": ["mode", "who"],
+				"required": [
+					"mode",
+					"who"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"ESideMode.RANDOM": {
-				"enum": ["RANDOM"],
+				"enum": [
+					"RANDOM"
+				],
 				"type": "string"
 			},
 			"ESideMode.KNIFE": {
-				"enum": ["KNIFE"],
+				"enum": [
+					"KNIFE"
+				],
 				"type": "string"
 			},
 			"IRandomOrKnifeSide": {
@@ -168,7 +209,9 @@
 						]
 					}
 				},
-				"required": ["mode"],
+				"required": [
+					"mode"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -201,7 +244,10 @@
 						]
 					}
 				},
-				"required": ["map", "side"],
+				"required": [
+					"map",
+					"side"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -243,7 +289,11 @@
 								"type": "string"
 							}
 						},
-						"required": ["rconPassword", "port", "ip"],
+						"required": [
+							"rconPassword",
+							"port",
+							"ip"
+						],
 						"type": "object"
 					},
 					"webhookUrl": {
@@ -282,7 +332,13 @@
 						"type": "boolean"
 					}
 				},
-				"required": ["mapPool", "team1", "team2", "electionSteps", "gameServer"],
+				"required": [
+					"mapPool",
+					"team1",
+					"team2",
+					"electionSteps",
+					"gameServer"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -292,7 +348,33 @@
 						"$ref": "#/components/schemas/IMatchInitData"
 					}
 				},
-				"required": ["matchInitData"],
+				"required": [
+					"matchInitData"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"EMatchSate": {
+				"enum": [
+					"ELECTION",
+					"MATCH_MAP",
+					"FINISHED"
+				],
+				"type": "string"
+			},
+			"IMatchChange": {
+				"properties": {
+					"state": {
+						"$ref": "#/components/schemas/EMatchSate"
+					},
+					"currentMap": {
+						"type": "number",
+						"format": "double"
+					},
+					"canClinch": {
+						"type": "boolean"
+					}
+				},
 				"type": "object",
 				"additionalProperties": false
 			}
@@ -325,7 +407,9 @@
 											"type": "string"
 										}
 									},
-									"required": ["id"],
+									"required": [
+										"id"
+									],
 									"type": "object"
 								}
 							}
@@ -344,11 +428,31 @@
 						}
 					}
 				}
+			},
+			"get": {
+				"operationId": "GetAllMatches",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IMatch"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
 			}
 		},
 		"/api/matches/{id}": {
 			"get": {
-				"operationId": "GetMatches",
+				"operationId": "GetMatch",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -364,6 +468,66 @@
 								}
 							}
 						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "ChangeMatch",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"type": "boolean"
+										},
+										{}
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IMatchChange"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteMatch",
+				"responses": {
+					"204": {
+						"description": "No content"
 					}
 				},
 				"security": [],

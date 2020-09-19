@@ -1,4 +1,4 @@
-import { Match, COMMAND_PREFIXES, EMatchSate } from './match';
+import { Match, COMMAND_PREFIXES } from './match';
 import { Team } from './team';
 import { getCommands, ECommand } from './commands';
 import { MatchMap } from './matchMap';

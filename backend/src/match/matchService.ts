@@ -17,7 +17,16 @@ export class MatchService {
 	}
 
 	static getAll() {
-		return [];
-		// return Array.from(matches.values());
+		return Array.from(matches.values());
+	}
+
+	static delete(id: string) {
+		const match = matches.get(id);
+		if (match) {
+			match.stop();
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

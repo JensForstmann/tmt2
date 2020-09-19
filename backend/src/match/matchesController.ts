@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Path, Post, Query, Route, SuccessResponse } from 'tsoa';
-import { IMatchInitData, Match, IMatch } from './match';
+import { Body, Controller, Delete, Get, Path, Post, Put, Query, Route, SuccessResponse } from 'tsoa';
+import { IMatchInitData, IMatch, IMatchChange } from './match';
 import { MatchService } from './matchService';
 
 @Route('/api/matches')
@@ -13,7 +13,7 @@ export class MatchesController extends Controller {
 	}
 
 	@Get('{id}')
-	async getMatches(id: string): Promise<IMatch | void> {
+	getMatch(id: string): IMatch | void {
 		const match = MatchService.get(id);
 		if (match) {
 			return match;
@@ -21,6 +21,31 @@ export class MatchesController extends Controller {
 			this.setStatus(404);
 			return;
 		}
+	}
+
+	@Post('{id}')
+	changeMatch(id: string, @Body() requestBody: IMatchChange): boolean | void {
+		const match = MatchService.get(id);
+		if (match) {
+			return match.change(requestBody);
+		} else {
+			this.setStatus(404);
+			return;
+		}
+	}
+
+	@Delete('{id}')
+	deleteMatch(id: string): void {
+		if (MatchService.delete(id)) {
+			this.setStatus(200);
+		} else {
+			this.setStatus(404);
+		}
+	}
+
+	@Get()
+	getAllMatches(): IMatch[] {
+		return MatchService.getAll();
 	}
 
 	@Post('{id}/server/log/{secret}')

@@ -1,0 +1,43 @@
+{
+  "name": "tmt2-frontend",
+  "version": "1.0.0",
+  "repository": "https://github.com/JensForstmann/tmt2",
+  "author": "Jens Forstmann",
+  "license": "MIT",
+  "scripts": {
+    "clean": "prettier --write .",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-scripts": "3.4.3",
+    "swagger-ui": "^3.34.0",
+    "swagger-ui-react": "^3.34.0"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.0",
+    "@types/react": "^16.9.0",
+    "@types/react-dom": "^16.9.0",
+    "@types/swagger-ui-react": "^3.23.3",
+    "prettier": "^2.1.2",
+    "typescript": "~3.7.2"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

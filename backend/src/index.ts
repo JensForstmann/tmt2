@@ -5,8 +5,17 @@ import { ValidateError } from 'tsoa';
 import axios from 'axios';
 import { IMatchInitData } from './match/match';
 import { EMapMode, ESideFixed, EWho, ESideMode } from './match/election';
+import * as path from 'path';
 
 const app = express();
+
+// CORS
+app.use((req, res, next) => {
+	res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', '*');
+    res.header('Access-Control-Allow-Headers', '*');
+    next();
+});
 
 app.use((req, res, next) => {
 	if (req.is('text/plain')) {
@@ -46,6 +55,10 @@ const errorRequestHandler: ErrorRequestHandler = (err, req, res, next) => {
 app.use(errorRequestHandler);
 
 const port = process.env.PORT || 8080;
+
+app.get("/swagger.json", (req, res) => {
+	res.sendFile(path.join(__dirname, 'swagger.json'));
+});
 
 app.listen(port, () => {
 	console.log(`App listening on port ${port}`);
