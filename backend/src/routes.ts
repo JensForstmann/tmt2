@@ -17,7 +17,7 @@ import * as express from 'express';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
-	ITeam: {
+	IMatchInitTeamData: {
 		dataType: 'refObject',
 		properties: {
 			remoteId: { dataType: 'string' },
@@ -188,6 +188,16 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IGameServer: {
+		dataType: 'refObject',
+		properties: {
+			ip: { dataType: 'string', required: true },
+			port: { dataType: 'double', required: true },
+			rconPassword: { dataType: 'string', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	IMatchInitData: {
 		dataType: 'refObject',
 		properties: {
@@ -198,23 +208,15 @@ const models: TsoaRoute.Models = {
 				required: true,
 				validators: { minItems: { value: 1 } },
 			},
-			team1: { ref: 'ITeam', required: true },
-			team2: { ref: 'ITeam', required: true },
+			team1: { ref: 'IMatchInitTeamData', required: true },
+			team2: { ref: 'IMatchInitTeamData', required: true },
 			electionSteps: {
 				dataType: 'array',
 				array: { ref: 'IElectionStep' },
 				required: true,
 				validators: { minItems: { value: 1 } },
 			},
-			gameServer: {
-				dataType: 'nestedObjectLiteral',
-				nestedProperties: {
-					rconPassword: { dataType: 'string', required: true },
-					port: { dataType: 'double', required: true },
-					ip: { dataType: 'string', required: true },
-				},
-				required: true,
-			},
+			gameServer: { ref: 'IGameServer', required: true },
 			webhookUrl: { dataType: 'string' },
 			rcon: {
 				dataType: 'nestedObjectLiteral',
@@ -230,11 +232,9 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	IMatch: {
+	ISerializable: {
 		dataType: 'refObject',
-		properties: {
-			matchInitData: { ref: 'IMatchInitData', required: true },
-		},
+		properties: {},
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -247,6 +247,13 @@ const models: TsoaRoute.Models = {
 		dataType: 'refObject',
 		properties: {
 			state: { ref: 'EMatchSate' },
+			gameServer: { ref: 'IGameServer' },
+			webhookUrl: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+			},
+			logSecret: { dataType: 'string' },
+			parseIncomingLogs: { dataType: 'boolean' },
 			currentMap: { dataType: 'double' },
 			canClinch: { dataType: 'boolean' },
 		},

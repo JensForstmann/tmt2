@@ -1,27 +1,38 @@
 import { Rcon } from 'rcon-client';
 import { IElectionStep, Election } from './election';
-import { Team, ETeamSides } from './team';
+import { Team, ETeamSides, ITeamChange } from './team';
 import { PlayerService } from './playerService';
 import { Player } from './player';
 import { commandMapping, ECommand } from './commands';
-import { EMatchMapSate, MatchMap } from './matchMap';
+import { EMatchMapSate, IMatchMapChange, MatchMap } from './matchMap';
 import { makeStringify, sleep } from '../utils';
 import { v4 as uuidv4 } from 'uuid';
 import Datastore from 'nedb';
 
 const db = new Datastore({ filename: 'nedb', autoload: true });
 
+export interface IGameServer {
+	ip: string;
+	port: number;
+	rconPassword: string;
+}
+
 export interface IMatchChange {
 	state?: EMatchSate;
+	gameServer?: IGameServer;
+	webhookUrl?: string | null;
+	// team1?: ITeamChange;
+	// team2?: ITeamChange;
+	logSecret?: string;
+	parseIncomingLogs?: boolean;
+	// matchMaps?: { [key: number]: IMatchMapChange };
 	currentMap?: number;
 	canClinch?: boolean;
 }
 
-export interface IMatch {
-	matchInitData: IMatchInitData;
-}
+export interface ISerializable {}
 
-interface ITeam {
+interface IMatchInitTeamData {
 	remoteId?: string;
 	name: string;
 }
@@ -32,17 +43,13 @@ export interface IMatchInitData {
 	 * @minItems 1
 	 */
 	mapPool: string[];
-	team1: ITeam;
-	team2: ITeam;
+	team1: IMatchInitTeamData;
+	team2: IMatchInitTeamData;
 	/**
 	 * @minItems 1
 	 */
 	electionSteps: IElectionStep[];
-	gameServer: {
-		ip: string;
-		port: number;
-		rconPassword: string;
-	};
+	gameServer: IGameServer;
 	webhookUrl?: string;
 	rcon?: {
 		init?: string[]; // executed once on match init
@@ -62,7 +69,7 @@ export enum EMatchSate {
 export const COMMAND_PREFIXES = ['.', '!'];
 const PERIODIC_MESSAGE_FREQUENCY = 30000;
 
-export class Match implements IMatch {
+export class Match implements ISerializable {
 	id: string;
 	readonly matchInitData: IMatchInitData;
 	state: EMatchSate = EMatchSate.ELECTION;
@@ -78,6 +85,7 @@ export class Match implements IMatch {
 	currentMap: number = 0;
 	periodicTimerId?: NodeJS.Timeout;
 	canClinch: boolean = true;
+	webhookUrl?: string;
 
 	constructor(id: string, matchInitData: IMatchInitData) {
 		this.id = id;
@@ -88,12 +96,14 @@ export class Match implements IMatch {
 			password: matchInitData.gameServer.rconPassword,
 		});
 		this.team1 = new Team(
+			this,
 			ETeamSides.CT,
 			true,
 			this.matchInitData.team1.name,
 			this.matchInitData.team1.remoteId
 		);
 		this.team2 = new Team(
+			this,
 			ETeamSides.T,
 			false,
 			this.matchInitData.team2.name,
@@ -103,14 +113,15 @@ export class Match implements IMatch {
 		if (typeof this.matchInitData.canClinch === 'boolean') {
 			this.canClinch = this.matchInitData.canClinch;
 		}
+		this.webhookUrl = this.matchInitData.webhookUrl;
 	}
 
 	async init() {
 		await this.rcon.connect();
 		// TODO add needed log options so that TMT can work
-		await this.rcon.send(
-			`logaddress_add_http "http://localhost:8080/api/matches/${this.id}/server/log/${this.logSecret}"`
-		);
+
+		this.registerLogAddress();
+
 		// logaddress_list_http
 		await this.loadInitConfig();
 		await this.rcon.send(`mp_teamname_1 "${this.team1.toIngameString()}"`);
@@ -129,6 +140,12 @@ export class Match implements IMatch {
 			this.election.auto();
 			this.sayPeriodicMessage();
 		});
+	}
+
+	registerLogAddress() {
+		this.rcon.send(
+			`logaddress_add_http "http://localhost:8080/api/matches/${this.id}/server/log/${this.logSecret}"`
+		);
 	}
 
 	async getRoundBackups(count: number = 5) {
@@ -424,13 +441,44 @@ export class Match implements IMatch {
 		return obj;
 	}
 
+	stop() {
+		if (this.periodicTimerId) {
+			clearTimeout(this.periodicTimerId);
+		}
+		this.say(`TMT IS OFFLINE`);
+		this.rcon.end();
+	}
+
 	change(change: IMatchChange) {
 		if (change.state) {
 			this.changeState(change.state);
 		}
+
+		if (change.gameServer) {
+			this.changeGameServer(change.gameServer);
+		}
+
+		if (change.webhookUrl !== undefined) {
+			if (change.webhookUrl === null) {
+				this.webhookUrl = undefined;
+			} else {
+				this.webhookUrl = change.webhookUrl;
+			}
+		}
+
+		if (change.logSecret) {
+			this.logSecret = change.logSecret;
+			this.registerLogAddress();
+		}
+
+		if (typeof change.parseIncomingLogs === 'boolean') {
+			this.parseIncomingLogs = change.parseIncomingLogs;
+		}
+
 		if (change.currentMap) {
 			this.changeCurrentMap(change.currentMap);
 		}
+
 		if (typeof change.canClinch === 'boolean') {
 			this.canClinch = change.canClinch;
 		}
@@ -442,18 +490,19 @@ export class Match implements IMatch {
 		}
 	}
 
+	changeGameServer(gameServer: IGameServer) {
+		this.rcon = new Rcon({
+			host: gameServer.ip,
+			port: gameServer.port,
+			password: gameServer.rconPassword,
+		});
+		this.init();
+	}
+
 	changeCurrentMap(currentMap: number) {
 		if (this.currentMap !== currentMap) {
 			this.currentMap = currentMap;
 			this.getCurrentMatchMap()?.loadMap();
 		}
-	}
-
-	stop() {
-		if (this.periodicTimerId) {
-			clearTimeout(this.periodicTimerId);
-		}
-		this.say(`TMT IS OFFLINE`);
-		this.rcon.end();
 	}
 }

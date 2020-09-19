@@ -15,6 +15,19 @@ export enum EMatchMapSate {
 	FINISHED = 'FINISHED',
 }
 
+export interface IMatchMapChange {
+	name?: string;
+	knifeForSide?: boolean;
+	startAsCtTeam?: 'team1' | 'team2';
+	state?: EMatchMapSate;
+	knifeWinner?: 'team1' | 'team2';
+	score?: {
+		team1?: number;
+		team2?: number;
+	};
+	refreshOvertimeAndMaxRoundsSettings?: boolean;
+}
+
 export class MatchMap {
 	name: string;
 	knifeForSide: boolean;
@@ -78,6 +91,15 @@ export class MatchMap {
 
 		await this.match.rcon.send(`changelevel ${this.name}`);
 		this.state = EMatchMapSate.WARMUP;
+
+		this.readyTeams.team1 = false;
+		this.readyTeams.team2 = false;
+		this.knifeRestart.team1 = false;
+		this.knifeRestart.team2 = false;
+		this.score.team1 = 0;
+		this.score.team2 = 0;
+
+		this.knifeWinner = undefined;
 	}
 
 	async startMatch() {
@@ -85,9 +107,7 @@ export class MatchMap {
 		await this.loadMatchConfig();
 		this.match.rcon.send('mp_unpause_match');
 		this.match.rcon.send('mp_restartgame 10');
-		this.overTimeEnabled = (await this.getConfigVar('mp_overtime_enable')) === '1';
-		this.overTimeMaxRounds = parseInt(await this.getConfigVar('mp_overtime_maxrounds'));
-		this.maxRounds = parseInt(await this.getConfigVar('mp_maxrounds'));
+		await this.refreshOvertimeAndMaxRoundsSettings();
 		this.match.say('THE MAP IS LIVE AFTER THE NEXT RESTART!');
 		this.match.say('GL & HF EVERYBODY');
 		sleep(11000).then(() => {
@@ -95,6 +115,12 @@ export class MatchMap {
 			this.match.say('MAP IS LIVE!');
 			this.match.say('MAP IS LIVE!');
 		});
+	}
+
+	async refreshOvertimeAndMaxRoundsSettings() {
+		this.overTimeEnabled = (await this.getConfigVar('mp_overtime_enable')) === '1';
+		this.overTimeMaxRounds = parseInt(await this.getConfigVar('mp_overtime_maxrounds'));
+		this.maxRounds = parseInt(await this.getConfigVar('mp_maxrounds'));
 	}
 
 	async getConfigVar(configVar: string): Promise<string> {
@@ -403,7 +429,51 @@ export class MatchMap {
 		}
 	}
 
-	change() {
-		// TODO
+	change(change: IMatchMapChange) {
+		if (change.name && change.name !== this.name) {
+			this.name = change.name;
+			if (this.match.getCurrentMatchMap() === this) {
+				this.loadMap();
+			}
+		}
+
+		if (typeof change.knifeForSide === 'boolean') {
+			this.knifeForSide = change.knifeForSide;
+		}
+
+		if (change.startAsCtTeam) {
+			if (change.startAsCtTeam === 'team1') {
+				this.startAsCtTeam = this.match.team1;
+				this.startAsTTeam = this.match.team2;
+			} else {
+				this.startAsCtTeam = this.match.team2;
+				this.startAsTTeam = this.match.team1;
+			}
+		}
+
+		if (change.state && change.state !== this.state) {
+			this.state = change.state; // TODO what else to do?
+		}
+
+		if (change.knifeWinner) {
+			if (change.knifeWinner === 'team1') {
+				this.knifeWinner = this.match.team1;
+			} else {
+				this.knifeWinner = this.match.team2;
+			}
+		}
+
+		if (change.score) {
+			if (change.score.team1) {
+				this.score.team1 = change.score.team1;
+			}
+			if (change.score.team2) {
+				this.score.team2 = change.score.team2;
+			}
+		}
+
+		if (change.refreshOvertimeAndMaxRoundsSettings) {
+			this.refreshOvertimeAndMaxRoundsSettings();
+		}
 	}
 }

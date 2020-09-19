@@ -6,7 +6,7 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"ITeam": {
+			"IMatchInitTeamData": {
 				"properties": {
 					"remoteId": {
 						"type": "string"
@@ -205,6 +205,23 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"IGameServer": {
+				"properties": {
+					"ip": {
+						"type": "string"
+					},
+					"port": {
+						"type": "number",
+						"format": "double"
+					},
+					"rconPassword": {
+						"type": "string"
+					}
+				},
+				"required": ["ip", "port", "rconPassword"],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"IMatchInitData": {
 				"properties": {
 					"remoteId": {
@@ -218,10 +235,10 @@
 						"minItems": 1
 					},
 					"team1": {
-						"$ref": "#/components/schemas/ITeam"
+						"$ref": "#/components/schemas/IMatchInitTeamData"
 					},
 					"team2": {
-						"$ref": "#/components/schemas/ITeam"
+						"$ref": "#/components/schemas/IMatchInitTeamData"
 					},
 					"electionSteps": {
 						"items": {
@@ -231,20 +248,7 @@
 						"minItems": 1
 					},
 					"gameServer": {
-						"properties": {
-							"rconPassword": {
-								"type": "string"
-							},
-							"port": {
-								"type": "number",
-								"format": "double"
-							},
-							"ip": {
-								"type": "string"
-							}
-						},
-						"required": ["rconPassword", "port", "ip"],
-						"type": "object"
+						"$ref": "#/components/schemas/IGameServer"
 					},
 					"webhookUrl": {
 						"type": "string"
@@ -286,13 +290,8 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"IMatch": {
-				"properties": {
-					"matchInitData": {
-						"$ref": "#/components/schemas/IMatchInitData"
-					}
-				},
-				"required": ["matchInitData"],
+			"ISerializable": {
+				"properties": {},
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -304,6 +303,19 @@
 				"properties": {
 					"state": {
 						"$ref": "#/components/schemas/EMatchSate"
+					},
+					"gameServer": {
+						"$ref": "#/components/schemas/IGameServer"
+					},
+					"webhookUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"logSecret": {
+						"type": "string"
+					},
+					"parseIncomingLogs": {
+						"type": "boolean"
 					},
 					"currentMap": {
 						"type": "number",
@@ -374,7 +386,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/IMatch"
+										"$ref": "#/components/schemas/ISerializable"
 									},
 									"type": "array"
 								}
@@ -397,7 +409,7 @@
 								"schema": {
 									"anyOf": [
 										{
-											"$ref": "#/components/schemas/IMatch"
+											"$ref": "#/components/schemas/ISerializable"
 										},
 										{}
 									]

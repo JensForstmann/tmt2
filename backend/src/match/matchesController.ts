@@ -10,7 +10,7 @@ import {
 	Route,
 	SuccessResponse,
 } from 'tsoa';
-import { IMatchInitData, IMatch, IMatchChange } from './match';
+import { IMatchInitData, ISerializable, IMatchChange } from './match';
 import { MatchService } from './matchService';
 
 @Route('/api/matches')
@@ -24,7 +24,7 @@ export class MatchesController extends Controller {
 	}
 
 	@Get('{id}')
-	getMatch(id: string): IMatch | void {
+	getMatch(id: string): ISerializable | void {
 		const match = MatchService.get(id);
 		if (match) {
 			return match;
@@ -80,7 +80,7 @@ export class MatchesController extends Controller {
 	}
 
 	@Get()
-	getAllMatches(): IMatch[] {
+	getAllMatches(): ISerializable[] {
 		return MatchService.getAll();
 	}
 
