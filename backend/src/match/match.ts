@@ -10,12 +10,19 @@ import { ISerializedGameServer, SerializedGameServer } from '../interfaces/gameS
 import { ISerializedMatchInitData } from '../interfaces/matchInitData';
 import { ETeamSides, SerializedTeam } from '../interfaces/team';
 import { GameServer } from './gameServer';
-import { ISerializedMatch, SerializedMatch, EMatchSate, IMatchChange } from '../interfaces/match';
+import {
+	ISerializedMatch,
+	SerializedMatch,
+	EMatchSate,
+	IMatchChange,
+	EMatchEndAction,
+} from '../interfaces/match';
 import { EMatchMapSate, SerializedMatchMap } from '../interfaces/matchMap';
 import { SerializedElection } from '../interfaces/election';
 
 export const COMMAND_PREFIXES = ['.', '!'];
 const PERIODIC_MESSAGE_FREQUENCY = 30000;
+const SAY_PREFIX = '[TMT] ';
 
 export class Match {
 	id: string;
@@ -34,6 +41,7 @@ export class Match {
 	periodicTimerId?: NodeJS.Timeout;
 	canClinch: boolean = true;
 	webhookUrl?: string;
+	matchEndAction: EMatchEndAction = EMatchEndAction.NONE;
 
 	constructor(id: string, serializedMatch: ISerializedMatch);
 	constructor(id: string, matchInitData: ISerializedMatchInitData);
@@ -65,6 +73,7 @@ export class Match {
 			this.currentMap = serializedMatch.currentMap;
 			this.canClinch = serializedMatch.canClinch;
 			this.webhookUrl = serializedMatch.webhookUrl;
+			this.matchEndAction = serializedMatch.matchEndAction;
 		} else {
 			console.log('create match from matchInitData');
 			const matchInitData = matchInitDataOrSerializedMatch;
@@ -96,10 +105,14 @@ export class Match {
 				this.canClinch = this.matchInitData.canClinch;
 			}
 			this.webhookUrl = this.matchInitData.webhookUrl;
+			if (this.matchInitData.matchEndAction) {
+				this.matchEndAction = this.matchInitData.matchEndAction;
+			}
 		}
 	}
 
 	async init() {
+		await this.gameServer.setupRconConnection();
 		// TODO add needed log options so that TMT can work
 
 		this.registerLogAddress();
@@ -198,9 +211,9 @@ export class Match {
 		}
 	}
 
-	async say(message: string) {
-		console.log(message);
-		await this.gameServer.rcon('say ' + message.replace(/;/g, ''));
+	say(message: string) {
+		message = (SAY_PREFIX + message).replace(/;/g, '');
+		this.gameServer.rcon(`say ${message}`);
 	}
 
 	getOtherTeam(team: Team) {
@@ -293,9 +306,18 @@ export class Match {
 		}
 	}
 
-	onMatchEnd() {
+	async onMatchEnd() {
 		this.state = EMatchSate.FINISHED;
 		this.loadEndConfig();
+		await sleep(20000);
+		switch (this.matchEndAction) {
+			case EMatchEndAction.KICK_ALL:
+				this.gameServer.kickAll();
+				break;
+			case EMatchEndAction.QUIT_SERVER:
+				this.gameServer.quitServer();
+				break;
+		}
 	}
 
 	isMatchEnd(): boolean {
@@ -510,6 +532,10 @@ export class Match {
 
 		if (typeof change.canClinch === 'boolean') {
 			this.canClinch = change.canClinch;
+		}
+
+		if (change.matchEndAction) {
+			this.matchEndAction = change.matchEndAction;
 		}
 	}
 

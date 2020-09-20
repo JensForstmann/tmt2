@@ -199,6 +199,11 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	EMatchEndAction: {
+		dataType: 'refEnum',
+		enums: ['KICK_ALL', 'QUIT_SERVER', 'NONE'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	ISerializedMatchInitData: {
 		dataType: 'refObject',
 		properties: {
@@ -229,6 +234,7 @@ const models: TsoaRoute.Models = {
 				},
 			},
 			canClinch: { dataType: 'boolean' },
+			matchEndAction: { ref: 'EMatchEndAction' },
 		},
 		additionalProperties: false,
 	},
@@ -388,6 +394,7 @@ const models: TsoaRoute.Models = {
 			currentMap: { dataType: 'double', required: true },
 			canClinch: { dataType: 'boolean', required: true },
 			webhookUrl: { dataType: 'string' },
+			matchEndAction: { ref: 'EMatchEndAction', required: true },
 		},
 		additionalProperties: false,
 	},
@@ -405,6 +412,7 @@ const models: TsoaRoute.Models = {
 			parseIncomingLogs: { dataType: 'boolean' },
 			currentMap: { dataType: 'double' },
 			canClinch: { dataType: 'boolean' },
+			matchEndAction: { ref: 'EMatchEndAction' },
 		},
 		additionalProperties: false,
 	},

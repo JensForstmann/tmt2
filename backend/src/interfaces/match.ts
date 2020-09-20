@@ -13,6 +13,13 @@ export interface IMatchChange {
 	parseIncomingLogs?: boolean;
 	currentMap?: number;
 	canClinch?: boolean;
+	matchEndAction?: EMatchEndAction;
+}
+
+export enum EMatchEndAction {
+	KICK_ALL = 'KICK_ALL',
+	QUIT_SERVER = 'QUIT_SERVER',
+	NONE = 'NONE',
 }
 
 export enum EMatchSate {
@@ -37,6 +44,7 @@ export interface ISerializedMatch {
 	currentMap: number;
 	canClinch: boolean;
 	webhookUrl?: string;
+	matchEndAction: EMatchEndAction;
 }
 
 export class SerializedMatch implements ISerializedMatch {
@@ -55,6 +63,7 @@ export class SerializedMatch implements ISerializedMatch {
 	currentMap: number;
 	canClinch: boolean;
 	webhookUrl?: string;
+	matchEndAction: EMatchEndAction;
 
 	constructor(match: Match) {
 		this.id = match.id;
@@ -74,6 +83,7 @@ export class SerializedMatch implements ISerializedMatch {
 		this.currentMap = match.currentMap;
 		this.canClinch = match.canClinch;
 		this.webhookUrl = match.webhookUrl;
+		this.matchEndAction = match.matchEndAction;
 	}
 
 	static fromSerializedToNormal(serializedMatch: ISerializedMatch): Match {

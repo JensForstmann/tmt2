@@ -1,7 +1,8 @@
 import { IElectionStep } from './election';
 import { ISerializedGameServer } from './gameServer';
+import { EMatchEndAction } from './match';
 
-interface IMatchInitTeamData {
+export interface IMatchInitTeamData {
 	remoteId?: string;
 	name: string;
 	advantage?: number;
@@ -28,4 +29,5 @@ export interface ISerializedMatchInitData {
 		end?: string[]; // executed after last match map
 	};
 	canClinch?: boolean;
+	matchEndAction?: EMatchEndAction;
 }
