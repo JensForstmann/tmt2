@@ -21,11 +21,8 @@ export interface IMatchChange {
 	state?: EMatchSate;
 	gameServer?: IGameServer;
 	webhookUrl?: string | null;
-	// teamA?: ITeamChange;
-	// teamB?: ITeamChange;
 	logSecret?: string;
 	parseIncomingLogs?: boolean;
-	// matchMaps?: { [key: number]: IMatchMapChange };
 	currentMap?: number;
 	canClinch?: boolean;
 }
