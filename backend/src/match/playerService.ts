@@ -13,12 +13,12 @@ export class PlayerService {
 		}
 	}
 
-	static get(id: string) {
-		return players.get(id);
+	static get(steamId: string) {
+		return players.get(steamId);
 	}
 
-	static ensure(id: string, name: string) {
-		const player = PlayerService.get(id) || PlayerService.create(id, name);
+	static ensure(steamId: string, name: string) {
+		const player = PlayerService.get(steamId) || PlayerService.create(steamId, name);
 		player.name = name;
 		return player;
 	}

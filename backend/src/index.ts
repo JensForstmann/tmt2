@@ -3,9 +3,9 @@ import bodyParser from 'body-parser';
 import { RegisterRoutes } from './routes';
 import { ValidateError } from 'tsoa';
 import axios from 'axios';
-import { IMatchInitData } from './match/match';
-import { EMapMode, ESideFixed, EWho, ESideMode } from './match/election';
 import * as path from 'path';
+import { ISerializedMatchInitData } from './interfaces/matchInitData';
+import { EMapMode, ESideFixed, ESideMode } from './interfaces/election';
 
 const app = express();
 
@@ -64,7 +64,7 @@ app.listen(port, () => {
 	console.log(`App listening on port ${port}`);
 	if (process.env.NODE_ENV === 'development') {
 		console.log('init match');
-		const matchInitData: IMatchInitData = {
+		const matchInitData: ISerializedMatchInitData = {
 			mapPool: ['de_dust2'],
 			teamA: {
 				name: 'teamA',
@@ -108,7 +108,7 @@ app.listen(port, () => {
 				port: 27016,
 				rconPassword: 'blob',
 			},
-			rcon: {
+			rconCommands: {
 				init: ['mp_autokick 0', 'say init rcon loaded'],
 				knife: [
 					'exec esl5on5bl.cfg',

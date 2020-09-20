@@ -1,11 +1,7 @@
 import { Player } from './player';
 import { makeStringify } from '../utils';
 import { Match } from './match';
-
-export enum ETeamSides {
-	CT = 'CT',
-	T = 'T',
-}
+import { ETeamSides } from '../interfaces/team';
 
 export interface ITeamChange {
 	name?: string;

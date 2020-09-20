@@ -1,10 +1,11 @@
-import { IMatchInitData, Match } from './match';
+import { Match } from './match';
 import { v4 as uuidv4 } from 'uuid';
+import { ISerializedMatchInitData } from '../interfaces/matchInitData';
 
 const matches: Map<string, Match> = new Map();
 
 export class MatchService {
-	static async create(matchInitData: IMatchInitData): Promise<string> {
+	static async create(matchInitData: ISerializedMatchInitData): Promise<string> {
 		const id =
 			process.env.NODE_ENV === 'development'
 				? '00000000-0000-0000-0000-000000000000'

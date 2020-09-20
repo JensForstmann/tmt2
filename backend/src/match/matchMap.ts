@@ -1,8 +1,9 @@
-import { Team, ETeamSides } from './team';
+import { Team } from './team';
 import { ECommand, getCommands } from './commands';
 import { Match, COMMAND_PREFIXES } from './match';
 import { Player } from './player';
 import { makeStringify, sleep } from '../utils';
+import { ETeamSides } from '../interfaces/team';
 
 export enum EMatchMapSate {
 	PENDING = 'PENDING',
@@ -87,7 +88,7 @@ export class MatchMap {
 		}
 
 		await this.setTeamNames();
-		await this.match.rcon.send(`changelevel ${this.name}`);
+		await this.match.gameServer.rcon(`changelevel ${this.name}`);
 		this.state = EMatchMapSate.WARMUP;
 
 		this.readyTeams.teamA = false;
@@ -101,15 +102,15 @@ export class MatchMap {
 	}
 
 	async setTeamNames() {
-		await this.match.rcon.send(`mp_teamname_1 "${this.startAsCtTeam.toIngameString()}"`);
-		await this.match.rcon.send(`mp_teamname_2 "${this.startAsTTeam.toIngameString()}"`);
+		await this.match.gameServer.rcon(`mp_teamname_1 "${this.startAsCtTeam.toIngameString()}"`);
+		await this.match.gameServer.rcon(`mp_teamname_2 "${this.startAsTTeam.toIngameString()}"`);
 	}
 
 	async startMatch() {
 		this.state = EMatchMapSate.IN_PROGRESS;
 		await this.loadMatchConfig();
-		this.match.rcon.send('mp_unpause_match');
-		this.match.rcon.send('mp_restartgame 10');
+		this.match.gameServer.rcon('mp_unpause_match');
+		this.match.gameServer.rcon('mp_restartgame 10');
 		await this.refreshOvertimeAndMaxRoundsSettings();
 		this.match.say('THE MAP IS LIVE AFTER THE NEXT RESTART!');
 		this.match.say('GL & HF EVERYBODY');
@@ -127,7 +128,7 @@ export class MatchMap {
 	}
 
 	async getConfigVar(configVar: string): Promise<string> {
-		const response = await this.match.rcon.send(configVar);
+		const response = await this.match.gameServer.rcon(configVar);
 		const configVarPattern = new RegExp(`^"${configVar}" = "(.*?)"`);
 		const configVarMatch = response.match(configVarPattern);
 		if (configVarMatch) {
@@ -211,7 +212,7 @@ export class MatchMap {
 
 	switchCommand(team: Team) {
 		this.match.say(`${team.toIngameString()} WANTS TO SWITCH SIDES`);
-		this.match.rcon.send('mp_swapteams');
+		this.match.gameServer.rcon('mp_swapteams');
 		this.switchTeamInternals();
 		this.startMatch();
 	}
@@ -243,11 +244,11 @@ export class MatchMap {
 			if (this.state === EMatchMapSate.PAUSED) {
 				this.readyTeams.teamA = false;
 				this.readyTeams.teamB = false;
-				await this.match.rcon.send('mp_unpause_match');
+				await this.match.gameServer.rcon('mp_unpause_match');
 				this.match.say('CONTINUE MAP');
 				this.state = EMatchMapSate.IN_PROGRESS;
 			} else if (this.state === EMatchMapSate.WARMUP) {
-				this.match.rcon.send('mp_warmup_end');
+				this.match.gameServer.rcon('mp_warmup_end');
 				if (this.knifeForSide) {
 					await this.startKnifeRound();
 				} else {
@@ -271,7 +272,7 @@ export class MatchMap {
 		this.readyTeams.teamA = false;
 		this.readyTeams.teamB = false;
 		this.state = EMatchMapSate.PAUSED;
-		this.match.rcon.send('mp_pause_match');
+		this.match.gameServer.rcon('mp_pause_match');
 	}
 
 	onMapEnd() {
@@ -311,7 +312,7 @@ export class MatchMap {
 			if (this.state === EMatchMapSate.KNIFE) {
 				this.knifeWinner = winningTeam;
 				this.state = EMatchMapSate.AFTER_KNIFE;
-				this.match.rcon.send('mp_pause_match');
+				this.match.gameServer.rcon('mp_pause_match');
 				this.match.say(`${winningTeam.toIngameString()} WON THE KNIFE`);
 				this.match.sayPeriodicMessage();
 			} else if (
@@ -363,7 +364,7 @@ export class MatchMap {
 	async startKnifeRound() {
 		this.state = EMatchMapSate.KNIFE;
 		await this.loadKnifeConfig();
-		await this.match.rcon.send('mp_restartgame 3');
+		await this.match.gameServer.rcon('mp_restartgame 3');
 		await sleep(4000);
 		this.match.say('KNIFE FOR SIDE');
 		this.match.say('KNIFE FOR SIDE');
@@ -371,18 +372,18 @@ export class MatchMap {
 	}
 
 	async loadKnifeConfig() {
-		await this.match.executeRconCommands(this.match.matchInitData.rcon?.knife);
+		await this.match.executeRconCommands(this.match.matchInitData.rconCommands?.knife);
 	}
 
 	async loadMatchConfig() {
-		await this.match.executeRconCommands(this.match.matchInitData.rcon?.match);
+		await this.match.executeRconCommands(this.match.matchInitData.rconCommands?.match);
 	}
 
 	async sayPeriodicMessage() {
 		if (this.state === EMatchMapSate.WARMUP) {
 			// TODO: move this to a more suitable location
-			await this.match.rcon.send('mp_warmup_pausetimer 1'); // infinite warmup
-			await this.match.rcon.send('mp_autokick 0'); // never kick
+			await this.match.gameServer.rcon('mp_warmup_pausetimer 1'); // infinite warmup
+			await this.match.gameServer.rcon('mp_autokick 0'); // never kick
 		}
 
 		switch (this.state) {

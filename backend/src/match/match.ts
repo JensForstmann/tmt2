@@ -1,60 +1,23 @@
-import { Rcon } from 'rcon-client';
-import { IElectionStep, Election } from './election';
-import { Team, ETeamSides } from './team';
+import { Election } from './election';
+import { Team } from './team';
 import { PlayerService } from './playerService';
 import { Player } from './player';
 import { commandMapping, ECommand } from './commands';
 import { EMatchMapSate, MatchMap } from './matchMap';
 import { makeStringify, sleep } from '../utils';
 import { v4 as uuidv4 } from 'uuid';
-import Datastore from 'nedb';
-
-const db = new Datastore({ filename: 'nedb', autoload: true });
-
-export interface IGameServer {
-	ip: string;
-	port: number;
-	rconPassword: string;
-}
+import { ISerializedGameServer } from '../interfaces/gameServer';
+import { ISerializedMatchInitData } from '../interfaces/matchInitData';
+import { ETeamSides } from '../interfaces/team';
+import { GameServer } from './gameServer';
 
 export interface IMatchChange {
 	state?: EMatchSate;
-	gameServer?: IGameServer;
+	gameServer?: ISerializedGameServer;
 	webhookUrl?: string | null;
 	logSecret?: string;
 	parseIncomingLogs?: boolean;
 	currentMap?: number;
-	canClinch?: boolean;
-}
-
-export interface ISerializable {}
-
-interface IMatchInitTeamData {
-	remoteId?: string;
-	name: string;
-	advantage?: number;
-}
-
-export interface IMatchInitData {
-	remoteId?: string;
-	/**
-	 * @minItems 1
-	 */
-	mapPool: string[];
-	teamA: IMatchInitTeamData;
-	teamB: IMatchInitTeamData;
-	/**
-	 * @minItems 1
-	 */
-	electionSteps: IElectionStep[];
-	gameServer: IGameServer;
-	webhookUrl?: string;
-	rcon?: {
-		init?: string[]; // executed once on match init
-		knife?: string[]; // executed before every knife round
-		match?: string[]; // executed before every match map start
-		end?: string[]; // executed after last match map
-	};
 	canClinch?: boolean;
 }
 
@@ -67,14 +30,14 @@ export enum EMatchSate {
 export const COMMAND_PREFIXES = ['.', '!'];
 const PERIODIC_MESSAGE_FREQUENCY = 30000;
 
-export class Match implements ISerializable {
+export class Match {
 	id: string;
-	readonly matchInitData: IMatchInitData;
+	readonly matchInitData: ISerializedMatchInitData;
 	state: EMatchSate = EMatchSate.ELECTION;
 	election: Election;
 	teamA: Team;
 	teamB: Team;
-	rcon: Rcon;
+	gameServer: GameServer;
 	logSecret: string = uuidv4();
 	parseIncomingLogs: boolean = false;
 	logCounter: number = 0;
@@ -85,14 +48,14 @@ export class Match implements ISerializable {
 	canClinch: boolean = true;
 	webhookUrl?: string;
 
-	constructor(id: string, matchInitData: IMatchInitData) {
+	constructor(id: string, matchInitData: ISerializedMatchInitData) {
 		this.id = id;
 		this.matchInitData = matchInitData;
-		this.rcon = new Rcon({
-			host: matchInitData.gameServer.ip,
-			port: matchInitData.gameServer.port,
-			password: matchInitData.gameServer.rconPassword,
-		});
+		this.gameServer = new GameServer(
+			matchInitData.gameServer.ip,
+			matchInitData.gameServer.port,
+			matchInitData.gameServer.rconPassword
+		);
 		this.teamA = new Team(
 			this,
 			ETeamSides.CT,
@@ -117,7 +80,6 @@ export class Match implements ISerializable {
 	}
 
 	async init() {
-		await this.rcon.connect();
 		// TODO add needed log options so that TMT can work
 
 		this.registerLogAddress();
@@ -126,10 +88,10 @@ export class Match implements ISerializable {
 		await this.loadInitConfig();
 		await this.setTeamNames();
 
-		await this.rcon.send(`mp_backup_round_file "round_backup_${this.id}"`);
-		await this.rcon.send('mp_backup_restore_load_autopause 1');
-		await this.rcon.send('mp_backup_round_auto 1');
-		await this.rcon.send(
+		await this.gameServer.rcon(`mp_backup_round_file "round_backup_${this.id}"`);
+		await this.gameServer.rcon('mp_backup_restore_load_autopause 1');
+		await this.gameServer.rcon('mp_backup_round_auto 1');
+		await this.gameServer.rcon(
 			'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%teamA%_%teamB%_%map%_round%round%_score_%score1%_%score2%.txt"'
 		);
 
@@ -143,7 +105,7 @@ export class Match implements ISerializable {
 	}
 
 	registerLogAddress() {
-		this.rcon.send(
+		this.gameServer.rcon(
 			`logaddress_add_http "http://localhost:8080/api/matches/${this.id}/server/log/${this.logSecret}"`
 		);
 	}
@@ -153,13 +115,13 @@ export class Match implements ISerializable {
 		if (currentMatch) {
 			await currentMatch.setTeamNames();
 		} else {
-			await this.rcon.send(`mp_teamname_1 "${this.teamA.toIngameString()}"`);
-			await this.rcon.send(`mp_teamname_2 "${this.teamB.toIngameString()}"`);
+			await this.gameServer.rcon(`mp_teamname_1 "${this.teamA.toIngameString()}"`);
+			await this.gameServer.rcon(`mp_teamname_2 "${this.teamB.toIngameString()}"`);
 		}
 	}
 
 	async getRoundBackups(count: number = 5) {
-		const response = await this.rcon.send(`mp_backup_restore_list_files ${count}`);
+		const response = await this.gameServer.rcon(`mp_backup_restore_list_files ${count}`);
 		const lines = response.trim().split('\n');
 		const files = lines.filter((line) => line[0] === ' ').map((line) => line.trim());
 		const totalFiles = parseInt(lines[lines.length - 1].split(' ')[0]);
@@ -170,7 +132,7 @@ export class Match implements ISerializable {
 	}
 
 	async loadRoundBackup(file: string) {
-		const response = await this.rcon.send(`mp_backup_restore_load_file "${file}"`);
+		const response = await this.gameServer.rcon(`mp_backup_restore_load_file "${file}"`);
 		if (response.includes('Failed to load file:')) {
 			return false;
 		} else {
@@ -202,24 +164,24 @@ export class Match implements ISerializable {
 	}
 
 	async loadInitConfig() {
-		await this.executeRconCommands(this.matchInitData.rcon?.init);
+		await this.executeRconCommands(this.matchInitData.rconCommands?.init);
 	}
 
 	async loadEndConfig() {
-		await this.executeRconCommands(this.matchInitData.rcon?.end);
+		await this.executeRconCommands(this.matchInitData.rconCommands?.end);
 	}
 
 	async executeRconCommands(commands?: string[]) {
 		if (commands) {
 			for (let i = 0; i < commands.length; i++) {
-				await this.rcon.send(commands[i]);
+				await this.gameServer.rcon(commands[i]);
 			}
 		}
 	}
 
 	async say(message: string) {
 		console.log(message);
-		await this.rcon.send('say ' + message.replace(/;/g, ''));
+		await this.gameServer.rcon('say ' + message.replace(/;/g, ''));
 	}
 
 	getOtherTeam(team: Team) {
@@ -475,7 +437,6 @@ export class Match implements ISerializable {
 
 	toJSON(): any {
 		const obj = makeStringify(this);
-		delete obj.rcon;
 		delete obj.periodicTimerId;
 		return obj;
 	}
@@ -485,7 +446,6 @@ export class Match implements ISerializable {
 			clearTimeout(this.periodicTimerId);
 		}
 		this.say(`TMT IS OFFLINE`);
-		this.rcon.end();
 	}
 
 	change(change: IMatchChange) {
@@ -529,13 +489,14 @@ export class Match implements ISerializable {
 		}
 	}
 
-	changeGameServer(gameServer: IGameServer) {
-		this.rcon = new Rcon({
-			host: gameServer.ip,
-			port: gameServer.port,
-			password: gameServer.rconPassword,
-		});
-		this.init();
+	changeGameServer(gameServer: ISerializedGameServer) {
+		// TODO
+		// this.rcon = new Rcon({
+		// 	host: gameServer.ip,
+		// 	port: gameServer.port,
+		// 	password: gameServer.rconPassword,
+		// });
+		// this.init();
 	}
 
 	changeCurrentMap(currentMap: number) {

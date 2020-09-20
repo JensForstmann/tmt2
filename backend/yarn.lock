@@ -1101,6 +1101,13 @@ ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
+nedb-promises@^4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/nedb-promises/-/nedb-promises-4.0.4.tgz#51aa3f43ae98269c9c9d512288ff67de890b7f7f"
+  integrity sha512-+z5kzrNOW0rDA1FiCfAtPGR7ZW3mnaOrYZytGAT0TbL6EqoEJUCxAuu9VME4+B1yZNG1gBx61F0c0jcacq1EsQ==
+  dependencies:
+    nedb "^1.8.0"
+
 nedb@^1.8.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/nedb/-/nedb-1.8.0.tgz#0e3502cd82c004d5355a43c9e55577bd7bd91d88"

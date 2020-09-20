@@ -209,7 +209,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"IGameServer": {
+			"ISerializedGameServer": {
 				"properties": {
 					"ip": {
 						"type": "string"
@@ -226,7 +226,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"IMatchInitData": {
+			"ISerializedMatchInitData": {
 				"properties": {
 					"remoteId": {
 						"type": "string"
@@ -252,12 +252,12 @@
 						"minItems": 1
 					},
 					"gameServer": {
-						"$ref": "#/components/schemas/IGameServer"
+						"$ref": "#/components/schemas/ISerializedGameServer"
 					},
 					"webhookUrl": {
 						"type": "string"
 					},
-					"rcon": {
+					"rconCommands": {
 						"properties": {
 							"end": {
 								"items": {
@@ -294,14 +294,141 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ISerializable": {
+			"EMatchSate": {
+				"enum": ["ELECTION", "MATCH_MAP", "FINISHED"],
+				"type": "string"
+			},
+			"ISerializedElection": {
 				"properties": {},
 				"type": "object",
 				"additionalProperties": false
 			},
-			"EMatchSate": {
-				"enum": ["ELECTION", "MATCH_MAP", "FINISHED"],
+			"ETeamSides": {
+				"enum": ["CT", "T"],
 				"type": "string"
+			},
+			"ISerializedPlayer": {
+				"properties": {
+					"steamId64": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"required": ["steamId64", "name"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ISerializedTeam": {
+				"properties": {
+					"remoteId": {
+						"type": "string"
+					},
+					"currentSide": {
+						"$ref": "#/components/schemas/ETeamSides"
+					},
+					"isTeamA": {
+						"type": "boolean"
+					},
+					"isTeamB": {
+						"type": "boolean"
+					},
+					"players": {
+						"items": {
+							"$ref": "#/components/schemas/ISerializedPlayer"
+						},
+						"type": "array"
+					},
+					"name": {
+						"type": "string"
+					},
+					"advantage": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": ["currentSide", "isTeamA", "isTeamB", "players", "name", "advantage"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ISerializedMatchMap": {
+				"properties": {},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ISerializedMatch": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"matchInitData": {
+						"$ref": "#/components/schemas/ISerializedMatchInitData"
+					},
+					"state": {
+						"$ref": "#/components/schemas/EMatchSate"
+					},
+					"election": {
+						"$ref": "#/components/schemas/ISerializedElection"
+					},
+					"teamA": {
+						"$ref": "#/components/schemas/ISerializedTeam"
+					},
+					"teamB": {
+						"$ref": "#/components/schemas/ISerializedTeam"
+					},
+					"gameServer": {
+						"$ref": "#/components/schemas/ISerializedGameServer"
+					},
+					"logSecret": {
+						"type": "string"
+					},
+					"parseIncomingLogs": {
+						"type": "boolean"
+					},
+					"logCounter": {
+						"type": "number",
+						"format": "double"
+					},
+					"logLineCounter": {
+						"type": "number",
+						"format": "double"
+					},
+					"matchMaps": {
+						"items": {
+							"$ref": "#/components/schemas/ISerializedMatchMap"
+						},
+						"type": "array"
+					},
+					"currentMap": {
+						"type": "number",
+						"format": "double"
+					},
+					"canClinch": {
+						"type": "boolean"
+					},
+					"webhookUrl": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"matchInitData",
+					"state",
+					"election",
+					"teamA",
+					"teamB",
+					"gameServer",
+					"logSecret",
+					"parseIncomingLogs",
+					"logCounter",
+					"logLineCounter",
+					"matchMaps",
+					"currentMap",
+					"canClinch"
+				],
+				"type": "object",
+				"additionalProperties": false
 			},
 			"IMatchChange": {
 				"properties": {
@@ -309,7 +436,7 @@
 						"$ref": "#/components/schemas/EMatchSate"
 					},
 					"gameServer": {
-						"$ref": "#/components/schemas/IGameServer"
+						"$ref": "#/components/schemas/ISerializedGameServer"
 					},
 					"webhookUrl": {
 						"type": "string",
@@ -375,7 +502,7 @@
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/IMatchInitData"
+								"$ref": "#/components/schemas/ISerializedMatchInitData"
 							}
 						}
 					}
@@ -390,7 +517,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/ISerializable"
+										"$ref": "#/components/schemas/ISerializedMatch"
 									},
 									"type": "array"
 								}
@@ -413,7 +540,7 @@
 								"schema": {
 									"anyOf": [
 										{
-											"$ref": "#/components/schemas/ISerializable"
+											"$ref": "#/components/schemas/ISerializedMatch"
 										},
 										{}
 									]

@@ -10,13 +10,15 @@ import {
 	Route,
 	SuccessResponse,
 } from 'tsoa';
-import { IMatchInitData, ISerializable, IMatchChange } from './match';
+import { ISerializedMatch, SerializedMatch } from '../interfaces/match';
+import { ISerializedMatchInitData } from '../interfaces/matchInitData';
+import { IMatchChange } from './match';
 import { MatchService } from './matchService';
 
 @Route('/api/matches')
 export class MatchesController extends Controller {
 	@Post()
-	async createMatch(@Body() requestBody: IMatchInitData): Promise<{ id: string }> {
+	async createMatch(@Body() requestBody: ISerializedMatchInitData): Promise<{ id: string }> {
 		const id = await MatchService.create(requestBody);
 		this.setHeader('Location', `/api/matches/${id}`);
 		this.setStatus(201);
@@ -24,10 +26,10 @@ export class MatchesController extends Controller {
 	}
 
 	@Get('{id}')
-	getMatch(id: string): ISerializable | void {
+	getMatch(id: string): ISerializedMatch | void {
 		const match = MatchService.get(id);
 		if (match) {
-			return match;
+			return SerializedMatch.fromNormalToSerialized(match);
 		} else {
 			this.setStatus(404);
 			return;
@@ -80,8 +82,8 @@ export class MatchesController extends Controller {
 	}
 
 	@Get()
-	getAllMatches(): ISerializable[] {
-		return MatchService.getAll();
+	getAllMatches(): ISerializedMatch[] {
+		return MatchService.getAll().map((match) => SerializedMatch.fromNormalToSerialized(match));
 	}
 
 	@Post('{id}/server/log/{secret}')
