@@ -8,6 +8,7 @@ export enum ETeamSides {
 }
 
 export interface ISerializedTeam {
+	id: string;
 	remoteId?: string;
 	currentSide: ETeamSides;
 	isTeamA: boolean;
@@ -18,6 +19,7 @@ export interface ISerializedTeam {
 }
 
 export class SerializedTeam implements ISerializedTeam {
+	id: string;
 	remoteId?: string;
 	currentSide: ETeamSides;
 	isTeamA: boolean;
@@ -27,6 +29,7 @@ export class SerializedTeam implements ISerializedTeam {
 	advantage: number;
 
 	constructor(team: Team) {
+		this.id = team.id;
 		this.remoteId = team.remoteId;
 		this.currentSide = team.currentSide;
 		this.isTeamA = team.isTeamA;
@@ -49,7 +52,8 @@ export class SerializedTeam implements ISerializedTeam {
 			serializedTeam.isTeamA,
 			serializedTeam.name,
 			serializedTeam.advantage,
-			serializedTeam.remoteId
+			serializedTeam.remoteId,
+			serializedTeam.id
 		);
 	}
 }

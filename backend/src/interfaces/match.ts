@@ -1,9 +1,25 @@
-import { EMatchSate, Match } from '../match/match';
+import { Match } from '../match/match';
 import { ISerializedElection, SerializedElection } from './election';
 import { ISerializedGameServer, SerializedGameServer } from './gameServer';
 import { ISerializedMatchInitData } from './matchInitData';
 import { ISerializedMatchMap, SerializedMatchMap } from './matchMap';
 import { ISerializedTeam, SerializedTeam } from './team';
+
+export interface IMatchChange {
+	state?: EMatchSate;
+	gameServer?: ISerializedGameServer;
+	webhookUrl?: string | null;
+	logSecret?: string;
+	parseIncomingLogs?: boolean;
+	currentMap?: number;
+	canClinch?: boolean;
+}
+
+export enum EMatchSate {
+	ELECTION = 'ELECTION',
+	MATCH_MAP = 'MATCH_MAP',
+	FINISHED = 'FINISHED',
+}
 
 export interface ISerializedMatch {
 	id: string;
@@ -61,8 +77,7 @@ export class SerializedMatch implements ISerializedMatch {
 	}
 
 	static fromSerializedToNormal(serializedMatch: ISerializedMatch): Match {
-		// TODO
-		return {} as Match;
+		return new Match(serializedMatch.id, serializedMatch);
 	}
 
 	static fromNormalToSerialized(match: Match): ISerializedMatch {

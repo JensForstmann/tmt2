@@ -10,9 +10,8 @@ import {
 	Route,
 	SuccessResponse,
 } from 'tsoa';
-import { ISerializedMatch, SerializedMatch } from '../interfaces/match';
+import { ISerializedMatch, SerializedMatch, IMatchChange } from '../interfaces/match';
 import { ISerializedMatchInitData } from '../interfaces/matchInitData';
-import { IMatchChange } from './match';
 import { MatchService } from './matchService';
 
 @Route('/api/matches')

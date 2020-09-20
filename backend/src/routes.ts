@@ -238,9 +238,52 @@ const models: TsoaRoute.Models = {
 		enums: ['ELECTION', 'MATCH_MAP', 'FINISHED'],
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	ElectionState: {
+		dataType: 'refEnum',
+		enums: ['NOT_STARTED', 'IN_PROGRESS', 'FINISHED'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	EStep: {
+		dataType: 'refEnum',
+		enums: ['MAP', 'SIDE'],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	ISerializedElection: {
 		dataType: 'refObject',
-		properties: {},
+		properties: {
+			state: { ref: 'ElectionState', required: true },
+			currentStep: { dataType: 'double', required: true },
+			currentElectionStep: { ref: 'IElectionStep', required: true },
+			currentSubStep: { ref: 'EStep', required: true },
+			teamX: { dataType: 'string' },
+			teamY: { dataType: 'string' },
+			remainingMaps: { dataType: 'array', array: { dataType: 'string' }, required: true },
+			map: { dataType: 'string', required: true },
+			currentAgree: {
+				dataType: 'nestedObjectLiteral',
+				nestedProperties: {
+					teamB: {
+						dataType: 'union',
+						subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+						required: true,
+					},
+					teamA: {
+						dataType: 'union',
+						subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+						required: true,
+					},
+				},
+				required: true,
+			},
+			currentRestart: {
+				dataType: 'nestedObjectLiteral',
+				nestedProperties: {
+					teamB: { dataType: 'boolean', required: true },
+					teamA: { dataType: 'boolean', required: true },
+				},
+				required: true,
+			},
+		},
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -261,6 +304,7 @@ const models: TsoaRoute.Models = {
 	ISerializedTeam: {
 		dataType: 'refObject',
 		properties: {
+			id: { dataType: 'string', required: true },
 			remoteId: { dataType: 'string' },
 			currentSide: { ref: 'ETeamSides', required: true },
 			isTeamA: { dataType: 'boolean', required: true },
@@ -272,9 +316,57 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	EMatchMapSate: {
+		dataType: 'refEnum',
+		enums: [
+			'PENDING',
+			'MAP_CHANGE',
+			'WARMUP',
+			'KNIFE',
+			'AFTER_KNIFE',
+			'IN_PROGRESS',
+			'PAUSED',
+			'FINISHED',
+		],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	ISerializedMatchMap: {
 		dataType: 'refObject',
-		properties: {},
+		properties: {
+			name: { dataType: 'string', required: true },
+			knifeForSide: { dataType: 'boolean', required: true },
+			startAsCtTeam: { dataType: 'string', required: true },
+			startAsTTeam: { dataType: 'string', required: true },
+			state: { ref: 'EMatchMapSate', required: true },
+			knifeWinner: { dataType: 'string' },
+			readyTeams: {
+				dataType: 'nestedObjectLiteral',
+				nestedProperties: {
+					teamB: { dataType: 'boolean', required: true },
+					teamA: { dataType: 'boolean', required: true },
+				},
+				required: true,
+			},
+			knifeRestart: {
+				dataType: 'nestedObjectLiteral',
+				nestedProperties: {
+					teamB: { dataType: 'boolean', required: true },
+					teamA: { dataType: 'boolean', required: true },
+				},
+				required: true,
+			},
+			score: {
+				dataType: 'nestedObjectLiteral',
+				nestedProperties: {
+					teamB: { dataType: 'double', required: true },
+					teamA: { dataType: 'double', required: true },
+				},
+				required: true,
+			},
+			overTimeEnabled: { dataType: 'boolean', required: true },
+			overTimeMaxRounds: { dataType: 'double', required: true },
+			maxRounds: { dataType: 'double', required: true },
+		},
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

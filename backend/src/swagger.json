@@ -298,8 +298,81 @@
 				"enum": ["ELECTION", "MATCH_MAP", "FINISHED"],
 				"type": "string"
 			},
+			"ElectionState": {
+				"enum": ["NOT_STARTED", "IN_PROGRESS", "FINISHED"],
+				"type": "string"
+			},
+			"EStep": {
+				"enum": ["MAP", "SIDE"],
+				"type": "string"
+			},
 			"ISerializedElection": {
-				"properties": {},
+				"properties": {
+					"state": {
+						"$ref": "#/components/schemas/ElectionState"
+					},
+					"currentStep": {
+						"type": "number",
+						"format": "double"
+					},
+					"currentElectionStep": {
+						"$ref": "#/components/schemas/IElectionStep"
+					},
+					"currentSubStep": {
+						"$ref": "#/components/schemas/EStep"
+					},
+					"teamX": {
+						"type": "string"
+					},
+					"teamY": {
+						"type": "string"
+					},
+					"remainingMaps": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"map": {
+						"type": "string"
+					},
+					"currentAgree": {
+						"properties": {
+							"teamB": {
+								"type": "string",
+								"nullable": true
+							},
+							"teamA": {
+								"type": "string",
+								"nullable": true
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object"
+					},
+					"currentRestart": {
+						"properties": {
+							"teamB": {
+								"type": "boolean"
+							},
+							"teamA": {
+								"type": "boolean"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object"
+					}
+				},
+				"required": [
+					"state",
+					"currentStep",
+					"currentElectionStep",
+					"currentSubStep",
+					"remainingMaps",
+					"map",
+					"currentAgree",
+					"currentRestart"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -322,6 +395,9 @@
 			},
 			"ISerializedTeam": {
 				"properties": {
+					"id": {
+						"type": "string"
+					},
 					"remoteId": {
 						"type": "string"
 					},
@@ -348,12 +424,114 @@
 						"format": "double"
 					}
 				},
-				"required": ["currentSide", "isTeamA", "isTeamB", "players", "name", "advantage"],
+				"required": [
+					"id",
+					"currentSide",
+					"isTeamA",
+					"isTeamB",
+					"players",
+					"name",
+					"advantage"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
+			"EMatchMapSate": {
+				"enum": [
+					"PENDING",
+					"MAP_CHANGE",
+					"WARMUP",
+					"KNIFE",
+					"AFTER_KNIFE",
+					"IN_PROGRESS",
+					"PAUSED",
+					"FINISHED"
+				],
+				"type": "string"
+			},
 			"ISerializedMatchMap": {
-				"properties": {},
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"knifeForSide": {
+						"type": "boolean"
+					},
+					"startAsCtTeam": {
+						"type": "string"
+					},
+					"startAsTTeam": {
+						"type": "string"
+					},
+					"state": {
+						"$ref": "#/components/schemas/EMatchMapSate"
+					},
+					"knifeWinner": {
+						"type": "string"
+					},
+					"readyTeams": {
+						"properties": {
+							"teamB": {
+								"type": "boolean"
+							},
+							"teamA": {
+								"type": "boolean"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object"
+					},
+					"knifeRestart": {
+						"properties": {
+							"teamB": {
+								"type": "boolean"
+							},
+							"teamA": {
+								"type": "boolean"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object"
+					},
+					"score": {
+						"properties": {
+							"teamB": {
+								"type": "number",
+								"format": "double"
+							},
+							"teamA": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object"
+					},
+					"overTimeEnabled": {
+						"type": "boolean"
+					},
+					"overTimeMaxRounds": {
+						"type": "number",
+						"format": "double"
+					},
+					"maxRounds": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"name",
+					"knifeForSide",
+					"startAsCtTeam",
+					"startAsTTeam",
+					"state",
+					"readyTeams",
+					"knifeRestart",
+					"score",
+					"overTimeEnabled",
+					"overTimeMaxRounds",
+					"maxRounds"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},

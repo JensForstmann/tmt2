@@ -1,4 +1,6 @@
 import { Election } from '../match/election';
+import { Match } from '../match/match';
+import { ISerializedTeam } from './team';
 
 export enum EWho {
 	TEAM_1 = 'TEAM_1',
@@ -78,14 +80,58 @@ export enum EStep {
 	SIDE = 'SIDE',
 }
 
-export interface ISerializedElection {}
+export interface ISerializedElection {
+	state: ElectionState;
+	currentStep: number;
+	currentElectionStep: IElectionStep;
+	currentSubStep: EStep;
+	teamX?: string;
+	teamY?: string;
+	remainingMaps: string[];
+	map: string;
+	currentAgree: {
+		teamA: string | null;
+		teamB: string | null;
+	};
+	currentRestart: {
+		teamA: boolean;
+		teamB: boolean;
+	};
+}
 
 export class SerializedElection implements ISerializedElection {
-	constructor(election: Election) {}
+	state: ElectionState;
+	currentStep: number;
+	currentElectionStep: IElectionStep;
+	currentSubStep: EStep;
+	teamX?: string;
+	teamY?: string;
+	remainingMaps: string[];
+	map: string;
+	currentAgree: {
+		teamA: string | null;
+		teamB: string | null;
+	};
+	currentRestart: {
+		teamA: boolean;
+		teamB: boolean;
+	};
 
-	static fromSerializedToNormal(serializedElection: ISerializedElection): Election {
-		// TODO
-		return {} as Election;
+	constructor(election: Election) {
+		this.state = election.state;
+		this.currentStep = election.currentStep;
+		this.currentElectionStep = election.currentElectionStep;
+		this.currentSubStep = election.currentSubStep;
+		this.teamX = election.teamX?.id;
+		this.teamY = election.teamY?.id;
+		this.remainingMaps = election.remainingMaps;
+		this.map = election.map;
+		this.currentAgree = election.currentAgree;
+		this.currentRestart = election.currentRestart;
+	}
+
+	static fromSerializedToNormal(serializedElection: ISerializedElection, match: Match): Election {
+		return new Election(match, serializedElection);
 	}
 
 	static fromNormalToSerialized(election: Election): ISerializedElection {

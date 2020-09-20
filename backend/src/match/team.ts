@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Player } from './player';
 import { makeStringify } from '../utils';
 import { Match } from './match';
@@ -10,6 +11,7 @@ export interface ITeamChange {
 
 export class Team {
 	match: Match;
+	id: string = uuidv4();
 	remoteId?: string;
 	currentSide: ETeamSides; // TODO move to matchMap
 	isTeamA: boolean;
@@ -24,7 +26,8 @@ export class Team {
 		isTeamA: boolean,
 		name: string,
 		advantage: number = 0,
-		remoteId?: string
+		remoteId?: string,
+		id?: string
 	) {
 		this.match = match;
 		this.remoteId = remoteId;
@@ -33,6 +36,7 @@ export class Team {
 		this.isTeamB = !isTeamA;
 		this.name = name;
 		this.advantage = advantage;
+		if (id) this.id = id;
 	}
 
 	isPlayerInTeam(player: Player) {

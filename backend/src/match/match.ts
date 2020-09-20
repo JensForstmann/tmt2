@@ -3,29 +3,16 @@ import { Team } from './team';
 import { PlayerService } from './playerService';
 import { Player } from './player';
 import { commandMapping, ECommand } from './commands';
-import { EMatchMapSate, MatchMap } from './matchMap';
+import { MatchMap } from './matchMap';
 import { makeStringify, sleep } from '../utils';
 import { v4 as uuidv4 } from 'uuid';
-import { ISerializedGameServer } from '../interfaces/gameServer';
+import { ISerializedGameServer, SerializedGameServer } from '../interfaces/gameServer';
 import { ISerializedMatchInitData } from '../interfaces/matchInitData';
-import { ETeamSides } from '../interfaces/team';
+import { ETeamSides, SerializedTeam } from '../interfaces/team';
 import { GameServer } from './gameServer';
-
-export interface IMatchChange {
-	state?: EMatchSate;
-	gameServer?: ISerializedGameServer;
-	webhookUrl?: string | null;
-	logSecret?: string;
-	parseIncomingLogs?: boolean;
-	currentMap?: number;
-	canClinch?: boolean;
-}
-
-export enum EMatchSate {
-	ELECTION = 'ELECTION',
-	MATCH_MAP = 'MATCH_MAP',
-	FINISHED = 'FINISHED',
-}
+import { ISerializedMatch, SerializedMatch, EMatchSate, IMatchChange } from '../interfaces/match';
+import { EMatchMapSate, SerializedMatchMap } from '../interfaces/matchMap';
+import { SerializedElection } from '../interfaces/election';
 
 export const COMMAND_PREFIXES = ['.', '!'];
 const PERIODIC_MESSAGE_FREQUENCY = 30000;
@@ -48,35 +35,68 @@ export class Match {
 	canClinch: boolean = true;
 	webhookUrl?: string;
 
-	constructor(id: string, matchInitData: ISerializedMatchInitData) {
-		this.id = id;
-		this.matchInitData = matchInitData;
-		this.gameServer = new GameServer(
-			matchInitData.gameServer.ip,
-			matchInitData.gameServer.port,
-			matchInitData.gameServer.rconPassword
-		);
-		this.teamA = new Team(
-			this,
-			ETeamSides.CT,
-			true,
-			this.matchInitData.teamA.name,
-			this.matchInitData.teamA.advantage,
-			this.matchInitData.teamA.remoteId
-		);
-		this.teamB = new Team(
-			this,
-			ETeamSides.T,
-			false,
-			this.matchInitData.teamB.name,
-			this.matchInitData.teamB.advantage,
-			this.matchInitData.teamB.remoteId
-		);
-		this.election = new Election(this);
-		if (typeof this.matchInitData.canClinch === 'boolean') {
-			this.canClinch = this.matchInitData.canClinch;
+	constructor(id: string, serializedMatch: ISerializedMatch);
+	constructor(id: string, matchInitData: ISerializedMatchInitData);
+	constructor(
+		id: string,
+		matchInitDataOrSerializedMatch: ISerializedMatchInitData | SerializedMatch
+	) {
+		if (matchInitDataOrSerializedMatch instanceof SerializedMatch) {
+			console.log('create match from SerializedMatch');
+			const serializedMatch = matchInitDataOrSerializedMatch;
+			this.id = serializedMatch.id;
+			this.matchInitData = serializedMatch.matchInitData;
+			this.election = SerializedElection.fromSerializedToNormal(
+				serializedMatch.election,
+				this
+			);
+			this.teamA = SerializedTeam.fromSerializedToNormal(serializedMatch.teamA, this);
+			this.teamB = SerializedTeam.fromSerializedToNormal(serializedMatch.teamB, this);
+			this.gameServer = SerializedGameServer.fromSerializedToNormal(
+				serializedMatch.gameServer
+			);
+			this.logSecret = serializedMatch.logSecret;
+			this.parseIncomingLogs = serializedMatch.parseIncomingLogs;
+			this.logCounter = serializedMatch.logCounter;
+			this.logLineCounter = serializedMatch.logLineCounter;
+			this.matchMaps = serializedMatch.matchMaps.map((matchMap) =>
+				SerializedMatchMap.fromSerializedToNormal(matchMap, this)
+			);
+			this.currentMap = serializedMatch.currentMap;
+			this.canClinch = serializedMatch.canClinch;
+			this.webhookUrl = serializedMatch.webhookUrl;
+		} else {
+			console.log('create match from matchInitData');
+			const matchInitData = matchInitDataOrSerializedMatch;
+			this.id = id;
+			this.matchInitData = matchInitData;
+			this.gameServer = new GameServer(
+				matchInitData.gameServer.ip,
+				matchInitData.gameServer.port,
+				matchInitData.gameServer.rconPassword
+			);
+			this.teamA = new Team(
+				this,
+				ETeamSides.CT,
+				true,
+				this.matchInitData.teamA.name,
+				this.matchInitData.teamA.advantage,
+				this.matchInitData.teamA.remoteId
+			);
+			this.teamB = new Team(
+				this,
+				ETeamSides.T,
+				false,
+				this.matchInitData.teamB.name,
+				this.matchInitData.teamB.advantage,
+				this.matchInitData.teamB.remoteId
+			);
+			this.election = new Election(this);
+			if (typeof this.matchInitData.canClinch === 'boolean') {
+				this.canClinch = this.matchInitData.canClinch;
+			}
+			this.webhookUrl = this.matchInitData.webhookUrl;
 		}
-		this.webhookUrl = this.matchInitData.webhookUrl;
 	}
 
 	async init() {
@@ -84,7 +104,6 @@ export class Match {
 
 		this.registerLogAddress();
 
-		// logaddress_list_http
 		await this.loadInitConfig();
 		await this.setTeamNames();
 
@@ -375,7 +394,6 @@ export class Match {
 
 	async onElectionFinished() {
 		this.state = EMatchSate.MATCH_MAP;
-		this.matchMaps = this.election.maps;
 		await this.getCurrentMatchMap()?.loadMap();
 	}
 
@@ -422,7 +440,9 @@ export class Match {
 	}
 
 	getCurrentMatchMap(): MatchMap | undefined {
-		return this.matchMaps[this.currentMap];
+		if (this.state === EMatchSate.MATCH_MAP) {
+			return this.matchMaps[this.currentMap];
+		}
 	}
 
 	getTeamByPlayer(player: Player) {
@@ -432,7 +452,17 @@ export class Match {
 		if (this.teamB.isPlayerInTeam(player)) {
 			return this.teamB;
 		}
-		return null;
+		return undefined;
+	}
+
+	getTeamById(id: string) {
+		if (this.teamA.id === id) {
+			return this.teamA;
+		}
+		if (this.teamB.id === id) {
+			return this.teamB;
+		}
+		return undefined;
 	}
 
 	toJSON(): any {
@@ -490,13 +520,8 @@ export class Match {
 	}
 
 	changeGameServer(gameServer: ISerializedGameServer) {
-		// TODO
-		// this.rcon = new Rcon({
-		// 	host: gameServer.ip,
-		// 	port: gameServer.port,
-		// 	password: gameServer.rconPassword,
-		// });
-		// this.init();
+		this.gameServer = new GameServer(gameServer.ip, gameServer.port, gameServer.rconPassword);
+		this.init();
 	}
 
 	changeCurrentMap(currentMap: number) {

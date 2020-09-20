@@ -11,6 +11,8 @@ import {
 	EStep,
 	EWho,
 	IElectionStep,
+	ISerializedElection,
+	SerializedElection,
 } from '../interfaces/election';
 
 export class Election {
@@ -23,7 +25,6 @@ export class Election {
 	teamY?: Team;
 	remainingMaps: string[];
 	map: string = '';
-	maps: MatchMap[] = [];
 	currentAgree: {
 		teamA: string | null;
 		teamB: string | null;
@@ -36,10 +37,29 @@ export class Election {
 		teamB: false,
 	};
 
-	constructor(match: Match) {
+	constructor(match: Match);
+	constructor(match: Match, serializedElection: ISerializedElection);
+	constructor(match: Match, serializedElection?: ISerializedElection) {
 		this.match = match;
 		this.currentElectionStep = this.match.matchInitData.electionSteps[0];
 		this.remainingMaps = [...this.match.matchInitData.mapPool].map((map) => map.toLowerCase());
+
+		if (serializedElection instanceof SerializedElection) {
+			this.state = serializedElection.state;
+			this.currentStep = serializedElection.currentStep;
+			this.currentElectionStep = serializedElection.currentElectionStep;
+			this.currentSubStep = serializedElection.currentSubStep;
+			if (serializedElection.teamX) {
+				this.teamX = this.match.getTeamById(serializedElection.teamX);
+			}
+			if (serializedElection.teamY) {
+				this.teamY = this.match.getTeamById(serializedElection.teamY);
+			}
+			this.remainingMaps = serializedElection.remainingMaps;
+			this.map = serializedElection.map;
+			this.currentAgree = serializedElection.currentAgree;
+			this.currentRestart = serializedElection.currentRestart;
+		}
 	}
 
 	toJSON() {
@@ -103,7 +123,9 @@ export class Election {
 		) {
 			this.ensureTeamXY(this.currentElectionStep.side.who, team);
 			this.state = ElectionState.IN_PROGRESS;
-			this.maps.push(new MatchMap(this.match, this.map, this.match.getOtherTeam(team)));
+			this.match.matchMaps.push(
+				new MatchMap(this.match, this.map, this.match.getOtherTeam(team))
+			);
 			this.match.say(
 				`${this.currentStep + 1}. MAP: ${this.map} (T-SIDE: ${team.toIngameString()})`
 			);
@@ -119,7 +141,7 @@ export class Election {
 		) {
 			this.ensureTeamXY(this.currentElectionStep.side.who, team);
 			this.state = ElectionState.IN_PROGRESS;
-			this.maps.push(new MatchMap(this.match, this.map, team));
+			this.match.matchMaps.push(new MatchMap(this.match, this.map, team));
 			this.match.say(
 				`${this.currentStep + 1}. MAP: ${this.map} (CT-SIDE: ${team.toIngameString()})`
 			);
@@ -199,7 +221,7 @@ export class Election {
 		this.teamY = undefined;
 		this.remainingMaps = [...this.match.matchInitData.mapPool].map((map) => map.toLowerCase());
 		this.map = '';
-		this.maps = [];
+		this.match.matchMaps = [];
 		this.currentAgree.teamA = null;
 		this.currentAgree.teamB = null;
 		this.resetCurrentRestart();
@@ -273,7 +295,7 @@ export class Election {
 					this.currentElectionStep.side.fixed
 				)
 			) {
-				this.maps.push(new MatchMap(this.match, this.map, this.match.teamA));
+				this.match.matchMaps.push(new MatchMap(this.match, this.map, this.match.teamA));
 				this.match.say(
 					`${this.currentStep + 1}. MAP: ${
 						this.map
@@ -288,7 +310,7 @@ export class Election {
 					this.currentElectionStep.side.fixed
 				)
 			) {
-				this.maps.push(new MatchMap(this.match, this.map, this.match.teamB));
+				this.match.matchMaps.push(new MatchMap(this.match, this.map, this.match.teamB));
 				this.match.say(
 					`${this.currentStep + 1}. MAP: ${
 						this.map
@@ -304,7 +326,7 @@ export class Election {
 						this.currentElectionStep.side.fixed
 					)
 				) {
-					this.maps.push(new MatchMap(this.match, this.map, this.teamX));
+					this.match.matchMaps.push(new MatchMap(this.match, this.map, this.teamX));
 					this.match.say(
 						`${this.currentStep + 1}. MAP: ${
 							this.map
@@ -319,7 +341,7 @@ export class Election {
 						this.currentElectionStep.side.fixed
 					)
 				) {
-					this.maps.push(new MatchMap(this.match, this.map, this.teamY));
+					this.match.matchMaps.push(new MatchMap(this.match, this.map, this.teamY));
 					this.match.say(
 						`${this.currentStep + 1}. MAP: ${
 							this.map
@@ -331,14 +353,14 @@ export class Election {
 			}
 		}
 		if (this.currentElectionStep.side.mode === 'KNIFE') {
-			this.maps.push(new MatchMap(this.match, this.map, true));
+			this.match.matchMaps.push(new MatchMap(this.match, this.map, true));
 			this.match.say(`${this.currentStep + 1}. MAP: ${this.map} (KNIFE FOR SIDE)`);
 			this.next();
 			return;
 		}
 		if (this.currentElectionStep.side.mode === 'RANDOM') {
 			const startAsCtTeam = Math.random() < 0.5 ? this.match.teamA : this.match.teamB;
-			this.maps.push(new MatchMap(this.match, this.map, startAsCtTeam));
+			this.match.matchMaps.push(new MatchMap(this.match, this.map, startAsCtTeam));
 			this.match.say(
 				`${this.currentStep + 1}. MAP: ${
 					this.map

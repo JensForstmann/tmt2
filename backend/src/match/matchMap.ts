@@ -4,30 +4,7 @@ import { Match, COMMAND_PREFIXES } from './match';
 import { Player } from './player';
 import { makeStringify, sleep } from '../utils';
 import { ETeamSides } from '../interfaces/team';
-
-export enum EMatchMapSate {
-	PENDING = 'PENDING',
-	MAP_CHANGE = 'MAP_CHANGE',
-	WARMUP = 'WARMUP',
-	KNIFE = 'KNIFE',
-	AFTER_KNIFE = 'AFTER_KNIFE',
-	IN_PROGRESS = 'IN_PROGRESS',
-	PAUSED = 'PAUSED',
-	FINISHED = 'FINISHED',
-}
-
-export interface IMatchMapChange {
-	name?: string;
-	knifeForSide?: boolean;
-	startAsCtTeam?: 'teamA' | 'teamB';
-	state?: EMatchMapSate;
-	knifeWinner?: 'teamA' | 'teamB';
-	score?: {
-		teamA?: number;
-		teamB?: number;
-	};
-	refreshOvertimeAndMaxRoundsSettings?: boolean;
-}
+import { EMatchMapSate, IMatchMapChange, ISerializedMatchMap } from '../interfaces/matchMap';
 
 export class MatchMap {
 	name: string;
@@ -55,15 +32,39 @@ export class MatchMap {
 
 	constructor(match: Match, name: string, knifeForSide: boolean);
 	constructor(match: Match, name: string, startAsCtTeam: Team);
-	constructor(match: Match, name: string, knifeOrStartAsCt: boolean | Team) {
+	constructor(match: Match, name: string, serializedMatchMap: ISerializedMatchMap);
+	constructor(
+		match: Match,
+		name: string,
+		knifeOrStartAsCtOrSerializedMatchMap: boolean | Team | ISerializedMatchMap
+	) {
 		this.match = match;
 		this.name = name;
-		if (typeof knifeOrStartAsCt === 'boolean') {
-			this.knifeForSide = knifeOrStartAsCt;
+		if (typeof knifeOrStartAsCtOrSerializedMatchMap === 'boolean') {
+			this.knifeForSide = knifeOrStartAsCtOrSerializedMatchMap;
 			this.startAsCtTeam = this.match.teamA;
-		} else {
+		} else if (knifeOrStartAsCtOrSerializedMatchMap instanceof Team) {
 			this.knifeForSide = false;
-			this.startAsCtTeam = knifeOrStartAsCt;
+			this.startAsCtTeam = knifeOrStartAsCtOrSerializedMatchMap;
+		} else {
+			this.knifeForSide = knifeOrStartAsCtOrSerializedMatchMap.knifeForSide;
+			this.startAsCtTeam =
+				this.match.teamA.id === knifeOrStartAsCtOrSerializedMatchMap.startAsCtTeam
+					? this.match.teamA
+					: this.match.teamB;
+			this.state = knifeOrStartAsCtOrSerializedMatchMap.state;
+			if (knifeOrStartAsCtOrSerializedMatchMap.knifeWinner) {
+				this.knifeWinner =
+					this.match.teamA.id === knifeOrStartAsCtOrSerializedMatchMap.knifeWinner
+						? this.match.teamA
+						: this.match.teamB;
+			}
+			this.readyTeams = knifeOrStartAsCtOrSerializedMatchMap.readyTeams;
+			this.knifeRestart = knifeOrStartAsCtOrSerializedMatchMap.knifeRestart;
+			this.score = knifeOrStartAsCtOrSerializedMatchMap.score;
+			this.overTimeEnabled = knifeOrStartAsCtOrSerializedMatchMap.overTimeEnabled;
+			this.overTimeMaxRounds = knifeOrStartAsCtOrSerializedMatchMap.overTimeMaxRounds;
+			this.maxRounds = knifeOrStartAsCtOrSerializedMatchMap.maxRounds;
 		}
 		this.startAsTTeam = this.match.getOtherTeam(this.startAsCtTeam);
 	}
