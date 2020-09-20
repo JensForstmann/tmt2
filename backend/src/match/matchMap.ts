@@ -18,12 +18,12 @@ export enum EMatchMapSate {
 export interface IMatchMapChange {
 	name?: string;
 	knifeForSide?: boolean;
-	startAsCtTeam?: 'team1' | 'team2';
+	startAsCtTeam?: 'teamA' | 'teamB';
 	state?: EMatchMapSate;
-	knifeWinner?: 'team1' | 'team2';
+	knifeWinner?: 'teamA' | 'teamB';
 	score?: {
-		team1?: number;
-		team2?: number;
+		teamA?: number;
+		teamB?: number;
 	};
 	refreshOvertimeAndMaxRoundsSettings?: boolean;
 }
@@ -37,16 +37,16 @@ export class MatchMap {
 	state: EMatchMapSate = EMatchMapSate.PENDING;
 	knifeWinner?: Team;
 	readyTeams = {
-		team1: false,
-		team2: false,
+		teamA: false,
+		teamB: false,
 	};
 	knifeRestart = {
-		team1: false,
-		team2: false,
+		teamA: false,
+		teamB: false,
 	};
 	score = {
-		team1: 0,
-		team2: 0,
+		teamA: 0,
+		teamB: 0,
 	};
 	overTimeEnabled: boolean = true;
 	overTimeMaxRounds: number = 6;
@@ -59,7 +59,7 @@ export class MatchMap {
 		this.name = name;
 		if (typeof knifeOrStartAsCt === 'boolean') {
 			this.knifeForSide = knifeOrStartAsCt;
-			this.startAsCtTeam = this.match.team1;
+			this.startAsCtTeam = this.match.teamA;
 		} else {
 			this.knifeForSide = false;
 			this.startAsCtTeam = knifeOrStartAsCt;
@@ -78,28 +78,31 @@ export class MatchMap {
 		this.state = EMatchMapSate.MAP_CHANGE;
 		await sleep(10000);
 
-		if (this.match.team1 === this.startAsCtTeam) {
-			this.match.team1.currentSide = ETeamSides.CT;
-			this.match.team2.currentSide = ETeamSides.T;
+		if (this.match.teamA === this.startAsCtTeam) {
+			this.match.teamA.currentSide = ETeamSides.CT;
+			this.match.teamB.currentSide = ETeamSides.T;
 		} else {
-			this.match.team1.currentSide = ETeamSides.T;
-			this.match.team2.currentSide = ETeamSides.CT;
+			this.match.teamA.currentSide = ETeamSides.T;
+			this.match.teamB.currentSide = ETeamSides.CT;
 		}
 
-		await this.match.rcon.send(`mp_teamname_1 "${this.startAsCtTeam.toIngameString()}"`);
-		await this.match.rcon.send(`mp_teamname_2 "${this.startAsTTeam.toIngameString()}"`);
-
+		await this.setTeamNames();
 		await this.match.rcon.send(`changelevel ${this.name}`);
 		this.state = EMatchMapSate.WARMUP;
 
-		this.readyTeams.team1 = false;
-		this.readyTeams.team2 = false;
-		this.knifeRestart.team1 = false;
-		this.knifeRestart.team2 = false;
-		this.score.team1 = 0;
-		this.score.team2 = 0;
+		this.readyTeams.teamA = false;
+		this.readyTeams.teamB = false;
+		this.knifeRestart.teamA = false;
+		this.knifeRestart.teamB = false;
+		this.score.teamA = 0;
+		this.score.teamB = 0;
 
 		this.knifeWinner = undefined;
+	}
+
+	async setTeamNames() {
+		await this.match.rcon.send(`mp_teamname_1 "${this.startAsCtTeam.toIngameString()}"`);
+		await this.match.rcon.send(`mp_teamname_2 "${this.startAsTTeam.toIngameString()}"`);
 	}
 
 	async startMatch() {
@@ -185,15 +188,15 @@ export class MatchMap {
 	}
 
 	restartKnifeCommand(team: Team) {
-		if (team.isTeam1) {
-			this.knifeRestart.team1 = true;
+		if (team.isTeamA) {
+			this.knifeRestart.teamA = true;
 		} else {
-			this.knifeRestart.team2 = true;
+			this.knifeRestart.teamB = true;
 		}
 
-		if (this.knifeRestart.team1 && this.knifeRestart.team2) {
-			this.knifeRestart.team1 = false;
-			this.knifeRestart.team2 = false;
+		if (this.knifeRestart.teamA && this.knifeRestart.teamB) {
+			this.knifeRestart.teamA = false;
+			this.knifeRestart.teamB = false;
 			this.startKnifeRound();
 		} else {
 			this.match.say(`${team.toIngameString()} WANTS TO RESTART THE KNIFE ROUND`);
@@ -230,16 +233,16 @@ export class MatchMap {
 	}
 
 	async readyCommand(team: Team) {
-		if (team.isTeam1) {
-			this.readyTeams.team1 = true;
+		if (team.isTeamA) {
+			this.readyTeams.teamA = true;
 		} else {
-			this.readyTeams.team2 = true;
+			this.readyTeams.teamB = true;
 		}
 		this.match.say(`${team.toIngameString()} IS READY`);
-		if (this.readyTeams.team1 && this.readyTeams.team2) {
+		if (this.readyTeams.teamA && this.readyTeams.teamB) {
 			if (this.state === EMatchMapSate.PAUSED) {
-				this.readyTeams.team1 = false;
-				this.readyTeams.team2 = false;
+				this.readyTeams.teamA = false;
+				this.readyTeams.teamB = false;
 				await this.match.rcon.send('mp_unpause_match');
 				this.match.say('CONTINUE MAP');
 				this.state = EMatchMapSate.IN_PROGRESS;
@@ -256,17 +259,17 @@ export class MatchMap {
 
 	unreadyCommand(team: Team) {
 		this.match.say(`${team.toIngameString()} IS NOT READY`);
-		if (team.isTeam1) {
-			this.readyTeams.team1 = false;
+		if (team.isTeamA) {
+			this.readyTeams.teamA = false;
 		} else {
-			this.readyTeams.team2 = false;
+			this.readyTeams.teamB = false;
 		}
 	}
 
 	pauseCommand(team: Team) {
 		this.match.say(`${team.toIngameString()} PAUSED THE MAP`);
-		this.readyTeams.team1 = false;
-		this.readyTeams.team2 = false;
+		this.readyTeams.teamA = false;
+		this.readyTeams.teamB = false;
 		this.state = EMatchMapSate.PAUSED;
 		this.match.rcon.send('mp_pause_match');
 	}
@@ -283,11 +286,11 @@ export class MatchMap {
 	}
 
 	isDraw() {
-		return this.score.team1 === this.score.team2;
+		return this.score.teamA === this.score.teamB;
 	}
 
 	getWinner() {
-		return this.score.team1 > this.score.team2 ? this.match.team1 : this.match.team2;
+		return this.score.teamA > this.score.teamB ? this.match.teamA : this.match.teamB;
 	}
 
 	getLoser() {}
@@ -302,8 +305,8 @@ export class MatchMap {
 			const tTeam = this.match.getTeamBySide(ETeamSides.T);
 			const winningTeam = this.match.getTeamBySide(winningTeamSide);
 			const losingTeam = this.match.getOtherTeam(winningTeam);
-			this.score.team1 = ctTeam.isTeam1 ? ctScore : tScore;
-			this.score.team2 = ctTeam.isTeam2 ? ctScore : tScore;
+			this.score.teamA = ctTeam.isTeamA ? ctScore : tScore;
+			this.score.teamB = ctTeam.isTeamB ? ctScore : tScore;
 
 			if (this.state === EMatchMapSate.KNIFE) {
 				this.knifeWinner = winningTeam;
@@ -317,12 +320,12 @@ export class MatchMap {
 			) {
 				this.match.say(
 					`${winningTeam.toIngameString()} SCORED (${
-						winningTeam.isTeam1 ? this.score.team1 : this.score.team2
+						winningTeam.isTeamA ? this.score.teamA : this.score.teamB
 					})`
 				);
 				this.match.say(
 					`${losingTeam.toIngameString()} (${
-						losingTeam.isTeam1 ? this.score.team1 : this.score.team2
+						losingTeam.isTeamA ? this.score.teamA : this.score.teamB
 					})`
 				);
 				if (this.isSideSwitch(ctScore + tScore)) {
@@ -334,12 +337,12 @@ export class MatchMap {
 	}
 
 	switchTeamInternals() {
-		if (this.match.team1.currentSide === ETeamSides.CT) {
-			this.match.team1.currentSide = ETeamSides.T;
-			this.match.team2.currentSide = ETeamSides.CT;
+		if (this.match.teamA.currentSide === ETeamSides.CT) {
+			this.match.teamA.currentSide = ETeamSides.T;
+			this.match.teamB.currentSide = ETeamSides.CT;
 		} else {
-			this.match.team1.currentSide = ETeamSides.CT;
-			this.match.team2.currentSide = ETeamSides.T;
+			this.match.teamA.currentSide = ETeamSides.CT;
+			this.match.teamB.currentSide = ETeamSides.T;
 		}
 	}
 
@@ -442,12 +445,12 @@ export class MatchMap {
 		}
 
 		if (change.startAsCtTeam) {
-			if (change.startAsCtTeam === 'team1') {
-				this.startAsCtTeam = this.match.team1;
-				this.startAsTTeam = this.match.team2;
+			if (change.startAsCtTeam === 'teamA') {
+				this.startAsCtTeam = this.match.teamA;
+				this.startAsTTeam = this.match.teamB;
 			} else {
-				this.startAsCtTeam = this.match.team2;
-				this.startAsTTeam = this.match.team1;
+				this.startAsCtTeam = this.match.teamB;
+				this.startAsTTeam = this.match.teamA;
 			}
 		}
 
@@ -456,19 +459,19 @@ export class MatchMap {
 		}
 
 		if (change.knifeWinner) {
-			if (change.knifeWinner === 'team1') {
-				this.knifeWinner = this.match.team1;
+			if (change.knifeWinner === 'teamA') {
+				this.knifeWinner = this.match.teamA;
 			} else {
-				this.knifeWinner = this.match.team2;
+				this.knifeWinner = this.match.teamB;
 			}
 		}
 
 		if (change.score) {
-			if (change.score.team1) {
-				this.score.team1 = change.score.team1;
+			if (change.score.teamA) {
+				this.score.teamA = change.score.teamA;
 			}
-			if (change.score.team2) {
-				this.score.team2 = change.score.team2;
+			if (change.score.teamB) {
+				this.score.teamB = change.score.teamB;
 			}
 		}
 

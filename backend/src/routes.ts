@@ -22,6 +22,7 @@ const models: TsoaRoute.Models = {
 		properties: {
 			remoteId: { dataType: 'string' },
 			name: { dataType: 'string', required: true },
+			advantage: { dataType: 'double' },
 		},
 		additionalProperties: false,
 	},
@@ -208,8 +209,8 @@ const models: TsoaRoute.Models = {
 				required: true,
 				validators: { minItems: { value: 1 } },
 			},
-			team1: { ref: 'IMatchInitTeamData', required: true },
-			team2: { ref: 'IMatchInitTeamData', required: true },
+			teamA: { ref: 'IMatchInitTeamData', required: true },
+			teamB: { ref: 'IMatchInitTeamData', required: true },
 			electionSteps: {
 				dataType: 'array',
 				array: { ref: 'IElectionStep' },

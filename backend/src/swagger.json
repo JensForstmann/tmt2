@@ -13,6 +13,10 @@
 					},
 					"name": {
 						"type": "string"
+					},
+					"advantage": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": ["name"],
@@ -234,10 +238,10 @@
 						"type": "array",
 						"minItems": 1
 					},
-					"team1": {
+					"teamA": {
 						"$ref": "#/components/schemas/IMatchInitTeamData"
 					},
-					"team2": {
+					"teamB": {
 						"$ref": "#/components/schemas/IMatchInitTeamData"
 					},
 					"electionSteps": {
@@ -286,7 +290,7 @@
 						"type": "boolean"
 					}
 				},
-				"required": ["mapPool", "team1", "team2", "electionSteps", "gameServer"],
+				"required": ["mapPool", "teamA", "teamB", "electionSteps", "gameServer"],
 				"type": "object",
 				"additionalProperties": false
 			},

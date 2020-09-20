@@ -66,11 +66,11 @@ app.listen(port, () => {
 		console.log('init match');
 		const matchInitData: IMatchInitData = {
 			mapPool: ['de_dust2'],
-			team1: {
-				name: 'team1',
+			teamA: {
+				name: 'teamA',
 			},
-			team2: {
-				name: 'team2',
+			teamB: {
+				name: 'teamB',
 			},
 			electionSteps: [
 				{

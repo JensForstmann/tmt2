@@ -12,7 +12,7 @@ export enum ECommand {
 	STAY = 'STAY',
 	SWITCH = 'SWITCH',
 	TEAM = 'TEAM',
-	RESTART = 'RESTART', // knife
+	RESTART = 'RESTART', // knife/election
 }
 
 export const commandMapping = new Map<string, ECommand>();

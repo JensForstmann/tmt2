@@ -1,10 +1,10 @@
 import { Rcon } from 'rcon-client';
 import { IElectionStep, Election } from './election';
-import { Team, ETeamSides, ITeamChange } from './team';
+import { Team, ETeamSides } from './team';
 import { PlayerService } from './playerService';
 import { Player } from './player';
 import { commandMapping, ECommand } from './commands';
-import { EMatchMapSate, IMatchMapChange, MatchMap } from './matchMap';
+import { EMatchMapSate, MatchMap } from './matchMap';
 import { makeStringify, sleep } from '../utils';
 import { v4 as uuidv4 } from 'uuid';
 import Datastore from 'nedb';
@@ -21,8 +21,8 @@ export interface IMatchChange {
 	state?: EMatchSate;
 	gameServer?: IGameServer;
 	webhookUrl?: string | null;
-	// team1?: ITeamChange;
-	// team2?: ITeamChange;
+	// teamA?: ITeamChange;
+	// teamB?: ITeamChange;
 	logSecret?: string;
 	parseIncomingLogs?: boolean;
 	// matchMaps?: { [key: number]: IMatchMapChange };
@@ -35,6 +35,7 @@ export interface ISerializable {}
 interface IMatchInitTeamData {
 	remoteId?: string;
 	name: string;
+	advantage?: number;
 }
 
 export interface IMatchInitData {
@@ -43,8 +44,8 @@ export interface IMatchInitData {
 	 * @minItems 1
 	 */
 	mapPool: string[];
-	team1: IMatchInitTeamData;
-	team2: IMatchInitTeamData;
+	teamA: IMatchInitTeamData;
+	teamB: IMatchInitTeamData;
 	/**
 	 * @minItems 1
 	 */
@@ -74,8 +75,8 @@ export class Match implements ISerializable {
 	readonly matchInitData: IMatchInitData;
 	state: EMatchSate = EMatchSate.ELECTION;
 	election: Election;
-	team1: Team;
-	team2: Team;
+	teamA: Team;
+	teamB: Team;
 	rcon: Rcon;
 	logSecret: string = uuidv4();
 	parseIncomingLogs: boolean = false;
@@ -95,19 +96,21 @@ export class Match implements ISerializable {
 			port: matchInitData.gameServer.port,
 			password: matchInitData.gameServer.rconPassword,
 		});
-		this.team1 = new Team(
+		this.teamA = new Team(
 			this,
 			ETeamSides.CT,
 			true,
-			this.matchInitData.team1.name,
-			this.matchInitData.team1.remoteId
+			this.matchInitData.teamA.name,
+			this.matchInitData.teamA.advantage,
+			this.matchInitData.teamA.remoteId
 		);
-		this.team2 = new Team(
+		this.teamB = new Team(
 			this,
 			ETeamSides.T,
 			false,
-			this.matchInitData.team2.name,
-			this.matchInitData.team2.remoteId
+			this.matchInitData.teamB.name,
+			this.matchInitData.teamB.advantage,
+			this.matchInitData.teamB.remoteId
 		);
 		this.election = new Election(this);
 		if (typeof this.matchInitData.canClinch === 'boolean') {
@@ -124,16 +127,16 @@ export class Match implements ISerializable {
 
 		// logaddress_list_http
 		await this.loadInitConfig();
-		await this.rcon.send(`mp_teamname_1 "${this.team1.toIngameString()}"`);
-		await this.rcon.send(`mp_teamname_2 "${this.team2.toIngameString()}"`);
+		await this.setTeamNames();
 
 		await this.rcon.send(`mp_backup_round_file "round_backup_${this.id}"`);
 		await this.rcon.send('mp_backup_restore_load_autopause 1');
 		await this.rcon.send('mp_backup_round_auto 1');
 		await this.rcon.send(
-			'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%team1%_%team2%_%map%_round%round%_score_%score1%_%score2%.txt"'
+			'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%teamA%_%teamB%_%map%_round%round%_score_%score1%_%score2%.txt"'
 		);
 
+		// delay parsing of incoming log lines (because we don't about the initial big batch)
 		sleep(2000).then(() => {
 			this.parseIncomingLogs = true;
 			this.say('TMT IS ONLINE');
@@ -146,6 +149,16 @@ export class Match implements ISerializable {
 		this.rcon.send(
 			`logaddress_add_http "http://localhost:8080/api/matches/${this.id}/server/log/${this.logSecret}"`
 		);
+	}
+
+	async setTeamNames() {
+		const currentMatch = this.getCurrentMatchMap();
+		if (currentMatch) {
+			await currentMatch.setTeamNames();
+		} else {
+			await this.rcon.send(`mp_teamname_1 "${this.teamA.toIngameString()}"`);
+			await this.rcon.send(`mp_teamname_2 "${this.teamB.toIngameString()}"`);
+		}
 	}
 
 	async getRoundBackups(count: number = 5) {
@@ -213,13 +226,13 @@ export class Match implements ISerializable {
 	}
 
 	getOtherTeam(team: Team) {
-		if (this.team1 === team) return this.team2;
-		return this.team1;
+		if (this.teamA === team) return this.teamB;
+		return this.teamA;
 	}
 
 	getTeamBySide(side: ETeamSides) {
-		if (this.team1.currentSide === side) return this.team1;
-		return this.team2;
+		if (this.teamA.currentSide === side) return this.teamA;
+		return this.teamB;
 	}
 
 	async onLog(body: string) {
@@ -247,9 +260,9 @@ export class Match implements ISerializable {
 			const name = playerMatch[1];
 			const ingamePlayerId = playerMatch[2];
 			const steamId = playerMatch[3];
-			const team = playerMatch[4];
+			const teamString = playerMatch[4];
 			const remainingLine = playerMatch[5];
-			await this.onPlayerLogLine(name, ingamePlayerId, steamId, team, remainingLine);
+			await this.onPlayerLogLine(name, ingamePlayerId, steamId, teamString, remainingLine);
 		}
 
 		const mapEndPattern = /Game Over: competitive (.*) score (\d+):(\d+) after (\d+) min$/;
@@ -309,19 +322,27 @@ export class Match implements ISerializable {
 
 	isMatchEnd(): boolean {
 		if (this.canClinch) {
-			const team1Wins = this.matchMaps.reduce(
-				(pv: number, cv) =>
-					pv +
-					(cv.state === EMatchMapSate.FINISHED && cv.getWinner() === this.team1 ? 1 : 0),
-				0
-			);
-			const team2Wins = this.matchMaps.reduce(
-				(pv: number, cv) =>
-					pv +
-					(cv.state === EMatchMapSate.FINISHED && cv.getWinner() === this.team2 ? 1 : 0),
-				0
-			);
-			if (this.matchMaps.length / 2 < Math.max(team1Wins, team2Wins)) {
+			const teamAWins =
+				this.teamA.advantage +
+				this.matchMaps.reduce(
+					(pv: number, cv) =>
+						pv +
+						(cv.state === EMatchMapSate.FINISHED && cv.getWinner() === this.teamA
+							? 1
+							: 0),
+					0
+				);
+			const teamBWins =
+				this.teamB.advantage +
+				this.matchMaps.reduce(
+					(pv: number, cv) =>
+						pv +
+						(cv.state === EMatchMapSate.FINISHED && cv.getWinner() === this.teamB
+							? 1
+							: 0),
+					0
+				);
+			if (this.matchMaps.length / 2 < Math.max(teamAWins, teamBWins)) {
 				return true;
 			}
 		}
@@ -343,17 +364,17 @@ export class Match implements ISerializable {
 		if (steamId === 'BOT') {
 		} else if (steamId === 'Console') {
 		} else {
-			const player = PlayerService.ensure(steamId);
+			const player = PlayerService.ensure(steamId, name);
 			const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
 			if (sayMatch) {
 				const isTeamChat = sayMatch[1] === '_team';
 				const message = sayMatch[2];
-				await this.onPlayerSay(player, message, isTeamChat);
+				await this.onPlayerSay(player, message, isTeamChat, teamString);
 			}
 		}
 	}
 
-	async onPlayerSay(player: Player, message: string, isTeamChat: boolean) {
+	async onPlayerSay(player: Player, message: string, isTeamChat: boolean, teamString: string) {
 		message = message.trim();
 
 		if (COMMAND_PREFIXES.includes(message[0])) {
@@ -363,13 +384,13 @@ export class Match implements ISerializable {
 			if (commandString) {
 				const command = commandMapping.get(commandString);
 				if (command) {
-					await this.onCommand(command, player, parts);
+					await this.onCommand(command, player, parts, teamString);
 				}
 			}
 		}
 	}
 
-	async onCommand(command: ECommand, player: Player, parameters: string[]) {
+	async onCommand(command: ECommand, player: Player, parameters: string[], teamString: string) {
 		let warnAboutTeam = true;
 		if (command === ECommand.TEAM) {
 			await this.onTeamCommand(player, parameters[0] || '');
@@ -377,9 +398,17 @@ export class Match implements ISerializable {
 		}
 
 		const playerTeam = this.getTeamByPlayer(player);
+
 		if (playerTeam) {
 			this.election.onCommand(command, playerTeam, parameters);
 			await this.getCurrentMatchMap()?.onCommand(command, playerTeam, player);
+
+			if (
+				(playerTeam.currentSide === ETeamSides.T && teamString !== 'TERRORIST') ||
+				(playerTeam.currentSide === ETeamSides.CT && teamString !== 'CT')
+			) {
+				this.sayWrongTeam(player, playerTeam);
+			}
 		} else if (warnAboutTeam) {
 			this.sayNotAssigned();
 		}
@@ -393,25 +422,38 @@ export class Match implements ISerializable {
 
 	sayNotAssigned() {
 		this.say('NOT ASSIGNED!');
-		this.say(`!team a   :  ${this.matchInitData.team1.name}`);
-		this.say(`!team b   :  ${this.matchInitData.team2.name}`);
-		this.say('TYPE !team a OR !team b');
+		this.say(`TYPE "${COMMAND_PREFIXES[0]}team a" TO JOIN ${this.teamA.toIngameString()}`);
+		this.say(`TYPE "${COMMAND_PREFIXES[0]}team b" TO JOIN ${this.teamB.toIngameString()}`);
+	}
+
+	sayWrongTeam(player: Player, team: Team) {
+		const otherTeam = this.getOtherTeam(team);
+		this.say(
+			`PLAYER ${player.toIngameString()} IS REGISTERED FOR ${team.toIngameString()} BUT CURRENTLY IN ${
+				otherTeam.currentSide
+			} (${otherTeam.toIngameString()})`
+		);
+		this.say(
+			`CHECK SCOREBOARD AND CHANGE TEAM OR TYPE "${COMMAND_PREFIXES[0]}team ${
+				otherTeam.isTeamA ? 'a' : 'b'
+			}" TO CHANGE REGISTRATION`
+		);
 	}
 
 	async onTeamCommand(player: Player, firstParameter: string) {
 		firstParameter = firstParameter.toUpperCase();
 		if (firstParameter === 'A') {
-			this.team1.players.add(player);
-			this.team2.players.delete(player);
+			this.teamA.players.add(player);
+			this.teamB.players.delete(player);
 		} else if (firstParameter === 'B') {
-			this.team1.players.delete(player);
-			this.team2.players.add(player);
+			this.teamA.players.delete(player);
+			this.teamB.players.add(player);
 		} else {
 			const playerTeam = this.getTeamByPlayer(player);
 			if (playerTeam) {
 				this.say(
 					`YOU ARE IN TEAM ${
-						playerTeam.isTeam1 ? 'A' : 'B'
+						playerTeam.isTeamA ? 'A' : 'B'
 					}: ${playerTeam.toIngameString()}`
 				);
 			} else {
@@ -425,11 +467,11 @@ export class Match implements ISerializable {
 	}
 
 	getTeamByPlayer(player: Player) {
-		if (this.team1.isPlayerInTeam(player)) {
-			return this.team1;
+		if (this.teamA.isPlayerInTeam(player)) {
+			return this.teamA;
 		}
-		if (this.team2.isPlayerInTeam(player)) {
-			return this.team2;
+		if (this.teamB.isPlayerInTeam(player)) {
+			return this.teamB;
 		}
 		return null;
 	}

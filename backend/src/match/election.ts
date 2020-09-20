@@ -94,11 +94,15 @@ export class Election {
 	map: string = '';
 	maps: MatchMap[] = [];
 	currentAgree: {
-		team1: string | null;
-		team2: string | null;
+		teamA: string | null;
+		teamB: string | null;
 	} = {
-		team1: null,
-		team2: null,
+		teamA: null,
+		teamB: null,
+	};
+	currentRestart = {
+		teamA: false,
+		teamB: false,
 	};
 
 	constructor(match: Match) {
@@ -121,7 +125,7 @@ export class Election {
 		map = map.toLowerCase();
 		if (
 			this.currentSubStep === EStep.MAP &&
-			this.currentElectionStep.map.mode === 'BAN' &&
+			this.currentElectionStep.map.mode === EMapMode.BAN &&
 			this.isValidTeam(this.currentElectionStep.map.who, team)
 		) {
 			const matchMap = this.remainingMaps.findIndex((mapName) => mapName === map);
@@ -201,19 +205,19 @@ export class Election {
 			const matchMap = this.remainingMaps.findIndex((mapName) => mapName === map);
 			if (matchMap > -1) {
 				this.state = ElectionState.IN_PROGRESS;
-				if (team.isTeam1) {
-					this.currentAgree.team1 = map;
+				if (team.isTeamA) {
+					this.currentAgree.teamA = map;
 				} else {
-					this.currentAgree.team2 = map;
+					this.currentAgree.teamB = map;
 				}
 				if (
-					this.currentAgree.team1 !== null &&
-					this.currentAgree.team2 !== null &&
-					this.currentAgree.team1 === this.currentAgree.team2
+					this.currentAgree.teamA !== null &&
+					this.currentAgree.teamB !== null &&
+					this.currentAgree.teamA === this.currentAgree.teamB
 				) {
 					this.map = this.remainingMaps[matchMap];
-					this.currentAgree.team1 = null;
-					this.currentAgree.team2 = null;
+					this.currentAgree.teamA = null;
+					this.currentAgree.teamB = null;
 					this.remainingMaps.splice(matchMap, 1);
 					this.next();
 				} else {
@@ -231,7 +235,48 @@ export class Election {
 		}
 	}
 
+	restartCommand(team: Team) {
+		if (team.isTeamA) {
+			this.currentRestart.teamA = true;
+		} else {
+			this.currentRestart.teamB = true;
+		}
+
+		if (this.currentRestart.teamA && this.currentRestart.teamB) {
+			this.restart();
+		} else {
+			this.match.say(`${team.toIngameString()} WANTS TO RESTART THE COMPLETE PROCESS`);
+			this.match.say(
+				`TYPE ${COMMAND_PREFIXES[0]}${getCommands(
+					ECommand.RESTART
+				)[0].toLowerCase()} TO CONFIRM AND RESTART`
+			);
+		}
+	}
+
+	resetCurrentRestart() {
+		this.currentRestart.teamA = false;
+		this.currentRestart.teamB = false;
+	}
+
+	restart() {
+		this.state = ElectionState.NOT_STARTED;
+		this.currentStep = 0;
+		this.currentElectionStep = this.match.matchInitData.electionSteps[0];
+		this.currentSubStep = EStep.MAP;
+		this.teamX = undefined;
+		this.teamY = undefined;
+		this.remainingMaps = [...this.match.matchInitData.mapPool].map((map) => map.toLowerCase());
+		this.map = '';
+		this.maps = [];
+		this.currentAgree.teamA = null;
+		this.currentAgree.teamB = null;
+		this.resetCurrentRestart();
+	}
+
 	next() {
+		this.resetCurrentRestart();
+
 		if (
 			this.currentSubStep === EStep.MAP &&
 			(this.currentElectionStep.map.mode === EMapMode.AGREE ||
@@ -297,11 +342,11 @@ export class Election {
 					this.currentElectionStep.side.fixed
 				)
 			) {
-				this.maps.push(new MatchMap(this.match, this.map, this.match.team1));
+				this.maps.push(new MatchMap(this.match, this.map, this.match.teamA));
 				this.match.say(
 					`${this.currentStep + 1}. MAP: ${
 						this.map
-					} (CT-SIDE: ${this.match.team1.toIngameString()})`
+					} (CT-SIDE: ${this.match.teamA.toIngameString()})`
 				);
 				this.next();
 				return;
@@ -312,11 +357,11 @@ export class Election {
 					this.currentElectionStep.side.fixed
 				)
 			) {
-				this.maps.push(new MatchMap(this.match, this.map, this.match.team2));
+				this.maps.push(new MatchMap(this.match, this.map, this.match.teamB));
 				this.match.say(
 					`${this.currentStep + 1}. MAP: ${
 						this.map
-					} (CT-SIDE: ${this.match.team2.toIngameString()})`
+					} (CT-SIDE: ${this.match.teamB.toIngameString()})`
 				);
 				this.next();
 				return;
@@ -361,7 +406,7 @@ export class Election {
 			return;
 		}
 		if (this.currentElectionStep.side.mode === 'RANDOM') {
-			const startAsCtTeam = Math.random() < 0.5 ? this.match.team1 : this.match.team2;
+			const startAsCtTeam = Math.random() < 0.5 ? this.match.teamA : this.match.teamB;
 			this.maps.push(new MatchMap(this.match, this.map, startAsCtTeam));
 			this.match.say(
 				`${this.currentStep + 1}. MAP: ${
@@ -380,25 +425,33 @@ export class Election {
 		if (this.currentSubStep === EStep.MAP) {
 			switch (this.currentElectionStep.map.mode) {
 				case EMapMode.AGREE:
-					return [...getCommands(ECommand.AGREE), ...getCommands(ECommand.PICK)];
-				case 'BAN':
-					return getCommands(ECommand.BAN);
+					return [
+						...getCommands(ECommand.AGREE),
+						...getCommands(ECommand.PICK),
+						...getCommands(ECommand.RESTART),
+					];
+				case EMapMode.BAN:
+					return [...getCommands(ECommand.BAN), ...getCommands(ECommand.RESTART)];
 				case EMapMode.PICK:
-					return getCommands(ECommand.PICK);
+					return [...getCommands(ECommand.PICK), ...getCommands(ECommand.RESTART)];
 			}
 		}
 		if (this.currentSubStep === 'SIDE') {
 			switch (this.currentElectionStep.side.mode) {
 				case ESideMode.PICK:
-					return [...getCommands(ECommand.T), ...getCommands(ECommand.CT)];
+					return [
+						...getCommands(ECommand.T),
+						...getCommands(ECommand.CT),
+						...getCommands(ECommand.RESTART),
+					];
 			}
 		}
 		return [];
 	}
 
 	isValidTeam(who: EWho, team: Team) {
-		if (who === EWho.TEAM_1 && team.isTeam1) return true;
-		if (who === EWho.TEAM_2 && !team.isTeam1) return true;
+		if (who === EWho.TEAM_1 && team.isTeamA) return true;
+		if (who === EWho.TEAM_2 && !team.isTeamA) return true;
 		if (!this.teamX && !this.teamY) return true;
 		if (who === EWho.TEAM_X && this.teamX === team) return true;
 		if (who === EWho.TEAM_Y && this.teamY === team) return true;
@@ -448,6 +501,9 @@ export class Election {
 					break;
 				case ECommand.T:
 					this.tCommand(team);
+					break;
+				case ECommand.RESTART:
+					this.restartCommand(team);
 					break;
 			}
 		}
