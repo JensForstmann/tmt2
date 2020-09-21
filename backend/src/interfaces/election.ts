@@ -1,5 +1,5 @@
-import { Election } from '../match/election';
-import { Match } from '../match/match';
+import { Election } from '../election';
+import { Match } from '../match';
 import { ISerializedTeam } from './team';
 
 export enum EWho {

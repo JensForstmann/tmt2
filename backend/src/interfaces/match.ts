@@ -1,4 +1,4 @@
-import { Match } from '../match/match';
+import { Match } from '../match';
 import { ISerializedElection, SerializedElection } from './election';
 import { ISerializedGameServer, SerializedGameServer } from './gameServer';
 import { ISerializedMatchInitData } from './matchInitData';

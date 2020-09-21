@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Player } from './player';
-import { makeStringify } from '../utils';
+import { makeStringify } from './utils';
 import { Match } from './match';
-import { ETeamSides } from '../interfaces/team';
+import { ETeamSides } from './interfaces/team';
 
 export interface ITeamChange {
 	name?: string;

@@ -1,4 +1,4 @@
-import { Player } from '../match/player';
+import { Player } from '../player';
 
 export interface ISerializedPlayer {
 	steamId64: string;

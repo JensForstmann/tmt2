@@ -4,11 +4,11 @@ import { PlayerService } from './playerService';
 import { Player } from './player';
 import { commandMapping, ECommand } from './commands';
 import { MatchMap } from './matchMap';
-import { makeStringify, sleep } from '../utils';
+import { makeStringify, sleep } from './utils';
 import { v4 as uuidv4 } from 'uuid';
-import { ISerializedGameServer, SerializedGameServer } from '../interfaces/gameServer';
-import { ISerializedMatchInitData } from '../interfaces/matchInitData';
-import { ETeamSides, SerializedTeam } from '../interfaces/team';
+import { ISerializedGameServer, SerializedGameServer } from './interfaces/gameServer';
+import { ISerializedMatchInitData } from './interfaces/matchInitData';
+import { ETeamSides, SerializedTeam } from './interfaces/team';
 import { GameServer } from './gameServer';
 import {
 	EMatchSate,
@@ -16,9 +16,9 @@ import {
 	isISerializedMatch,
 	ISerializedMatch,
 	IMatchChange,
-} from '../interfaces/match';
-import { EMatchMapSate, SerializedMatchMap } from '../interfaces/matchMap';
-import { ElectionState, SerializedElection } from '../interfaces/election';
+} from './interfaces/match';
+import { EMatchMapSate, SerializedMatchMap } from './interfaces/matchMap';
+import { ElectionState, SerializedElection } from './interfaces/election';
 
 export const COMMAND_PREFIXES = ['.', '!'];
 const PERIODIC_MESSAGE_FREQUENCY = 30000;

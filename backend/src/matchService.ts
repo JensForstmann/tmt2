@@ -1,9 +1,9 @@
 import Datastore from 'nedb-promises';
 import { Match } from './match';
 import { v4 as uuidv4 } from 'uuid';
-import { ISerializedMatchInitData } from '../interfaces/matchInitData';
-import { EMatchSate, SerializedMatch } from '../interfaces/match';
-import { SerializedMatchMap } from '../interfaces/matchMap';
+import { ISerializedMatchInitData } from './interfaces/matchInitData';
+import { EMatchSate, SerializedMatch } from './interfaces/match';
+import { SerializedMatchMap } from './interfaces/matchMap';
 
 export const matchesDb = new Datastore({ filename: 'matches.db', autoload: true });
 

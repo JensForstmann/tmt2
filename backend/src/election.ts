@@ -2,7 +2,7 @@ import { Match, COMMAND_PREFIXES } from './match';
 import { Team } from './team';
 import { getCommands, ECommand } from './commands';
 import { MatchMap } from './matchMap';
-import { makeStringify } from '../utils';
+import { makeStringify } from './utils';
 import {
 	ElectionState,
 	EMapMode,
@@ -14,7 +14,7 @@ import {
 	ISerializedElection,
 	isSerializedElection,
 	SerializedElection,
-} from '../interfaces/election';
+} from './interfaces/election';
 
 export class Election {
 	match: Match;

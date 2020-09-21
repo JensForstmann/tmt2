@@ -1,5 +1,5 @@
-import { Match } from '../match/match';
-import { MatchMap } from '../match/matchMap';
+import { Match } from '../match';
+import { MatchMap } from '../matchMap';
 
 export enum EMatchMapSate {
 	PENDING = 'PENDING',

@@ -1,5 +1,5 @@
 import { Rcon } from 'rcon-client/lib';
-import { GameServer } from '../match/gameServer';
+import { GameServer } from '../gameServer';
 
 export interface ISerializedGameServer {
 	ip: string;

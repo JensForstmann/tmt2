@@ -2,9 +2,9 @@ import { Team } from './team';
 import { ECommand, getCommands } from './commands';
 import { Match, COMMAND_PREFIXES } from './match';
 import { Player } from './player';
-import { makeStringify, sleep } from '../utils';
-import { ETeamSides } from '../interfaces/team';
-import { EMatchMapSate, IMatchMapChange, ISerializedMatchMap } from '../interfaces/matchMap';
+import { makeStringify, sleep } from './utils';
+import { ETeamSides } from './interfaces/team';
+import { EMatchMapSate, IMatchMapChange, ISerializedMatchMap } from './interfaces/matchMap';
 
 export class MatchMap {
 	name: string;

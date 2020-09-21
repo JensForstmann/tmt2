@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as path from 'path';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
 import { EMapMode, ESideFixed, ESideMode } from './interfaces/election';
-import { MatchService } from './match/matchService';
+import { MatchService } from './matchService';
 
 const app = express();
 

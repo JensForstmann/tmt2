@@ -1,5 +1,5 @@
-import { Match } from '../match/match';
-import { Team } from '../match/team';
+import { Match } from '../match';
+import { Team } from '../team';
 import { ISerializedPlayer, SerializedPlayer } from './player';
 
 export enum ETeamSides {
