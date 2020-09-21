@@ -1,4 +1,3 @@
-import { Rcon } from 'rcon-client/lib';
 import { GameServer } from '../gameServer';
 
 export interface ISerializedGameServer {

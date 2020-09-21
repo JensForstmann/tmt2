@@ -1,6 +1,5 @@
 import { Election } from '../election';
 import { Match } from '../match';
-import { ISerializedTeam } from './team';
 
 export enum EWho {
 	TEAM_1 = 'TEAM_1',

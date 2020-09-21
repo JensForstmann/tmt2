@@ -18,7 +18,7 @@ import {
 	IMatchChange,
 } from './interfaces/match';
 import { EMatchMapSate, SerializedMatchMap } from './interfaces/matchMap';
-import { ElectionState, SerializedElection } from './interfaces/election';
+import { SerializedElection } from './interfaces/election';
 
 export const COMMAND_PREFIXES = ['.', '!'];
 const PERIODIC_MESSAGE_FREQUENCY = 30000;

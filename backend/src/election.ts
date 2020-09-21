@@ -13,7 +13,6 @@ import {
 	IElectionStep,
 	ISerializedElection,
 	isSerializedElection,
-	SerializedElection,
 } from './interfaces/election';
 
 export class Election {

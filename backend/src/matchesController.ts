@@ -3,12 +3,10 @@ import {
 	Controller,
 	Delete,
 	Get,
-	Path,
 	Post,
 	Put,
 	Query,
 	Route,
-	SuccessResponse,
 } from 'tsoa';
 import { ISerializedMatch, SerializedMatch, IMatchChange } from './interfaces/match';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
