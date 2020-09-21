@@ -48,6 +48,7 @@ export interface ISerializedMatch {
 }
 
 export class SerializedMatch implements ISerializedMatch {
+	isSerializedMatch: boolean = true;
 	id: string;
 	matchInitData: ISerializedMatchInitData;
 	state: EMatchSate;
@@ -93,4 +94,12 @@ export class SerializedMatch implements ISerializedMatch {
 	static fromNormalToSerialized(match: Match): ISerializedMatch {
 		return new this(match);
 	}
+}
+
+export function isISerializedMatch(serializedMatch: any): serializedMatch is ISerializedMatch {
+	return serializedMatch && serializedMatch.isSerializedMatch;
+}
+
+export function isSerializedMatch(serializedMatch: any): serializedMatch is SerializedMatch {
+	return serializedMatch && serializedMatch.isSerializedMatch;
 }

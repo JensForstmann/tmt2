@@ -12,6 +12,7 @@ import {
 	EWho,
 	IElectionStep,
 	ISerializedElection,
+	isSerializedElection,
 	SerializedElection,
 } from '../interfaces/election';
 
@@ -41,10 +42,8 @@ export class Election {
 	constructor(match: Match, serializedElection: ISerializedElection);
 	constructor(match: Match, serializedElection?: ISerializedElection) {
 		this.match = match;
-		this.currentElectionStep = this.match.matchInitData.electionSteps[0];
-		this.remainingMaps = [...this.match.matchInitData.mapPool].map((map) => map.toLowerCase());
-
-		if (serializedElection instanceof SerializedElection) {
+		if (isSerializedElection(serializedElection)) {
+			console.log("create election from serialized");
 			this.state = serializedElection.state;
 			this.currentStep = serializedElection.currentStep;
 			this.currentElectionStep = serializedElection.currentElectionStep;
@@ -59,6 +58,10 @@ export class Election {
 			this.map = serializedElection.map;
 			this.currentAgree = serializedElection.currentAgree;
 			this.currentRestart = serializedElection.currentRestart;
+		} else {
+			console.log("create election from match");
+			this.currentElectionStep = this.match.matchInitData.electionSteps[0];
+			this.remainingMaps = [...this.match.matchInitData.mapPool].map((map) => map.toLowerCase());
 		}
 	}
 
@@ -253,11 +256,13 @@ export class Election {
 	}
 
 	auto() {
-		if (this.currentSubStep === EStep.MAP) {
-			this.autoMap();
-		}
-		if (this.currentSubStep === 'SIDE') {
-			this.autoSide();
+		if (this.state !== ElectionState.FINISHED) {
+			if (this.currentSubStep === EStep.MAP) {
+				this.autoMap();
+			}
+			if (this.currentSubStep === 'SIDE') {
+				this.autoSide();
+			}
 		}
 	}
 

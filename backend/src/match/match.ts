@@ -11,14 +11,14 @@ import { ISerializedMatchInitData } from '../interfaces/matchInitData';
 import { ETeamSides, SerializedTeam } from '../interfaces/team';
 import { GameServer } from './gameServer';
 import {
-	ISerializedMatch,
-	SerializedMatch,
 	EMatchSate,
-	IMatchChange,
 	EMatchEndAction,
+	isISerializedMatch,
+	ISerializedMatch,
+	IMatchChange,
 } from '../interfaces/match';
 import { EMatchMapSate, SerializedMatchMap } from '../interfaces/matchMap';
-import { SerializedElection } from '../interfaces/election';
+import { ElectionState, SerializedElection } from '../interfaces/election';
 
 export const COMMAND_PREFIXES = ['.', '!'];
 const PERIODIC_MESSAGE_FREQUENCY = 30000;
@@ -47,10 +47,10 @@ export class Match {
 	constructor(id: string, matchInitData: ISerializedMatchInitData);
 	constructor(
 		id: string,
-		matchInitDataOrSerializedMatch: ISerializedMatchInitData | SerializedMatch
+		matchInitDataOrSerializedMatch: ISerializedMatchInitData | ISerializedMatch
 	) {
-		if (matchInitDataOrSerializedMatch instanceof SerializedMatch) {
-			console.log('create match from SerializedMatch');
+		if (isISerializedMatch(matchInitDataOrSerializedMatch)) {
+			console.log("create match from serialized");
 			const serializedMatch = matchInitDataOrSerializedMatch;
 			this.id = serializedMatch.id;
 			this.matchInitData = serializedMatch.matchInitData;
@@ -75,7 +75,7 @@ export class Match {
 			this.webhookUrl = serializedMatch.webhookUrl;
 			this.matchEndAction = serializedMatch.matchEndAction;
 		} else {
-			console.log('create match from matchInitData');
+			console.log("create match from normal (matchInitData)");
 			const matchInitData = matchInitDataOrSerializedMatch;
 			this.id = id;
 			this.matchInitData = matchInitData;
@@ -130,7 +130,7 @@ export class Match {
 		// delay parsing of incoming log lines (because we don't about the initial big batch)
 		sleep(2000).then(() => {
 			this.parseIncomingLogs = true;
-			this.say('TMT IS ONLINE');
+			this.say('ONLINE');
 			this.election.auto();
 			this.sayPeriodicMessage();
 		});

@@ -6,6 +6,7 @@ import axios from 'axios';
 import * as path from 'path';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
 import { EMapMode, ESideFixed, ESideMode } from './interfaces/election';
+import { MatchService } from './match/matchService';
 
 const app = express();
 
@@ -60,9 +61,10 @@ app.get('/swagger.json', (req, res) => {
 	res.sendFile(path.join(__dirname, 'swagger.json'));
 });
 
-app.listen(port, () => {
+app.listen(port, async () => {
 	console.log(`App listening on port ${port}`);
-	if (process.env.NODE_ENV === 'development') {
+	await MatchService.init();
+	if (MatchService.getAll().length === 0 && process.env.NODE_ENV === 'development') {
 		console.log('init match');
 		const matchInitData: ISerializedMatchInitData = {
 			mapPool: ['de_dust2'],

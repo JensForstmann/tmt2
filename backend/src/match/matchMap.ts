@@ -41,12 +41,15 @@ export class MatchMap {
 		this.match = match;
 		this.name = name;
 		if (typeof knifeOrStartAsCtOrSerializedMatchMap === 'boolean') {
+			console.log("create map from knifeForSide parameter")
 			this.knifeForSide = knifeOrStartAsCtOrSerializedMatchMap;
 			this.startAsCtTeam = this.match.teamA;
 		} else if (knifeOrStartAsCtOrSerializedMatchMap instanceof Team) {
+			console.log("create map from startAsCtTeam parameter")
 			this.knifeForSide = false;
 			this.startAsCtTeam = knifeOrStartAsCtOrSerializedMatchMap;
 		} else {
+			console.log("create map from serialized");
 			this.knifeForSide = knifeOrStartAsCtOrSerializedMatchMap.knifeForSide;
 			this.startAsCtTeam =
 				this.match.teamA.id === knifeOrStartAsCtOrSerializedMatchMap.startAsCtTeam

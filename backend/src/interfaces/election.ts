@@ -100,6 +100,7 @@ export interface ISerializedElection {
 }
 
 export class SerializedElection implements ISerializedElection {
+	isSerializedElection: boolean = true;
 	state: ElectionState;
 	currentStep: number;
 	currentElectionStep: IElectionStep;
@@ -137,4 +138,8 @@ export class SerializedElection implements ISerializedElection {
 	static fromNormalToSerialized(election: Election): ISerializedElection {
 		return new this(election);
 	}
+}
+
+export function isSerializedElection(serializedElection: any): serializedElection is SerializedElection {
+	return serializedElection && serializedElection.isSerializedElection;
 }
