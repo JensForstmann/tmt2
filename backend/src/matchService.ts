@@ -17,18 +17,7 @@ export class MatchService {
 		const match = new Match(id, matchInitData);
 		matches.set(id, match);
 
-		matchesDb.update(
-			{
-				_id: match.id,
-			},
-			{
-				_id: match.id,
-				...SerializedMatch.fromNormalToSerialized(match),
-			},
-			{
-				upsert: true,
-			}
-		);
+		MatchService.save(match);
 
 		await match.init();
 
@@ -54,6 +43,10 @@ export class MatchService {
 	}
 
 	static async init() {
+		setInterval(() => {
+			MatchService.saveAll();
+		}, 60000);
+
 		const matchesFromDb = await matchesDb.find({
 			state: {
 				$ne: EMatchSate.FINISHED	
@@ -64,8 +57,34 @@ export class MatchService {
 			console.log("load match from db");
 			const matchFromDb: SerializedMatch = matchesFromDb[i] as any;
 			const match = SerializedMatch.fromSerializedToNormal(matchFromDb);
-			await match.init();
 			matches.set(match.id, match);
+			await match.init();
+		}
+
+	}
+
+	static async save(match: Match) {
+		await matchesDb.update(
+			{
+				_id: match.id,
+			},
+			{
+				_id: match.id,
+				...SerializedMatch.fromNormalToSerialized(match),
+			},
+			{
+				upsert: true,
+			}
+		);
+	}
+
+	static async saveAll() {
+		console.log(`save all ${matches.size} matches to db`);
+
+		const allMatches = Array.from(matches.values());
+
+		for (let i = 0; i < allMatches.length; i++) {
+			await MatchService.save(allMatches[i]);
 		}
 	}
 }

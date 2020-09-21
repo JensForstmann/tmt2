@@ -27,21 +27,21 @@ const SAY_PREFIX = '[TMT] ';
 export class Match {
 	id: string;
 	readonly matchInitData: ISerializedMatchInitData;
-	state: EMatchSate = EMatchSate.ELECTION;
+	state: EMatchSate;
 	election: Election;
 	teamA: Team;
 	teamB: Team;
 	gameServer: GameServer;
-	logSecret: string = uuidv4();
-	parseIncomingLogs: boolean = false;
-	logCounter: number = 0;
-	logLineCounter: number = 0;
-	matchMaps: MatchMap[] = [];
-	currentMap: number = 0;
+	logSecret: string;
+	parseIncomingLogs: boolean;
+	logCounter: number;
+	logLineCounter: number;
+	matchMaps: MatchMap[];
+	currentMap: number;
 	periodicTimerId?: NodeJS.Timeout;
-	canClinch: boolean = true;
+	canClinch: boolean;
 	webhookUrl?: string;
-	matchEndAction: EMatchEndAction = EMatchEndAction.NONE;
+	matchEndAction: EMatchEndAction;
 
 	constructor(id: string, serializedMatch: ISerializedMatch);
 	constructor(id: string, matchInitData: ISerializedMatchInitData);
@@ -53,6 +53,7 @@ export class Match {
 			console.log("create match from serialized");
 			const serializedMatch = matchInitDataOrSerializedMatch;
 			this.id = serializedMatch.id;
+			this.state = serializedMatch.state;
 			this.matchInitData = serializedMatch.matchInitData;
 			this.election = SerializedElection.fromSerializedToNormal(
 				serializedMatch.election,
@@ -76,6 +77,15 @@ export class Match {
 			this.matchEndAction = serializedMatch.matchEndAction;
 		} else {
 			console.log("create match from normal (matchInitData)");
+			this.state = EMatchSate.ELECTION;
+			this.logSecret = uuidv4();
+			this.parseIncomingLogs = false;
+			this.logCounter = 0;
+			this.logLineCounter = 0;
+			this.matchMaps = [];
+			this.currentMap = 0;
+			this.canClinch = true;
+			this.matchEndAction = EMatchEndAction.NONE;
 			const matchInitData = matchInitDataOrSerializedMatch;
 			this.id = id;
 			this.matchInitData = matchInitData;
