@@ -139,6 +139,8 @@ export class SerializedElection implements ISerializedElection {
 	}
 }
 
-export function isSerializedElection(serializedElection: any): serializedElection is SerializedElection {
+export function isSerializedElection(
+	serializedElection: any
+): serializedElection is SerializedElection {
 	return serializedElection && serializedElection.isSerializedElection;
 }

@@ -1,10 +1,8 @@
-import Datastore from 'nedb-promises';
 import { Match } from './match';
 import { v4 as uuidv4 } from 'uuid';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
 import { EMatchSate, SerializedMatch } from './interfaces/match';
-
-export const matchesDb = new Datastore({ filename: 'matches.db', autoload: true });
+import { Storage } from './storage';
 
 const matches: Map<string, Match> = new Map();
 
@@ -47,34 +45,23 @@ export class MatchService {
 			MatchService.saveAll();
 		}, 60000);
 
-		const matchesFromDb = await matchesDb.find({
-			state: {
-				$ne: EMatchSate.FINISHED	
+		const matchesFromStorage = await Storage.list();
+		for (let i = 0; i < matchesFromStorage.length; i++) {
+			const matchId = matchesFromStorage[i];
+			const matchFromStorage: SerializedMatch = JSON.parse(await Storage.read(matchId));
+			if (matchFromStorage.state !== EMatchSate.FINISHED && matchId === matchFromStorage.id) {
+				console.log('load match from db', matchId);
+				const match = SerializedMatch.fromSerializedToNormal(matchFromStorage);
+				matches.set(match.id, match);
+				await match.init();
 			}
-		});
-
-		for (let i = 0; i < matchesFromDb.length; i++) {
-			console.log("load match from db");
-			const matchFromDb: SerializedMatch = matchesFromDb[i] as any;
-			const match = SerializedMatch.fromSerializedToNormal(matchFromDb);
-			matches.set(match.id, match);
-			await match.init();
 		}
-
 	}
 
 	static async save(match: Match) {
-		await matchesDb.update(
-			{
-				_id: match.id,
-			},
-			{
-				_id: match.id,
-				...SerializedMatch.fromNormalToSerialized(match),
-			},
-			{
-				upsert: true,
-			}
+		await Storage.write(
+			match.id,
+			JSON.stringify(SerializedMatch.fromNormalToSerialized(match))
 		);
 	}
 

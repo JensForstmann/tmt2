@@ -42,7 +42,7 @@ export class Election {
 	constructor(match: Match, serializedElection?: ISerializedElection) {
 		this.match = match;
 		if (isSerializedElection(serializedElection)) {
-			console.log("create election from serialized");
+			console.log('create election from serialized');
 			this.state = serializedElection.state;
 			this.currentStep = serializedElection.currentStep;
 			this.currentElectionStep = serializedElection.currentElectionStep;
@@ -58,9 +58,11 @@ export class Election {
 			this.currentAgree = serializedElection.currentAgree;
 			this.currentRestart = serializedElection.currentRestart;
 		} else {
-			console.log("create election from match");
+			console.log('create election from match');
 			this.currentElectionStep = this.match.matchInitData.electionSteps[0];
-			this.remainingMaps = [...this.match.matchInitData.mapPool].map((map) => map.toLowerCase());
+			this.remainingMaps = [...this.match.matchInitData.mapPool].map((map) =>
+				map.toLowerCase()
+			);
 		}
 	}
 

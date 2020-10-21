@@ -50,7 +50,7 @@ export class Match {
 		matchInitDataOrSerializedMatch: ISerializedMatchInitData | ISerializedMatch
 	) {
 		if (isISerializedMatch(matchInitDataOrSerializedMatch)) {
-			console.log("create match from serialized");
+			console.log('create match from serialized');
 			const serializedMatch = matchInitDataOrSerializedMatch;
 			this.id = serializedMatch.id;
 			this.state = serializedMatch.state;
@@ -76,7 +76,7 @@ export class Match {
 			this.webhookUrl = serializedMatch.webhookUrl;
 			this.matchEndAction = serializedMatch.matchEndAction;
 		} else {
-			console.log("create match from normal (matchInitData)");
+			console.log('create match from normal (matchInitData)');
 			this.state = EMatchSate.ELECTION;
 			this.logSecret = uuidv4();
 			this.parseIncomingLogs = false;

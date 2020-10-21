@@ -19,16 +19,12 @@
 						"format": "double"
 					}
 				},
-				"required": [
-					"name"
-				],
+				"required": ["name"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMapMode.FIXED": {
-				"enum": [
-					"FIXED"
-				],
+				"enum": ["FIXED"],
 				"type": "string"
 			},
 			"IFixedMap": {
@@ -40,32 +36,20 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"mode",
-					"fixed"
-				],
+				"required": ["mode", "fixed"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMapMode.BAN": {
-				"enum": [
-					"BAN"
-				],
+				"enum": ["BAN"],
 				"type": "string"
 			},
 			"EMapMode.PICK": {
-				"enum": [
-					"PICK"
-				],
+				"enum": ["PICK"],
 				"type": "string"
 			},
 			"EWho": {
-				"enum": [
-					"TEAM_A",
-					"TEAM_B",
-					"TEAM_X",
-					"TEAM_Y"
-				],
+				"enum": ["TEAM_A", "TEAM_B", "TEAM_X", "TEAM_Y"],
 				"type": "string"
 			},
 			"IBanOrPickMap": {
@@ -84,29 +68,20 @@
 						"$ref": "#/components/schemas/EWho"
 					}
 				},
-				"required": [
-					"mode",
-					"who"
-				],
+				"required": ["mode", "who"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMapMode.RANDOM_BAN": {
-				"enum": [
-					"RANDOM_BAN"
-				],
+				"enum": ["RANDOM_BAN"],
 				"type": "string"
 			},
 			"EMapMode.RANDOM_PICK": {
-				"enum": [
-					"RANDOM_PICK"
-				],
+				"enum": ["RANDOM_PICK"],
 				"type": "string"
 			},
 			"EMapMode.AGREE": {
-				"enum": [
-					"AGREE"
-				],
+				"enum": ["AGREE"],
 				"type": "string"
 			},
 			"IAgreeOrRandomMap": {
@@ -125,16 +100,12 @@
 						]
 					}
 				},
-				"required": [
-					"mode"
-				],
+				"required": ["mode"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"ESideMode.FIXED": {
-				"enum": [
-					"FIXED"
-				],
+				"enum": ["FIXED"],
 				"type": "string"
 			},
 			"ESideFixed": {
@@ -159,17 +130,12 @@
 						"$ref": "#/components/schemas/ESideFixed"
 					}
 				},
-				"required": [
-					"mode",
-					"fixed"
-				],
+				"required": ["mode", "fixed"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"ESideMode.PICK": {
-				"enum": [
-					"PICK"
-				],
+				"enum": ["PICK"],
 				"type": "string"
 			},
 			"IPickSide": {
@@ -181,23 +147,16 @@
 						"$ref": "#/components/schemas/EWho"
 					}
 				},
-				"required": [
-					"mode",
-					"who"
-				],
+				"required": ["mode", "who"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"ESideMode.RANDOM": {
-				"enum": [
-					"RANDOM"
-				],
+				"enum": ["RANDOM"],
 				"type": "string"
 			},
 			"ESideMode.KNIFE": {
-				"enum": [
-					"KNIFE"
-				],
+				"enum": ["KNIFE"],
 				"type": "string"
 			},
 			"IRandomOrKnifeSide": {
@@ -213,9 +172,7 @@
 						]
 					}
 				},
-				"required": [
-					"mode"
-				],
+				"required": ["mode"],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -248,10 +205,7 @@
 						]
 					}
 				},
-				"required": [
-					"map",
-					"side"
-				],
+				"required": ["map", "side"],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -268,20 +222,12 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"ip",
-					"port",
-					"rconPassword"
-				],
+				"required": ["ip", "port", "rconPassword"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMatchEndAction": {
-				"enum": [
-					"KICK_ALL",
-					"QUIT_SERVER",
-					"NONE"
-				],
+				"enum": ["KICK_ALL", "QUIT_SERVER", "NONE"],
 				"type": "string"
 			},
 			"ISerializedMatchInitData": {
@@ -351,37 +297,20 @@
 						"$ref": "#/components/schemas/EMatchEndAction"
 					}
 				},
-				"required": [
-					"mapPool",
-					"teamA",
-					"teamB",
-					"electionSteps",
-					"gameServer"
-				],
+				"required": ["mapPool", "teamA", "teamB", "electionSteps", "gameServer"],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"EMatchSate": {
-				"enum": [
-					"ELECTION",
-					"MATCH_MAP",
-					"FINISHED"
-				],
+				"enum": ["ELECTION", "MATCH_MAP", "FINISHED"],
 				"type": "string"
 			},
 			"ElectionState": {
-				"enum": [
-					"NOT_STARTED",
-					"IN_PROGRESS",
-					"FINISHED"
-				],
+				"enum": ["NOT_STARTED", "IN_PROGRESS", "FINISHED"],
 				"type": "string"
 			},
 			"EStep": {
-				"enum": [
-					"MAP",
-					"SIDE"
-				],
+				"enum": ["MAP", "SIDE"],
 				"type": "string"
 			},
 			"ISerializedElection": {
@@ -425,10 +354,7 @@
 								"nullable": true
 							}
 						},
-						"required": [
-							"teamB",
-							"teamA"
-						],
+						"required": ["teamB", "teamA"],
 						"type": "object"
 					},
 					"currentRestart": {
@@ -440,10 +366,7 @@
 								"type": "boolean"
 							}
 						},
-						"required": [
-							"teamB",
-							"teamA"
-						],
+						"required": ["teamB", "teamA"],
 						"type": "object"
 					}
 				},
@@ -461,10 +384,7 @@
 				"additionalProperties": false
 			},
 			"ETeamSides": {
-				"enum": [
-					"CT",
-					"T"
-				],
+				"enum": ["CT", "T"],
 				"type": "string"
 			},
 			"ISerializedPlayer": {
@@ -476,10 +396,7 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"steamId64",
-					"name"
-				],
+				"required": ["steamId64", "name"],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -568,10 +485,7 @@
 								"type": "boolean"
 							}
 						},
-						"required": [
-							"teamB",
-							"teamA"
-						],
+						"required": ["teamB", "teamA"],
 						"type": "object"
 					},
 					"knifeRestart": {
@@ -583,10 +497,7 @@
 								"type": "boolean"
 							}
 						},
-						"required": [
-							"teamB",
-							"teamA"
-						],
+						"required": ["teamB", "teamA"],
 						"type": "object"
 					},
 					"score": {
@@ -600,10 +511,7 @@
 								"format": "double"
 							}
 						},
-						"required": [
-							"teamB",
-							"teamA"
-						],
+						"required": ["teamB", "teamA"],
 						"type": "object"
 					},
 					"overTimeEnabled": {
@@ -772,9 +680,7 @@
 											"type": "string"
 										}
 									},
-									"required": [
-										"id"
-									],
+									"required": ["id"],
 									"type": "object"
 								}
 							}
@@ -931,10 +837,7 @@
 													"type": "array"
 												}
 											},
-											"required": [
-												"total",
-												"latestFiles"
-											],
+											"required": ["total", "latestFiles"],
 											"type": "object"
 										},
 										{}
