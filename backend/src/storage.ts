@@ -7,6 +7,12 @@ const STORAGE_PREFIX = 'match_';
 const STORAGE_SUFFIX = '.json';
 
 export class Storage {
+	static init() {
+		fs.mkdirSync(STORAGE_FOLDER, {
+			recursive: true,
+		});
+	}
+
 	private static getPath(id: string) {
 		return path.join(STORAGE_FOLDER, STORAGE_PREFIX + id + STORAGE_SUFFIX);
 	}
@@ -26,7 +32,10 @@ export class Storage {
 				return fileName.startsWith(STORAGE_PREFIX) && fileName.endsWith(STORAGE_SUFFIX);
 			})
 			.map((fileName) => {
-				return fileName.substring(STORAGE_PREFIX.length, -STORAGE_SUFFIX.length);
+				return fileName.substring(
+					STORAGE_PREFIX.length,
+					fileName.length - STORAGE_SUFFIX.length
+				);
 			});
 	}
 }

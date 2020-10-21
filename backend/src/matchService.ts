@@ -46,6 +46,7 @@ export class MatchService {
 		}, 60000);
 
 		const matchesFromStorage = await Storage.list();
+		console.log('TCL: MatchService -> init -> matchesFromStorage', matchesFromStorage);
 		for (let i = 0; i < matchesFromStorage.length; i++) {
 			const matchId = matchesFromStorage[i];
 			const matchFromStorage: SerializedMatch = JSON.parse(await Storage.read(matchId));
@@ -66,7 +67,7 @@ export class MatchService {
 	}
 
 	static async saveAll() {
-		console.log(`save all ${matches.size} matches to db`);
+		console.log(`save ${matches.size} match${matches.size === 1 ? '' : 'es'}`);
 
 		const allMatches = Array.from(matches.values());
 

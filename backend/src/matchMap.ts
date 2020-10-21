@@ -283,6 +283,7 @@ export class MatchMap {
 		if (this.state === EMatchMapSate.IN_PROGRESS || this.state === EMatchMapSate.PAUSED) {
 			this.state = EMatchMapSate.FINISHED;
 			this.match.say('MAP FINISHED');
+			this.match.webhook.onMapEnd(this.score.teamA, this.score.teamB);
 		}
 	}
 
@@ -295,6 +296,7 @@ export class MatchMap {
 	}
 
 	getWinner() {
+		// TODO: Fix: Draw will return falsy winner
 		return this.score.teamA > this.score.teamB ? this.match.teamA : this.match.teamB;
 	}
 
@@ -323,6 +325,7 @@ export class MatchMap {
 				this.state === EMatchMapSate.IN_PROGRESS ||
 				this.state === EMatchMapSate.PAUSED // state could be set to pause during round
 			) {
+				this.match.webhook.onRoundEnd(this.score.teamA, this.score.teamB);
 				this.match.say(
 					`${winningTeam.toIngameString()} SCORED (${
 						winningTeam.isTeamA ? this.score.teamA : this.score.teamB

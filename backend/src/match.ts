@@ -19,6 +19,7 @@ import {
 } from './interfaces/match';
 import { EMatchMapSate, SerializedMatchMap } from './interfaces/matchMap';
 import { SerializedElection } from './interfaces/election';
+import { Webhook } from './webhook';
 
 export const COMMAND_PREFIXES = ['.', '!'];
 const PERIODIC_MESSAGE_FREQUENCY = 30000;
@@ -42,6 +43,7 @@ export class Match {
 	canClinch: boolean;
 	webhookUrl?: string;
 	matchEndAction: EMatchEndAction;
+	webhook: Webhook = new Webhook(this);
 
 	constructor(id: string, serializedMatch: ISerializedMatch);
 	constructor(id: string, matchInitData: ISerializedMatchInitData);
@@ -147,6 +149,7 @@ export class Match {
 	}
 
 	registerLogAddress() {
+		// TODO: make this dynamic
 		this.gameServer.rcon(
 			`logaddress_add_http "http://localhost:8080/api/matches/${this.id}/server/log/${this.logSecret}"`
 		);
@@ -385,7 +388,10 @@ export class Match {
 	}
 
 	async onPlayerSay(player: Player, message: string, isTeamChat: boolean, teamString: string) {
+		console.log('TCL: Match -> onPlayerSay -> onPlayerSay');
 		message = message.trim();
+
+		this.webhook.onPlayerSay(player, message, isTeamChat);
 
 		if (COMMAND_PREFIXES.includes(message[0])) {
 			message = message.substr(1);

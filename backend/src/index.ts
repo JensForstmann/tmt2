@@ -7,6 +7,9 @@ import * as path from 'path';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
 import { EMapMode, ESideFixed, ESideMode } from './interfaces/election';
 import { MatchService } from './matchService';
+import { Storage } from './storage';
+
+Storage.init();
 
 const app = express();
 
@@ -125,6 +128,7 @@ app.listen(port, async () => {
 				],
 				end: ['say end rcon loaded'],
 			},
+			webhookUrl: 'http://127.0.0.1:1337',
 		};
 		axios.post(`http://localhost:${port}/api/matches`, matchInitData).catch((err) => {
 			err && err.response && err.response.data
