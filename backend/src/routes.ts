@@ -45,7 +45,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "EWho": {
         "dataType": "refEnum",
-        "enums": ["TEAM_1", "TEAM_2", "TEAM_X", "TEAM_Y"],
+        "enums": ["TEAM_A", "TEAM_B", "TEAM_X", "TEAM_Y"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IBanOrPickMap": {
@@ -87,7 +87,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ESideFixed": {
         "dataType": "refEnum",
-        "enums": ["TEAM_1_CT", "TEAM_1_T", "TEAM_2_CT", "TEAM_2_T", "TEAM_X_CT", "TEAM_X_T", "TEAM_Y_CT", "TEAM_Y_T"],
+        "enums": ["TEAM_A_CT", "TEAM_A_T", "TEAM_B_CT", "TEAM_B_T", "TEAM_X_CT", "TEAM_X_T", "TEAM_Y_CT", "TEAM_Y_T"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IFixedSide": {

@@ -2,17 +2,17 @@ import { Election } from '../election';
 import { Match } from '../match';
 
 export enum EWho {
-	TEAM_1 = 'TEAM_1',
-	TEAM_2 = 'TEAM_2',
+	TEAM_A = 'TEAM_A',
+	TEAM_B = 'TEAM_B',
 	TEAM_X = 'TEAM_X',
 	TEAM_Y = 'TEAM_Y',
 }
 
 export enum ESideFixed {
-	TEAM_1_CT = 'TEAM_1_CT',
-	TEAM_1_T = 'TEAM_1_T',
-	TEAM_2_CT = 'TEAM_2_CT',
-	TEAM_2_T = 'TEAM_2_T',
+	TEAM_A_CT = 'TEAM_A_CT',
+	TEAM_A_T = 'TEAM_A_T',
+	TEAM_B_CT = 'TEAM_B_CT',
+	TEAM_B_T = 'TEAM_B_T',
 	TEAM_X_CT = 'TEAM_X_CT',
 	TEAM_X_T = 'TEAM_X_T',
 	TEAM_Y_CT = 'TEAM_Y_CT',

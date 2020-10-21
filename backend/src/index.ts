@@ -82,7 +82,7 @@ app.listen(port, async () => {
 					},
 					side: {
 						mode: ESideMode.FIXED,
-						fixed: ESideFixed.TEAM_1_CT,
+						fixed: ESideFixed.TEAM_A_CT,
 					},
 				},
 				{
@@ -92,7 +92,7 @@ app.listen(port, async () => {
 					},
 					side: {
 						mode: ESideMode.FIXED,
-						fixed: ESideFixed.TEAM_1_T,
+						fixed: ESideFixed.TEAM_A_T,
 					},
 				},
 				{

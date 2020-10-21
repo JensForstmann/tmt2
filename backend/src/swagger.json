@@ -61,8 +61,8 @@
 			},
 			"EWho": {
 				"enum": [
-					"TEAM_1",
-					"TEAM_2",
+					"TEAM_A",
+					"TEAM_B",
 					"TEAM_X",
 					"TEAM_Y"
 				],
@@ -139,10 +139,10 @@
 			},
 			"ESideFixed": {
 				"enum": [
-					"TEAM_1_CT",
-					"TEAM_1_T",
-					"TEAM_2_CT",
-					"TEAM_2_T",
+					"TEAM_A_CT",
+					"TEAM_A_T",
+					"TEAM_B_CT",
+					"TEAM_B_T",
 					"TEAM_X_CT",
 					"TEAM_X_T",
 					"TEAM_Y_CT",

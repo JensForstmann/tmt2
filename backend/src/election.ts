@@ -295,7 +295,7 @@ export class Election {
 	autoSide() {
 		if (this.currentElectionStep.side.mode === ESideMode.FIXED) {
 			if (
-				[ESideFixed.TEAM_1_CT, ESideFixed.TEAM_2_T].includes(
+				[ESideFixed.TEAM_A_CT, ESideFixed.TEAM_B_T].includes(
 					this.currentElectionStep.side.fixed
 				)
 			) {
@@ -310,7 +310,7 @@ export class Election {
 			}
 
 			if (
-				[ESideFixed.TEAM_1_T, ESideFixed.TEAM_2_CT].includes(
+				[ESideFixed.TEAM_A_T, ESideFixed.TEAM_B_CT].includes(
 					this.currentElectionStep.side.fixed
 				)
 			) {
@@ -407,8 +407,8 @@ export class Election {
 	}
 
 	isValidTeam(who: EWho, team: Team) {
-		if (who === EWho.TEAM_1 && team.isTeamA) return true;
-		if (who === EWho.TEAM_2 && !team.isTeamA) return true;
+		if (who === EWho.TEAM_A && team.isTeamA) return true;
+		if (who === EWho.TEAM_B && !team.isTeamA) return true;
 		if (!this.teamX && !this.teamY) return true;
 		if (who === EWho.TEAM_X && this.teamX === team) return true;
 		if (who === EWho.TEAM_Y && this.teamY === team) return true;
