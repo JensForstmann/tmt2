@@ -58,7 +58,9 @@ const errorRequestHandler: ErrorRequestHandler = (err, req, res, next) => {
 
 app.use(errorRequestHandler);
 
-const port = process.env.PORT || 8080;
+// TODO: check all process.env vars
+
+const port = process.env.TMT_PORT || 8080;
 
 app.get('/swagger.json', (req, res) => {
 	res.sendFile(path.join(__dirname, 'swagger.json'));

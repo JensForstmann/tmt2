@@ -3,7 +3,6 @@ import { SerializedPlayer } from './interfaces/player';
 import { EWebhookType, IChatWebhook, IRoundEndWebhook, IWebhook } from './interfaces/webhook';
 import { Match } from './match';
 import { Player } from './player';
-import { Team } from './team';
 
 export class Webhook {
 	match: Match;

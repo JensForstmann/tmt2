@@ -5,3 +5,5 @@
 - pause in last round: don't accept round/match end
 - Dockerfile
 - remove hardcoded localhosts
+- auth
+    - auth per match?

@@ -1,10 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-// TODO: make those constants configurable
-const STORAGE_FOLDER = 'storage';
-const STORAGE_PREFIX = 'match_';
-const STORAGE_SUFFIX = '.json';
+const STORAGE_FOLDER = process.env.TMT_STORAGE_FOLDER || 'storage';
+const STORAGE_PREFIX = process.env.TMT_STORAGE_FOLDER || 'match_';
+const STORAGE_SUFFIX = process.env.TMT_STORAGE_FOLDER || '.json';
 
 export class Storage {
 	static init() {

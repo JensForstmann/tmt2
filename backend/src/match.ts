@@ -125,7 +125,7 @@ export class Match {
 
 	async init() {
 		await this.gameServer.setupRconConnection();
-		// TODO add needed log options so that TMT can work
+		// TODO add needed log options so that TMT can work (mp_logdetail xy, ...)
 
 		this.registerLogAddress();
 
@@ -149,10 +149,8 @@ export class Match {
 	}
 
 	registerLogAddress() {
-		// TODO: make this dynamic
-		this.gameServer.rcon(
-			`logaddress_add_http "http://localhost:8080/api/matches/${this.id}/server/log/${this.logSecret}"`
-		);
+		const logAddress = `${process.env.TMT_LOG_ADDRESS}/api/matches/${this.id}/server/log/${this.logSecret}`;
+		this.gameServer.rcon(`logaddress_add_http "${logAddress}"`);
 	}
 
 	async setTeamNames() {

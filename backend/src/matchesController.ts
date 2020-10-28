@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Put, Query, Route } from 'tsoa';
+import { Body, Controller, Delete, Get, Post, Put, Query, Route, SuccessResponse } from 'tsoa';
 import { ISerializedMatch, SerializedMatch, IMatchChange } from './interfaces/match';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
 import { MatchService } from './matchService';
@@ -6,6 +6,7 @@ import { MatchService } from './matchService';
 @Route('/api/matches')
 export class MatchesController extends Controller {
 	@Post()
+	@SuccessResponse(201)
 	async createMatch(@Body() requestBody: ISerializedMatchInitData): Promise<{ id: string }> {
 		const id = await MatchService.create(requestBody);
 		this.setHeader('Location', `/api/matches/${id}`);
