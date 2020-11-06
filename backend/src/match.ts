@@ -320,6 +320,7 @@ export class Match {
 	async onMatchEnd() {
 		this.state = EMatchSate.FINISHED;
 		this.loadEndConfig();
+		this.webhook.onMatchEnd();
 		await sleep(20000);
 		switch (this.matchEndAction) {
 			case EMatchEndAction.KICK_ALL:

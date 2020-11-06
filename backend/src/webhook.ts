@@ -1,6 +1,13 @@
 import axios from 'axios';
 import { SerializedPlayer } from './interfaces/player';
-import { EWebhookType, IChatWebhook, IRoundEndWebhook, IWebhook } from './interfaces/webhook';
+import {
+	EWebhookType,
+	IChatWebhook,
+	IMapEndWebhook,
+	IMatchEndWebhook,
+	IRoundEndWebhook,
+	IWebhook,
+} from './interfaces/webhook';
 import { Match } from './match';
 import { Player } from './player';
 
@@ -28,9 +35,23 @@ export class Webhook {
 		this.send(payload);
 	}
 
-	onMapEnd(scoreTeamA: number, scoreTeamB: number) {}
+	onMapEnd(scoreTeamA: number, scoreTeamB: number) {
+		const payload: IMapEndWebhook = {
+			...this.getWebhook(),
+			type: EWebhookType.MAP_END,
+			scoreTeamA: scoreTeamA,
+			scoreTeamB: scoreTeamB,
+		};
+		this.send(payload);
+	}
 
-	onMatchEnd() {}
+	onMatchEnd() {
+		const payload: IMatchEndWebhook = {
+			...this.getWebhook(),
+			type: EWebhookType.MATCH_END,
+		};
+		this.send(payload);
+	}
 
 	onPlayerSay(player: Player, message: string, isTeamChat: boolean) {
 		const payload: IChatWebhook = {

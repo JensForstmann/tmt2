@@ -29,3 +29,13 @@ export interface IRoundEndWebhook extends IWebhook {
 	scoreTeamA: number;
 	scoreTeamB: number;
 }
+
+export interface IMapEndWebhook extends IWebhook {
+	type: EWebhookType.MAP_END;
+	scoreTeamA: number;
+	scoreTeamB: number;
+}
+
+export interface IMatchEndWebhook extends IWebhook {
+	type: EWebhookType.MATCH_END;
+}
