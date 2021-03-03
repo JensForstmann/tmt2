@@ -6,7 +6,6 @@
 - auth
     - auth per match?
 - get match by remoteId
-- include score in IMatchEndWebhook
 - webhook after all maps are set (after map election)
 - on init:
     - timeout on rcon connect

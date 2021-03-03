@@ -38,4 +38,6 @@ export interface IMapEndWebhook extends IWebhook {
 
 export interface IMatchEndWebhook extends IWebhook {
 	type: EWebhookType.MATCH_END;
+	wonMapsTeamA: number;
+	wonMapsTeamB: number;
 }
