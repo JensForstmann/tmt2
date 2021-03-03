@@ -149,6 +149,7 @@ export class Match {
 	}
 
 	registerLogAddress() {
+		// TODO: check if TMT_LOG_ADDRESS is set (maybe at startup of tmt)
 		const logAddress = `${process.env.TMT_LOG_ADDRESS}/api/matches/${this.id}/server/log/${this.logSecret}`;
 		this.gameServer.rcon(`logaddress_add_http "${logAddress}"`);
 	}
