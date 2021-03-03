@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const STORAGE_FOLDER = process.env.TMT_STORAGE_FOLDER || 'storage';
-const STORAGE_PREFIX = process.env.TMT_STORAGE_FOLDER || 'match_';
-const STORAGE_SUFFIX = process.env.TMT_STORAGE_FOLDER || '.json';
+const STORAGE_PREFIX = process.env.TMT_STORAGE_PREFIX || 'match_';
+const STORAGE_SUFFIX = process.env.TMT_STORAGE_SUFFIX || '.json';
 
 export class Storage {
 	static init() {
