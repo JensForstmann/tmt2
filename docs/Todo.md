@@ -6,7 +6,6 @@
 - auth
     - auth per match?
 - get match by remoteId
-- webhook after all maps are set (after map election)
 - on init:
     - timeout on rcon connect
     - on error httpCode > 500
