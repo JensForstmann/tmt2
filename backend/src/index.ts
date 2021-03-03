@@ -6,6 +6,7 @@ import axios from 'axios';
 import * as path from 'path';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
 import { EMapMode, ESideFixed, ESideMode } from './interfaces/election';
+import { EMatchEndAction } from './interfaces/match';
 import { MatchService } from './matchService';
 import { Storage } from './storage';
 
@@ -118,7 +119,7 @@ app.listen(port, async () => {
 			rconCommands: {
 				init: ['mp_autokick 0', 'say init rcon loaded'],
 				knife: [
-					'exec esl5on5bl.cfg',
+					'exec tmt2test.cfg',
 					'mp_give_player_c4 0; mp_startmoney 0; mp_ct_default_secondary ""; mp_t_default_secondary ""',
 					'mp_roundtime 60; mp_roundtime_defuse 0; mp_roundtime_deployment 0; mp_roundtime_hostage 0',
 					'say "> Special Knife Config Loaded <"',
@@ -126,11 +127,12 @@ app.listen(port, async () => {
 				match: [
 					'mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary "weapon_hkp2000"; mp_t_default_secondary "weapon_glock"',
 					'mp_roundtime 1.92; mp_roundtime_defuse 1.92; mp_roundtime_deployment 0; mp_roundtime_hostage 0',
-					'exec esl5on5bl.cfg',
+					'exec tmt2test.cfg',
 				],
 				end: ['say end rcon loaded'],
 			},
 			webhookUrl: 'http://127.0.0.1:1337',
+			matchEndAction: EMatchEndAction.KICK_ALL,
 		};
 		axios.post(`http://localhost:${port}/api/matches`, matchInitData).catch((err) => {
 			err && err.response && err.response.data
