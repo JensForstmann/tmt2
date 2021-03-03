@@ -449,7 +449,7 @@ export function RegisterRoutes(app: express.Router) {
 		const controller = new MatchesController();
 
 		const promise = controller.createMatch.apply(controller, validatedArgs as any);
-		promiseHandler(controller, promise, response, next);
+		promiseHandler(controller, promise, response, undefined, next);
 	});
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.get('/api/matches/:id', function (request: any, response: any, next: any) {
@@ -469,7 +469,7 @@ export function RegisterRoutes(app: express.Router) {
 		const controller = new MatchesController();
 
 		const promise = controller.getMatch.apply(controller, validatedArgs as any);
-		promiseHandler(controller, promise, response, next);
+		promiseHandler(controller, promise, response, undefined, next);
 	});
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.get(
@@ -492,7 +492,7 @@ export function RegisterRoutes(app: express.Router) {
 			const controller = new MatchesController();
 
 			const promise = controller.getRoundBackups.apply(controller, validatedArgs as any);
-			promiseHandler(controller, promise, response, next);
+			promiseHandler(controller, promise, response, undefined, next);
 		}
 	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -516,7 +516,7 @@ export function RegisterRoutes(app: express.Router) {
 			const controller = new MatchesController();
 
 			const promise = controller.loadRoundBackup.apply(controller, validatedArgs as any);
-			promiseHandler(controller, promise, response, next);
+			promiseHandler(controller, promise, response, undefined, next);
 		}
 	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -538,7 +538,7 @@ export function RegisterRoutes(app: express.Router) {
 		const controller = new MatchesController();
 
 		const promise = controller.changeMatch.apply(controller, validatedArgs as any);
-		promiseHandler(controller, promise, response, next);
+		promiseHandler(controller, promise, response, undefined, next);
 	});
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.delete('/api/matches/:id', function (request: any, response: any, next: any) {
@@ -558,7 +558,7 @@ export function RegisterRoutes(app: express.Router) {
 		const controller = new MatchesController();
 
 		const promise = controller.deleteMatch.apply(controller, validatedArgs as any);
-		promiseHandler(controller, promise, response, next);
+		promiseHandler(controller, promise, response, undefined, next);
 	});
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.get('/api/matches', function (request: any, response: any, next: any) {
@@ -576,7 +576,7 @@ export function RegisterRoutes(app: express.Router) {
 		const controller = new MatchesController();
 
 		const promise = controller.getAllMatches.apply(controller, validatedArgs as any);
-		promiseHandler(controller, promise, response, next);
+		promiseHandler(controller, promise, response, undefined, next);
 	});
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.post(
@@ -600,7 +600,7 @@ export function RegisterRoutes(app: express.Router) {
 			const controller = new MatchesController();
 
 			const promise = controller.receiveLog.apply(controller, validatedArgs as any);
-			promiseHandler(controller, promise, response, next);
+			promiseHandler(controller, promise, response, undefined, next);
 		}
 	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -613,10 +613,16 @@ export function RegisterRoutes(app: express.Router) {
 		return 'getHeaders' in object && 'getStatus' in object && 'setStatus' in object;
 	}
 
-	function promiseHandler(controllerObj: any, promise: any, response: any, next: any) {
+	function promiseHandler(
+		controllerObj: any,
+		promise: any,
+		response: any,
+		successStatus: any,
+		next: any
+	) {
 		return Promise.resolve(promise)
 			.then((data: any) => {
-				let statusCode;
+				let statusCode = successStatus;
 				let headers;
 				if (isController(controllerObj)) {
 					headers = controllerObj.getHeaders();
@@ -643,8 +649,7 @@ export function RegisterRoutes(app: express.Router) {
 			typeof data._read === 'function'
 		) {
 			data.pipe(response);
-		} else if (data || data === false) {
-			// === false allows boolean result
+		} else if (data !== null && data !== undefined) {
 			response.status(statusCode || 200).json(data);
 		} else {
 			response.status(statusCode || 204).end();

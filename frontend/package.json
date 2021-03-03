@@ -13,17 +13,17 @@
   "dependencies": {
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "react-scripts": "^4.0.1",
-    "swagger-ui": "^3.40.0",
-    "swagger-ui-react": "^3.40.0"
+    "react-scripts": "^4.0.3",
+    "swagger-ui": "^3.44.0",
+    "swagger-ui-react": "^3.44.0"
   },
   "devDependencies": {
-    "@types/node": "^14.14.22",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
+    "@types/node": "^14.14.31",
+    "@types/react": "^17.0.2",
+    "@types/react-dom": "^17.0.1",
     "@types/swagger-ui-react": "^3.23.3",
     "prettier": "^2.1.2",
-    "typescript": "~4.1.3"
+    "typescript": "~4.2.2"
   },
   "eslintConfig": {
     "extends": "react-app"
