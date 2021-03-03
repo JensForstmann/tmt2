@@ -50,11 +50,11 @@ export class Webhook {
 			...this.getWebhook(),
 			type: EWebhookType.MATCH_END,
 			wonMapsTeamA: this.match.matchMaps.reduce(
-				(pv, cv) => (pv + cv.score.teamA > cv.score.teamB ? 1 : 0),
+				(pv, cv) => pv + (cv.score.teamA > cv.score.teamB ? 1 : 0),
 				0
 			),
 			wonMapsTeamB: this.match.matchMaps.reduce(
-				(pv, cv) => (pv + cv.score.teamB > cv.score.teamA ? 1 : 0),
+				(pv, cv) => pv + (cv.score.teamB > cv.score.teamA ? 1 : 0),
 				0
 			),
 		};
