@@ -16,23 +16,17 @@ full examples
 
 ## Run directly
 
-install dependencies with npm OR yarn
+install dependencies with npm
 
     npm install
-    # or
-    yarn install
 
 build
 
     npm run build
-    # or
-    yarn run build
 
 start
 
     npm start
-    # or
-    yarn start
 
 ## Configuration
 

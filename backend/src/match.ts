@@ -274,7 +274,8 @@ export class Match {
 			this.onMapEnd();
 		}
 
-		const roundEndPattern = /Team "(CT|TERRORIST)" triggered "([a-zA-Z_]+)" \(CT "(\d+)"\) \(T "(\d+)"\)/;
+		const roundEndPattern =
+			/Team "(CT|TERRORIST)" triggered "([a-zA-Z_]+)" \(CT "(\d+)"\) \(T "(\d+)"\)/;
 		const roundEndMatch = line.match(
 			new RegExp(dateTimePattern.source + roundEndPattern.source)
 		);
@@ -297,9 +298,7 @@ export class Match {
 			this.say(`${this.currentMap + 1}. MAP FINISHED (DRAW)`);
 		} else {
 			this.say(
-				`${
-					this.currentMap + 1
-				}. MAP FINISHED (WINNER: ${this.getCurrentMatchMap()
+				`${this.currentMap + 1}. MAP FINISHED (WINNER: ${this.getCurrentMatchMap()
 					?.getWinner()
 					.toIngameString()})`
 			);

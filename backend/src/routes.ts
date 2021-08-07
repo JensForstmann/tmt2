@@ -218,7 +218,7 @@ const models: TsoaRoute.Models = {
 			teamB: { ref: 'IMatchInitTeamData', required: true },
 			electionSteps: {
 				dataType: 'array',
-				array: { ref: 'IElectionStep' },
+				array: { dataType: 'refObject', ref: 'IElectionStep' },
 				required: true,
 				validators: { minItems: { value: 1 } },
 			},
@@ -315,7 +315,11 @@ const models: TsoaRoute.Models = {
 			currentSide: { ref: 'ETeamSides', required: true },
 			isTeamA: { dataType: 'boolean', required: true },
 			isTeamB: { dataType: 'boolean', required: true },
-			players: { dataType: 'array', array: { ref: 'ISerializedPlayer' }, required: true },
+			players: {
+				dataType: 'array',
+				array: { dataType: 'refObject', ref: 'ISerializedPlayer' },
+				required: true,
+			},
 			name: { dataType: 'string', required: true },
 			advantage: { dataType: 'double', required: true },
 		},
@@ -390,7 +394,11 @@ const models: TsoaRoute.Models = {
 			parseIncomingLogs: { dataType: 'boolean', required: true },
 			logCounter: { dataType: 'double', required: true },
 			logLineCounter: { dataType: 'double', required: true },
-			matchMaps: { dataType: 'array', array: { ref: 'ISerializedMatchMap' }, required: true },
+			matchMaps: {
+				dataType: 'array',
+				array: { dataType: 'refObject', ref: 'ISerializedMatchMap' },
+				required: true,
+			},
 			currentMap: { dataType: 'double', required: true },
 			canClinch: { dataType: 'boolean', required: true },
 			webhookUrl: { dataType: 'string' },
@@ -427,54 +435,63 @@ export function RegisterRoutes(app: express.Router) {
 	//  NOTE: If you do not see routes for all of your controllers in this file, then you might not have informed tsoa of where to look
 	//      Please look into the "controllerPathGlobs" config option described in the readme: https://github.com/lukeautry/tsoa
 	// ###########################################################################################################
-	app.post('/api/matches', function (request: any, response: any, next: any) {
-		const args = {
-			requestBody: {
-				in: 'body',
-				name: 'requestBody',
-				required: true,
-				ref: 'ISerializedMatchInitData',
-			},
-		};
+	app.post(
+		'/api/matches',
 
-		// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+		function MatchesController_createMatch(request: any, response: any, next: any) {
+			const args = {
+				requestBody: {
+					in: 'body',
+					name: 'requestBody',
+					required: true,
+					ref: 'ISerializedMatchInitData',
+				},
+			};
 
-		let validatedArgs: any[] = [];
-		try {
-			validatedArgs = getValidatedArgs(args, request, response);
-		} catch (err) {
-			return next(err);
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+			} catch (err) {
+				return next(err);
+			}
+
+			const controller = new MatchesController();
+
+			const promise = controller.createMatch.apply(controller, validatedArgs as any);
+			promiseHandler(controller, promise, response, undefined, next);
 		}
-
-		const controller = new MatchesController();
-
-		const promise = controller.createMatch.apply(controller, validatedArgs as any);
-		promiseHandler(controller, promise, response, undefined, next);
-	});
+	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	app.get('/api/matches/:id', function (request: any, response: any, next: any) {
-		const args = {
-			id: { in: 'path', name: 'id', required: true, dataType: 'string' },
-		};
+	app.get(
+		'/api/matches/:id',
 
-		// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+		function MatchesController_getMatch(request: any, response: any, next: any) {
+			const args = {
+				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
+			};
 
-		let validatedArgs: any[] = [];
-		try {
-			validatedArgs = getValidatedArgs(args, request, response);
-		} catch (err) {
-			return next(err);
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+			} catch (err) {
+				return next(err);
+			}
+
+			const controller = new MatchesController();
+
+			const promise = controller.getMatch.apply(controller, validatedArgs as any);
+			promiseHandler(controller, promise, response, undefined, next);
 		}
-
-		const controller = new MatchesController();
-
-		const promise = controller.getMatch.apply(controller, validatedArgs as any);
-		promiseHandler(controller, promise, response, undefined, next);
-	});
+	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.get(
 		'/api/matches/:id/server/round_backups',
-		function (request: any, response: any, next: any) {
+
+		function MatchesController_getRoundBackups(request: any, response: any, next: any) {
 			const args = {
 				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
 				count: { in: 'query', name: 'count', dataType: 'double' },
@@ -498,7 +515,8 @@ export function RegisterRoutes(app: express.Router) {
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.post(
 		'/api/matches/:id/server/round_backups/:file',
-		function (request: any, response: any, next: any) {
+
+		function MatchesController_loadRoundBackup(request: any, response: any, next: any) {
 			const args = {
 				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
 				file: { in: 'path', name: 'file', required: true, dataType: 'string' },
@@ -520,68 +538,86 @@ export function RegisterRoutes(app: express.Router) {
 		}
 	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	app.post('/api/matches/:id', function (request: any, response: any, next: any) {
-		const args = {
-			id: { in: 'path', name: 'id', required: true, dataType: 'string' },
-			requestBody: { in: 'body', name: 'requestBody', required: true, ref: 'IMatchChange' },
-		};
+	app.post(
+		'/api/matches/:id',
 
-		// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+		function MatchesController_changeMatch(request: any, response: any, next: any) {
+			const args = {
+				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
+				requestBody: {
+					in: 'body',
+					name: 'requestBody',
+					required: true,
+					ref: 'IMatchChange',
+				},
+			};
 
-		let validatedArgs: any[] = [];
-		try {
-			validatedArgs = getValidatedArgs(args, request, response);
-		} catch (err) {
-			return next(err);
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+			} catch (err) {
+				return next(err);
+			}
+
+			const controller = new MatchesController();
+
+			const promise = controller.changeMatch.apply(controller, validatedArgs as any);
+			promiseHandler(controller, promise, response, undefined, next);
 		}
-
-		const controller = new MatchesController();
-
-		const promise = controller.changeMatch.apply(controller, validatedArgs as any);
-		promiseHandler(controller, promise, response, undefined, next);
-	});
+	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	app.delete('/api/matches/:id', function (request: any, response: any, next: any) {
-		const args = {
-			id: { in: 'path', name: 'id', required: true, dataType: 'string' },
-		};
+	app.delete(
+		'/api/matches/:id',
 
-		// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+		function MatchesController_deleteMatch(request: any, response: any, next: any) {
+			const args = {
+				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
+			};
 
-		let validatedArgs: any[] = [];
-		try {
-			validatedArgs = getValidatedArgs(args, request, response);
-		} catch (err) {
-			return next(err);
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+			} catch (err) {
+				return next(err);
+			}
+
+			const controller = new MatchesController();
+
+			const promise = controller.deleteMatch.apply(controller, validatedArgs as any);
+			promiseHandler(controller, promise, response, undefined, next);
 		}
-
-		const controller = new MatchesController();
-
-		const promise = controller.deleteMatch.apply(controller, validatedArgs as any);
-		promiseHandler(controller, promise, response, undefined, next);
-	});
+	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	app.get('/api/matches', function (request: any, response: any, next: any) {
-		const args = {};
+	app.get(
+		'/api/matches',
 
-		// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+		function MatchesController_getAllMatches(request: any, response: any, next: any) {
+			const args = {};
 
-		let validatedArgs: any[] = [];
-		try {
-			validatedArgs = getValidatedArgs(args, request, response);
-		} catch (err) {
-			return next(err);
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+			} catch (err) {
+				return next(err);
+			}
+
+			const controller = new MatchesController();
+
+			const promise = controller.getAllMatches.apply(controller, validatedArgs as any);
+			promiseHandler(controller, promise, response, undefined, next);
 		}
-
-		const controller = new MatchesController();
-
-		const promise = controller.getAllMatches.apply(controller, validatedArgs as any);
-		promiseHandler(controller, promise, response, undefined, next);
-	});
+	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.post(
 		'/api/matches/:id/server/log/:secret',
-		function (request: any, response: any, next: any) {
+
+		function MatchesController_receiveLog(request: any, response: any, next: any) {
 			const args = {
 				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
 				secret: { in: 'path', name: 'secret', required: true, dataType: 'string' },
@@ -626,7 +662,7 @@ export function RegisterRoutes(app: express.Router) {
 				let headers;
 				if (isController(controllerObj)) {
 					headers = controllerObj.getHeaders();
-					statusCode = controllerObj.getStatus();
+					statusCode = controllerObj.getStatus() || statusCode;
 				}
 
 				// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -639,6 +675,9 @@ export function RegisterRoutes(app: express.Router) {
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 	function returnHandler(response: any, statusCode?: number, data?: any, headers: any = {}) {
+		if (response.headersSent) {
+			return;
+		}
 		Object.keys(headers).forEach((name: string) => {
 			response.set(name, headers[name]);
 		});
@@ -718,6 +757,38 @@ export function RegisterRoutes(app: express.Router) {
 						'body.',
 						{ noImplicitAdditionalProperties: 'throw-on-extras' }
 					);
+				case 'formData':
+					if (args[key].dataType === 'file') {
+						return validationService.ValidateParam(
+							args[key],
+							request.file,
+							name,
+							fieldErrors,
+							undefined,
+							{ noImplicitAdditionalProperties: 'throw-on-extras' }
+						);
+					} else if (
+						args[key].dataType === 'array' &&
+						args[key].array.dataType === 'file'
+					) {
+						return validationService.ValidateParam(
+							args[key],
+							request.files,
+							name,
+							fieldErrors,
+							undefined,
+							{ noImplicitAdditionalProperties: 'throw-on-extras' }
+						);
+					} else {
+						return validationService.ValidateParam(
+							args[key],
+							request.body[name],
+							name,
+							fieldErrors,
+							undefined,
+							{ noImplicitAdditionalProperties: 'throw-on-extras' }
+						);
+					}
 				case 'res':
 					return responder(response);
 			}

@@ -1,5 +1,4 @@
 import express, { ErrorRequestHandler } from 'express';
-import bodyParser from 'body-parser';
 import { RegisterRoutes } from './routes';
 import { ValidateError } from 'tsoa';
 import axios from 'axios';
@@ -35,12 +34,8 @@ app.use((req, res, next) => {
 	}
 });
 
-app.use(
-	bodyParser.urlencoded({
-		extended: true,
-	})
-);
-app.use(bodyParser.json());
+app.use(express.urlencoded);
+app.use(express.json);
 
 RegisterRoutes(app);
 
