@@ -8,10 +8,7 @@ const matches: Map<string, Match> = new Map();
 
 export class MatchService {
 	static async create(matchInitData: ISerializedMatchInitData): Promise<string> {
-		const id =
-			process.env.NODE_ENV === 'development'
-				? '0'
-				: shortUuid();
+		const id = process.env.NODE_ENV === 'development' ? '0' : shortUuid();
 		const match = new Match(id, matchInitData);
 		matches.set(id, match);
 
