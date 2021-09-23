@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import { generate as shortUuid } from 'short-uuid';
 import { Player } from './player';
 import { makeStringify } from './utils';
 import { Match } from './match';
@@ -11,7 +11,7 @@ export interface ITeamChange {
 
 export class Team {
 	match: Match;
-	id: string = uuidv4();
+	id: string = shortUuid();
 	remoteId?: string;
 	currentSide: ETeamSides; // TODO move to matchMap
 	isTeamA: boolean;

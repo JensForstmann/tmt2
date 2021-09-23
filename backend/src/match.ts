@@ -5,7 +5,7 @@ import { Player } from './player';
 import { commandMapping, ECommand } from './commands';
 import { MatchMap } from './matchMap';
 import { makeStringify, sleep } from './utils';
-import { v4 as uuidv4 } from 'uuid';
+import { generate as shortUuid } from 'short-uuid';
 import { ISerializedGameServer, SerializedGameServer } from './interfaces/gameServer';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
 import { ETeamSides, SerializedTeam } from './interfaces/team';
@@ -80,7 +80,7 @@ export class Match {
 		} else {
 			console.log('create match from normal (matchInitData)');
 			this.state = EMatchSate.ELECTION;
-			this.logSecret = uuidv4();
+			this.logSecret = shortUuid();
 			this.parseIncomingLogs = false;
 			this.logCounter = 0;
 			this.logLineCounter = 0;

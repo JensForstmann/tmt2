@@ -1,5 +1,5 @@
 import { Match } from './match';
-import { v4 as uuidv4 } from 'uuid';
+import { generate as shortUuid } from 'short-uuid';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
 import { EMatchSate, SerializedMatch } from './interfaces/match';
 import { Storage } from './storage';
@@ -10,8 +10,8 @@ export class MatchService {
 	static async create(matchInitData: ISerializedMatchInitData): Promise<string> {
 		const id =
 			process.env.NODE_ENV === 'development'
-				? '00000000-0000-0000-0000-000000000000'
-				: uuidv4();
+				? '0'
+				: shortUuid();
 		const match = new Match(id, matchInitData);
 		matches.set(id, match);
 
