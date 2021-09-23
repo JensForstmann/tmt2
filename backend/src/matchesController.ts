@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Put, Query, Route, SuccessResponse } from 'tsoa';
+import { Body, Controller, Delete, Get, Post, Put, Query, Route, SuccessResponse } from '@tsoa/runtime';
 import { ISerializedMatch, SerializedMatch, IMatchChange } from './interfaces/match';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
 import { MatchService } from './matchService';

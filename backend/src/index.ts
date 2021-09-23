@@ -1,6 +1,6 @@
 import express, { ErrorRequestHandler } from 'express';
 import { RegisterRoutes } from './routes';
-import { ValidateError } from 'tsoa';
+import { ValidateError } from '@tsoa/runtime';
 import axios from 'axios';
 import * as path from 'path';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
