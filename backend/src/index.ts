@@ -34,8 +34,8 @@ app.use((req, res, next) => {
 	}
 });
 
-app.use(express.urlencoded);
-app.use(express.json);
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 RegisterRoutes(app);
 
@@ -129,10 +129,10 @@ app.listen(port, async () => {
 			webhookUrl: 'http://127.0.0.1:1337',
 			matchEndAction: EMatchEndAction.KICK_ALL,
 		};
-		axios.post(`http://localhost:${port}/api/matches`, matchInitData).catch((err) => {
-			err && err.response && err.response.data
-				? console.error(err.response.data)
-				: console.error(err);
-		});
+		// axios.post(`http://localhost:${port}/api/matches`, matchInitData).catch((err) => {
+		// 	err && err.response && err.response.data
+		// 		? console.error(err.response.data)
+		// 		: console.error(err);
+		// });
 	}
 });
