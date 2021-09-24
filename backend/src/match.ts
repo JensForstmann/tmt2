@@ -20,6 +20,7 @@ import {
 import { EMatchMapSate, SerializedMatchMap } from './interfaces/matchMap';
 import { SerializedElection } from './interfaces/election';
 import { Webhook } from './webhook';
+import { MatchService } from './matchService';
 
 export const COMMAND_PREFIXES = ['.', '!'];
 const PERIODIC_MESSAGE_FREQUENCY = 30000;
@@ -330,6 +331,7 @@ export class Match {
 				this.gameServer.quitServer();
 				break;
 		}
+		MatchService.delete(this.id);
 	}
 
 	isMatchEnd(): boolean {

@@ -31,6 +31,7 @@ export class MatchService {
 		const match = matches.get(id);
 		if (match) {
 			match.stop();
+			matches.delete(id);
 			return true;
 		} else {
 			return false;
