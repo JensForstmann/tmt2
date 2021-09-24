@@ -6,7 +6,7 @@
 	"author": "Jens Forstmann",
 	"license": "MIT",
 	"scripts": {
-		"build": "tsoa spec-and-routes && rm -rf dist && tsc",
+		"build": "rm -rf dist && tsoa spec-and-routes && tsc",
 		"dev": "NODE_ENV=development concurrently \"nodemon\" \"nodemon -x tsoa spec-and-routes\"",
 		"clean": "prettier --write .",
 		"start": "node ./dist/index.js"

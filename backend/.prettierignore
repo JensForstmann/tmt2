@@ -8,3 +8,5 @@ node_modules
 .nyc_output
 public
 **/*.md
+src/routes.ts
+swagger.json

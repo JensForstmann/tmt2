@@ -2,7 +2,6 @@ import express, { ErrorRequestHandler } from 'express';
 import { RegisterRoutes } from './routes';
 import { ValidateError } from '@tsoa/runtime';
 import axios from 'axios';
-import * as path from 'path';
 import { ISerializedMatchInitData } from './interfaces/matchInitData';
 import { EMapMode, ESideFixed, ESideMode } from './interfaces/election';
 import { EMatchEndAction } from './interfaces/match';
@@ -59,7 +58,7 @@ app.use(errorRequestHandler);
 const port = process.env.TMT_PORT || 8080;
 
 app.get('/swagger.json', (req, res) => {
-	res.sendFile(path.join(__dirname, 'swagger.json'));
+	res.sendFile('swagger.json', { root: '.' });
 });
 
 app.listen(port, async () => {

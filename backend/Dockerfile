@@ -7,7 +7,7 @@ RUN npm prune --production
 
 FROM node:14-alpine
 WORKDIR /app
-COPY --from=BUILD_IMAGE /app/package.json ./
+COPY --from=BUILD_IMAGE /app/package.json /app/swagger.json ./
 COPY --from=BUILD_IMAGE /app/dist ./dist
 COPY --from=BUILD_IMAGE /app/node_modules ./node_modules
 
