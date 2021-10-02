@@ -1,64 +1,55 @@
-import { Rcon } from 'rcon-client';
+import { Rcon } from './rcon-client';
 import { IGameServer } from './interfaces/gameServer';
+import * as Match from './match';
+import { sleep } from './utils';
 
-export class GameServer {
-	data: IGameServer;
-	rconConnection: Rcon;
+export const create = async (dto: IGameServer): Promise<Rcon> => {
+	const rcon = new Rcon({
+		host: dto.ip,
+		port: dto.port,
+		password: dto.rconPassword,
+	});
 
-	private constructor(data: IGameServer, rconConnection: Rcon) {
-		this.data = data;
-		this.rconConnection = rconConnection;
-	}
+	rcon.on('error', (err) => console.error(`rconConnection.on('error'): ${err}`));
 
-	static async new(dto: IGameServer) {
-		const rconConnection = await Rcon.connect({
-			host: dto.ip,
-			port: dto.port,
-			password: dto.rconPassword,
-		});
-		rconConnection.on('error', (err) => {
-			console.error(err);
-			console.error(`rconConnection.on('error'): ${err}`);
-		});
-		rconConnection.emitter.on('error', (err) => {
-			console.error(err);
-			console.error(`rconConnection.emitter.on('error'): ${err}`);
-		});
-		return new this(dto, rconConnection);
-	}
+	await rcon.connect();
+	return rcon;
+};
 
-	async rcon(command: string, suppressError: boolean = true) {
-		try {
-			return await this.rconConnection.send(command);
-		} catch (err) {
-			if (suppressError) {
-				console.warn('rcon error: ', command, err);
-				return '';
-			} else {
-				throw err;
-			}
+export const exec = async (match: Match.Match, command: string, suppressError: boolean = true) => {
+	try {
+		return await match.rconConnection.send(command);
+	} catch (err) {
+		if (suppressError) {
+			// console.warn(err);
+			console.warn(`rcon error with command ${command}: ${err} -> return ''`);
+			return '';
+		} else {
+			throw err;
 		}
 	}
+};
 
-	async kickAll() {
-		const status = await this.rcon('status');
-		//# userid name uniqueid connected ping loss state rate adr
-		//#  2 1 "Yenz" STEAM_1:0:8520813 02:50 25 0 active 196608 172.24.16.1:27005
-		const userIds = status
-			.trim()
-			.split('\n')
-			.filter((line) => line.trim()[0] === '#')
-			.filter((line, lineNumber) => lineNumber > 0) // remove header line
-			.map((line) => line.substr(1).trim()) // remove # and trim line
-			.map((line) => line.split(' ')[0]); // extract first part (the user id)
-		userIds.forEach((userId) => this.rcon(`kickid ${userId}`));
+export const kickAll = async (match: Match.Match) => {
+	const status = await exec(match, 'status');
+	//# userid name uniqueid connected ping loss state rate adr
+	//#  2 1 "Yenz" STEAM_1:0:8520813 02:50 25 0 active 196608 172.24.16.1:27005
+	const userIds = status
+		.trim()
+		.split('\n')
+		.filter((line) => line.trim()[0] === '#')
+		.filter((line, lineNumber) => lineNumber > 0) // remove header line
+		.map((line) => line.substr(1).trim()) // remove # and trim line
+		.map((line) => line.split(' ')[0]); // extract first part (the user id)
+	for (let i = 0; i < userIds.length; i++) {
+		await exec(match, `kickid ${userIds[i]}`);
 	}
+};
 
-	quitServer() {
-		this.rcon('quit');
+export const disconnect = async (match: Match.Match) => {
+	try {
+		await match.rconConnection.end();
+	} catch (err) {
+		// ignore error
 	}
-
-	disconnect() {
-		this.rconConnection.end();
-	}
-}
+};

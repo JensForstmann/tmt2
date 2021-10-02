@@ -4,7 +4,7 @@ import * as Player from './player';
 import { commandMapping, ECommand } from './commands';
 import * as MatchMap from './matchMap';
 import { escapeRconString, sleep } from './utils';
-import { GameServer } from './gameServer';
+import * as GameServer from './gameServer';
 import * as Webhook from './webhook';
 import {
 	EMatchEndAction,
@@ -19,23 +19,19 @@ import { Settings } from './settings';
 import { ITeam } from './interfaces/team';
 import { ETeamSides } from './interfaces/stuff';
 import * as MatchService from './matchService';
+import { Rcon } from './rcon-client';
 
-export interface IRuntimeData {
-	periodicTimerId?: NodeJS.Timeout;
-	gameServer: GameServer;
-}
 export interface Match {
 	data: IMatch;
-	runtimeData: IRuntimeData;
+	rconConnection: Rcon;
+	periodicTimerId?: NodeJS.Timeout;
 }
 
 export const createFromData = async (data: IMatch) => {
-	const gameServer = await GameServer.new(data.gameServer);
+	const gameServer = await GameServer.create(data.gameServer);
 	const match: Match = {
 		data: data,
-		runtimeData: {
-			gameServer: gameServer,
-		},
+		rconConnection: gameServer,
 	};
 	await setup(match);
 	return match;
@@ -94,8 +90,7 @@ const setup = async (match: Match) => {
 };
 
 export const execRcon = async (match: Match, command: string) => {
-	const response = await match.runtimeData.gameServer.rcon(command);
-	return response;
+	return await GameServer.exec(match, command);
 };
 
 /**
@@ -118,15 +113,15 @@ export const execManyRcon = async (match: Match, commands?: string[]) => {
 
 export const say = async (match: Match, message: string) => {
 	message = (Settings.SAY_PREFIX + message).replace(/;/g, '');
-	execRcon(match, `say ${message}`);
+	await execRcon(match, `say ${message}`);
 };
 
 const sayPeriodicMessage = async (match: Match) => {
-	if (match.runtimeData.periodicTimerId) {
-		clearTimeout(match.runtimeData.periodicTimerId);
+	if (match.periodicTimerId) {
+		clearTimeout(match.periodicTimerId);
 	}
 
-	match.runtimeData.periodicTimerId = setTimeout(async () => {
+	match.periodicTimerId = setTimeout(async () => {
 		await sayPeriodicMessage(match);
 	}, Settings.PERIODIC_MESSAGE_FREQUENCY);
 
@@ -509,10 +504,10 @@ const onMatchEnd = async (match: Match) => {
 		await sleep(Settings.MATCH_END_ACTION_DELAY);
 		switch (match.data.matchEndAction) {
 			case EMatchEndAction.KICK_ALL:
-				match.runtimeData.gameServer.kickAll();
+				await GameServer.kickAll(match);
 				break;
 			case EMatchEndAction.QUIT_SERVER:
-				match.runtimeData.gameServer.quitServer();
+				await execRcon(match, 'quit');
 				break;
 		}
 	}
@@ -521,11 +516,11 @@ const onMatchEnd = async (match: Match) => {
 
 export const stop = async (match: Match) => {
 	match.data.isStopped = true;
-	if (match.runtimeData.periodicTimerId) {
-		clearTimeout(match.runtimeData.periodicTimerId);
+	if (match.periodicTimerId) {
+		clearTimeout(match.periodicTimerId);
 	}
 	await say(match, `TMT IS OFFLINE`);
-	match.runtimeData.gameServer.disconnect();
+	await GameServer.disconnect(match);
 };
 
 export const update = async (match: Match, dto: IMatchUpdateDto) => {

@@ -16,9 +16,9 @@
 		"axios": "^0.21.4",
 		"debug": "^4.3.2",
 		"express": "^4.17.1",
-		"rcon-client": "^4.2.2",
 		"short-uuid": "^4.2.0",
-		"steamid": "^2.0.0"
+		"steamid": "^2.0.0",
+		"typed-emitter": "^1.3.1"
 	},
 	"devDependencies": {
 		"@tsoa/cli": "^3.11.2",
