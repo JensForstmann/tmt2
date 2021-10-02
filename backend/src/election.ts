@@ -131,9 +131,17 @@ const ensureTeamXY = (match: Match.Match, who: EWho, teamAB: ETeamAB) => {
 const isValidTeam = (match: Match.Match, who: EWho, teamAB: ETeamAB) => {
 	if (who === EWho.TEAM_A && teamAB === ETeamAB.TEAM_A) return true;
 	if (who === EWho.TEAM_B && teamAB === ETeamAB.TEAM_B) return true;
-	if (!match.data.election.teamX && !match.data.election.teamY) return true;
+
 	if (who === EWho.TEAM_X && teamAB === match.data.election.teamX) return true;
 	if (who === EWho.TEAM_Y && teamAB === match.data.election.teamY) return true;
+
+	if (
+		(who === EWho.TEAM_X || who === EWho.TEAM_Y) &&
+		!match.data.election.teamX &&
+		!match.data.election.teamY
+	)
+		return true;
+
 	return false;
 };
 
@@ -379,13 +387,13 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 			match.data.election.remainingMaps.length
 		);
 		if (currentElectionStep.map.mode === EMapMode.RANDOM_PICK) {
+			match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
 			await Match.say(
 				match,
 				`RANDOM ${match.data.election.currentStep + 1}. MAP: ${
 					match.data.election.currentStepMap
 				}`
 			);
-			match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
 		} else {
 			await Match.say(match, `MAP ${match.data.election.remainingMaps[matchMap]} BANNED`);
 		}
