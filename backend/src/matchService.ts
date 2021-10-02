@@ -34,10 +34,14 @@ export const setup = async () => {
 				console.log(`load match ${matchData.id} from storage`);
 				startingMatches.add(matchData.id);
 				matchData.parseIncomingLogs = false;
-				const match = await Match.createFromData(matchData);
-				matches.set(match.data.id, match);
+				try {
+					const match = await Match.createFromData(matchData);
+					matches.set(match.data.id, match);
+					await save(match);
+				} catch (err) {
+					console.error(`error creating match ${matchData.id} from storage: ${err}`);
+				}
 				startingMatches.delete(matchData.id);
-				await save(match);
 			}
 		}
 	}

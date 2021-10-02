@@ -33,6 +33,7 @@ export const createFromData = async (data: IMatch) => {
 		data: data,
 		rconConnection: gameServer,
 	};
+	gameServer.on('end', () => onRconConnectionEnd(match));
 	await setup(match);
 	return match;
 };
@@ -59,6 +60,26 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 	const match = await createFromData(data);
 	await init(match);
 	return match;
+};
+
+export const onRconConnectionEnd = async (match: Match) => {
+	const str = `(${match.data.id}, ${match.data.gameServer.ip}:${match.data.gameServer.port})`;
+	console.warn(`rcon connection lost ${str}`);
+	while (true) {
+		try {
+			await sleep(10000);
+			if (match.data.isStopped) {
+				return;
+			}
+			console.log(`reconnect rcon ${str}`);
+			const gameServer = await GameServer.create(match.data.gameServer);
+			match.rconConnection = gameServer;
+			console.log(`reconnect rcon successful ${str}`);
+			return;
+		} catch (err) {
+			console.warn(`reconnect rcon failed ${str}: ${err}`);
+		}
+	}
 };
 
 /**
