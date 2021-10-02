@@ -238,7 +238,7 @@ const pickCommand = async (
 			match.data.election.remainingMaps.splice(matchMap, 1);
 			await Match.say(
 				match,
-				`${match.data.election.currentStep + 1}. MAP: ${match.data.election.currentStepMap}`
+				`${match.data.matchMaps.length + 1}. MAP: ${match.data.election.currentStepMap}`
 			);
 			await next(match);
 		} else {
@@ -264,7 +264,7 @@ const tCommand = async (
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, false, getOtherTeamAB(teamAB)));
 		await Match.say(
 			match,
-			`${match.data.election.currentStep + 1}. MAP: ${
+			`${match.data.matchMaps.length}. MAP: ${
 				match.data.election.currentStepMap
 			} (T-SIDE: ${escapeRconString(Match.getTeamByAB(match, getOtherTeamAB(teamAB)).name)})`
 		);
@@ -288,7 +288,7 @@ const ctCommand = async (
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, false, teamAB));
 		await Match.say(
 			match,
-			`${match.data.election.currentStep + 1}. MAP: ${
+			`${match.data.matchMaps.length}. MAP: ${
 				match.data.election.currentStepMap
 			} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, teamAB).name)})`
 		);
@@ -373,7 +373,7 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 		match.data.election.currentStepMap = currentElectionStep.map.fixed;
 		await Match.say(
 			match,
-			`${match.data.election.currentStep + 1}. MAP: ${match.data.election.currentStepMap}`
+			`${match.data.matchMaps.length + 1}. MAP: ${match.data.election.currentStepMap}`
 		);
 		await next(match);
 		return;
@@ -390,7 +390,7 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 			match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
 			await Match.say(
 				match,
-				`RANDOM ${match.data.election.currentStep + 1}. MAP: ${
+				`RANDOM ${match.data.matchMaps.length + 1}. MAP: ${
 					match.data.election.currentStepMap
 				}`
 			);
@@ -410,7 +410,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, ETeamAB.TEAM_A));
 			await Match.say(
 				match,
-				`${match.data.election.currentStep + 1}. MAP: ${
+				`${match.data.matchMaps.length}. MAP: ${
 					match.data.election.currentStepMap
 				} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, ETeamAB.TEAM_A).name)})`
 			);
@@ -422,7 +422,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, ETeamAB.TEAM_B));
 			await Match.say(
 				match,
-				`${match.data.election.currentStep + 1}. MAP: ${
+				`${match.data.matchMaps.length}. MAP: ${
 					match.data.election.currentStepMap
 				} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, ETeamAB.TEAM_B).name)})`
 			);
@@ -439,7 +439,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 				);
 				await Match.say(
 					match,
-					`${match.data.election.currentStep + 1}. MAP: ${
+					`${match.data.matchMaps.length}. MAP: ${
 						match.data.election.currentStepMap
 					} (CT-SIDE: ${escapeRconString(
 						Match.getTeamByAB(match, match.data.election.teamX).name
@@ -457,7 +457,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 				);
 				await Match.say(
 					match,
-					`${match.data.election.currentStep + 1}. MAP: ${
+					`${match.data.matchMaps.length}. MAP: ${
 						match.data.election.currentStepMap
 					} (CT-SIDE: ${escapeRconString(
 						Match.getTeamByAB(match, match.data.election.teamY).name
@@ -473,7 +473,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, true));
 		await Match.say(
 			match,
-			`${match.data.election.currentStep + 1}. MAP: ${
+			`${match.data.matchMaps.length}. MAP: ${
 				match.data.election.currentStepMap
 			} (KNIFE FOR SIDE)`
 		);
@@ -486,7 +486,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, false, startAsCtTeam));
 		await Match.say(
 			match,
-			`${match.data.election.currentStep + 1}. MAP: ${
+			`${match.data.matchMaps.length}. MAP: ${
 				match.data.election.currentStepMap
 			} (RANDOM CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, startAsCtTeam).name)})`
 		);
