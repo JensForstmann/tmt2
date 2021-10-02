@@ -61,15 +61,6 @@
 		{
 			"map": {
 				"mode": "BAN",
-				"who": "TEAM_A"
-			},
-			"side": {
-				"mode": "KNIFE"
-			}
-		},
-		{
-			"map": {
-				"mode": "BAN",
 				"who": "TEAM_B"
 			},
 			"side": {
@@ -78,11 +69,12 @@
 		},
 		{
 			"map": {
-				"mode": "RANDOM_PICK"
+				"mode": "PICK",
+				"who": "TEAM_A"
 			},
 			"side": {
 				"mode": "PICK",
-				"who": "TEAM_A"
+				"who": "TEAM_B"
 			}
 		}
 	],

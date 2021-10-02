@@ -12,4 +12,9 @@ BO1, active duty map pool, alternate banning of maps until the last one, knife f
 
 BO3, active duty map pool, advantage for one team, election process:
 
-team A map ban, team B map ban, team A map pick + team B side pick, team B map pick + team A side pick, team A map ban, team B map ban, team A side pick (last remaining map)
+- team A map ban
+- team B map ban
+- team A map pick + team B side pick
+- team B map pick + team A side pick
+- team B map ban
+- team A map pick + team B side pick
