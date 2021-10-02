@@ -54,7 +54,7 @@ export const sayPeriodicMessage = async (match: Match.Match, matchMap: IMatchMap
 		case EMatchMapSate.WARMUP:
 			const commands = getAvailableCommands(matchMap.state);
 			if (commands.length > 0) {
-				Match.say(
+				await Match.say(
 					match,
 					`COMMANDS: ${commands.map((c) => Settings.COMMAND_PREFIXES[0] + c).join(', ')}`
 				);
@@ -356,7 +356,7 @@ const stayCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETea
 		match,
 		`${escapeRconString(Match.getTeamByAB(match, teamAB).name)} WANTS TO STAY`
 	);
-	startMatch(match, matchMap);
+	await startMatch(match, matchMap);
 };
 
 const switchCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
@@ -366,22 +366,22 @@ const switchCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ET
 	);
 	await Match.execRcon(match, 'mp_swapteams');
 	matchMap.startAsCtTeam = getOtherTeamAB(matchMap.startAsCtTeam);
-	startMatch(match, matchMap);
+	await startMatch(match, matchMap);
 };
 
 const ctCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
 	if (matchMap.startAsCtTeam === teamAB) {
-		stayCommand(match, matchMap, teamAB);
+		await stayCommand(match, matchMap, teamAB);
 	} else {
-		switchCommand(match, matchMap, teamAB);
+		await switchCommand(match, matchMap, teamAB);
 	}
 };
 
 const tCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
 	if (matchMap.startAsCtTeam === teamAB) {
-		switchCommand(match, matchMap, teamAB);
+		await switchCommand(match, matchMap, teamAB);
 	} else {
-		stayCommand(match, matchMap, teamAB);
+		await stayCommand(match, matchMap, teamAB);
 	}
 };
 
