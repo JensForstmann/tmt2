@@ -1,0 +1,112 @@
+{
+	"passthrough": "<remote match id here>",
+	"electionMap": "de_vertigo",
+	"mapPool": [
+		"de_mirage",
+		"de_inferno",
+		"de_overpass",
+		"de_vertigo",
+		"de_nuke",
+		"de_ancient",
+		"de_dust2"
+	],
+	"teamA": {
+		"name": "Alpha",
+		"passthrough": "<remote team a id here>"
+	},
+	"teamB": {
+		"name": "Bravo",
+		"passthrough": "<remote team b id here>"
+	},
+	"electionSteps": [
+		{
+			"map": {
+				"mode": "BAN",
+				"who": "TEAM_A"
+			},
+			"side": {
+				"mode": "KNIFE"
+			}
+		},
+		{
+			"map": {
+				"mode": "BAN",
+				"who": "TEAM_B"
+			},
+			"side": {
+				"mode": "KNIFE"
+			}
+		},
+		{
+			"map": {
+				"mode": "BAN",
+				"who": "TEAM_A"
+			},
+			"side": {
+				"mode": "KNIFE"
+			}
+		},
+		{
+			"map": {
+				"mode": "BAN",
+				"who": "TEAM_B"
+			},
+			"side": {
+				"mode": "KNIFE"
+			}
+		},
+		{
+			"map": {
+				"mode": "BAN",
+				"who": "TEAM_A"
+			},
+			"side": {
+				"mode": "KNIFE"
+			}
+		},
+		{
+			"map": {
+				"mode": "BAN",
+				"who": "TEAM_B"
+			},
+			"side": {
+				"mode": "KNIFE"
+			}
+		},
+		{
+			"map": {
+				"mode": "RANDOM_PICK"
+			},
+			"side": {
+				"mode": "KNIFE"
+			}
+		}
+	],
+	"gameServer": {
+		"ip": "localhost",
+		"port": 27016,
+		"rconPassword": "blob"
+	},
+	"rconCommands": {
+		"init": [
+			"hostname \"5on5 Match: Alpha VS Bravo\"",
+			"exec esl5on5.cfg",
+			"say > init rcon loaded <"
+		],
+		"knife": [
+			"exec esl5on5.cfg",
+			"mp_give_player_c4 0; mp_startmoney 0; mp_ct_default_secondary \"\"; mp_t_default_secondary \"\"",
+			"mp_roundtime 60; mp_roundtime_defuse 0; mp_roundtime_deployment 0; mp_roundtime_hostage 0",
+			"say > Special Knife Config Loaded <"
+		],
+		"match": [
+			"mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary \"weapon_hkp2000\"; mp_t_default_secondary \"weapon_glock\"",
+			"mp_roundtime 1.92; mp_roundtime_defuse 1.92; mp_roundtime_deployment 0; mp_roundtime_hostage 0",
+			"exec esl5on5.cfg",
+			"say > match config loaded <"
+		],
+		"end": ["hostname \"empty server\"", "say > end rcon loaded <"]
+	},
+	"canClinch": true,
+	"matchEndAction": "KICK_ALL"
+}
