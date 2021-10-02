@@ -967,7 +967,7 @@
 	},
 	"info": {
 		"title": "tmt2-backend",
-		"version": "1.0.0",
+		"version": "2.0.0",
 		"license": {
 			"name": "MIT"
 		},
