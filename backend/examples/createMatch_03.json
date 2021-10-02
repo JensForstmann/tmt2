@@ -12,7 +12,8 @@
 	],
 	"teamA": {
 		"name": "Alpha",
-		"passthrough": "<remote team a id here>"
+		"passthrough": "<remote team a id here>",
+		"advantage": 1
 	},
 	"teamB": {
 		"name": "Bravo",
