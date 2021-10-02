@@ -1,30 +1,30 @@
 import { Rcon } from 'rcon-client';
+import { IGameServer } from './interfaces/gameServer';
 
 export class GameServer {
+	data: IGameServer;
 	rconConnection: Rcon;
-	ip: string;
-	port: number;
-	rconPassword: string;
 
-	constructor(ip: string, port: number, rconPassword: string) {
-		this.ip = ip;
-		this.port = port;
-		this.rconPassword = rconPassword;
-		this.rconConnection = new Rcon({
-			host: this.ip,
-			port: this.port,
-			password: this.rconPassword,
-		});
-		this.rconConnection.connect();
+	private constructor(data: IGameServer, rconConnection: Rcon) {
+		this.data = data;
+		this.rconConnection = rconConnection;
 	}
 
-	async setupRconConnection() {
-		this.rconConnection = new Rcon({
-			host: this.ip,
-			port: this.port,
-			password: this.rconPassword,
+	static async new(dto: IGameServer) {
+		const rconConnection = await Rcon.connect({
+			host: dto.ip,
+			port: dto.port,
+			password: dto.rconPassword,
 		});
-		await this.rconConnection.connect();
+		rconConnection.on('error', (err) => {
+			console.error(err);
+			console.error(`rconConnection.on('error'): ${err}`);
+		});
+		rconConnection.emitter.on('error', (err) => {
+			console.error(err);
+			console.error(`rconConnection.emitter.on('error'): ${err}`);
+		});
+		return new this(dto, rconConnection);
 	}
 
 	async rcon(command: string, suppressError: boolean = true) {
@@ -56,5 +56,9 @@ export class GameServer {
 
 	quitServer() {
 		this.rcon('quit');
+	}
+
+	disconnect() {
+		this.rconConnection.end();
 	}
 }

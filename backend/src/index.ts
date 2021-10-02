@@ -1,14 +1,14 @@
 import express, { ErrorRequestHandler } from 'express';
 import { RegisterRoutes } from './routes';
 import { ValidateError } from '@tsoa/runtime';
-import axios from 'axios';
-import { ISerializedMatchInitData } from './interfaces/matchInitData';
-import { EMapMode, ESideFixed, ESideMode } from './interfaces/election';
-import { EMatchEndAction } from './interfaces/match';
-import { MatchService } from './matchService';
-import { Storage } from './storage';
+import * as MatchService from './matchService';
+import * as Storage from './storage';
 
-Storage.init();
+if (!process.env.TMT_LOG_ADDRESS) {
+	throw 'environment variable TMT_LOG_ADDRESS is not set';
+}
+
+const PORT = process.env.TMT_PORT || 8080;
 
 const app = express();
 
@@ -53,85 +53,20 @@ const errorRequestHandler: ErrorRequestHandler = (err, req, res, next) => {
 
 app.use(errorRequestHandler);
 
-// TODO: check all process.env vars
-
-const port = process.env.TMT_PORT || 8080;
-
-app.get('/swagger.json', (req, res) => {
+app.get('/api', (req, res) => {
 	res.sendFile('swagger.json', { root: '.' });
 });
 
-app.listen(port, async () => {
-	console.log(`App listening on port ${port}`);
-	await MatchService.init();
-	if (MatchService.getAll().length === 0 && process.env.NODE_ENV === 'development') {
-		console.log('init match');
-		const matchInitData: ISerializedMatchInitData = {
-			mapPool: ['de_dust2'],
-			teamA: {
-				name: 'teamA',
-			},
-			teamB: {
-				name: 'teamB',
-			},
-			electionSteps: [
-				{
-					map: {
-						mode: EMapMode.FIXED,
-						fixed: 'de_dust2',
-					},
-					side: {
-						mode: ESideMode.FIXED,
-						fixed: ESideFixed.TEAM_A_CT,
-					},
-				},
-				{
-					map: {
-						mode: EMapMode.FIXED,
-						fixed: 'de_dust2',
-					},
-					side: {
-						mode: ESideMode.FIXED,
-						fixed: ESideFixed.TEAM_A_T,
-					},
-				},
-				{
-					map: {
-						mode: EMapMode.FIXED,
-						fixed: 'de_dust2',
-					},
-					side: {
-						mode: ESideMode.RANDOM,
-					},
-				},
-			],
-			gameServer: {
-				ip: 'localhost',
-				port: 27016,
-				rconPassword: 'blob',
-			},
-			rconCommands: {
-				init: ['mp_autokick 0', 'say init rcon loaded'],
-				knife: [
-					'exec tmt2test.cfg',
-					'mp_give_player_c4 0; mp_startmoney 0; mp_ct_default_secondary ""; mp_t_default_secondary ""',
-					'mp_roundtime 60; mp_roundtime_defuse 0; mp_roundtime_deployment 0; mp_roundtime_hostage 0',
-					'say "> Special Knife Config Loaded <"',
-				],
-				match: [
-					'mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary "weapon_hkp2000"; mp_t_default_secondary "weapon_glock"',
-					'mp_roundtime 1.92; mp_roundtime_defuse 1.92; mp_roundtime_deployment 0; mp_roundtime_hostage 0',
-					'exec tmt2test.cfg',
-				],
-				end: ['say end rcon loaded'],
-			},
-			webhookUrl: 'http://127.0.0.1:1337',
-			matchEndAction: EMatchEndAction.KICK_ALL,
-		};
-		// axios.post(`http://localhost:${port}/api/matches`, matchInitData).catch((err) => {
-		// 	err && err.response && err.response.data
-		// 		? console.error(err.response.data)
-		// 		: console.error(err);
-		// });
-	}
+const main = async () => {
+	await Storage.setup();
+
+	app.listen(PORT, async () => {
+		console.log(`App listening on port ${PORT}`);
+		await MatchService.setup(); // can only be done when http server is up and running (so that incoming logs can be handled)
+	});
+};
+
+main().catch((err) => {
+	console.error(err);
+	console.error(`Error in main(): ${err}`);
 });

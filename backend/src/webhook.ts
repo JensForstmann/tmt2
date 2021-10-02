@@ -1,5 +1,7 @@
 import axios from 'axios';
-import { SerializedPlayer } from './interfaces/player';
+import { IMatchMap } from './interfaces/matchMap';
+import { IPlayer } from './interfaces/player';
+import { ITeam } from './interfaces/team';
 import {
 	EWebhookType,
 	IChatWebhook,
@@ -8,77 +10,66 @@ import {
 	IRoundEndWebhook,
 	IWebhook,
 } from './interfaces/webhook';
-import { Match } from './match';
-import { Player } from './player';
+import * as Match from './match';
 
-export class Webhook {
-	match: Match;
-
-	constructor(match: Match) {
-		this.match = match;
+const send = (data: IWebhook, webhookUrl?: string) => {
+	if (webhookUrl?.startsWith('http')) {
+		axios.post(webhookUrl, data).catch((err) => {
+			console.warn(`send webhook failed: ${err}`);
+		});
 	}
+};
 
-	private getWebhook() {
-		return {
-			id: this.match.id,
-			remoteId: this.match.matchInitData.remoteId,
-		};
-	}
+export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
+	// TODO
+};
 
-	onRoundEnd(scoreTeamA: number, scoreTeamB: number) {
-		const payload: IRoundEndWebhook = {
-			...this.getWebhook(),
-			type: EWebhookType.ROUND_END,
-			scoreTeamA: scoreTeamA,
-			scoreTeamB: scoreTeamB,
-		};
-		this.send(payload);
-	}
+export const onRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
+	const data: IRoundEndWebhook = {
+		matchId: match.data.id,
+		matchPassthrough: match.data.passthrough,
+		type: EWebhookType.ROUND_END,
+		winnerTeam: winnerTeam,
+		scoreTeamA: matchMap.score.teamA,
+		scoreTeamB: matchMap.score.teamB,
+	};
+	send(data);
+};
 
-	onMapEnd(scoreTeamA: number, scoreTeamB: number) {
-		const payload: IMapEndWebhook = {
-			...this.getWebhook(),
-			type: EWebhookType.MAP_END,
-			scoreTeamA: scoreTeamA,
-			scoreTeamB: scoreTeamB,
-		};
-		this.send(payload);
-	}
+export const onPlayerSay = (
+	match: Match.Match,
+	player: IPlayer,
+	message: string,
+	isTeamChat: boolean
+) => {
+	const data: IChatWebhook = {
+		matchId: match.data.id,
+		matchPassthrough: match.data.passthrough,
+		type: EWebhookType.CHAT,
+		player: player,
+		message: message,
+		isTeamChat: isTeamChat,
+	};
+	send(data);
+};
 
-	onMatchEnd() {
-		const payload: IMatchEndWebhook = {
-			...this.getWebhook(),
-			type: EWebhookType.MATCH_END,
-			wonMapsTeamA: this.match.matchMaps.reduce(
-				(pv, cv) => pv + (cv.score.teamA > cv.score.teamB ? 1 : 0),
-				0
-			),
-			wonMapsTeamB: this.match.matchMaps.reduce(
-				(pv, cv) => pv + (cv.score.teamB > cv.score.teamA ? 1 : 0),
-				0
-			),
-		};
-		this.send(payload);
-	}
-
-	onPlayerSay(player: Player, message: string, isTeamChat: boolean) {
-		const payload: IChatWebhook = {
-			...this.getWebhook(),
-			type: EWebhookType.CHAT,
-			player: SerializedPlayer.fromNormalToSerialized(player),
-			message: message,
-			isTeamChat: isTeamChat,
-		};
-		this.send(payload);
-	}
-
-	send(data: IWebhook) {
-		console.log('TCL: Webhook -> send -> data', data);
-		if (this.match.webhookUrl?.startsWith('http')) {
-			console.log('TCL: Webhook -> send -> this.match.webhookUrl', this.match.webhookUrl);
-			axios.post(this.match.webhookUrl, data).catch((err) => {
-				console.warn('send webhook failed: ' + err);
-			});
-		}
-	}
-}
+export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeamB: number) => {
+	const data: IMatchEndWebhook = {
+		matchId: match.data.id,
+		matchPassthrough: match.data.passthrough,
+		type: EWebhookType.MATCH_END,
+		wonMapsTeamA: wonMapsTeamA,
+		wonMapsTeamB: wonMapsTeamB,
+	};
+	send(data);
+};
+export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
+	const data: IMapEndWebhook = {
+		matchId: match.data.id,
+		matchPassthrough: match.data.passthrough,
+		type: EWebhookType.MAP_END,
+		scoreTeamA: matchMap.score.teamA,
+		scoreTeamB: matchMap.score.teamB,
+	};
+	send(data);
+};

@@ -1,576 +1,604 @@
-import { Election } from './election';
-import { Team } from './team';
-import { PlayerService } from './playerService';
-import { Player } from './player';
+import * as Election from './election';
+import * as Team from './team';
+import * as Player from './player';
 import { commandMapping, ECommand } from './commands';
-import { MatchMap } from './matchMap';
-import { makeStringify, sleep } from './utils';
-import { generate as shortUuid } from 'short-uuid';
-import { ISerializedGameServer, SerializedGameServer } from './interfaces/gameServer';
-import { ISerializedMatchInitData } from './interfaces/matchInitData';
-import { ETeamSides, SerializedTeam } from './interfaces/team';
+import * as MatchMap from './matchMap';
+import { escapeRconString, sleep } from './utils';
 import { GameServer } from './gameServer';
+import * as Webhook from './webhook';
 import {
-	EMatchSate,
 	EMatchEndAction,
-	isISerializedMatch,
-	ISerializedMatch,
-	IMatchChange,
+	EMatchSate,
+	IMatch,
+	IMatchCreateDto,
+	IMatchUpdateDto,
 } from './interfaces/match';
-import { EMatchMapSate, SerializedMatchMap } from './interfaces/matchMap';
-import { SerializedElection } from './interfaces/election';
-import { Webhook } from './webhook';
-import { MatchService } from './matchService';
+import { IPlayer } from './interfaces/player';
+import { EMatchMapSate, ETeamAB, getOtherTeamAB } from './interfaces/matchMap';
+import { Settings } from './settings';
+import { ITeam } from './interfaces/team';
+import { ETeamSides } from './interfaces/stuff';
+import * as MatchService from './matchService';
 
-export const COMMAND_PREFIXES = ['.', '!'];
-const PERIODIC_MESSAGE_FREQUENCY = 30000;
-const SAY_PREFIX = '[TMT] ';
-
-export class Match {
-	id: string;
-	readonly matchInitData: ISerializedMatchInitData;
-	state: EMatchSate;
-	election: Election;
-	teamA: Team;
-	teamB: Team;
-	gameServer: GameServer;
-	logSecret: string;
-	parseIncomingLogs: boolean;
-	logCounter: number;
-	logLineCounter: number;
-	matchMaps: MatchMap[];
-	currentMap: number;
+export interface IRuntimeData {
 	periodicTimerId?: NodeJS.Timeout;
-	canClinch: boolean;
-	webhookUrl?: string;
-	matchEndAction: EMatchEndAction;
-	webhook: Webhook = new Webhook(this);
+	gameServer: GameServer;
+}
+export interface Match {
+	data: IMatch;
+	runtimeData: IRuntimeData;
+}
 
-	constructor(id: string, serializedMatch: ISerializedMatch);
-	constructor(id: string, matchInitData: ISerializedMatchInitData);
-	constructor(
-		id: string,
-		matchInitDataOrSerializedMatch: ISerializedMatchInitData | ISerializedMatch
-	) {
-		if (isISerializedMatch(matchInitDataOrSerializedMatch)) {
-			console.log('create match from serialized');
-			const serializedMatch = matchInitDataOrSerializedMatch;
-			this.id = serializedMatch.id;
-			this.state = serializedMatch.state;
-			this.matchInitData = serializedMatch.matchInitData;
-			this.election = SerializedElection.fromSerializedToNormal(
-				serializedMatch.election,
-				this
-			);
-			this.teamA = SerializedTeam.fromSerializedToNormal(serializedMatch.teamA, this);
-			this.teamB = SerializedTeam.fromSerializedToNormal(serializedMatch.teamB, this);
-			this.gameServer = SerializedGameServer.fromSerializedToNormal(
-				serializedMatch.gameServer
-			);
-			this.logSecret = serializedMatch.logSecret;
-			this.parseIncomingLogs = serializedMatch.parseIncomingLogs;
-			this.logCounter = serializedMatch.logCounter;
-			this.logLineCounter = serializedMatch.logLineCounter;
-			this.matchMaps = serializedMatch.matchMaps.map((matchMap) =>
-				SerializedMatchMap.fromSerializedToNormal(matchMap, this)
-			);
-			this.currentMap = serializedMatch.currentMap;
-			this.canClinch = serializedMatch.canClinch;
-			this.webhookUrl = serializedMatch.webhookUrl;
-			this.matchEndAction = serializedMatch.matchEndAction;
-		} else {
-			console.log('create match from normal (matchInitData)');
-			this.state = EMatchSate.ELECTION;
-			this.logSecret = shortUuid();
-			this.parseIncomingLogs = false;
-			this.logCounter = 0;
-			this.logLineCounter = 0;
-			this.matchMaps = [];
-			this.currentMap = 0;
-			this.canClinch = true;
-			this.matchEndAction = EMatchEndAction.NONE;
-			const matchInitData = matchInitDataOrSerializedMatch;
-			this.id = id;
-			this.matchInitData = matchInitData;
-			this.gameServer = new GameServer(
-				matchInitData.gameServer.ip,
-				matchInitData.gameServer.port,
-				matchInitData.gameServer.rconPassword
-			);
-			this.teamA = new Team(
-				this,
-				ETeamSides.CT,
-				true,
-				this.matchInitData.teamA.name,
-				this.matchInitData.teamA.advantage,
-				this.matchInitData.teamA.remoteId
-			);
-			this.teamB = new Team(
-				this,
-				ETeamSides.T,
-				false,
-				this.matchInitData.teamB.name,
-				this.matchInitData.teamB.advantage,
-				this.matchInitData.teamB.remoteId
-			);
-			this.election = new Election(this);
-			if (typeof this.matchInitData.canClinch === 'boolean') {
-				this.canClinch = this.matchInitData.canClinch;
-			}
-			this.webhookUrl = this.matchInitData.webhookUrl;
-			if (this.matchInitData.matchEndAction) {
-				this.matchEndAction = this.matchInitData.matchEndAction;
-			}
+export const createFromData = async (data: IMatch) => {
+	const gameServer = await GameServer.new(data.gameServer);
+	const match: Match = {
+		data: data,
+		runtimeData: {
+			gameServer: gameServer,
+		},
+	};
+	await setup(match);
+	return match;
+};
+
+export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logSecret: string) => {
+	const data: IMatch = {
+		...dto,
+		id: id,
+		teamA: Team.createFromCreateDto(dto.teamA),
+		teamB: Team.createFromCreateDto(dto.teamB),
+		state: EMatchSate.ELECTION,
+		logSecret: logSecret,
+		parseIncomingLogs: false,
+		matchMaps: [],
+		currentMap: 0,
+		logs: [],
+		players: [],
+		canClinch: dto.canClinch ?? true,
+		matchEndAction: dto.matchEndAction ?? EMatchEndAction.NONE,
+		election: Election.create(dto.mapPool),
+		isStopped: false,
+		electionMap: dto.electionMap ?? 'de_dust2',
+	};
+	const match = await createFromData(data);
+	await init(match);
+	return match;
+};
+
+/**
+ * Executes once per match and every time the map will be loaded from storage.
+ */
+const setup = async (match: Match) => {
+	// TODO: add needed log options so that TMT can work (mp_logdetail xy, ...)
+
+	await registerLogAddress(match);
+	await setTeamNames(match);
+
+	await execRcon(match, `mp_backup_round_file "round_backup_${match.data.id}"`);
+	await execRcon(match, 'mp_backup_restore_load_autopause 1');
+	await execRcon(match, 'mp_backup_round_auto 1');
+	await execRcon(
+		match,
+		'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%teamA%_%teamB%_%map%_round%round%_score_%score1%_%score2%.txt"'
+	);
+
+	// delay parsing of incoming log lines (because we don't about the initial big batch)
+	sleep(2000).then(async () => {
+		match.data.parseIncomingLogs = true;
+		await say(match, 'ONLINE');
+		if (match.data.state === EMatchSate.ELECTION) {
+			Election.auto(match);
+		}
+		await sayPeriodicMessage(match);
+	});
+};
+
+export const execRcon = async (match: Match, command: string) => {
+	const response = await match.runtimeData.gameServer.rcon(command);
+	return response;
+};
+
+/**
+ * Executes only once per match (at creation).
+ */
+const init = async (match: Match) => {
+	await execRcon(match, `changelevel ${match.data.electionMap}`);
+	await execRcon(match, 'mp_warmup_pausetimer 1'); // infinite warmup
+	await execRcon(match, 'mp_autokick 0'); // never kick
+	await execManyRcon(match, match.data.rconCommands?.init);
+};
+
+export const execManyRcon = async (match: Match, commands?: string[]) => {
+	if (commands) {
+		for (let i = 0; i < commands.length; i++) {
+			await execRcon(match, commands[i]);
 		}
 	}
+};
 
-	async init() {
-		await this.gameServer.setupRconConnection();
-		// TODO add needed log options so that TMT can work (mp_logdetail xy, ...)
+export const say = async (match: Match, message: string) => {
+	message = (Settings.SAY_PREFIX + message).replace(/;/g, '');
+	execRcon(match, `say ${message}`);
+};
 
-		this.registerLogAddress();
+const sayPeriodicMessage = async (match: Match) => {
+	if (match.runtimeData.periodicTimerId) {
+		clearTimeout(match.runtimeData.periodicTimerId);
+	}
 
-		await this.loadInitConfig();
-		await this.setTeamNames();
+	match.runtimeData.periodicTimerId = setTimeout(async () => {
+		await sayPeriodicMessage(match);
+	}, Settings.PERIODIC_MESSAGE_FREQUENCY);
 
-		await this.gameServer.rcon(`mp_backup_round_file "round_backup_${this.id}"`);
-		await this.gameServer.rcon('mp_backup_restore_load_autopause 1');
-		await this.gameServer.rcon('mp_backup_round_auto 1');
-		await this.gameServer.rcon(
-			'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%teamA%_%teamB%_%map%_round%round%_score_%score1%_%score2%.txt"'
+	if (match.data.state === EMatchSate.ELECTION) {
+		Election.sayPeriodicMessage(
+			match,
+			match.data.electionSteps[match.data.election.currentStep]
 		);
-
-		// delay parsing of incoming log lines (because we don't about the initial big batch)
-		sleep(2000).then(() => {
-			this.parseIncomingLogs = true;
-			this.say('ONLINE');
-			this.election.auto();
-			this.sayPeriodicMessage();
-		});
-	}
-
-	registerLogAddress() {
-		// TODO: check if TMT_LOG_ADDRESS is set (maybe at startup of tmt)
-		const logAddress = `${process.env.TMT_LOG_ADDRESS}/api/matches/${this.id}/server/log/${this.logSecret}`;
-		this.gameServer.rcon(`logaddress_add_http "${logAddress}"`);
-	}
-
-	async setTeamNames() {
-		const currentMatch = this.getCurrentMatchMap();
-		if (currentMatch) {
-			await currentMatch.setTeamNames();
-		} else {
-			await this.gameServer.rcon(`mp_teamname_1 "${this.teamA.toIngameString()}"`);
-			await this.gameServer.rcon(`mp_teamname_2 "${this.teamB.toIngameString()}"`);
+	} else if (match.data.state === EMatchSate.MATCH_MAP) {
+		const matchMap = getCurrentMatchMap(match);
+		if (matchMap) {
+			MatchMap.sayPeriodicMessage(match, matchMap);
 		}
+	} else if (match.data.state === EMatchSate.FINISHED) {
+		await say(match, 'MATCH IS FINISHED');
 	}
+};
 
-	async getRoundBackups(count: number = 5) {
-		const response = await this.gameServer.rcon(`mp_backup_restore_list_files ${count}`);
-		const lines = response.trim().split('\n');
-		const files = lines.filter((line) => line[0] === ' ').map((line) => line.trim());
-		const totalFiles = parseInt(lines[lines.length - 1].split(' ')[0]);
-		return {
-			latestFiles: files,
-			total: isNaN(totalFiles) ? 0 : totalFiles,
-		};
+const registerLogAddress = async (match: Match) => {
+	const logAddress = `${process.env.TMT_LOG_ADDRESS}/api/matches/${match.data.id}/server/log/${match.data.logSecret}`;
+	await execRcon(match, `logaddress_add_http "${logAddress}"`);
+};
+
+const getCurrentMatchMap = (match: Match) => {
+	if (match.data.state === EMatchSate.MATCH_MAP) {
+		return match.data.matchMaps[match.data.currentMap];
 	}
+	return undefined;
+};
 
-	async loadRoundBackup(file: string) {
-		const response = await this.gameServer.rcon(`mp_backup_restore_load_file "${file}"`);
-		if (response.includes('Failed to load file:')) {
-			return false;
-		} else {
-			const currentMatchMap = this.getCurrentMatchMap();
-			if (currentMatchMap) {
-				currentMatchMap.state = EMatchMapSate.PAUSED;
-			}
-			return true;
-		}
+export const getTeamByAB = (match: Match, teamAB: ETeamAB): ITeam => {
+	switch (teamAB) {
+		case ETeamAB.TEAM_A:
+			return match.data.teamA;
+		case ETeamAB.TEAM_B:
+			return match.data.teamB;
 	}
+};
 
-	sayPeriodicMessage() {
-		if (this.periodicTimerId) {
-			clearTimeout(this.periodicTimerId);
-		}
-
-		this.periodicTimerId = setTimeout(
-			() => this.sayPeriodicMessage(),
-			PERIODIC_MESSAGE_FREQUENCY
+// TODO: duplicate code here and in matchMap
+const setTeamNames = async (match: Match) => {
+	const currentMatchMap = getCurrentMatchMap(match);
+	if (currentMatchMap) {
+		await execRcon(
+			match,
+			`mp_teamname_1 "${escapeRconString(
+				getTeamByAB(match, currentMatchMap.startAsCtTeam).name
+			)}"`
 		);
-
-		if (this.state === EMatchSate.ELECTION) {
-			this.election.sayPeriodicMessage();
-		} else if (this.state === EMatchSate.MATCH_MAP) {
-			this.getCurrentMatchMap()?.sayPeriodicMessage();
-		} else if (this.state === EMatchSate.FINISHED) {
-			this.say('MATCH IS FINISHED');
-		}
-	}
-
-	async loadInitConfig() {
-		await this.executeRconCommands(this.matchInitData.rconCommands?.init);
-	}
-
-	async loadEndConfig() {
-		await this.executeRconCommands(this.matchInitData.rconCommands?.end);
-	}
-
-	async executeRconCommands(commands?: string[]) {
-		if (commands) {
-			for (let i = 0; i < commands.length; i++) {
-				await this.gameServer.rcon(commands[i]);
-			}
-		}
-	}
-
-	say(message: string) {
-		message = (SAY_PREFIX + message).replace(/;/g, '');
-		this.gameServer.rcon(`say ${message}`);
-	}
-
-	getOtherTeam(team: Team) {
-		if (this.teamA === team) return this.teamB;
-		return this.teamA;
-	}
-
-	getTeamBySide(side: ETeamSides) {
-		if (this.teamA.currentSide === side) return this.teamA;
-		return this.teamB;
-	}
-
-	async onLog(body: string) {
-		this.logCounter++;
-		if (this.parseIncomingLogs) {
-			const lines = body.split('\n');
-			for (let index = 0; index < lines.length; index++) {
-				await this.onLogLine(lines[index]);
-			}
-		}
-	}
-
-	async onLogLine(line: string) {
-		if (!line) return;
-
-		this.logLineCounter++;
-
-		//09/14/2020 - 15:11:58.307 - "Yenz<2><STEAM_1:0:8520813><TERRORIST>" say "ajshdaosjkhdlaökjsdhlakjshd"
-		// console.log('line:', line);
-		const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
-
-		const playerPattern = /"(.*)<(\d+)><(.*)><(|Unassigned|CT|TERRORIST|Console)>" (.*)$/;
-		const playerMatch = line.match(new RegExp(dateTimePattern.source + playerPattern.source));
-		if (playerMatch) {
-			const name = playerMatch[1];
-			const ingamePlayerId = playerMatch[2];
-			const steamId = playerMatch[3];
-			const teamString = playerMatch[4];
-			const remainingLine = playerMatch[5];
-			await this.onPlayerLogLine(name, ingamePlayerId, steamId, teamString, remainingLine);
-		}
-
-		const mapEndPattern = /Game Over: competitive (.*) score (\d+):(\d+) after (\d+) min$/;
-		const mapEndMatch = line.match(new RegExp(dateTimePattern.source + mapEndPattern.source));
-		if (mapEndMatch) {
-			this.onMapEnd();
-		}
-
-		const roundEndPattern =
-			/Team "(CT|TERRORIST)" triggered "([a-zA-Z_]+)" \(CT "(\d+)"\) \(T "(\d+)"\)/;
-		const roundEndMatch = line.match(
-			new RegExp(dateTimePattern.source + roundEndPattern.source)
+		await execRcon(
+			match,
+			`mp_teamname_2 "${escapeRconString(
+				getOtherTeam(match, getTeamByAB(match, currentMatchMap.startAsCtTeam)).name
+			)}"`
 		);
-		if (roundEndMatch) {
-			const winningTeam = roundEndMatch[1];
-			const winningReason = roundEndMatch[2];
-			const ctScore = parseInt(roundEndMatch[3]);
-			const tScore = parseInt(roundEndMatch[4]);
-			await this.getCurrentMatchMap()?.onRoundEnd(
+	} else {
+		await execRcon(match, `mp_teamname_1 "${escapeRconString(match.data.teamA.name)}"`);
+		await execRcon(match, `mp_teamname_2 "${escapeRconString(match.data.teamB.name)}"`);
+	}
+};
+
+export const getRoundBackups = async (match: Match, count: number = 5) => {
+	const response = await execRcon(match, `mp_backup_restore_list_files ${count}`);
+	const lines = response.trim().split('\n');
+	const files = lines.filter((line) => line[0] === ' ').map((line) => line.trim());
+	const totalFiles = parseInt(lines[lines.length - 1].split(' ')[0]);
+	return {
+		latestFiles: files,
+		total: isNaN(totalFiles) ? 0 : totalFiles,
+	};
+};
+
+export const loadRoundBackup = async (match: Match, file: string) => {
+	const response = await execRcon(match, `mp_backup_restore_load_file "${file}"`);
+	if (response.includes('Failed to load file:')) {
+		return false;
+	} else {
+		const currentMatchMap = getCurrentMatchMap(match);
+		if (currentMatchMap) {
+			currentMatchMap.state = EMatchMapSate.PAUSED;
+		}
+		return true;
+	}
+};
+
+export const onLog = async (match: Match, body: string) => {
+	if (match.data.parseIncomingLogs) {
+		const lines = body.split('\n');
+		for (let index = 0; index < lines.length; index++) {
+			await onLogLine(match, lines[index]);
+		}
+	}
+};
+
+const onLogLine = async (match: Match, line: string) => {
+	if (!line) return;
+
+	//09/14/2020 - 15:11:58.307 - "Yenz<2><STEAM_1:0:8520813><TERRORIST>" say "ajshdaosjkhdlaökjsdhlakjshd"
+	// console.log('line:', line);
+	const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
+
+	const playerPattern = /"(.*)<(\d+)><(.*)><(|Unassigned|CT|TERRORIST|Console)>" (.*)$/;
+	const playerMatch = line.match(new RegExp(dateTimePattern.source + playerPattern.source));
+	if (playerMatch) {
+		const name = playerMatch[1];
+		const ingamePlayerId = playerMatch[2];
+		const steamId = playerMatch[3];
+		const teamString = playerMatch[4];
+		const remainingLine = playerMatch[5];
+		await onPlayerLogLine(match, name, ingamePlayerId, steamId, teamString, remainingLine);
+	}
+
+	const mapEndPattern = /Game Over: competitive (.*) score (\d+):(\d+) after (\d+) min$/;
+	const mapEndMatch = line.match(new RegExp(dateTimePattern.source + mapEndPattern.source));
+	if (mapEndMatch) {
+		await onMapEnd(match);
+	}
+
+	const roundEndPattern =
+		/Team "(CT|TERRORIST)" triggered "([a-zA-Z_]+)" \(CT "(\d+)"\) \(T "(\d+)"\)/;
+	const roundEndMatch = line.match(new RegExp(dateTimePattern.source + roundEndPattern.source));
+	if (roundEndMatch) {
+		const winningTeam = roundEndMatch[1];
+		const winningReason = roundEndMatch[2];
+		const ctScore = parseInt(roundEndMatch[3]);
+		const tScore = parseInt(roundEndMatch[4]);
+		const currentMatchMap = getCurrentMatchMap(match);
+		if (currentMatchMap) {
+			await MatchMap.onRoundEnd(
+				match,
+				currentMatchMap,
 				ctScore,
 				tScore,
 				winningTeam === 'CT' ? ETeamSides.CT : ETeamSides.T
 			);
 		}
 	}
+};
 
-	async onMapEnd() {
-		await this.getCurrentMatchMap()?.onMapEnd();
-		if (this.getCurrentMatchMap()?.isDraw()) {
-			this.say(`${this.currentMap + 1}. MAP FINISHED (DRAW)`);
+const onPlayerLogLine = async (
+	match: Match,
+	name: string,
+	ingamePlayerId: string,
+	steamId: string,
+	teamString: string,
+	remainingLine: string
+) => {
+	//say "ajshdaosjkhdlaökjsdhlakjshd"
+	if (steamId === 'BOT') {
+	} else if (steamId === 'Console') {
+	} else {
+		const steamId64 = Player.getSteamID64(steamId);
+		let player = match.data.players.find((p) => p.steamId64 === steamId64);
+		if (!player) {
+			player = Player.create(steamId, name);
+			match.data.players.push(player);
+		}
+		const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
+		if (sayMatch) {
+			const isTeamChat = sayMatch[1] === '_team';
+			const message = sayMatch[2];
+			await onPlayerSay(match, player, message, isTeamChat, teamString);
+		}
+	}
+};
+
+const onPlayerSay = async (
+	match: Match,
+	player: IPlayer,
+	message: string,
+	isTeamChat: boolean,
+	teamString: string
+) => {
+	message = message.trim();
+
+	Webhook.onPlayerSay(match, player, message, isTeamChat);
+
+	if (Settings.COMMAND_PREFIXES.includes(message[0])) {
+		message = message.substr(1);
+		const parts = message.split(' ').filter((str) => str.length > 0);
+		const commandString = parts.shift()?.toLowerCase();
+		if (commandString) {
+			const command = commandMapping.get(commandString);
+			if (command) {
+				await onCommand(match, command, player, parts, teamString);
+			}
+		}
+	}
+};
+
+const onCommand = async (
+	match: Match,
+	command: ECommand,
+	player: IPlayer,
+	parameters: string[],
+	teamString: string
+) => {
+	let warnAboutTeam = true;
+	if (command === ECommand.TEAM) {
+		await onTeamCommand(match, player, parameters[0] || '');
+		warnAboutTeam = false;
+	}
+
+	const teamAB = player.team;
+
+	if (teamAB) {
+		const playerTeam = getTeamByAB(match, teamAB);
+
+		Election.onCommand(match, command, teamAB, parameters);
+
+		const currentMatchMap = getCurrentMatchMap(match);
+		if (currentMatchMap) {
+			await MatchMap.onCommand(match, currentMatchMap, command, teamAB, player);
+		}
+
+		const currentCtTeamAB = currentMatchMap
+			? MatchMap.getCurrentTeamSideAndRoundSwitch(currentMatchMap).currentCtTeamAB
+			: ETeamAB.TEAM_A;
+		const currentTTeamAB = getOtherTeamAB(currentCtTeamAB);
+
+		if (
+			(teamString === 'TERRORIST' && player.team !== currentTTeamAB) ||
+			(teamString === 'CT' && player.team !== currentCtTeamAB)
+		) {
+			sayWrongTeamOrSide(match, player, teamString, playerTeam, teamAB);
+		}
+	} else if (warnAboutTeam) {
+		sayNotAssigned(match, player);
+	}
+};
+
+const sayNotAssigned = async (match: Match, player: IPlayer) => {
+	await say(match, `PLAYER ${escapeRconString(player.name)} NOT ASSIGNED!`);
+	await say(
+		match,
+		`TYPE "${Settings.COMMAND_PREFIXES[0]}team a" TO JOIN ${escapeRconString(
+			match.data.teamA.name
+		)}`
+	);
+	await say(
+		match,
+		`TYPE "${Settings.COMMAND_PREFIXES[0]}team b" TO JOIN ${escapeRconString(
+			match.data.teamB.name
+		)}`
+	);
+};
+
+const sayWrongTeamOrSide = async (
+	match: Match,
+	player: IPlayer,
+	currentSite: 'CT' | 'TERRORIST',
+	currentTeam: ITeam,
+	currentTeamAB: ETeamAB
+) => {
+	const otherTeam = getOtherTeam(match, currentTeam);
+	await say(
+		match,
+		`PLAYER ${escapeRconString(player.name)} IS REGISTERED FOR ${escapeRconString(
+			currentTeam.name
+		)} BUT CURRENTLY IN ${currentSite} (${escapeRconString(otherTeam.name)})`
+	);
+	await say(
+		match,
+		`CHECK SCOREBOARD AND CHANGE TEAM OR TYPE "${Settings.COMMAND_PREFIXES[0]}team ${
+			currentTeamAB === ETeamAB.TEAM_A ? 'b' : 'a'
+		}" TO CHANGE REGISTRATION`
+	);
+};
+
+export const getOtherTeam = (match: Match, team: ITeam) => {
+	if (match.data.teamA === team) return match.data.teamB;
+	return match.data.teamA;
+};
+
+const onTeamCommand = async (match: Match, player: IPlayer, firstParameter: string) => {
+	firstParameter = firstParameter.toUpperCase();
+	if (firstParameter === 'A') {
+		player.team = ETeamAB.TEAM_A;
+	} else if (firstParameter === 'B') {
+		player.team = ETeamAB.TEAM_B;
+	} else {
+		const playerTeam = player.team;
+		if (playerTeam) {
+			say(
+				match,
+				`YOU ARE IN TEAM ${playerTeam === ETeamAB.TEAM_A ? 'A' : 'B'}: ${escapeRconString(
+					playerTeam === ETeamAB.TEAM_A ? match.data.teamA.name : match.data.teamB.name
+				)}`
+			);
 		} else {
-			this.say(
-				`${this.currentMap + 1}. MAP FINISHED (WINNER: ${this.getCurrentMatchMap()
-					?.getWinner()
-					.toIngameString()})`
+			say(match, `YOU HAVE NO TEAM`);
+		}
+	}
+};
+
+const onMapEnd = async (match: Match) => {
+	console.log(`onMapEnd`);
+	const currentMatchMap = getCurrentMatchMap(match);
+	if (currentMatchMap) {
+		await MatchMap.onMapEnd(match, currentMatchMap);
+
+		const winnerTeamAB = MatchMap.getWinner(currentMatchMap);
+		if (!winnerTeamAB) {
+			await say(match, `${match.data.currentMap + 1}. MAP FINISHED (DRAW)`);
+		} else {
+			const winnerTeam = getTeamByAB(match, winnerTeamAB);
+			await say(
+				match,
+				`${match.data.currentMap + 1}. MAP FINISHED (WINNER: ${escapeRconString(
+					winnerTeam.name
+				)})`
 			);
 		}
+	}
 
-		if (this.isMatchEnd()) {
-			this.onMatchEnd();
+	if (isMatchEnd(match)) {
+		console.log(`isMatchEnd`);
+		await onMatchEnd(match);
+	} else {
+		match.data.currentMap++;
+		const nextMap = getCurrentMatchMap(match);
+		if (nextMap) {
+			console.log(`load next map`);
+			await MatchMap.loadMap(match, nextMap);
 		} else {
-			this.currentMap++;
-			const nextMap = this.getCurrentMatchMap();
-			if (nextMap) {
-				nextMap.loadMap();
-			} else {
-				this.onMatchEnd();
-			}
+			await onMatchEnd(match);
+		}
+	}
+};
+
+const isMatchEnd = (match: Match) => {
+	if (match.data.canClinch) {
+		const wonMapsTeamA = getTeamWins(match, ETeamAB.TEAM_A);
+		const wonMapsTeamB = getTeamWins(match, ETeamAB.TEAM_B);
+		if (match.data.matchMaps.length / 2 < Math.max(wonMapsTeamA, wonMapsTeamB)) {
+			return true;
 		}
 	}
 
-	async onMatchEnd() {
-		this.state = EMatchSate.FINISHED;
-		this.loadEndConfig();
-		this.webhook.onMatchEnd();
-		await sleep(20000);
-		switch (this.matchEndAction) {
+	return match.data.matchMaps.reduce((pv, cv) => pv && cv.state === EMatchMapSate.FINISHED, true);
+};
+
+export const getTeamWins = (match: Match, teamAB: ETeamAB) => {
+	if (teamAB === ETeamAB.TEAM_A) {
+		return (
+			match.data.teamA.advantage +
+			match.data.matchMaps.reduce(
+				(pv: number, cv) =>
+					pv +
+					(cv.state === EMatchMapSate.FINISHED &&
+					MatchMap.getWinner(cv) === ETeamAB.TEAM_A
+						? 1
+						: 0),
+				0
+			)
+		);
+	} else {
+		return (
+			match.data.teamB.advantage +
+			match.data.matchMaps.reduce(
+				(pv: number, cv) =>
+					pv +
+					(cv.state === EMatchMapSate.FINISHED &&
+					MatchMap.getWinner(cv) === ETeamAB.TEAM_B
+						? 1
+						: 0),
+				0
+			)
+		);
+	}
+};
+
+const onMatchEnd = async (match: Match) => {
+	if (match.data.state !== EMatchSate.FINISHED) {
+		match.data.state = EMatchSate.FINISHED;
+		await execManyRcon(match, match.data.rconCommands?.end);
+		const wonMapsTeamA = getTeamWins(match, ETeamAB.TEAM_A);
+		const wonMapsTeamB = getTeamWins(match, ETeamAB.TEAM_B);
+		Webhook.onMatchEnd(match, wonMapsTeamA, wonMapsTeamB);
+		await sleep(Settings.MATCH_END_ACTION_DELAY);
+		switch (match.data.matchEndAction) {
 			case EMatchEndAction.KICK_ALL:
-				this.gameServer.kickAll();
+				match.runtimeData.gameServer.kickAll();
 				break;
 			case EMatchEndAction.QUIT_SERVER:
-				this.gameServer.quitServer();
+				match.runtimeData.gameServer.quitServer();
 				break;
 		}
-		MatchService.delete(this.id);
+	}
+	await MatchService.remove(match.data.id); // this will call Match.stop()
+};
+
+export const stop = async (match: Match) => {
+	match.data.isStopped = true;
+	if (match.runtimeData.periodicTimerId) {
+		clearTimeout(match.runtimeData.periodicTimerId);
+	}
+	await say(match, `TMT IS OFFLINE`);
+	match.runtimeData.gameServer.disconnect();
+};
+
+export const update = async (match: Match, dto: IMatchUpdateDto) => {
+	// TODO
+	return false;
+};
+
+export const onElectionFinished = async (match: Match) => {
+	match.data.state = EMatchSate.MATCH_MAP;
+	const currentMatchMap = getCurrentMatchMap(match);
+	if (currentMatchMap) {
+		await MatchMap.loadMap(match, currentMatchMap);
+	}
+};
+
+// TODO: Implement match change handler
+
+/*
+function change(change: IMatchChange) {
+	if (change.state) {
+		this.changeState(change.state);
 	}
 
-	isMatchEnd(): boolean {
-		if (this.canClinch) {
-			const teamAWins =
-				this.teamA.advantage +
-				this.matchMaps.reduce(
-					(pv: number, cv) =>
-						pv +
-						(cv.state === EMatchMapSate.FINISHED && cv.getWinner() === this.teamA
-							? 1
-							: 0),
-					0
-				);
-			const teamBWins =
-				this.teamB.advantage +
-				this.matchMaps.reduce(
-					(pv: number, cv) =>
-						pv +
-						(cv.state === EMatchMapSate.FINISHED && cv.getWinner() === this.teamB
-							? 1
-							: 0),
-					0
-				);
-			if (this.matchMaps.length / 2 < Math.max(teamAWins, teamBWins)) {
-				return true;
-			}
-		}
-
-		return this.matchMaps.reduce(
-			(pv: boolean, cv) => pv && cv.state === EMatchMapSate.FINISHED,
-			true
-		);
+	if (change.gameServer) {
+		this.changeGameServer(change.gameServer);
 	}
 
-	async onPlayerLogLine(
-		name: string,
-		ingamePlayerId: string,
-		steamId: string,
-		teamString: string,
-		remainingLine: string
-	) {
-		//say "ajshdaosjkhdlaökjsdhlakjshd"
-		if (steamId === 'BOT') {
-		} else if (steamId === 'Console') {
+	if (change.webhookUrl !== undefined) {
+		if (change.webhookUrl === null) {
+			this.webhookUrl = undefined;
 		} else {
-			const player = PlayerService.ensure(steamId, name);
-			const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
-			if (sayMatch) {
-				const isTeamChat = sayMatch[1] === '_team';
-				const message = sayMatch[2];
-				await this.onPlayerSay(player, message, isTeamChat, teamString);
-			}
+			this.webhookUrl = change.webhookUrl;
 		}
 	}
 
-	async onPlayerSay(player: Player, message: string, isTeamChat: boolean, teamString: string) {
-		console.log('TCL: Match -> onPlayerSay -> onPlayerSay');
-		message = message.trim();
-
-		this.webhook.onPlayerSay(player, message, isTeamChat);
-
-		if (COMMAND_PREFIXES.includes(message[0])) {
-			message = message.substr(1);
-			const parts = message.split(' ').filter((str) => str.length > 0);
-			const commandString = parts.shift()?.toLowerCase();
-			if (commandString) {
-				const command = commandMapping.get(commandString);
-				if (command) {
-					await this.onCommand(command, player, parts, teamString);
-				}
-			}
-		}
+	if (change.logSecret) {
+		this.logSecret = change.logSecret;
+		this.registerLogAddress();
 	}
 
-	async onCommand(command: ECommand, player: Player, parameters: string[], teamString: string) {
-		let warnAboutTeam = true;
-		if (command === ECommand.TEAM) {
-			await this.onTeamCommand(player, parameters[0] || '');
-			warnAboutTeam = false;
-		}
-
-		const playerTeam = this.getTeamByPlayer(player);
-
-		if (playerTeam) {
-			this.election.onCommand(command, playerTeam, parameters);
-			await this.getCurrentMatchMap()?.onCommand(command, playerTeam, player);
-
-			if (
-				(playerTeam.currentSide === ETeamSides.T && teamString !== 'TERRORIST') ||
-				(playerTeam.currentSide === ETeamSides.CT && teamString !== 'CT')
-			) {
-				this.sayWrongTeam(player, playerTeam);
-			}
-		} else if (warnAboutTeam) {
-			this.sayNotAssigned();
-		}
+	if (typeof change.parseIncomingLogs === 'boolean') {
+		this.parseIncomingLogs = change.parseIncomingLogs;
 	}
 
-	async onElectionFinished() {
-		this.state = EMatchSate.MATCH_MAP;
-		await this.getCurrentMatchMap()?.loadMap();
+	if (change.currentMap) {
+		this.changeCurrentMap(change.currentMap);
 	}
 
-	sayNotAssigned() {
-		this.say('NOT ASSIGNED!');
-		this.say(`TYPE "${COMMAND_PREFIXES[0]}team a" TO JOIN ${this.teamA.toIngameString()}`);
-		this.say(`TYPE "${COMMAND_PREFIXES[0]}team b" TO JOIN ${this.teamB.toIngameString()}`);
+	if (typeof change.canClinch === 'boolean') {
+		this.canClinch = change.canClinch;
 	}
 
-	sayWrongTeam(player: Player, team: Team) {
-		const otherTeam = this.getOtherTeam(team);
-		this.say(
-			`PLAYER ${player.toIngameString()} IS REGISTERED FOR ${team.toIngameString()} BUT CURRENTLY IN ${
-				otherTeam.currentSide
-			} (${otherTeam.toIngameString()})`
-		);
-		this.say(
-			`CHECK SCOREBOARD AND CHANGE TEAM OR TYPE "${COMMAND_PREFIXES[0]}team ${
-				otherTeam.isTeamA ? 'a' : 'b'
-			}" TO CHANGE REGISTRATION`
-		);
-	}
-
-	async onTeamCommand(player: Player, firstParameter: string) {
-		firstParameter = firstParameter.toUpperCase();
-		if (firstParameter === 'A') {
-			this.teamA.players.add(player);
-			this.teamB.players.delete(player);
-		} else if (firstParameter === 'B') {
-			this.teamA.players.delete(player);
-			this.teamB.players.add(player);
-		} else {
-			const playerTeam = this.getTeamByPlayer(player);
-			if (playerTeam) {
-				this.say(
-					`YOU ARE IN TEAM ${
-						playerTeam.isTeamA ? 'A' : 'B'
-					}: ${playerTeam.toIngameString()}`
-				);
-			} else {
-				this.say(`YOU HAVE NO TEAM`);
-			}
-		}
-	}
-
-	getCurrentMatchMap(): MatchMap | undefined {
-		if (this.state === EMatchSate.MATCH_MAP) {
-			return this.matchMaps[this.currentMap];
-		}
-	}
-
-	getTeamByPlayer(player: Player) {
-		if (this.teamA.isPlayerInTeam(player)) {
-			return this.teamA;
-		}
-		if (this.teamB.isPlayerInTeam(player)) {
-			return this.teamB;
-		}
-		return undefined;
-	}
-
-	getTeamById(id: string) {
-		if (this.teamA.id === id) {
-			return this.teamA;
-		}
-		if (this.teamB.id === id) {
-			return this.teamB;
-		}
-		return undefined;
-	}
-
-	toJSON(): any {
-		const obj = makeStringify(this);
-		delete obj.periodicTimerId;
-		return obj;
-	}
-
-	stop() {
-		if (this.periodicTimerId) {
-			clearTimeout(this.periodicTimerId);
-		}
-		this.say(`TMT IS OFFLINE`);
-	}
-
-	change(change: IMatchChange) {
-		if (change.state) {
-			this.changeState(change.state);
-		}
-
-		if (change.gameServer) {
-			this.changeGameServer(change.gameServer);
-		}
-
-		if (change.webhookUrl !== undefined) {
-			if (change.webhookUrl === null) {
-				this.webhookUrl = undefined;
-			} else {
-				this.webhookUrl = change.webhookUrl;
-			}
-		}
-
-		if (change.logSecret) {
-			this.logSecret = change.logSecret;
-			this.registerLogAddress();
-		}
-
-		if (typeof change.parseIncomingLogs === 'boolean') {
-			this.parseIncomingLogs = change.parseIncomingLogs;
-		}
-
-		if (change.currentMap) {
-			this.changeCurrentMap(change.currentMap);
-		}
-
-		if (typeof change.canClinch === 'boolean') {
-			this.canClinch = change.canClinch;
-		}
-
-		if (change.matchEndAction) {
-			this.matchEndAction = change.matchEndAction;
-		}
-	}
-
-	changeState(state: EMatchSate) {
-		if (this.state !== state) {
-			this.state = state; // TODO: think about if further actions must take place
-		}
-	}
-
-	changeGameServer(gameServer: ISerializedGameServer) {
-		this.gameServer = new GameServer(gameServer.ip, gameServer.port, gameServer.rconPassword);
-		this.init();
-	}
-
-	changeCurrentMap(currentMap: number) {
-		if (this.currentMap !== currentMap) {
-			this.currentMap = currentMap;
-			this.getCurrentMatchMap()?.loadMap();
-		}
+	if (change.matchEndAction) {
+		this.matchEndAction = change.matchEndAction;
 	}
 }
+
+function changeState(state: EMatchSate) {
+	if (this.state !== state) {
+		this.state = state; // TODO: think about if further actions must take place
+	}
+}
+
+function changeGameServer(gameServer: ISerializedGameServer) {
+	this.gameServer = new GameServer(gameServer.ip, gameServer.port, gameServer.rconPassword);
+	this.setup();
+}
+
+function changeCurrentMap(currentMap: number) {
+	if (this.currentMap !== currentMap) {
+		this.currentMap = currentMap;
+		this.getCurrentMatchMap()?.loadMap();
+	}
+}
+
+*/

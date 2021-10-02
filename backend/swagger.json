@@ -6,17 +6,19 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"IMatchInitTeamData": {
+			"ITeamCreateDto": {
 				"properties": {
-					"remoteId": {
-						"type": "string"
-					},
 					"name": {
 						"type": "string"
 					},
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
+					},
 					"advantage": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"description": "defaults to 0 (no advantage)"
 					}
 				},
 				"required": [
@@ -255,7 +257,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ISerializedGameServer": {
+			"IGameServer": {
 				"properties": {
 					"ip": {
 						"type": "string"
@@ -284,36 +286,37 @@
 				],
 				"type": "string"
 			},
-			"ISerializedMatchInitData": {
+			"IMatchCreateDto": {
 				"properties": {
-					"remoteId": {
-						"type": "string"
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
 					},
 					"mapPool": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array",
-						"minItems": 1
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
 					},
 					"teamA": {
-						"$ref": "#/components/schemas/IMatchInitTeamData"
+						"$ref": "#/components/schemas/ITeamCreateDto"
 					},
 					"teamB": {
-						"$ref": "#/components/schemas/IMatchInitTeamData"
+						"$ref": "#/components/schemas/ITeamCreateDto"
 					},
 					"electionSteps": {
 						"items": {
 							"$ref": "#/components/schemas/IElectionStep"
 						},
-						"type": "array",
-						"minItems": 1
+						"type": "array"
 					},
 					"gameServer": {
-						"$ref": "#/components/schemas/ISerializedGameServer"
+						"$ref": "#/components/schemas/IGameServer"
 					},
 					"webhookUrl": {
-						"type": "string"
+						"type": "string",
+						"description": "if set various events will be posted to this url"
 					},
 					"rconCommands": {
 						"properties": {
@@ -321,34 +324,44 @@
 								"items": {
 									"type": "string"
 								},
-								"type": "array"
+								"type": "array",
+								"description": "executed after last match map"
 							},
 							"match": {
 								"items": {
 									"type": "string"
 								},
-								"type": "array"
+								"type": "array",
+								"description": "executed before every match map start"
 							},
 							"knife": {
 								"items": {
 									"type": "string"
 								},
-								"type": "array"
+								"type": "array",
+								"description": "executed before every knife round"
 							},
 							"init": {
 								"items": {
 									"type": "string"
 								},
-								"type": "array"
+								"type": "array",
+								"description": "executed exactly once on match init"
 							}
 						},
 						"type": "object"
 					},
 					"canClinch": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
 					},
 					"matchEndAction": {
-						"$ref": "#/components/schemas/EMatchEndAction"
+						"$ref": "#/components/schemas/EMatchEndAction",
+						"description": "defaults to NONE"
+					},
+					"electionMap": {
+						"type": "string",
+						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
 					}
 				},
 				"required": [
@@ -369,11 +382,43 @@
 				],
 				"type": "string"
 			},
-			"ElectionState": {
+			"ITeam": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"passthrough": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"advantage": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"advantage"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"EElectionState": {
 				"enum": [
 					"NOT_STARTED",
+					"RESTARTED",
 					"IN_PROGRESS",
 					"FINISHED"
+				],
+				"type": "string"
+			},
+			"ETeamAB": {
+				"enum": [
+					"TEAM_A",
+					"TEAM_B"
 				],
 				"type": "string"
 			},
@@ -384,35 +429,36 @@
 				],
 				"type": "string"
 			},
-			"ISerializedElection": {
+			"IElection": {
 				"properties": {
 					"state": {
-						"$ref": "#/components/schemas/ElectionState"
-					},
-					"currentStep": {
-						"type": "number",
-						"format": "double"
-					},
-					"currentElectionStep": {
-						"$ref": "#/components/schemas/IElectionStep"
-					},
-					"currentSubStep": {
-						"$ref": "#/components/schemas/EStep"
+						"$ref": "#/components/schemas/EElectionState"
 					},
 					"teamX": {
-						"type": "string"
+						"$ref": "#/components/schemas/ETeamAB"
 					},
 					"teamY": {
-						"type": "string"
+						"$ref": "#/components/schemas/ETeamAB"
 					},
 					"remainingMaps": {
 						"items": {
 							"type": "string"
 						},
-						"type": "array"
+						"type": "array",
+						"description": "Will be the same as the mapPool from the match, but will shrink when maps get picked, banned or randomly chosen."
 					},
-					"map": {
-						"type": "string"
+					"currentStep": {
+						"type": "number",
+						"format": "double",
+						"description": "Index of the current electionSteps of the match."
+					},
+					"currentSubStep": {
+						"$ref": "#/components/schemas/EStep",
+						"description": "Toggles between MAP and SIDE"
+					},
+					"currentStepMap": {
+						"type": "string",
+						"description": "Current set map of the current selection step."
 					},
 					"currentAgree": {
 						"properties": {
@@ -429,7 +475,8 @@
 							"teamB",
 							"teamA"
 						],
-						"type": "object"
+						"type": "object",
+						"description": "Holds the wanted maps of each team."
 					},
 					"currentRestart": {
 						"properties": {
@@ -444,84 +491,17 @@
 							"teamB",
 							"teamA"
 						],
-						"type": "object"
+						"type": "object",
+						"description": "The election process can be restarted if both teams vote for it."
 					}
 				},
 				"required": [
 					"state",
-					"currentStep",
-					"currentElectionStep",
-					"currentSubStep",
 					"remainingMaps",
-					"map",
+					"currentStep",
+					"currentSubStep",
 					"currentAgree",
 					"currentRestart"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ETeamSides": {
-				"enum": [
-					"CT",
-					"T"
-				],
-				"type": "string"
-			},
-			"ISerializedPlayer": {
-				"properties": {
-					"steamId64": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"steamId64",
-					"name"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ISerializedTeam": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"remoteId": {
-						"type": "string"
-					},
-					"currentSide": {
-						"$ref": "#/components/schemas/ETeamSides"
-					},
-					"isTeamA": {
-						"type": "boolean"
-					},
-					"isTeamB": {
-						"type": "boolean"
-					},
-					"players": {
-						"items": {
-							"$ref": "#/components/schemas/ISerializedPlayer"
-						},
-						"type": "array"
-					},
-					"name": {
-						"type": "string"
-					},
-					"advantage": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"id",
-					"currentSide",
-					"isTeamA",
-					"isTeamB",
-					"players",
-					"name",
-					"advantage"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -539,25 +519,24 @@
 				],
 				"type": "string"
 			},
-			"ISerializedMatchMap": {
+			"IMatchMap": {
 				"properties": {
 					"name": {
-						"type": "string"
+						"type": "string",
+						"description": "map name"
 					},
 					"knifeForSide": {
 						"type": "boolean"
 					},
 					"startAsCtTeam": {
-						"type": "string"
-					},
-					"startAsTTeam": {
-						"type": "string"
+						"$ref": "#/components/schemas/ETeamAB",
+						"description": "may change after knife round"
 					},
 					"state": {
 						"$ref": "#/components/schemas/EMatchMapSate"
 					},
 					"knifeWinner": {
-						"type": "string"
+						"$ref": "#/components/schemas/ETeamAB"
 					},
 					"readyTeams": {
 						"properties": {
@@ -622,7 +601,6 @@
 					"name",
 					"knifeForSide",
 					"startAsCtTeam",
-					"startAsTTeam",
 					"state",
 					"readyTeams",
 					"knifeRestart",
@@ -634,97 +612,341 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ISerializedMatch": {
+			"ELogType.CHAT": {
+				"enum": [
+					"CHAT"
+				],
+				"type": "string"
+			},
+			"IPlayer": {
 				"properties": {
-					"id": {
+					"steamId64": {
 						"type": "string"
 					},
-					"matchInitData": {
-						"$ref": "#/components/schemas/ISerializedMatchInitData"
-					},
-					"state": {
-						"$ref": "#/components/schemas/EMatchSate"
-					},
-					"election": {
-						"$ref": "#/components/schemas/ISerializedElection"
-					},
-					"teamA": {
-						"$ref": "#/components/schemas/ISerializedTeam"
-					},
-					"teamB": {
-						"$ref": "#/components/schemas/ISerializedTeam"
-					},
-					"gameServer": {
-						"$ref": "#/components/schemas/ISerializedGameServer"
-					},
-					"logSecret": {
+					"name": {
 						"type": "string"
 					},
-					"parseIncomingLogs": {
-						"type": "boolean"
-					},
-					"logCounter": {
-						"type": "number",
-						"format": "double"
-					},
-					"logLineCounter": {
-						"type": "number",
-						"format": "double"
-					},
-					"matchMaps": {
-						"items": {
-							"$ref": "#/components/schemas/ISerializedMatchMap"
-						},
-						"type": "array"
-					},
-					"currentMap": {
-						"type": "number",
-						"format": "double"
-					},
-					"canClinch": {
-						"type": "boolean"
-					},
-					"webhookUrl": {
-						"type": "string"
-					},
-					"matchEndAction": {
-						"$ref": "#/components/schemas/EMatchEndAction"
+					"team": {
+						"$ref": "#/components/schemas/ETeamAB"
 					}
 				},
 				"required": [
-					"id",
-					"matchInitData",
-					"state",
-					"election",
-					"teamA",
-					"teamB",
-					"gameServer",
-					"logSecret",
-					"parseIncomingLogs",
-					"logCounter",
-					"logLineCounter",
-					"matchMaps",
-					"currentMap",
-					"canClinch",
-					"matchEndAction"
+					"steamId64",
+					"name"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
-			"IMatchChange": {
+			"ELogType": {
+				"enum": [
+					"CHAT",
+					"SYSTEM"
+				],
+				"type": "string"
+			},
+			"ILogChat": {
 				"properties": {
+					"type": {
+						"$ref": "#/components/schemas/ELogType.CHAT"
+					},
+					"timestamp": {
+						"type": "number",
+						"format": "double"
+					},
+					"isTeamChat": {
+						"type": "boolean"
+					},
+					"player": {
+						"$ref": "#/components/schemas/IPlayer"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"type",
+					"timestamp",
+					"isTeamChat",
+					"player",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ELogType.SYSTEM": {
+				"enum": [
+					"SYSTEM"
+				],
+				"type": "string"
+			},
+			"ILogSystem": {
+				"properties": {
+					"type": {
+						"$ref": "#/components/schemas/ELogType.SYSTEM"
+					},
+					"timestamp": {
+						"type": "number",
+						"format": "double"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"type",
+					"timestamp",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TLogUnion": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/ILogChat"
+					},
+					{
+						"$ref": "#/components/schemas/ILogSystem"
+					}
+				]
+			},
+			"IMatch": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "tmt2 identifier for this match"
+					},
 					"state": {
 						"$ref": "#/components/schemas/EMatchSate"
 					},
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
+					},
+					"mapPool": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
+					},
+					"teamA": {
+						"$ref": "#/components/schemas/ITeam"
+					},
+					"teamB": {
+						"$ref": "#/components/schemas/ITeam"
+					},
+					"electionSteps": {
+						"items": {
+							"$ref": "#/components/schemas/IElectionStep"
+						},
+						"type": "array"
+					},
+					"election": {
+						"$ref": "#/components/schemas/IElection",
+						"description": "election state data"
+					},
 					"gameServer": {
-						"$ref": "#/components/schemas/ISerializedGameServer"
+						"$ref": "#/components/schemas/IGameServer"
+					},
+					"logSecret": {
+						"type": "string",
+						"description": "log secret that is given as part of the url to the cs go server it will send the logs to"
+					},
+					"parseIncomingLogs": {
+						"type": "boolean",
+						"description": "Indicates if incoming logs from the cs go server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
+					},
+					"matchMaps": {
+						"items": {
+							"$ref": "#/components/schemas/IMatchMap"
+						},
+						"type": "array",
+						"description": "The maps which will be played. If match state is still ELECTION than this is not final."
+					},
+					"currentMap": {
+						"type": "number",
+						"format": "double",
+						"description": "Index of the matchMaps array indicating the current map."
 					},
 					"webhookUrl": {
 						"type": "string",
-						"nullable": true
+						"description": "if set various events will be posted to this url"
+					},
+					"rconCommands": {
+						"properties": {
+							"end": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed after last match map"
+							},
+							"match": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every match map start"
+							},
+							"knife": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every knife round"
+							},
+							"init": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed exactly once on match init"
+							}
+						},
+						"type": "object"
+					},
+					"canClinch": {
+						"type": "boolean",
+						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
+					},
+					"matchEndAction": {
+						"$ref": "#/components/schemas/EMatchEndAction",
+						"description": "defaults to NONE"
+					},
+					"logs": {
+						"items": {
+							"$ref": "#/components/schemas/TLogUnion"
+						},
+						"type": "array"
+					},
+					"players": {
+						"items": {
+							"$ref": "#/components/schemas/IPlayer"
+						},
+						"type": "array"
+					},
+					"tmtSecret": {
+						"type": "string"
+					},
+					"isStopped": {
+						"type": "boolean",
+						"description": "If match is finished or if the match was stopped/deleted this is true."
+					},
+					"electionMap": {
+						"type": "string",
+						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
+					}
+				},
+				"required": [
+					"id",
+					"state",
+					"mapPool",
+					"teamA",
+					"teamB",
+					"electionSteps",
+					"election",
+					"gameServer",
+					"logSecret",
+					"parseIncomingLogs",
+					"matchMaps",
+					"currentMap",
+					"canClinch",
+					"matchEndAction",
+					"logs",
+					"players",
+					"isStopped",
+					"electionMap"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IMatchUpdateDto": {
+				"properties": {
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
+					},
+					"mapPool": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
+					},
+					"teamA": {
+						"$ref": "#/components/schemas/ITeamCreateDto"
+					},
+					"teamB": {
+						"$ref": "#/components/schemas/ITeamCreateDto"
+					},
+					"electionSteps": {
+						"items": {
+							"$ref": "#/components/schemas/IElectionStep"
+						},
+						"type": "array"
+					},
+					"gameServer": {
+						"$ref": "#/components/schemas/IGameServer"
+					},
+					"webhookUrl": {
+						"type": "string",
+						"description": "if set various events will be posted to this url"
+					},
+					"rconCommands": {
+						"properties": {
+							"end": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed after last match map"
+							},
+							"match": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every match map start"
+							},
+							"knife": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every knife round"
+							},
+							"init": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed exactly once on match init"
+							}
+						},
+						"type": "object"
+					},
+					"canClinch": {
+						"type": "boolean",
+						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
+					},
+					"matchEndAction": {
+						"$ref": "#/components/schemas/EMatchEndAction",
+						"description": "defaults to NONE"
+					},
+					"electionMap": {
+						"type": "string",
+						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
+					},
+					"id": {
+						"type": "string"
+					},
+					"state": {
+						"$ref": "#/components/schemas/EMatchSate"
 					},
 					"logSecret": {
-						"type": "string"
+						"type": "string",
+						"description": "updates the server's log address automatically"
 					},
 					"parseIncomingLogs": {
 						"type": "boolean"
@@ -732,14 +954,11 @@
 					"currentMap": {
 						"type": "number",
 						"format": "double"
-					},
-					"canClinch": {
-						"type": "boolean"
-					},
-					"matchEndAction": {
-						"$ref": "#/components/schemas/EMatchEndAction"
 					}
 				},
+				"required": [
+					"id"
+				],
 				"type": "object",
 				"additionalProperties": false
 			}
@@ -788,7 +1007,7 @@
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/ISerializedMatchInitData"
+								"$ref": "#/components/schemas/IMatchCreateDto"
 							}
 						}
 					}
@@ -803,12 +1022,22 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/ISerializedMatch"
+										"$ref": "#/components/schemas/IMatch"
 									},
 									"type": "array"
 								}
 							}
 						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			},
+			"delete": {
+				"operationId": "DeleteAll",
+				"responses": {
+					"204": {
+						"description": "No content"
 					}
 				},
 				"security": [],
@@ -826,7 +1055,7 @@
 								"schema": {
 									"anyOf": [
 										{
-											"$ref": "#/components/schemas/ISerializedMatch"
+											"$ref": "#/components/schemas/IMatch"
 										},
 										{}
 									]
@@ -847,8 +1076,8 @@
 					}
 				]
 			},
-			"post": {
-				"operationId": "ChangeMatch",
+			"put": {
+				"operationId": "UpdateMatch",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -882,7 +1111,7 @@
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/IMatchChange"
+								"$ref": "#/components/schemas/IMatchUpdateDto"
 							}
 						}
 					}
@@ -891,8 +1120,20 @@
 			"delete": {
 				"operationId": "DeleteMatch",
 				"responses": {
-					"204": {
-						"description": "No content"
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"type": "boolean"
+										},
+										{}
+									]
+								}
+							}
+						}
 					}
 				},
 				"security": [],

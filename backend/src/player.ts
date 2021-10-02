@@ -1,17 +1,13 @@
 import SteamID from 'steamid';
+import { IPlayer } from './interfaces/player';
 
-export class Player {
-	steamId: SteamID;
-	steamId64: string;
-	name: string;
+export const create = (steamId: string, name: string): IPlayer => {
+	return {
+		name: name,
+		steamId64: getSteamID64(steamId),
+	};
+};
 
-	constructor(steamId: string, name: string) {
-		this.steamId = new SteamID(steamId);
-		this.steamId64 = this.steamId.getSteamID64();
-		this.name = name;
-	}
-
-	toIngameString(): string {
-		return this.name.replace(/[";]/g, '');
-	}
-}
+export const getSteamID64 = (steamId: string) => {
+	return new SteamID(steamId).getSteamID64();
+};

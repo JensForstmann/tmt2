@@ -1,97 +1,69 @@
-import { Match } from '../match';
-import { MatchMap } from '../matchMap';
-
 export enum EMatchMapSate {
+	/** map will be played in the future, server has not changed to this map, yet */
 	PENDING = 'PENDING',
+	/** server will change to this map, soon */
 	MAP_CHANGE = 'MAP_CHANGE',
 	WARMUP = 'WARMUP',
 	KNIFE = 'KNIFE',
+	/** knife round is over, waiting for winner to select side (or to restart the knife round) */
 	AFTER_KNIFE = 'AFTER_KNIFE',
 	IN_PROGRESS = 'IN_PROGRESS',
 	PAUSED = 'PAUSED',
 	FINISHED = 'FINISHED',
 }
 
-export interface IMatchMapChange {
+export enum ETeamAB {
+	TEAM_A = 'TEAM_A',
+	TEAM_B = 'TEAM_B',
+}
+
+export const getOtherTeamAB = (team: ETeamAB): ETeamAB => {
+	switch (team) {
+		case ETeamAB.TEAM_A:
+			return ETeamAB.TEAM_B;
+		case ETeamAB.TEAM_B:
+			return ETeamAB.TEAM_A;
+	}
+};
+
+export interface IMatchMap {
+	/** map name */
+	name: string;
+	knifeForSide: boolean;
+	/** may change after knife round */
+	startAsCtTeam: ETeamAB;
+	// startAsTTeam: ETeamAB; // can be calculated
+	// currentCtTeam: ETeamAB; // can be calculated
+	// currentTTeam: ETeamAB; // can be calculated
+	state: EMatchMapSate;
+	knifeWinner?: ETeamAB;
+	readyTeams: {
+		teamA: boolean;
+		teamB: boolean;
+	};
+	knifeRestart: {
+		teamA: boolean;
+		teamB: boolean;
+	};
+	score: {
+		teamA: number;
+		teamB: number;
+	};
+	overTimeEnabled: boolean;
+	overTimeMaxRounds: number;
+	maxRounds: number;
+}
+
+export interface IMatchMapUpdateDto {
 	name?: string;
 	knifeForSide?: boolean;
-	startAsCtTeam?: 'teamA' | 'teamB';
+	startAsCtTeam?: ETeamAB;
 	state?: EMatchMapSate;
-	knifeWinner?: 'teamA' | 'teamB';
+	knifeWinner?: ETeamAB;
 	score?: {
 		teamA?: number;
 		teamB?: number;
 	};
+	/** reads and refreshes mp_overtime_enable, mp_overtime_maxrounds and mp_maxrounds from rcon */
 	refreshOvertimeAndMaxRoundsSettings?: boolean;
-}
-
-export interface ISerializedMatchMap {
-	name: string;
-	knifeForSide: boolean;
-	startAsCtTeam: string;
-	startAsTTeam: string;
-	state: EMatchMapSate;
-	knifeWinner?: string;
-	readyTeams: {
-		teamA: boolean;
-		teamB: boolean;
-	};
-	knifeRestart: {
-		teamA: boolean;
-		teamB: boolean;
-	};
-	score: {
-		teamA: number;
-		teamB: number;
-	};
-	overTimeEnabled: boolean;
-	overTimeMaxRounds: number;
-	maxRounds: number;
-}
-
-export class SerializedMatchMap implements ISerializedMatchMap {
-	name: string;
-	knifeForSide: boolean;
-	startAsCtTeam: string;
-	startAsTTeam: string;
-	state: EMatchMapSate;
-	knifeWinner?: string;
-	readyTeams: {
-		teamA: boolean;
-		teamB: boolean;
-	};
-	knifeRestart: {
-		teamA: boolean;
-		teamB: boolean;
-	};
-	score: {
-		teamA: number;
-		teamB: number;
-	};
-	overTimeEnabled: boolean;
-	overTimeMaxRounds: number;
-	maxRounds: number;
-
-	constructor(matchMap: MatchMap) {
-		this.name = matchMap.name;
-		this.knifeForSide = matchMap.knifeForSide;
-		this.startAsCtTeam = matchMap.startAsCtTeam.id;
-		this.startAsTTeam = matchMap.startAsTTeam.id;
-		this.state = matchMap.state;
-		this.knifeWinner = matchMap.knifeWinner?.id;
-		this.readyTeams = matchMap.readyTeams;
-		this.knifeRestart = matchMap.knifeRestart;
-		this.score = matchMap.score;
-		this.overTimeEnabled = matchMap.overTimeEnabled;
-		this.overTimeMaxRounds = matchMap.overTimeMaxRounds;
-		this.maxRounds = matchMap.maxRounds;
-	}
-
-	static fromSerializedToNormal(serializedMatchMap: ISerializedMatchMap, match: Match): MatchMap {
-		return new MatchMap(match, serializedMatchMap.name, serializedMatchMap);
-	}
-
-	static fromNormalToSerialized(matchMap: MatchMap): ISerializedMatchMap {
-		return new this(matchMap);
-	}
 }

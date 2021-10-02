@@ -1,4 +1,5 @@
-import { ISerializedPlayer } from './player';
+import { IPlayer } from './player';
+import { ITeam } from './team';
 
 export enum EWebhookType {
 	CHAT = 'CHAT',
@@ -13,20 +14,21 @@ export enum EWebhookType {
 }
 
 export interface IWebhook {
-	id: string;
-	remoteId?: string;
+	matchId: string;
+	matchPassthrough?: string;
 	type: EWebhookType;
 }
 
 export interface IChatWebhook extends IWebhook {
 	type: EWebhookType.CHAT;
-	player: ISerializedPlayer;
+	player: IPlayer;
 	message: string;
 	isTeamChat: boolean;
 }
 
 export interface IRoundEndWebhook extends IWebhook {
 	type: EWebhookType.ROUND_END;
+	winnerTeam: ITeam;
 	scoreTeamA: number;
 	scoreTeamB: number;
 }

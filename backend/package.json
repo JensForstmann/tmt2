@@ -1,6 +1,6 @@
 {
 	"name": "tmt2-backend",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"main": "dist/index.js",
 	"repository": "https://github.com/JensForstmann/tmt2",
 	"author": "Jens Forstmann",

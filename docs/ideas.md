@@ -10,7 +10,7 @@
 - mp_teamscore_1, mp_teamscore_2, mp_teamscore_max https://blog.counter-strike.net/index.php/2017/02/17867/
 - sv_competitive_official_5v5
 - mp_team_timeout_max, mp_team_timeout_time, timeout_ct_start, timeout_t_start, mp_debug_timeouts
-- mp_match_end_restart, mp_match_restart_delay
+- mp_match_end_restart, mp_match_restart_delay, mp_match_end_changelevel
 - mp_competitive_endofmatch_extra_time
 - sv_buy_status_override 3, mp_give_player_c4 0, mp_startmoney 0, mp_drop_knife_enable 1, mp_t_default_melee "", mp_ct_default_melee "", mp_ct_default_secondary "", mp_t_default_secondary ""
 - mp_halftime, mp_halftime_duration, mp_halftime_pausematch, mp_halftime_pausetimer
