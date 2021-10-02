@@ -91,26 +91,30 @@ export const onCommand = async (
 		match.data.election.state === EElectionState.NOT_STARTED
 	) {
 		const map = (parameters[0] || '').toLowerCase();
-		const currentElectionStep = match.data.electionSteps[match.data.election.currentStep];
-		switch (command) {
-			case ECommand.AGREE:
-				await agreeCommand(match, currentElectionStep, teamAB, map);
-				break;
-			case ECommand.BAN:
-				await banCommand(match, currentElectionStep, teamAB, map);
-				break;
-			case ECommand.PICK:
-				await pickCommand(match, currentElectionStep, teamAB, map);
-				break;
-			case ECommand.CT:
-				await ctCommand(match, currentElectionStep, teamAB);
-				break;
-			case ECommand.T:
-				await tCommand(match, currentElectionStep, teamAB);
-				break;
-			case ECommand.RESTART:
-				await restartCommand(match, currentElectionStep, teamAB);
-				break;
+		const currentElectionStep = match.data.electionSteps[match.data.election.currentStep] as
+			| IElectionStep
+			| undefined;
+		if (currentElectionStep) {
+			switch (command) {
+				case ECommand.AGREE:
+					await agreeCommand(match, currentElectionStep, teamAB, map);
+					break;
+				case ECommand.BAN:
+					await banCommand(match, currentElectionStep, teamAB, map);
+					break;
+				case ECommand.PICK:
+					await pickCommand(match, currentElectionStep, teamAB, map);
+					break;
+				case ECommand.CT:
+					await ctCommand(match, currentElectionStep, teamAB);
+					break;
+				case ECommand.T:
+					await tCommand(match, currentElectionStep, teamAB);
+					break;
+				case ECommand.RESTART:
+					await restartCommand(match, currentElectionStep, teamAB);
+					break;
+			}
 		}
 	}
 };
@@ -334,14 +338,16 @@ const next = async (match: Match.Match) => {
 	match.data.election.currentRestart.teamA = false;
 	match.data.election.currentRestart.teamB = false;
 
-	const currentElectionStep = match.data.electionSteps[match.data.election.currentStep];
+	const currentElectionStep = match.data.electionSteps[match.data.election.currentStep] as
+		| IElectionStep
+		| undefined;
 
 	if (
 		match.data.election.currentSubStep === EStep.MAP &&
-		(currentElectionStep.map.mode === EMapMode.AGREE ||
-			currentElectionStep.map.mode === EMapMode.FIXED ||
-			currentElectionStep.map.mode === EMapMode.PICK ||
-			currentElectionStep.map.mode === EMapMode.RANDOM_PICK)
+		(currentElectionStep?.map.mode === EMapMode.AGREE ||
+			currentElectionStep?.map.mode === EMapMode.FIXED ||
+			currentElectionStep?.map.mode === EMapMode.PICK ||
+			currentElectionStep?.map.mode === EMapMode.RANDOM_PICK)
 	) {
 		match.data.election.currentSubStep = EStep.SIDE;
 	} else {
@@ -353,11 +359,13 @@ const next = async (match: Match.Match) => {
 		}
 	}
 
-	auto(match);
+	await auto(match);
 };
 
 export const auto = async (match: Match.Match) => {
-	const currentElectionStep = match.data.electionSteps[match.data.election.currentStep];
+	const currentElectionStep = match.data.electionSteps[match.data.election.currentStep] as
+		| IElectionStep
+		| undefined;
 	if (match.data.election.state !== EElectionState.FINISHED && currentElectionStep) {
 		if (match.data.election.currentSubStep === EStep.MAP) {
 			await autoMap(match, currentElectionStep);
@@ -473,9 +481,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, true));
 		await Match.say(
 			match,
-			`${match.data.matchMaps.length}. MAP: ${
-				match.data.election.currentStepMap
-			} (KNIFE FOR SIDE)`
+			`${match.data.matchMaps.length}. MAP: ${match.data.election.currentStepMap} (KNIFE FOR SIDE)`
 		);
 		await next(match);
 		return;
