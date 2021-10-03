@@ -12,9 +12,9 @@ import {
 } from './interfaces/webhook';
 import * as Match from './match';
 
-const send = (data: IWebhook, webhookUrl?: string) => {
-	if (webhookUrl?.startsWith('http')) {
-		axios.post(webhookUrl, data).catch((err) => {
+const send = (match: Match.Match, data: IWebhook) => {
+	if (match.data.webhookUrl?.startsWith('http')) {
+		axios.post(match.data.webhookUrl, data).catch((err) => {
 			console.warn(`send webhook failed: ${err}`);
 		});
 	}
@@ -33,7 +33,7 @@ export const onRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: 
 		scoreTeamA: matchMap.score.teamA,
 		scoreTeamB: matchMap.score.teamB,
 	};
-	send(data);
+	send(match, data);
 };
 
 export const onPlayerSay = (
@@ -50,7 +50,7 @@ export const onPlayerSay = (
 		message: message,
 		isTeamChat: isTeamChat,
 	};
-	send(data);
+	send(match, data);
 };
 
 export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeamB: number) => {
@@ -61,7 +61,7 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 		wonMapsTeamA: wonMapsTeamA,
 		wonMapsTeamB: wonMapsTeamB,
 	};
-	send(data);
+	send(match, data);
 };
 export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 	const data: IMapEndWebhook = {
@@ -71,5 +71,5 @@ export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 		scoreTeamA: matchMap.score.teamA,
 		scoreTeamB: matchMap.score.teamB,
 	};
-	send(data);
+	send(match, data);
 };
