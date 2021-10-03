@@ -1,6 +1,10 @@
 FROM node:14-alpine AS BUILD_IMAGE
 WORKDIR /app
-COPY . .
+COPY src src
+COPY package-lock.json .
+COPY package.json .
+COPY tsconfig.json .
+COPY tsoa.json .
 RUN npm install
 RUN npm run build
 RUN npm prune --production
