@@ -25,6 +25,7 @@ export interface Match {
 	data: IMatch;
 	rconConnection: Rcon;
 	periodicTimerId?: NodeJS.Timeout;
+	logBuffer: string[];
 }
 
 export const createFromData = async (data: IMatch) => {
@@ -32,6 +33,7 @@ export const createFromData = async (data: IMatch) => {
 	const match: Match = {
 		data: data,
 		rconConnection: gameServer,
+		logBuffer: [],
 	};
 	gameServer.on('end', () => onRconConnectionEnd(match));
 	await setup(match);
@@ -53,10 +55,11 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		players: [],
 		canClinch: dto.canClinch ?? true,
 		matchEndAction: dto.matchEndAction ?? EMatchEndAction.NONE,
-		election: Election.create(dto.mapPool),
+		election: Election.create(dto.mapPool, dto.electionSteps),
 		isStopped: false,
 		electionMap: dto.electionMap ?? 'de_dust2',
 	};
+	// TODO: check if webhook is available
 	const match = await createFromData(data);
 	await init(match);
 	return match;
@@ -86,9 +89,13 @@ export const onRconConnectionEnd = async (match: Match) => {
  * Executes once per match and every time the map will be loaded from storage.
  */
 const setup = async (match: Match) => {
-	// TODO: add needed log options so that TMT can work (mp_logdetail xy, ...)
+	// TMT does not need any special log settings to work. Only 'log on' must be executed.
+	// If more is needed (in the future): mp_logdetail, mp_logdetail_items, mp_logmoney
 
-	await registerLogAddress(match);
+	await execRcon(match, 'log on');
+
+	const logAddress = `${process.env.TMT_LOG_ADDRESS}/api/matches/${match.data.id}/server/log/${match.data.logSecret}`;
+	await execRcon(match, `logaddress_add_http "${logAddress}"`);
 	await setTeamNames(match);
 
 	await execRcon(match, `mp_backup_round_file "round_backup_${match.data.id}"`);
@@ -100,14 +107,18 @@ const setup = async (match: Match) => {
 	);
 
 	// delay parsing of incoming log lines (because we don't about the initial big batch)
-	sleep(2000).then(async () => {
-		match.data.parseIncomingLogs = true;
-		await say(match, 'ONLINE');
-		if (match.data.state === EMatchSate.ELECTION) {
-			Election.auto(match);
-		}
-		await sayPeriodicMessage(match);
-	});
+	sleep(2000)
+		.then(async () => {
+			match.data.parseIncomingLogs = true;
+			await say(match, 'ONLINE');
+			if (match.data.state === EMatchSate.ELECTION) {
+				await Election.auto(match);
+			}
+			await sayPeriodicMessage(match);
+		})
+		.catch((err) => {
+			console.error(`Error in delayed setup (match ${match.data.id}): ${err}`);
+		});
 };
 
 export const execRcon = async (match: Match, command: string) => {
@@ -119,9 +130,10 @@ export const execRcon = async (match: Match, command: string) => {
  */
 const init = async (match: Match) => {
 	await execRcon(match, `changelevel ${match.data.electionMap}`);
-	await execRcon(match, 'mp_warmup_pausetimer 1'); // infinite warmup
-	await execRcon(match, 'mp_autokick 0'); // never kick
 	await execManyRcon(match, match.data.rconCommands?.init);
+	await execRcon(match, 'mp_warmuptime 600');
+	await execRcon(match, 'mp_warmup_pausetimer 1');
+	await execRcon(match, 'mp_autokick 0');
 };
 
 export const execManyRcon = async (match: Match, commands?: string[]) => {
@@ -143,27 +155,23 @@ const sayPeriodicMessage = async (match: Match) => {
 	}
 
 	match.periodicTimerId = setTimeout(async () => {
-		await sayPeriodicMessage(match);
+		try {
+			await sayPeriodicMessage(match);
+		} catch (err) {
+			console.error(`Error in sayPeriodicMessage (match${match.data.id}): ${err}`);
+		}
 	}, Settings.PERIODIC_MESSAGE_FREQUENCY);
 
 	if (match.data.state === EMatchSate.ELECTION) {
-		Election.sayPeriodicMessage(
-			match,
-			match.data.electionSteps[match.data.election.currentStep]
-		);
+		await Election.sayPeriodicMessage(match);
 	} else if (match.data.state === EMatchSate.MATCH_MAP) {
 		const matchMap = getCurrentMatchMap(match);
 		if (matchMap) {
-			MatchMap.sayPeriodicMessage(match, matchMap);
+			await MatchMap.sayPeriodicMessage(match, matchMap);
 		}
 	} else if (match.data.state === EMatchSate.FINISHED) {
 		await say(match, 'MATCH IS FINISHED');
 	}
-};
-
-const registerLogAddress = async (match: Match) => {
-	const logAddress = `${process.env.TMT_LOG_ADDRESS}/api/matches/${match.data.id}/server/log/${match.data.logSecret}`;
-	await execRcon(match, `logaddress_add_http "${logAddress}"`);
 };
 
 const getCurrentMatchMap = (match: Match) => {
@@ -229,10 +237,19 @@ export const loadRoundBackup = async (match: Match, file: string) => {
 };
 
 export const onLog = async (match: Match, body: string) => {
-	if (match.data.parseIncomingLogs) {
-		const lines = body.split('\n');
-		for (let index = 0; index < lines.length; index++) {
-			await onLogLine(match, lines[index]);
+	if (!match.data.parseIncomingLogs) {
+		return;
+	}
+
+	const lines = body.split('\n');
+	match.logBuffer.push(...lines);
+
+	if (match.logBuffer.length === lines.length) {
+		// logBuffer was empty before -> no other onLogLine is in progress right now
+		while (match.logBuffer.length > 0) {
+			const oldestLine = match.logBuffer[0];
+			await onLogLine(match, oldestLine);
+			match.logBuffer.splice(0, 1);
 		}
 	}
 };
@@ -351,7 +368,9 @@ const onCommand = async (
 	if (teamAB) {
 		const playerTeam = getTeamByAB(match, teamAB);
 
-		Election.onCommand(match, command, teamAB, parameters);
+		if (match.data.state === EMatchSate.ELECTION) {
+			await Election.onCommand(match, command, teamAB, parameters);
+		}
 
 		const currentMatchMap = getCurrentMatchMap(match);
 		if (currentMatchMap) {
@@ -367,10 +386,10 @@ const onCommand = async (
 			(teamString === 'TERRORIST' && player.team !== currentTTeamAB) ||
 			(teamString === 'CT' && player.team !== currentCtTeamAB)
 		) {
-			sayWrongTeamOrSide(match, player, teamString, playerTeam, teamAB);
+			await sayWrongTeamOrSide(match, player, teamString, playerTeam, teamAB);
 		}
 	} else if (warnAboutTeam) {
-		sayNotAssigned(match, player);
+		await sayNotAssigned(match, player);
 	}
 };
 
@@ -421,8 +440,20 @@ const onTeamCommand = async (match: Match, player: IPlayer, firstParameter: stri
 	firstParameter = firstParameter.toUpperCase();
 	if (firstParameter === 'A') {
 		player.team = ETeamAB.TEAM_A;
+		say(
+			match,
+			`PLAYER ${escapeRconString(player.name)} JOINED TEAM ${escapeRconString(
+				match.data.teamA.name
+			)}`
+		);
 	} else if (firstParameter === 'B') {
 		player.team = ETeamAB.TEAM_B;
+		say(
+			match,
+			`PLAYER ${escapeRconString(player.name)} JOINED TEAM ${escapeRconString(
+				match.data.teamB.name
+			)}`
+		);
 	} else {
 		const playerTeam = player.team;
 		if (playerTeam) {
@@ -522,7 +553,7 @@ const onMatchEnd = async (match: Match) => {
 		const wonMapsTeamA = getTeamWins(match, ETeamAB.TEAM_A);
 		const wonMapsTeamB = getTeamWins(match, ETeamAB.TEAM_B);
 		Webhook.onMatchEnd(match, wonMapsTeamA, wonMapsTeamB);
-		await sleep(Settings.MATCH_END_ACTION_DELAY);
+		await sleep(Settings.MATCH_END_ACTION_DELAY); // TODO: remove await and make it async?
 		switch (match.data.matchEndAction) {
 			case EMatchEndAction.KICK_ALL:
 				await GameServer.kickAll(match);
