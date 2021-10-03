@@ -17,7 +17,9 @@ const send = (match: Match.Match, data: IWebhook) => {
 	const url = match.data.webhookUrl;
 	if (url?.startsWith('http')) {
 		axios.post(url, data).catch((err) => {
-			console.warn(`sending webhook ${data.type} of match ${data.matchId} to ${url} failed: ${err}`);
+			console.warn(
+				`sending webhook ${data.type} of match ${data.matchId} to ${url} failed: ${err}`
+			);
 		});
 	}
 };
@@ -69,7 +71,12 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 		type: EWebhookType.MATCH_END,
 		wonMapsTeamA: wonMapsTeamA,
 		wonMapsTeamB: wonMapsTeamB,
-		winnerTeam: wonMapsTeamA === wonMapsTeamB ? null : (wonMapsTeamA > wonMapsTeamB ? match.data.teamA : match.data.teamB),
+		winnerTeam:
+			wonMapsTeamA === wonMapsTeamB
+				? null
+				: wonMapsTeamA > wonMapsTeamB
+				? match.data.teamA
+				: match.data.teamB,
 	};
 	send(match, data);
 };
@@ -80,7 +87,12 @@ export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 		type: EWebhookType.MAP_END,
 		scoreTeamA: matchMap.score.teamA,
 		scoreTeamB: matchMap.score.teamB,
-		winnerTeam: matchMap.score.teamA === matchMap.score.teamB ? null : (matchMap.score.teamA > matchMap.score.teamB ? match.data.teamA : match.data.teamB),
+		winnerTeam:
+			matchMap.score.teamA === matchMap.score.teamB
+				? null
+				: matchMap.score.teamA > matchMap.score.teamB
+				? match.data.teamA
+				: match.data.teamB,
 	};
 	send(match, data);
 };
