@@ -22,6 +22,7 @@ export interface IWebhook {
 export interface IChatWebhook extends IWebhook {
 	type: EWebhookType.CHAT;
 	player: IPlayer;
+	playerTeam?: ITeam;
 	message: string;
 	isTeamChat: boolean;
 }
@@ -37,10 +38,19 @@ export interface IMapEndWebhook extends IWebhook {
 	type: EWebhookType.MAP_END;
 	scoreTeamA: number;
 	scoreTeamB: number;
+	/** winner of the match or null if it's a draw */
+	winnerTeam: ITeam | null;
 }
 
 export interface IMatchEndWebhook extends IWebhook {
 	type: EWebhookType.MATCH_END;
 	wonMapsTeamA: number;
 	wonMapsTeamB: number;
+	/** winner of the match or null if it's a draw */
+	winnerTeam: ITeam | null;
+}
+
+export interface IKnifeRoundEndWebhook extends IWebhook {
+	type: EWebhookType.KNIFE_END;
+	winnerTeam: ITeam;
 }

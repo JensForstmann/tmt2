@@ -1,10 +1,11 @@
 import axios from 'axios';
-import { IMatchMap } from './interfaces/matchMap';
+import { ETeamAB, IMatchMap } from './interfaces/matchMap';
 import { IPlayer } from './interfaces/player';
 import { ITeam } from './interfaces/team';
 import {
 	EWebhookType,
 	IChatWebhook,
+	IKnifeRoundEndWebhook,
 	IMapEndWebhook,
 	IMatchEndWebhook,
 	IRoundEndWebhook,
@@ -13,15 +14,22 @@ import {
 import * as Match from './match';
 
 const send = (match: Match.Match, data: IWebhook) => {
-	if (match.data.webhookUrl?.startsWith('http')) {
-		axios.post(match.data.webhookUrl, data).catch((err) => {
-			console.warn(`send webhook failed: ${err}`);
+	const url = match.data.webhookUrl;
+	if (url?.startsWith('http')) {
+		axios.post(url, data).catch((err) => {
+			console.warn(`sending webhook ${data.type} of match ${data.matchId} to ${url} failed: ${err}`);
 		});
 	}
 };
 
 export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
-	// TODO
+	const data: IKnifeRoundEndWebhook = {
+		matchId: match.data.id,
+		matchPassthrough: match.data.passthrough,
+		type: EWebhookType.KNIFE_END,
+		winnerTeam: winnerTeam,
+	};
+	send(match, data);
 };
 
 export const onRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
@@ -47,6 +55,7 @@ export const onPlayerSay = (
 		matchPassthrough: match.data.passthrough,
 		type: EWebhookType.CHAT,
 		player: player,
+		playerTeam: player.team ? Match.getTeamByAB(match, player.team) : undefined,
 		message: message,
 		isTeamChat: isTeamChat,
 	};
@@ -60,6 +69,7 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 		type: EWebhookType.MATCH_END,
 		wonMapsTeamA: wonMapsTeamA,
 		wonMapsTeamB: wonMapsTeamB,
+		winnerTeam: wonMapsTeamA === wonMapsTeamB ? null : (wonMapsTeamA > wonMapsTeamB ? match.data.teamA : match.data.teamB),
 	};
 	send(match, data);
 };
@@ -70,6 +80,7 @@ export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 		type: EWebhookType.MAP_END,
 		scoreTeamA: matchMap.score.teamA,
 		scoreTeamB: matchMap.score.teamB,
+		winnerTeam: matchMap.score.teamA === matchMap.score.teamB ? null : (matchMap.score.teamA > matchMap.score.teamB ? match.data.teamA : match.data.teamB),
 	};
 	send(match, data);
 };
