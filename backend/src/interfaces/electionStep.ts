@@ -62,5 +62,5 @@ export interface IRandomOrKnifeSide {
 
 export interface IElectionStep {
 	map: IFixedMap | IBanOrPickMap | IAgreeOrRandomMap;
-	side: IFixedSide | IPickSide | IRandomOrKnifeSide;
+	side: IFixedSide | IPickSide | IRandomOrKnifeSide; // TODO: remove side when it's not needed (ban steps)
 }

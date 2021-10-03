@@ -7,6 +7,9 @@ import * as Storage from './storage';
 if (!process.env.TMT_LOG_ADDRESS) {
 	throw 'environment variable TMT_LOG_ADDRESS is not set';
 }
+if (!process.env.TMT_LOG_ADDRESS.startsWith('http')) {
+	throw 'environment variable TMT_LOG_ADDRESS must be an http address';
+}
 
 const PORT = process.env.TMT_PORT || 8080;
 

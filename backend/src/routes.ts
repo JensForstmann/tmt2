@@ -280,11 +280,17 @@ const models: TsoaRoute.Models = {
         "enums": ["SYSTEM"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ESystemLogType": {
+        "dataType": "refEnum",
+        "enums": ["ERROR","WARN","INFO","DEBUG"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ILogSystem": {
         "dataType": "refObject",
         "properties": {
             "type": {"ref":"ELogType.SYSTEM","required":true},
             "timestamp": {"dataType":"double","required":true},
+            "category": {"ref":"ESystemLogType","required":true},
             "message": {"dataType":"string","required":true},
         },
         "additionalProperties": false,

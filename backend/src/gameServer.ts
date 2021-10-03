@@ -1,7 +1,6 @@
 import { Rcon } from './rcon-client';
 import { IGameServer } from './interfaces/gameServer';
 import * as Match from './match';
-import { sleep } from './utils';
 
 export const create = async (dto: IGameServer): Promise<Rcon> => {
 	const rcon = new Rcon({
