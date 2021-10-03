@@ -37,11 +37,12 @@ export const create = (
 
 export const sayPeriodicMessage = async (match: Match.Match, matchMap: IMatchMap) => {
 	if (matchMap.state === EMatchMapSate.WARMUP) {
-		// TODO: move this to a more suitable location
-		await Match.execRcon(match, 'mp_warmup_pausetimer 1'); // infinite warmup
-		await Match.execRcon(match, 'mp_autokick 0'); // never kick
+		await Match.execRcon(match, 'mp_warmuptime 600');
+		await Match.execRcon(match, 'mp_warmup_pausetimer 1');
+		await Match.execRcon(match, 'mp_autokick 0');
 	}
 
+	// TODO: More ingame chat about what must be done (state & commands)
 	switch (matchMap.state) {
 		case EMatchMapSate.IN_PROGRESS:
 			break;
@@ -52,13 +53,7 @@ export const sayPeriodicMessage = async (match: Match.Match, matchMap: IMatchMap
 		case EMatchMapSate.PAUSED:
 		case EMatchMapSate.PENDING:
 		case EMatchMapSate.WARMUP:
-			const commands = getAvailableCommands(matchMap.state);
-			if (commands.length > 0) {
-				await Match.say(
-					match,
-					`COMMANDS: ${commands.map((c) => Settings.COMMAND_PREFIXES[0] + c).join(', ')}`
-				);
-			}
+			await sayAvailableCommands(match, matchMap);
 			break;
 	}
 };
@@ -87,6 +82,16 @@ const getAvailableCommands = (state: EMatchMapSate): string[] => {
 			return [];
 		case EMatchMapSate.WARMUP:
 			return [...getCommands(ECommand.READY), ...getCommands(ECommand.UNREADY)];
+	}
+};
+
+const sayAvailableCommands = async (match: Match.Match, matchMap: IMatchMap) => {
+	const commands = getAvailableCommands(matchMap.state);
+	if (commands.length > 0) {
+		await Match.say(
+			match,
+			`COMMANDS: ${commands.map((c) => Settings.COMMAND_PREFIXES[0] + c).join(', ')}`
+		);
 	}
 };
 
@@ -392,7 +397,9 @@ export const onCommand = async (
 	teamAB: ETeamAB,
 	player: IPlayer
 ) => {
-	if (matchMap.state === EMatchMapSate.KNIFE) {
+	if (command === ECommand.HELP) {
+		await sayAvailableCommands(match, matchMap);
+	} else if (matchMap.state === EMatchMapSate.KNIFE) {
 		switch (command) {
 			case ECommand.RESTART:
 				await restartKnifeCommand(match, matchMap, teamAB);
@@ -417,6 +424,8 @@ export const onCommand = async (
 					await restartKnifeCommand(match, matchMap, teamAB);
 					break;
 			}
+		} else {
+			await Match.say(match, `ONLY THE WINNER OF THE KNIFE ROUND CAN CHOSE THE SIDE!`);
 		}
 	} else if (matchMap.state === EMatchMapSate.WARMUP) {
 		switch (command) {
