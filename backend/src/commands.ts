@@ -8,7 +8,6 @@ export enum ECommand {
 	UNREADY = 'UNREADY',
 	PAUSE = 'PAUSE',
 	HELP = 'HELP',
-	FULL_HELP = 'FULL_HELP',
 	STAY = 'STAY',
 	SWITCH = 'SWITCH',
 	TEAM = 'TEAM',
@@ -30,7 +29,6 @@ commandMapping.set('unready', ECommand.UNREADY);
 commandMapping.set('unrdy', ECommand.UNREADY);
 commandMapping.set('pause', ECommand.PAUSE);
 commandMapping.set('help', ECommand.HELP);
-commandMapping.set('fullhelp', ECommand.FULL_HELP);
 commandMapping.set('stay', ECommand.STAY);
 commandMapping.set('switch', ECommand.SWITCH);
 commandMapping.set('swap', ECommand.SWITCH);
