@@ -549,7 +549,6 @@ export const getTeamWins = (match: Match, teamAB: ETeamAB) => {
 const onMatchEnd = async (match: Match) => {
 	if (match.data.state !== EMatchSate.FINISHED) {
 		match.data.state = EMatchSate.FINISHED;
-		await execManyRcon(match, match.data.rconCommands?.end);
 		const wonMapsTeamA = getTeamWins(match, ETeamAB.TEAM_A);
 		const wonMapsTeamB = getTeamWins(match, ETeamAB.TEAM_B);
 		Webhook.onMatchEnd(match, wonMapsTeamA, wonMapsTeamB);
@@ -571,7 +570,10 @@ export const stop = async (match: Match) => {
 	if (match.periodicTimerId) {
 		clearTimeout(match.periodicTimerId);
 	}
-	await say(match, `TMT IS OFFLINE`);
+	await execManyRcon(match, match.data.rconCommands?.end).catch((err) => {
+		console.warn(`error executing match end rcon commands (match ${match.data.id}): ${err}`);
+	});
+	await say(match, `TMT IS OFFLINE`).catch(() => {});
 	await GameServer.disconnect(match);
 };
 
