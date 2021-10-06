@@ -5,6 +5,7 @@ import { ITeam } from './interfaces/team';
 import {
 	EWebhookType,
 	IChatWebhook,
+	IElectionEndWebhook,
 	IKnifeRoundEndWebhook,
 	IMapEndWebhook,
 	IMapStartWebhook,
@@ -24,6 +25,16 @@ const send = (match: Match.Match, data: IWebhook) => {
 		});
 	}
 };
+
+export const onElectionEnd = (match: Match.Match) => {
+	const data: IElectionEndWebhook = {
+		matchId: match.data.id,
+		matchPassthrough: match.data.passthrough ?? null,
+		type: EWebhookType.MAP_ELECTION_END,
+		mapNames: match.data.matchMaps.map((matchMaps) => matchMaps.name),
+	};
+	send(match, data);
+}
 
 export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
 	const data: IKnifeRoundEndWebhook = {

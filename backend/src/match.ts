@@ -583,6 +583,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 };
 
 export const onElectionFinished = async (match: Match) => {
+	Webhook.onElectionEnd(match);
 	match.data.state = EMatchSate.MATCH_MAP;
 	const currentMatchMap = getCurrentMatchMap(match);
 	if (currentMatchMap) {

@@ -3,10 +3,10 @@ import { ITeam } from './team';
 
 export enum EWebhookType {
 	CHAT = 'CHAT',
-	MAP_ELECTION_STEP = 'MAP_ELECTION_STEP',
+	// MAP_ELECTION_STEP = 'MAP_ELECTION_STEP',
 	MAP_ELECTION_END = 'MAP_ELECTION_END',
-	KNIFE_START = 'KNIFE_START',
-	KNIFE_RESTART = 'KNIFE_RESTART',
+	// KNIFE_START = 'KNIFE_START',
+	// KNIFE_RESTART = 'KNIFE_RESTART',
 	KNIFE_END = 'KNIFE_END',
 	ROUND_END = 'ROUND_END',
 	MAP_START = 'MAP_START',
@@ -26,6 +26,11 @@ export interface IChatWebhook extends IWebhook {
 	playerTeam: ITeam | null;
 	message: string;
 	isTeamChat: boolean;
+}
+
+export interface IElectionEndWebhook extends IWebhook {
+	type: EWebhookType.MAP_ELECTION_END;
+	mapNames: string[];
 }
 
 export interface IRoundEndWebhook extends IWebhook {
