@@ -9,20 +9,21 @@ export enum EWebhookType {
 	KNIFE_RESTART = 'KNIFE_RESTART',
 	KNIFE_END = 'KNIFE_END',
 	ROUND_END = 'ROUND_END',
+	MAP_START = 'MAP_START',
 	MAP_END = 'MAP_END',
 	MATCH_END = 'MATCH_END',
 }
 
 export interface IWebhook {
 	matchId: string;
-	matchPassthrough?: string;
+	matchPassthrough: string | null;
 	type: EWebhookType;
 }
 
 export interface IChatWebhook extends IWebhook {
 	type: EWebhookType.CHAT;
 	player: IPlayer;
-	playerTeam?: ITeam;
+	playerTeam: ITeam | null;
 	message: string;
 	isTeamChat: boolean;
 }
@@ -53,4 +54,9 @@ export interface IMatchEndWebhook extends IWebhook {
 export interface IKnifeRoundEndWebhook extends IWebhook {
 	type: EWebhookType.KNIFE_END;
 	winnerTeam: ITeam;
+}
+
+export interface IMapStartWebhook extends IWebhook {
+	type: EWebhookType.MAP_START;
+	mapName: string;
 }

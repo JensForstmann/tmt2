@@ -7,6 +7,7 @@ import {
 	IChatWebhook,
 	IKnifeRoundEndWebhook,
 	IMapEndWebhook,
+	IMapStartWebhook,
 	IMatchEndWebhook,
 	IRoundEndWebhook,
 	IWebhook,
@@ -27,7 +28,7 @@ const send = (match: Match.Match, data: IWebhook) => {
 export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
 	const data: IKnifeRoundEndWebhook = {
 		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough,
+		matchPassthrough: match.data.passthrough ?? null,
 		type: EWebhookType.KNIFE_END,
 		winnerTeam: winnerTeam,
 	};
@@ -37,7 +38,7 @@ export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerT
 export const onRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
 	const data: IRoundEndWebhook = {
 		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough,
+		matchPassthrough: match.data.passthrough ?? null,
 		type: EWebhookType.ROUND_END,
 		winnerTeam: winnerTeam,
 		scoreTeamA: matchMap.score.teamA,
@@ -54,10 +55,10 @@ export const onPlayerSay = (
 ) => {
 	const data: IChatWebhook = {
 		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough,
+		matchPassthrough: match.data.passthrough ?? null,
 		type: EWebhookType.CHAT,
 		player: player,
-		playerTeam: player.team ? Match.getTeamByAB(match, player.team) : undefined,
+		playerTeam: player.team ? Match.getTeamByAB(match, player.team) : null,
 		message: message,
 		isTeamChat: isTeamChat,
 	};
@@ -67,7 +68,7 @@ export const onPlayerSay = (
 export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeamB: number) => {
 	const data: IMatchEndWebhook = {
 		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough,
+		matchPassthrough: match.data.passthrough ?? null,
 		type: EWebhookType.MATCH_END,
 		wonMapsTeamA: wonMapsTeamA,
 		wonMapsTeamB: wonMapsTeamB,
@@ -80,10 +81,21 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 	};
 	send(match, data);
 };
+
+export const onMapStart = (match: Match.Match, matchMap: IMatchMap) => {
+	const data: IMapStartWebhook = {
+		matchId: match.data.id,
+		matchPassthrough: match.data.passthrough ?? null,
+		type: EWebhookType.MAP_START,
+		mapName: matchMap.name,
+	};
+	send(match, data);
+};
+
 export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 	const data: IMapEndWebhook = {
 		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough,
+		matchPassthrough: match.data.passthrough ?? null,
 		type: EWebhookType.MAP_END,
 		scoreTeamA: matchMap.score.teamA,
 		scoreTeamB: matchMap.score.teamB,

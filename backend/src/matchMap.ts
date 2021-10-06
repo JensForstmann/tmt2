@@ -242,6 +242,8 @@ const startMatch = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, 'MAP IS LIVE!');
 	await Match.say(match, 'MAP IS LIVE!');
 	await Match.say(match, 'MAP IS LIVE!');
+
+	Webhook.onMapStart(match, matchMap);
 };
 
 const refreshOvertimeAndMaxRoundsSettings = async (match: Match.Match, matchMap: IMatchMap) => {
