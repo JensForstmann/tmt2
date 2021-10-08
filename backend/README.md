@@ -97,9 +97,9 @@ Example:
 
 ```json5
 {
-	"2Mgog6ATqAs495NtUQUsph": { // that's the token
-		"comment": "first auto generated token" // optional comment, might be used in logging
-	},
+    "2Mgog6ATqAs495NtUQUsph": { // that's the token
+        "comment": "first auto generated token" // optional comment, might be used in logging
+    },
 
     // mutliple tokens are also possible
     "knRRkV41yLBUw1eVwRD9VF": {
