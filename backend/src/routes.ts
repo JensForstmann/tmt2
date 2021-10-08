@@ -4,17 +4,26 @@
 import { Controller, ValidationService, FieldErrors, ValidateError, TsoaRoute, HttpStatusCodeLiteral, TsoaResponse } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MatchesController } from './matchesController';
+import { expressAuthentication } from './auth';
+// @ts-ignore - no great way to install types from subpackage
+const promiseAny = require('promise.any');
 import * as express from 'express';
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
-    "ITeamCreateDto": {
+    "EMatchSate": {
+        "dataType": "refEnum",
+        "enums": ["ELECTION","MATCH_MAP","FINISHED"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ITeam": {
         "dataType": "refObject",
         "properties": {
-            "name": {"dataType":"string","required":true},
+            "id": {"dataType":"string","required":true},
             "passthrough": {"dataType":"string"},
-            "advantage": {"dataType":"double"},
+            "name": {"dataType":"string","required":true},
+            "advantage": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
     },
@@ -140,55 +149,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "IGameServer": {
-        "dataType": "refObject",
-        "properties": {
-            "ip": {"dataType":"string","required":true},
-            "port": {"dataType":"double","required":true},
-            "rconPassword": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "EMatchEndAction": {
-        "dataType": "refEnum",
-        "enums": ["KICK_ALL","QUIT_SERVER","NONE"],
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "IMatchCreateDto": {
-        "dataType": "refObject",
-        "properties": {
-            "passthrough": {"dataType":"string"},
-            "mapPool": {"dataType":"array","array":{"dataType":"string"},"required":true},
-            "teamA": {"ref":"ITeamCreateDto","required":true},
-            "teamB": {"ref":"ITeamCreateDto","required":true},
-            "electionSteps": {"dataType":"array","array":{"dataType":"refObject","ref":"IElectionStep"},"required":true},
-            "gameServer": {"ref":"IGameServer","required":true},
-            "webhookUrl": {"dataType":"string"},
-            "rconCommands": {"dataType":"nestedObjectLiteral","nestedProperties":{"end":{"dataType":"array","array":{"dataType":"string"}},"match":{"dataType":"array","array":{"dataType":"string"}},"knife":{"dataType":"array","array":{"dataType":"string"}},"init":{"dataType":"array","array":{"dataType":"string"}}}},
-            "canClinch": {"dataType":"boolean"},
-            "matchEndAction": {"ref":"EMatchEndAction"},
-            "electionMap": {"dataType":"string"},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "EMatchSate": {
-        "dataType": "refEnum",
-        "enums": ["ELECTION","MATCH_MAP","FINISHED"],
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ITeam": {
-        "dataType": "refObject",
-        "properties": {
-            "id": {"dataType":"string","required":true},
-            "passthrough": {"dataType":"string"},
-            "name": {"dataType":"string","required":true},
-            "advantage": {"dataType":"double","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "EElectionState": {
         "dataType": "refEnum",
         "enums": ["NOT_STARTED","RESTARTED","IN_PROGRESS","FINISHED"],
@@ -220,6 +180,16 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IGameServer": {
+        "dataType": "refObject",
+        "properties": {
+            "ip": {"dataType":"string","required":true},
+            "port": {"dataType":"double","required":true},
+            "rconPassword": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "EMatchMapSate": {
         "dataType": "refEnum",
         "enums": ["PENDING","MAP_CHANGE","WARMUP","KNIFE","AFTER_KNIFE","IN_PROGRESS","PAUSED","FINISHED"],
@@ -241,6 +211,11 @@ const models: TsoaRoute.Models = {
             "maxRounds": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "EMatchEndAction": {
+        "dataType": "refEnum",
+        "enums": ["KICK_ALL","QUIT_SERVER","NONE"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ELogType.CHAT": {
@@ -280,7 +255,7 @@ const models: TsoaRoute.Models = {
         "enums": ["SYSTEM"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ESystemLogType": {
+    "ESystemLogCategory": {
         "dataType": "refEnum",
         "enums": ["ERROR","WARN","INFO","DEBUG"],
     },
@@ -290,7 +265,7 @@ const models: TsoaRoute.Models = {
         "properties": {
             "type": {"ref":"ELogType.SYSTEM","required":true},
             "timestamp": {"dataType":"double","required":true},
-            "category": {"ref":"ESystemLogType","required":true},
+            "category": {"ref":"ESystemLogCategory","required":true},
             "message": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -323,9 +298,37 @@ const models: TsoaRoute.Models = {
             "matchEndAction": {"ref":"EMatchEndAction","required":true},
             "logs": {"dataType":"array","array":{"dataType":"refAlias","ref":"TLogUnion"},"required":true},
             "players": {"dataType":"array","array":{"dataType":"refObject","ref":"IPlayer"},"required":true},
-            "tmtSecret": {"dataType":"string"},
+            "tmtSecret": {"dataType":"string","required":true},
             "isStopped": {"dataType":"boolean","required":true},
             "electionMap": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ITeamCreateDto": {
+        "dataType": "refObject",
+        "properties": {
+            "name": {"dataType":"string","required":true},
+            "passthrough": {"dataType":"string"},
+            "advantage": {"dataType":"double"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IMatchCreateDto": {
+        "dataType": "refObject",
+        "properties": {
+            "passthrough": {"dataType":"string"},
+            "mapPool": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "teamA": {"ref":"ITeamCreateDto","required":true},
+            "teamB": {"ref":"ITeamCreateDto","required":true},
+            "electionSteps": {"dataType":"array","array":{"dataType":"refObject","ref":"IElectionStep"},"required":true},
+            "gameServer": {"ref":"IGameServer","required":true},
+            "webhookUrl": {"dataType":"string"},
+            "rconCommands": {"dataType":"nestedObjectLiteral","nestedProperties":{"end":{"dataType":"array","array":{"dataType":"string"}},"match":{"dataType":"array","array":{"dataType":"string"}},"knife":{"dataType":"array","array":{"dataType":"string"}},"init":{"dataType":"array","array":{"dataType":"string"}}}},
+            "canClinch": {"dataType":"boolean"},
+            "matchEndAction": {"ref":"EMatchEndAction"},
+            "electionMap": {"dataType":"string"},
         },
         "additionalProperties": false,
     },
@@ -387,10 +390,12 @@ export function RegisterRoutes(app: express.Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/matches/:id',
+            authenticateMiddleware([{"bearer_token":[]}]),
 
             function MatchesController_getMatch(request: any, response: any, next: any) {
             const args = {
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    undefined: {"in":"request","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -410,10 +415,12 @@ export function RegisterRoutes(app: express.Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/matches/:id/server/round_backups',
+            authenticateMiddleware([{"bearer_token":[]}]),
 
             function MatchesController_getRoundBackups(request: any, response: any, next: any) {
             const args = {
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    undefined: {"in":"request","required":true,"dataType":"object"},
                     count: {"in":"query","name":"count","dataType":"double"},
             };
 
@@ -434,11 +441,13 @@ export function RegisterRoutes(app: express.Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.post('/api/matches/:id/server/round_backups/:file',
+            authenticateMiddleware([{"bearer_token":[]}]),
 
             function MatchesController_loadRoundBackup(request: any, response: any, next: any) {
             const args = {
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
                     file: {"in":"path","name":"file","required":true,"dataType":"string"},
+                    undefined: {"in":"request","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -458,11 +467,13 @@ export function RegisterRoutes(app: express.Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.put('/api/matches/:id',
+            authenticateMiddleware([{"bearer_token":[]}]),
 
             function MatchesController_updateMatch(request: any, response: any, next: any) {
             const args = {
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
                     requestBody: {"in":"body","name":"requestBody","required":true,"ref":"IMatchUpdateDto"},
+                    undefined: {"in":"request","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -482,10 +493,12 @@ export function RegisterRoutes(app: express.Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.delete('/api/matches/:id',
+            authenticateMiddleware([{"bearer_token":[]}]),
 
             function MatchesController_deleteMatch(request: any, response: any, next: any) {
             const args = {
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    undefined: {"in":"request","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -505,9 +518,11 @@ export function RegisterRoutes(app: express.Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/matches',
+            authenticateMiddleware([{"bearer_token":[]}]),
 
             function MatchesController_getAllMatches(request: any, response: any, next: any) {
             const args = {
+                    undefined: {"in":"request","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -552,9 +567,11 @@ export function RegisterRoutes(app: express.Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.delete('/api/matches',
+            authenticateMiddleware([{"bearer_token":[]}]),
 
             function MatchesController_deleteAll(request: any, response: any, next: any) {
             const args = {
+                    undefined: {"in":"request","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -576,6 +593,65 @@ export function RegisterRoutes(app: express.Router) {
 
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
+
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+    function authenticateMiddleware(security: TsoaRoute.Security[] = []) {
+        return async function runAuthenticationMiddleware(request: any, _response: any, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            // keep track of failed auth attempts so we can hand back the most
+            // recent one.  This behavior was previously existing so preserving it
+            // here
+            const failedAttempts: any[] = [];
+            const pushAndRethrow = (error: any) => {
+                failedAttempts.push(error);
+                throw error;
+            };
+
+            const secMethodOrPromises: Promise<any>[] = [];
+            for (const secMethod of security) {
+                if (Object.keys(secMethod).length > 1) {
+                    const secMethodAndPromises: Promise<any>[] = [];
+
+                    for (const name in secMethod) {
+                        secMethodAndPromises.push(
+                            expressAuthentication(request, name, secMethod[name])
+                                .catch(pushAndRethrow)
+                        );
+                    }
+
+                    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+                    secMethodOrPromises.push(Promise.all(secMethodAndPromises)
+                        .then(users => { return users[0]; }));
+                } else {
+                    for (const name in secMethod) {
+                        secMethodOrPromises.push(
+                            expressAuthentication(request, name, secMethod[name])
+                                .catch(pushAndRethrow)
+                        );
+                    }
+                }
+            }
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            try {
+                request['user'] = await promiseAny(secMethodOrPromises);
+                next();
+            }
+            catch(err) {
+                // Show most recent error as response
+                const error = failedAttempts.pop();
+                error.status = error.status || 401;
+                next(error);
+            }
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        }
+    }
 
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 

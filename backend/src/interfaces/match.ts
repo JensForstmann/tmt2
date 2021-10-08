@@ -65,7 +65,7 @@ export interface IMatch {
 	matchEndAction: EMatchEndAction;
 	logs: TLogUnion[];
 	players: IPlayer[];
-	tmtSecret?: string;
+	tmtSecret: string;
 	/** If match is finished or if the match was stopped/deleted this is true. */
 	isStopped: boolean;
 	/** this map will be loaded on match init (defaults to de_dust2 if not set) */

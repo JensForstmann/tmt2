@@ -1,7 +1,7 @@
 import { generate as shortUuid } from 'short-uuid';
+import { EMatchSate, IMatch, IMatchCreateDto } from './interfaces/match';
 import * as Match from './match';
 import * as Storage from './storage';
-import { EMatchSate, IMatch, IMatchCreateDto } from './interfaces/match';
 
 const STORAGE_PREFIX = process.env.TMT_STORAGE_PREFIX || 'match_';
 const STORAGE_SUFFIX = process.env.TMT_STORAGE_SUFFIX || '.json';
@@ -55,7 +55,7 @@ export const create = async (dto: IMatchCreateDto) => {
 	matches.set(match.data.id, match);
 	startingMatches.delete(id);
 	await save(match);
-	return match.data.id;
+	return match;
 };
 
 export const get = (id: string) => {

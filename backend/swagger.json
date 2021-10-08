@@ -6,23 +6,34 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"ITeamCreateDto": {
+			"EMatchSate": {
+				"enum": [
+					"ELECTION",
+					"MATCH_MAP",
+					"FINISHED"
+				],
+				"type": "string"
+			},
+			"ITeam": {
 				"properties": {
-					"name": {
+					"id": {
 						"type": "string"
 					},
 					"passthrough": {
-						"type": "string",
-						"description": "e.g. remote identifier, will be present in every response/webhook"
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
 					},
 					"advantage": {
 						"type": "number",
-						"format": "double",
-						"description": "defaults to 0 (no advantage)"
+						"format": "double"
 					}
 				},
 				"required": [
-					"name"
+					"id",
+					"name",
+					"advantage"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -257,155 +268,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"IGameServer": {
-				"properties": {
-					"ip": {
-						"type": "string"
-					},
-					"port": {
-						"type": "number",
-						"format": "double"
-					},
-					"rconPassword": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"ip",
-					"port",
-					"rconPassword"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"EMatchEndAction": {
-				"enum": [
-					"KICK_ALL",
-					"QUIT_SERVER",
-					"NONE"
-				],
-				"type": "string"
-			},
-			"IMatchCreateDto": {
-				"properties": {
-					"passthrough": {
-						"type": "string",
-						"description": "e.g. remote identifier, will be present in every response/webhook"
-					},
-					"mapPool": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array",
-						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
-					},
-					"teamA": {
-						"$ref": "#/components/schemas/ITeamCreateDto"
-					},
-					"teamB": {
-						"$ref": "#/components/schemas/ITeamCreateDto"
-					},
-					"electionSteps": {
-						"items": {
-							"$ref": "#/components/schemas/IElectionStep"
-						},
-						"type": "array"
-					},
-					"gameServer": {
-						"$ref": "#/components/schemas/IGameServer"
-					},
-					"webhookUrl": {
-						"type": "string",
-						"description": "if set various events will be posted to this url"
-					},
-					"rconCommands": {
-						"properties": {
-							"end": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array",
-								"description": "executed after last match map"
-							},
-							"match": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array",
-								"description": "executed before every match map start"
-							},
-							"knife": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array",
-								"description": "executed before every knife round"
-							},
-							"init": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array",
-								"description": "executed exactly once on match init"
-							}
-						},
-						"type": "object"
-					},
-					"canClinch": {
-						"type": "boolean",
-						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
-					},
-					"matchEndAction": {
-						"$ref": "#/components/schemas/EMatchEndAction",
-						"description": "defaults to NONE"
-					},
-					"electionMap": {
-						"type": "string",
-						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
-					}
-				},
-				"required": [
-					"mapPool",
-					"teamA",
-					"teamB",
-					"electionSteps",
-					"gameServer"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"EMatchSate": {
-				"enum": [
-					"ELECTION",
-					"MATCH_MAP",
-					"FINISHED"
-				],
-				"type": "string"
-			},
-			"ITeam": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"passthrough": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					},
-					"advantage": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"id",
-					"name",
-					"advantage"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"EElectionState": {
 				"enum": [
 					"NOT_STARTED",
@@ -502,6 +364,27 @@
 					"currentSubStep",
 					"currentAgree",
 					"currentRestart"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IGameServer": {
+				"properties": {
+					"ip": {
+						"type": "string"
+					},
+					"port": {
+						"type": "number",
+						"format": "double"
+					},
+					"rconPassword": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"ip",
+					"port",
+					"rconPassword"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -612,6 +495,14 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"EMatchEndAction": {
+				"enum": [
+					"KICK_ALL",
+					"QUIT_SERVER",
+					"NONE"
+				],
+				"type": "string"
+			},
 			"ELogType.CHAT": {
 				"enum": [
 					"CHAT"
@@ -679,7 +570,7 @@
 				],
 				"type": "string"
 			},
-			"ESystemLogType": {
+			"ESystemLogCategory": {
 				"enum": [
 					"ERROR",
 					"WARN",
@@ -698,7 +589,7 @@
 						"format": "double"
 					},
 					"category": {
-						"$ref": "#/components/schemas/ESystemLogType"
+						"$ref": "#/components/schemas/ESystemLogCategory"
 					},
 					"message": {
 						"type": "string"
@@ -868,8 +759,118 @@
 					"matchEndAction",
 					"logs",
 					"players",
+					"tmtSecret",
 					"isStopped",
 					"electionMap"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ITeamCreateDto": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
+					},
+					"advantage": {
+						"type": "number",
+						"format": "double",
+						"description": "defaults to 0 (no advantage)"
+					}
+				},
+				"required": [
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IMatchCreateDto": {
+				"properties": {
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
+					},
+					"mapPool": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
+					},
+					"teamA": {
+						"$ref": "#/components/schemas/ITeamCreateDto"
+					},
+					"teamB": {
+						"$ref": "#/components/schemas/ITeamCreateDto"
+					},
+					"electionSteps": {
+						"items": {
+							"$ref": "#/components/schemas/IElectionStep"
+						},
+						"type": "array"
+					},
+					"gameServer": {
+						"$ref": "#/components/schemas/IGameServer"
+					},
+					"webhookUrl": {
+						"type": "string",
+						"description": "if set various events will be posted to this url"
+					},
+					"rconCommands": {
+						"properties": {
+							"end": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed after last match map"
+							},
+							"match": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every match map start"
+							},
+							"knife": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every knife round"
+							},
+							"init": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed exactly once on match init"
+							}
+						},
+						"type": "object"
+					},
+					"canClinch": {
+						"type": "boolean",
+						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
+					},
+					"matchEndAction": {
+						"$ref": "#/components/schemas/EMatchEndAction",
+						"description": "defaults to NONE"
+					},
+					"electionMap": {
+						"type": "string",
+						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
+					}
+				},
+				"required": [
+					"mapPool",
+					"teamA",
+					"teamB",
+					"electionSteps",
+					"gameServer"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -976,7 +977,12 @@
 				"additionalProperties": false
 			}
 		},
-		"securitySchemes": {}
+		"securitySchemes": {
+			"bearer_token": {
+				"type": "http",
+				"scheme": "bearer"
+			}
+		}
 	},
 	"info": {
 		"title": "tmt2-backend",
@@ -999,15 +1005,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"properties": {
-										"id": {
-											"type": "string"
-										}
-									},
-									"required": [
-										"id"
-									],
-									"type": "object"
+									"$ref": "#/components/schemas/IMatch"
 								}
 							}
 						}
@@ -1043,7 +1041,11 @@
 						}
 					}
 				},
-				"security": [],
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
 				"parameters": []
 			},
 			"delete": {
@@ -1053,7 +1055,11 @@
 						"description": "No content"
 					}
 				},
-				"security": [],
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
 				"parameters": []
 			}
 		},
@@ -1077,7 +1083,11 @@
 						}
 					}
 				},
-				"security": [],
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
 				"parameters": [
 					{
 						"in": "path",
@@ -1108,7 +1118,11 @@
 						}
 					}
 				},
-				"security": [],
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
 				"parameters": [
 					{
 						"in": "path",
@@ -1149,7 +1163,11 @@
 						}
 					}
 				},
-				"security": [],
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
 				"parameters": [
 					{
 						"in": "path",
@@ -1198,7 +1216,11 @@
 						}
 					}
 				},
-				"security": [],
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
 				"parameters": [
 					{
 						"in": "path",
@@ -1240,7 +1262,11 @@
 						}
 					}
 				},
-				"security": [],
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
 				"parameters": [
 					{
 						"in": "path",

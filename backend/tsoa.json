@@ -4,9 +4,16 @@
 	"controllerPathGlobs": ["./src/**/*Controller.ts"],
 	"spec": {
 		"outputDirectory": "./",
-		"specVersion": 3
+		"specVersion": 3,
+		"securityDefinitions": {
+			"bearer_token": {
+				"type": "http",
+				"scheme": "bearer"
+			}
+		}
 	},
 	"routes": {
+		"authenticationModule": "./src/auth.ts",
 		"routesDir": "./src"
 	}
 }

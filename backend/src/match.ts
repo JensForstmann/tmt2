@@ -1,3 +1,4 @@
+import shortUUID, { generate as shortUuid } from 'short-uuid';
 import * as Election from './election';
 import * as Team from './team';
 import * as Player from './player';
@@ -58,6 +59,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		election: Election.create(dto.mapPool, dto.electionSteps),
 		isStopped: false,
 		electionMap: dto.electionMap ?? 'de_dust2',
+		tmtSecret: shortUuid(),
 	};
 	// TODO: check if webhook is available
 	const match = await createFromData(data);

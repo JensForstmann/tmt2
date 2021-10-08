@@ -34,7 +34,7 @@ export const onElectionEnd = (match: Match.Match) => {
 		mapNames: match.data.matchMaps.map((matchMaps) => matchMaps.name),
 	};
 	send(match, data);
-}
+};
 
 export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
 	const data: IKnifeRoundEndWebhook = {

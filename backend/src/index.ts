@@ -1,6 +1,7 @@
 import express, { ErrorRequestHandler } from 'express';
 import { RegisterRoutes } from './routes';
 import { ValidateError } from '@tsoa/runtime';
+import * as Auth from './auth';
 import * as MatchService from './matchService';
 import * as Storage from './storage';
 
@@ -46,8 +47,20 @@ const errorRequestHandler: ErrorRequestHandler = (err, req, res, next) => {
 		if (err instanceof ValidateError) {
 			res.status(400).send(err);
 		} else {
-			console.log(`ERROR: ${req.method} ${req.url}:`, err);
-			res.status(500).send(err + '');
+			console.error(err);
+			console.error(`ERROR: ${req.method} ${req.url}: ${err}`);
+			const status =
+				typeof err?.status === 'number' &&
+				Number.isInteger(err?.status) &&
+				err?.status >= 100 &&
+				err?.status <= 599
+					? err.status
+					: 500;
+			if (err + '' !== '[object Object]') {
+				res.status(status).send(err + '');
+			} else {
+				res.sendStatus(status);
+			}
 		}
 	} else {
 		next(err);
@@ -63,6 +76,7 @@ app.get('/api', (req, res) => {
 const main = async () => {
 	console.log(`Start TMT (${process.env.COMMIT_SHA ?? 'no COMMIT_SHA set'})`);
 	await Storage.setup();
+	await Auth.setup();
 
 	app.listen(PORT, async () => {
 		console.log(`App listening on port ${PORT}`);

@@ -73,3 +73,46 @@ TMT_SAY_PREFIX="[TMT] "
 See `swagger.json`. You might want to copy its content and paste it into https://editor.swagger.io/.
 
 See also the `examples` folder.
+
+## Security / Authentication
+
+There are two types of authentication:
+
+- global access
+- match specific access
+
+Global access tokens have full permissions. Match specific ones can only access its own match.
+
+Both are used in client requests in the Authorization header with a "Bearer "-prefix:
+
+    ...
+    Authorization: Bearer 2Mgog6ATqAs495NtUQUsph
+    ...
+
+### global access tokens
+
+Global access tokens are persisted in the storage folder in the file `access_tokens.json`.
+
+Example:
+
+```json5
+{
+	"2Mgog6ATqAs495NtUQUsph": { // that's the token
+		"comment": "first auto generated token" // optional comment, might be used in logging
+	},
+
+    // mutliple tokens are also possible
+    "knRRkV41yLBUw1eVwRD9VF": {
+        "comment": "Jens"
+    },
+    "vZQjPZBXRAK6yhCwoboxWk": {
+        "comment": "tournament system"
+    }
+}
+```
+
+If the file does not exist at startup a new one with a single auto generated global access token will be created.
+
+### match specific access tokens
+
+Every match will have a `tmtSecret` property. This can be used in the same way as a global access token.
