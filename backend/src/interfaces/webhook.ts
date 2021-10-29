@@ -54,6 +54,13 @@ export interface IMatchEndWebhook extends IWebhook {
 	wonMapsTeamB: number;
 	/** winner of the match or null if it's a draw */
 	winnerTeam: ITeam | null;
+	mapResults: {
+		mapName: string;
+		scoreTeamA: number;
+		scoreTeamB: number;
+		/** winner of the match or null if it's a draw */
+		winnerTeam: ITeam | null;
+	}[];
 }
 
 export interface IKnifeRoundEndWebhook extends IWebhook {

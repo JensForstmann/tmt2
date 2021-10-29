@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ETeamAB, IMatchMap } from './interfaces/matchMap';
+import { EMatchMapSate, ETeamAB, IMatchMap } from './interfaces/matchMap';
 import { IPlayer } from './interfaces/player';
 import { ITeam } from './interfaces/team';
 import {
@@ -89,6 +89,19 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 				: wonMapsTeamA > wonMapsTeamB
 				? match.data.teamA
 				: match.data.teamB,
+		mapResults: match.data.matchMaps
+			.filter((map) => map.state === EMatchMapSate.FINISHED)
+			.map((matchMap) => ({
+				mapName: matchMap.name,
+				scoreTeamA: matchMap.score.teamA,
+				scoreTeamB: matchMap.score.teamB,
+				winnerTeam:
+					matchMap.score.teamA === matchMap.score.teamB
+						? null
+						: matchMap.score.teamA > matchMap.score.teamB
+						? match.data.teamA
+						: match.data.teamB,
+			})),
 	};
 	send(match, data);
 };
