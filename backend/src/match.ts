@@ -105,7 +105,7 @@ const setup = async (match: Match) => {
 	await execRcon(match, 'mp_backup_round_auto 1');
 	await execRcon(
 		match,
-		'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%teamA%_%teamB%_%map%_round%round%_score_%score1%_%score2%.txt"'
+		'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%team1%_%team2%_%map%_round%round%_score_%score1%_%score2%.txt"'
 	);
 
 	// delay parsing of incoming log lines (because we don't about the initial big batch)
