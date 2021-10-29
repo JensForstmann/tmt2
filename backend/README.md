@@ -6,7 +6,7 @@ You can either use the official image hosted on docker hub or build your own one
 
 ### Official image
 
-TMT2 is available on docker hub: https://hub.docker.com/repository/docker/jensforstmann/tmt2
+TMT2 is available on docker hub: https://hub.docker.com/r/jensforstmann/tmt2
 
 Run it with:
 
