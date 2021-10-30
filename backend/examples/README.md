@@ -10,11 +10,9 @@ BO1, active duty map pool, alternate banning of maps until the last one, knife f
 
 ### createMatch_03.json
 
-BO3, active duty map pool, advantage for one team, election process:
+Double elimination final (bo3, but max. two maps, because of advantage for one team):
 
 - team A map ban
 - team B map ban
 - team A map pick + team B side pick
 - team B map pick + team A side pick
-- team B map ban
-- team A map pick + team B side pick

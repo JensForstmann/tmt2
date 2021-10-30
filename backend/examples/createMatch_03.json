@@ -57,25 +57,6 @@
 				"mode": "PICK",
 				"who": "TEAM_A"
 			}
-		},
-		{
-			"map": {
-				"mode": "BAN",
-				"who": "TEAM_B"
-			},
-			"side": {
-				"mode": "KNIFE"
-			}
-		},
-		{
-			"map": {
-				"mode": "PICK",
-				"who": "TEAM_A"
-			},
-			"side": {
-				"mode": "PICK",
-				"who": "TEAM_B"
-			}
 		}
 	],
 	"gameServer": {
