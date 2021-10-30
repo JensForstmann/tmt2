@@ -51,6 +51,8 @@ export const onRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: 
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
 		type: EWebhookType.ROUND_END,
+		mapIndex: match.data.currentMap,
+		mapName: matchMap.name,
 		winnerTeam: winnerTeam,
 		scoreTeamA: matchMap.score.teamA,
 		scoreTeamB: matchMap.score.teamB,

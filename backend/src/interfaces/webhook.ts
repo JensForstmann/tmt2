@@ -35,6 +35,8 @@ export interface IElectionEndWebhook extends IWebhook {
 
 export interface IRoundEndWebhook extends IWebhook {
 	type: EWebhookType.ROUND_END;
+	mapIndex: number;
+	mapName: string;
 	winnerTeam: ITeam;
 	scoreTeamA: number;
 	scoreTeamB: number;
