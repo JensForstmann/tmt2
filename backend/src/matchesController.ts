@@ -125,7 +125,7 @@ export class MatchesController extends Controller {
 				console.error(`error in Match.onLog(): ${err}`);
 			});
 		} else if (!MatchService.isStartingMatch(id)) {
-			console.log(`return 401 to gameserver`);
+			console.log(`return 410 to gameserver`);
 			this.setStatus(410); // 410 tells the cs go server to stop send logs
 		}
 	}

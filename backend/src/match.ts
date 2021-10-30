@@ -472,7 +472,6 @@ const onTeamCommand = async (match: Match, player: IPlayer, firstParameter: stri
 };
 
 const onMapEnd = async (match: Match) => {
-	console.log(`onMapEnd`);
 	const currentMatchMap = getCurrentMatchMap(match);
 	if (currentMatchMap) {
 		await MatchMap.onMapEnd(match, currentMatchMap);
