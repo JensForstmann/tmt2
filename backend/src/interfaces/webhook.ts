@@ -44,6 +44,8 @@ export interface IRoundEndWebhook extends IWebhook {
 
 export interface IMapEndWebhook extends IWebhook {
 	type: EWebhookType.MAP_END;
+	mapIndex: number;
+	mapName: string;
 	scoreTeamA: number;
 	scoreTeamB: number;
 	/** winner of the match or null if it's a draw */

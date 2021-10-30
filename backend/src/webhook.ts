@@ -124,6 +124,8 @@ export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
 		type: EWebhookType.MAP_END,
+		mapIndex: match.data.currentMap,
+		mapName: matchMap.name,
 		scoreTeamA: matchMap.score.teamA,
 		scoreTeamB: matchMap.score.teamB,
 		winnerTeam:
