@@ -113,6 +113,7 @@ export const onMapStart = (match: Match.Match, matchMap: IMatchMap) => {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
 		type: EWebhookType.MAP_START,
+		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
 	};
 	send(match, data);

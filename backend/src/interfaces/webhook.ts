@@ -72,5 +72,6 @@ export interface IKnifeRoundEndWebhook extends IWebhook {
 
 export interface IMapStartWebhook extends IWebhook {
 	type: EWebhookType.MAP_START;
+	mapIndex: number;
 	mapName: string;
 }
