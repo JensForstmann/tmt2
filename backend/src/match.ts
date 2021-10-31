@@ -233,6 +233,8 @@ export const loadRoundBackup = async (match: Match, file: string) => {
 		const currentMatchMap = getCurrentMatchMap(match);
 		if (currentMatchMap) {
 			currentMatchMap.state = EMatchMapSate.PAUSED;
+			currentMatchMap.readyTeams.teamA = false;
+			currentMatchMap.readyTeams.teamB = false;
 		}
 		return true;
 	}
