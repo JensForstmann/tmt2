@@ -117,7 +117,7 @@ export const sayPeriodicMessage = async (match: Match.Match) => {
 		const currentElectionStep = getCurrentElectionStep(match);
 		if (!currentElectionStep) {
 			await Match.say(match, `ELECTION PROCESS BROKEN?`);
-			console.warn(`No currentElectionStep for match ${match.data.id}`);
+			match.log(`Error: No currentElectionStep, election process broken?`);
 		} else {
 			await sayAvailableCommands(match, currentElectionStep);
 			await sayWhatIsUp(match);
@@ -497,7 +497,7 @@ const restartCommand = async (
 			match.data.election = create(match.data.mapPool, match.data.electionSteps);
 			match.data.matchMaps = [];
 		} catch (err) {
-			console.error(`Error restarting the election process (match ${match.data.id}): ${err}`);
+			match.log(`Error restarting the election process: ${err}`);
 			await Match.say(match, `ERROR RESTARTING THE ELECTION`);
 		}
 	} else {

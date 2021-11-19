@@ -121,15 +121,16 @@ export class MatchesController extends Controller {
 			this.setStatus(200);
 			// async, so game server does not have to wait for processing (it will resend data if it takes too long)
 			Match.onLog(match, requestBody.raw).catch((err) => {
-				console.error(err);
-				console.error(`error in Match.onLog(): ${err}`);
+				// console.error(err);
+				match.log(`error in Match.onLog(): ${err}`);
 			});
 		} else if (MatchService.isStartingMatch(id)) {
 			// drop logs for matches in startup phase
 			this.setStatus(200);
 		} else {
-			console.log(`return 410 to gameserver`);
-			this.setStatus(410); // 410 tells the cs go server to stop send logs
+			// 410 tells the cs go server to stop send logs
+			console.log(`return 410 to gameserver (match id: ${id})`);
+			this.setStatus(410);
 		}
 	}
 

@@ -27,14 +27,17 @@ export interface Match {
 	rconConnection: Rcon;
 	periodicTimerId?: NodeJS.Timeout;
 	logBuffer: string[];
+	log: (msg: string) => void;
 }
 
 export const createFromData = async (data: IMatch) => {
-	const gameServer = await GameServer.create(data.gameServer);
+	const log = logger(data.id);
+	const gameServer = await GameServer.create(data.gameServer, log);
 	const match: Match = {
 		data: data,
 		rconConnection: gameServer,
 		logBuffer: [],
+		log: log,
 	};
 	gameServer.on('end', () => onRconConnectionEnd(match));
 	await setup(match);
@@ -67,22 +70,26 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 	return match;
 };
 
+const logger = (id: string) => (msg: string) => {
+	console.log(`[${id}] ${msg}`);
+};
+
 export const onRconConnectionEnd = async (match: Match) => {
-	const str = `(${match.data.id}, ${match.data.gameServer.ip}:${match.data.gameServer.port})`;
-	console.warn(`rcon connection lost ${str}`);
+	const addr = `${match.data.gameServer.ip}:${match.data.gameServer.port}`;
+	match.log(`rcon connection lost: ${addr}`);
 	while (true) {
 		try {
 			await sleep(10000);
 			if (match.data.isStopped) {
 				return;
 			}
-			console.log(`reconnect rcon ${str}`);
-			const gameServer = await GameServer.create(match.data.gameServer);
+			match.log(`reconnect rcon ${addr}`);
+			const gameServer = await GameServer.create(match.data.gameServer, match.log);
 			match.rconConnection = gameServer;
-			console.log(`reconnect rcon successful ${str}`);
+			match.log(`reconnect rcon successful ${addr}`);
 			return;
 		} catch (err) {
-			console.warn(`reconnect rcon failed ${str}: ${err}`);
+			match.log(`reconnect rcon failed ${addr}: ${err}`);
 		}
 	}
 };
@@ -93,6 +100,8 @@ export const onRconConnectionEnd = async (match: Match) => {
 const setup = async (match: Match) => {
 	// TMT does not need any special log settings to work. Only 'log on' must be executed.
 	// If more is needed (in the future): mp_logdetail, mp_logdetail_items, mp_logmoney
+
+	match.log('Setup match...');
 
 	await execRcon(match, 'log on');
 
@@ -111,6 +120,7 @@ const setup = async (match: Match) => {
 	// delay parsing of incoming log lines (because we don't about the initial big batch)
 	sleep(2000)
 		.then(async () => {
+			match.log('enable parsing of incoming log');
 			match.data.parseIncomingLogs = true;
 			await say(match, 'ONLINE');
 			if (match.data.state === EMatchSate.ELECTION) {
@@ -119,8 +129,10 @@ const setup = async (match: Match) => {
 			await sayPeriodicMessage(match);
 		})
 		.catch((err) => {
-			console.error(`Error in delayed setup (match ${match.data.id}): ${err}`);
+			match.log(`Error in delayed setup: ${err}`);
 		});
+
+	match.log('Setup finished');
 };
 
 export const execRcon = async (match: Match, command: string) => {
@@ -131,11 +143,13 @@ export const execRcon = async (match: Match, command: string) => {
  * Executes only once per match (at creation).
  */
 const init = async (match: Match) => {
+	match.log('init match...');
 	await execRcon(match, `changelevel ${match.data.electionMap}`);
 	await execManyRcon(match, match.data.rconCommands?.init);
 	await execRcon(match, 'mp_warmuptime 600');
 	await execRcon(match, 'mp_warmup_pausetimer 1');
 	await execRcon(match, 'mp_autokick 0');
+	match.log('init match finished');
 };
 
 export const execManyRcon = async (match: Match, commands?: string[]) => {
@@ -160,7 +174,7 @@ const sayPeriodicMessage = async (match: Match) => {
 		try {
 			await sayPeriodicMessage(match);
 		} catch (err) {
-			console.error(`Error in sayPeriodicMessage (match${match.data.id}): ${err}`);
+			match.log(`Error in sayPeriodicMessage: ${err}`);
 		}
 	}, Settings.PERIODIC_MESSAGE_FREQUENCY);
 
@@ -228,8 +242,10 @@ export const getRoundBackups = async (match: Match, count: number = 5) => {
 export const loadRoundBackup = async (match: Match, file: string) => {
 	const response = await execRcon(match, `mp_backup_restore_load_file "${file}"`);
 	if (response.includes('Failed to load file:')) {
+		match.log(`Error loading round backup: ${response}`);
 		return false;
 	} else {
+		match.log(`load round backup ${file}`);
 		const currentMatchMap = getCurrentMatchMap(match);
 		if (currentMatchMap) {
 			currentMatchMap.state = EMatchMapSate.PAUSED;
@@ -493,13 +509,13 @@ const onMapEnd = async (match: Match) => {
 	}
 
 	if (isMatchEnd(match)) {
-		console.log(`isMatchEnd`);
+		match.log(`onMapEnd -> isMatchEnd -> onMatchEnd`);
 		await onMatchEnd(match);
 	} else {
 		match.data.currentMap++;
 		const nextMap = getCurrentMatchMap(match);
 		if (nextMap) {
-			console.log(`load next map`);
+			match.log(`onMapEnd -> loadNextMap`);
 			await MatchMap.loadMap(match, nextMap);
 		} else {
 			await onMatchEnd(match);
@@ -574,7 +590,7 @@ export const stop = async (match: Match) => {
 		clearTimeout(match.periodicTimerId);
 	}
 	await execManyRcon(match, match.data.rconCommands?.end).catch((err) => {
-		console.warn(`error executing match end rcon commands (match ${match.data.id}): ${err}`);
+		match.log(`error executing match end rcon commands: ${err}`);
 	});
 	await say(match, `TMT IS OFFLINE`).catch(() => {});
 	await GameServer.disconnect(match);

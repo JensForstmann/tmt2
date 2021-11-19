@@ -2,14 +2,14 @@ import { Rcon } from './rcon-client';
 import { IGameServer } from './interfaces/gameServer';
 import * as Match from './match';
 
-export const create = async (dto: IGameServer): Promise<Rcon> => {
+export const create = async (dto: IGameServer, log: (msg: string) => void): Promise<Rcon> => {
 	const rcon = new Rcon({
 		host: dto.ip,
 		port: dto.port,
 		password: dto.rconPassword,
 	});
 
-	rcon.on('error', (err) => console.error(`rconConnection.on('error'): ${err}`));
+	rcon.on('error', (err) => log(`rcon.on('error'): ${err}`));
 
 	await rcon.connect();
 	return rcon;
@@ -20,8 +20,7 @@ export const exec = async (match: Match.Match, command: string, suppressError: b
 		return await match.rconConnection.send(command);
 	} catch (err) {
 		if (suppressError) {
-			// console.warn(err);
-			console.warn(`rcon error with command ${command}: ${err} -> return ''`);
+			match.log(`rcon error with command ${command}: ${err} -> return ''`);
 			return '';
 		} else {
 			throw err;

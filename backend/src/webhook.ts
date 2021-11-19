@@ -19,9 +19,7 @@ const send = (match: Match.Match, data: IWebhook) => {
 	const url = match.data.webhookUrl;
 	if (url?.startsWith('http')) {
 		axios.post(url, data).catch((err) => {
-			console.warn(
-				`sending webhook ${data.type} of match ${data.matchId} to ${url} failed: ${err}`
-			);
+			match.log(`sending webhook ${data.type} to ${url} failed: ${err}`);
 		});
 	}
 };
