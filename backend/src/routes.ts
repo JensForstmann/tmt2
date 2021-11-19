@@ -42,11 +42,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "EMapMode.BAN": {
-        "dataType": "refEnum",
-        "enums": ["BAN"],
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "EMapMode.PICK": {
         "dataType": "refEnum",
         "enums": ["PICK"],
@@ -57,10 +52,10 @@ const models: TsoaRoute.Models = {
         "enums": ["TEAM_A","TEAM_B","TEAM_X","TEAM_Y"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "IBanOrPickMap": {
+    "IPickMap": {
         "dataType": "refObject",
         "properties": {
-            "mode": {"dataType":"union","subSchemas":[{"ref":"EMapMode.BAN"},{"ref":"EMapMode.PICK"}],"required":true},
+            "mode": {"ref":"EMapMode.PICK","required":true},
             "who": {"ref":"EWho","required":true},
         },
         "additionalProperties": false,
@@ -140,11 +135,33 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "IElectionStep": {
+    "IElectionStepAdd": {
         "dataType": "refObject",
         "properties": {
-            "map": {"dataType":"union","subSchemas":[{"ref":"IFixedMap"},{"ref":"IBanOrPickMap"},{"ref":"IAgreeOrRandomMap"}],"required":true},
+            "map": {"dataType":"union","subSchemas":[{"ref":"IFixedMap"},{"ref":"IPickMap"},{"ref":"IAgreeOrRandomMap"}],"required":true},
             "side": {"dataType":"union","subSchemas":[{"ref":"IFixedSide"},{"ref":"IPickSide"},{"ref":"IRandomOrKnifeSide"}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "EMapMode.BAN": {
+        "dataType": "refEnum",
+        "enums": ["BAN"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IBanMap": {
+        "dataType": "refObject",
+        "properties": {
+            "mode": {"ref":"EMapMode.BAN","required":true},
+            "who": {"ref":"EWho","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IElectionStepSkip": {
+        "dataType": "refObject",
+        "properties": {
+            "map": {"ref":"IBanMap","required":true},
         },
         "additionalProperties": false,
     },
@@ -285,7 +302,7 @@ const models: TsoaRoute.Models = {
             "mapPool": {"dataType":"array","array":{"dataType":"string"},"required":true},
             "teamA": {"ref":"ITeam","required":true},
             "teamB": {"ref":"ITeam","required":true},
-            "electionSteps": {"dataType":"array","array":{"dataType":"refObject","ref":"IElectionStep"},"required":true},
+            "electionSteps": {"dataType":"array","array":{"dataType":"union","subSchemas":[{"ref":"IElectionStepAdd"},{"ref":"IElectionStepSkip"}]},"required":true},
             "election": {"ref":"IElection","required":true},
             "gameServer": {"ref":"IGameServer","required":true},
             "logSecret": {"dataType":"string","required":true},
@@ -322,7 +339,7 @@ const models: TsoaRoute.Models = {
             "mapPool": {"dataType":"array","array":{"dataType":"string"},"required":true},
             "teamA": {"ref":"ITeamCreateDto","required":true},
             "teamB": {"ref":"ITeamCreateDto","required":true},
-            "electionSteps": {"dataType":"array","array":{"dataType":"refObject","ref":"IElectionStep"},"required":true},
+            "electionSteps": {"dataType":"array","array":{"dataType":"union","subSchemas":[{"ref":"IElectionStepAdd"},{"ref":"IElectionStepSkip"}]},"required":true},
             "gameServer": {"ref":"IGameServer","required":true},
             "webhookUrl": {"dataType":"string"},
             "rconCommands": {"dataType":"nestedObjectLiteral","nestedProperties":{"end":{"dataType":"array","array":{"dataType":"string"}},"match":{"dataType":"array","array":{"dataType":"string"}},"knife":{"dataType":"array","array":{"dataType":"string"}},"init":{"dataType":"array","array":{"dataType":"string"}}}},
@@ -340,7 +357,7 @@ const models: TsoaRoute.Models = {
             "mapPool": {"dataType":"array","array":{"dataType":"string"}},
             "teamA": {"ref":"ITeamCreateDto"},
             "teamB": {"ref":"ITeamCreateDto"},
-            "electionSteps": {"dataType":"array","array":{"dataType":"refObject","ref":"IElectionStep"}},
+            "electionSteps": {"dataType":"array","array":{"dataType":"union","subSchemas":[{"ref":"IElectionStepAdd"},{"ref":"IElectionStepSkip"}]}},
             "gameServer": {"ref":"IGameServer"},
             "webhookUrl": {"dataType":"string"},
             "rconCommands": {"dataType":"nestedObjectLiteral","nestedProperties":{"end":{"dataType":"array","array":{"dataType":"string"}},"match":{"dataType":"array","array":{"dataType":"string"}},"knife":{"dataType":"array","array":{"dataType":"string"}},"init":{"dataType":"array","array":{"dataType":"string"}}}},

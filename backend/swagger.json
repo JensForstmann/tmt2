@@ -60,12 +60,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"EMapMode.BAN": {
-				"enum": [
-					"BAN"
-				],
-				"type": "string"
-			},
 			"EMapMode.PICK": {
 				"enum": [
 					"PICK"
@@ -81,17 +75,10 @@
 				],
 				"type": "string"
 			},
-			"IBanOrPickMap": {
+			"IPickMap": {
 				"properties": {
 					"mode": {
-						"anyOf": [
-							{
-								"$ref": "#/components/schemas/EMapMode.BAN"
-							},
-							{
-								"$ref": "#/components/schemas/EMapMode.PICK"
-							}
-						]
+						"$ref": "#/components/schemas/EMapMode.PICK"
 					},
 					"who": {
 						"$ref": "#/components/schemas/EWho"
@@ -232,7 +219,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"IElectionStep": {
+			"IElectionStepAdd": {
 				"properties": {
 					"map": {
 						"anyOf": [
@@ -240,7 +227,7 @@
 								"$ref": "#/components/schemas/IFixedMap"
 							},
 							{
-								"$ref": "#/components/schemas/IBanOrPickMap"
+								"$ref": "#/components/schemas/IPickMap"
 							},
 							{
 								"$ref": "#/components/schemas/IAgreeOrRandomMap"
@@ -264,6 +251,40 @@
 				"required": [
 					"map",
 					"side"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"EMapMode.BAN": {
+				"enum": [
+					"BAN"
+				],
+				"type": "string"
+			},
+			"IBanMap": {
+				"properties": {
+					"mode": {
+						"$ref": "#/components/schemas/EMapMode.BAN"
+					},
+					"who": {
+						"$ref": "#/components/schemas/EWho"
+					}
+				},
+				"required": [
+					"mode",
+					"who"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IElectionStepSkip": {
+				"properties": {
+					"map": {
+						"$ref": "#/components/schemas/IBanMap"
+					}
+				},
+				"required": [
+					"map"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -642,7 +663,14 @@
 					},
 					"electionSteps": {
 						"items": {
-							"$ref": "#/components/schemas/IElectionStep"
+							"anyOf": [
+								{
+									"$ref": "#/components/schemas/IElectionStepAdd"
+								},
+								{
+									"$ref": "#/components/schemas/IElectionStepSkip"
+								}
+							]
 						},
 						"type": "array"
 					},
@@ -808,7 +836,14 @@
 					},
 					"electionSteps": {
 						"items": {
-							"$ref": "#/components/schemas/IElectionStep"
+							"anyOf": [
+								{
+									"$ref": "#/components/schemas/IElectionStepAdd"
+								},
+								{
+									"$ref": "#/components/schemas/IElectionStepSkip"
+								}
+							]
 						},
 						"type": "array"
 					},
@@ -896,7 +931,14 @@
 					},
 					"electionSteps": {
 						"items": {
-							"$ref": "#/components/schemas/IElectionStep"
+							"anyOf": [
+								{
+									"$ref": "#/components/schemas/IElectionStepAdd"
+								},
+								{
+									"$ref": "#/components/schemas/IElectionStepSkip"
+								}
+							]
 						},
 						"type": "array"
 					},

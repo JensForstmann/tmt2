@@ -1,5 +1,5 @@
 import { IElection } from './election';
-import { IElectionStep } from './electionStep';
+import { IElectionStepAdd, IElectionStepSkip } from './electionStep';
 import { IGameServer } from './gameServer';
 import { TLogUnion } from './log';
 import { IMatchMap } from './matchMap';
@@ -32,7 +32,7 @@ export interface IMatch {
 	mapPool: string[];
 	teamA: ITeam;
 	teamB: ITeam;
-	electionSteps: IElectionStep[];
+	electionSteps: Array<IElectionStepAdd | IElectionStepSkip>;
 	/** election state data */
 	election: IElection;
 	gameServer: IGameServer;
@@ -83,7 +83,7 @@ export interface IMatchCreateDto {
 	mapPool: string[];
 	teamA: ITeamCreateDto;
 	teamB: ITeamCreateDto;
-	electionSteps: IElectionStep[];
+	electionSteps: Array<IElectionStepAdd | IElectionStepSkip>;
 	gameServer: IGameServer;
 	/** if set various events will be posted to this url */
 	webhookUrl?: string;

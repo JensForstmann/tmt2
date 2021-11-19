@@ -30,8 +30,13 @@ export interface IFixedMap {
 	fixed: string;
 }
 
-export interface IBanOrPickMap {
-	mode: EMapMode.BAN | EMapMode.PICK;
+export interface IBanMap {
+	mode: EMapMode.BAN;
+	who: EWho;
+}
+
+export interface IPickMap {
+	mode: EMapMode.PICK;
 	who: EWho;
 }
 
@@ -60,7 +65,21 @@ export interface IRandomOrKnifeSide {
 	mode: ESideMode.RANDOM | ESideMode.KNIFE;
 }
 
-export interface IElectionStep {
-	map: IFixedMap | IBanOrPickMap | IAgreeOrRandomMap;
+export interface IElectionStepAdd {
+	map: IFixedMap | IPickMap | IAgreeOrRandomMap;
 	side: IFixedSide | IPickSide | IRandomOrKnifeSide; // TODO: remove side when it's not needed (ban steps)
 }
+
+export interface IElectionStepSkip {
+	map: IBanMap;
+}
+
+export type IElectionStep = IElectionStepAdd | IElectionStepSkip;
+
+export const isElectionStepAdd = (u: IElectionStep): u is IElectionStepAdd => {
+	return u.map.mode !== EMapMode.BAN;
+};
+
+export const isElectionStepSkip = (u: IElectionStep): u is IElectionStepSkip => {
+	return u.map.mode === EMapMode.BAN;
+};

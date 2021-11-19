@@ -24,18 +24,12 @@
 			"map": {
 				"mode": "BAN",
 				"who": "TEAM_A"
-			},
-			"side": {
-				"mode": "KNIFE"
 			}
 		},
 		{
 			"map": {
 				"mode": "BAN",
 				"who": "TEAM_B"
-			},
-			"side": {
-				"mode": "KNIFE"
 			}
 		},
 		{

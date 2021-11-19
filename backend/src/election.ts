@@ -4,14 +4,27 @@ import * as Match from './match';
 import { escapeRconString } from './utils';
 import { EElectionState, EStep, IElection } from './interfaces/election';
 import { Settings } from './settings';
-import { EMapMode, ESideFixed, ESideMode, EWho, IElectionStep } from './interfaces/electionStep';
+import {
+	EMapMode,
+	ESideFixed,
+	ESideMode,
+	EWho,
+	IElectionStep,
+	IElectionStepAdd,
+	IElectionStepSkip,
+	isElectionStepAdd,
+	isElectionStepSkip,
+} from './interfaces/electionStep';
 import { ETeamAB, getOtherTeamAB } from './interfaces/matchMap';
 import { EMatchSate } from './interfaces/match';
 
 /**
  * @throws if configuration is invalid
  */
-export const create = (mapPool: string[], steps: IElectionStep[]): IElection => {
+export const create = (
+	mapPool: string[],
+	steps: Array<IElectionStepAdd | IElectionStepSkip>
+): IElection => {
 	if (!isValidConfiguration(mapPool, steps)) {
 		throw 'Combination of map pool and election steps is invalid (too few maps in map pool for these election steps).';
 	}
@@ -34,7 +47,10 @@ export const create = (mapPool: string[], steps: IElectionStep[]): IElection => 
 	};
 };
 
-const isValidConfiguration = (mapPool: string[], steps: IElectionStep[]): boolean => {
+const isValidConfiguration = (
+	mapPool: string[],
+	steps: Array<IElectionStepAdd | IElectionStepSkip>
+): boolean => {
 	const stepsWhichRemovesAMapFromMapPool = steps.filter((step): boolean => {
 		switch (step.map.mode) {
 			case EMapMode.PICK:
@@ -69,7 +85,10 @@ const getAvailableCommands = (match: Match.Match, currentElectionStep: IElection
 				return [...getCommands(ECommand.PICK), ...getCommands(ECommand.RESTART)];
 		}
 	}
-	if (match.data.election.currentSubStep === EStep.SIDE) {
+	if (
+		match.data.election.currentSubStep === EStep.SIDE &&
+		isElectionStepAdd(currentElectionStep)
+	) {
 		switch (currentElectionStep.side.mode) {
 			case ESideMode.PICK:
 				return [
@@ -179,7 +198,10 @@ const sayWhatIsUp = async (match: Match.Match) => {
 			await sayAvailableMaps(match);
 		}
 	} else {
-		if (currentElectionStep.side.mode === ESideMode.PICK) {
+		if (
+			isElectionStepAdd(currentElectionStep) &&
+			currentElectionStep.side.mode === ESideMode.PICK
+		) {
 			const validTeam = getValidTeamAB(match, currentElectionStep.side.who);
 			if (validTeam)
 				await Match.say(
@@ -402,6 +424,7 @@ const tCommand = async (
 	const currentStepMap = match.data.election.currentStepMap ?? '';
 	if (
 		match.data.election.currentSubStep === EStep.SIDE &&
+		isElectionStepAdd(currentElectionStep) &&
 		currentElectionStep.side.mode === ESideMode.PICK
 	) {
 		if (isValidTeam(match, currentElectionStep.side.who, teamAB)) {
@@ -434,6 +457,7 @@ const ctCommand = async (
 	const currentStepMap = match.data.election.currentStepMap ?? '';
 	if (
 		match.data.election.currentSubStep === EStep.SIDE &&
+		isElectionStepAdd(currentElectionStep) &&
 		currentElectionStep.side.mode === ESideMode.PICK
 	) {
 		if (isValidTeam(match, currentElectionStep.side.who, teamAB)) {
@@ -566,7 +590,12 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 };
 
 const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) => {
+	if (isElectionStepSkip(currentElectionStep)) {
+		return;
+	}
+
 	const currentStepMap = match.data.election.currentStepMap ?? '';
+
 	if (currentElectionStep.side.mode === ESideMode.FIXED) {
 		if ([ESideFixed.TEAM_A_CT, ESideFixed.TEAM_B_T].includes(currentElectionStep.side.fixed)) {
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, ETeamAB.TEAM_A));
