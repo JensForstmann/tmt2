@@ -378,15 +378,15 @@ export function RegisterRoutes(app: express.Router) {
             let validatedArgs: any[] = [];
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.createMatch.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
             }
-
-            const controller = new MatchesController();
-
-
-            const promise = controller.createMatch.apply(controller, validatedArgs as any);
-            promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/matches/:id',
@@ -403,15 +403,15 @@ export function RegisterRoutes(app: express.Router) {
             let validatedArgs: any[] = [];
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.getMatch.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
             }
-
-            const controller = new MatchesController();
-
-
-            const promise = controller.getMatch.apply(controller, validatedArgs as any);
-            promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/matches/:id/server/round_backups',
@@ -429,15 +429,15 @@ export function RegisterRoutes(app: express.Router) {
             let validatedArgs: any[] = [];
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.getRoundBackups.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
             }
-
-            const controller = new MatchesController();
-
-
-            const promise = controller.getRoundBackups.apply(controller, validatedArgs as any);
-            promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.post('/api/matches/:id/server/round_backups/:file',
@@ -455,15 +455,15 @@ export function RegisterRoutes(app: express.Router) {
             let validatedArgs: any[] = [];
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.loadRoundBackup.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
             }
-
-            const controller = new MatchesController();
-
-
-            const promise = controller.loadRoundBackup.apply(controller, validatedArgs as any);
-            promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.put('/api/matches/:id',
@@ -481,15 +481,15 @@ export function RegisterRoutes(app: express.Router) {
             let validatedArgs: any[] = [];
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.updateMatch.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
             }
-
-            const controller = new MatchesController();
-
-
-            const promise = controller.updateMatch.apply(controller, validatedArgs as any);
-            promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.delete('/api/matches/:id',
@@ -506,15 +506,15 @@ export function RegisterRoutes(app: express.Router) {
             let validatedArgs: any[] = [];
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.deleteMatch.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
             }
-
-            const controller = new MatchesController();
-
-
-            const promise = controller.deleteMatch.apply(controller, validatedArgs as any);
-            promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/matches',
@@ -530,15 +530,15 @@ export function RegisterRoutes(app: express.Router) {
             let validatedArgs: any[] = [];
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.getAllMatches.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
             }
-
-            const controller = new MatchesController();
-
-
-            const promise = controller.getAllMatches.apply(controller, validatedArgs as any);
-            promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.post('/api/matches/:id/server/log/:secret',
@@ -555,15 +555,15 @@ export function RegisterRoutes(app: express.Router) {
             let validatedArgs: any[] = [];
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.receiveLog.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
             }
-
-            const controller = new MatchesController();
-
-
-            const promise = controller.receiveLog.apply(controller, validatedArgs as any);
-            promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.delete('/api/matches',
@@ -579,15 +579,15 @@ export function RegisterRoutes(app: express.Router) {
             let validatedArgs: any[] = [];
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.deleteAll.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
             }
-
-            const controller = new MatchesController();
-
-
-            const promise = controller.deleteAll.apply(controller, validatedArgs as any);
-            promiseHandler(controller, promise, response, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
