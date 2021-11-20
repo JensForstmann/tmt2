@@ -1,6 +1,7 @@
 import { getCommands, ECommand } from './commands';
 import * as MatchMap from './matchMap';
 import * as Match from './match';
+import * as MatchService from './matchService';
 import { escapeRconString } from './utils';
 import { EElectionState, EStep, IElection } from './interfaces/election';
 import { Settings } from './settings';
@@ -283,6 +284,7 @@ const ensureTeamXY = (match: Match.Match, who: EWho, teamAB: ETeamAB) => {
 			match.data.election.teamX = getOtherTeamAB(teamAB);
 			match.data.election.teamY = teamAB;
 		}
+		MatchService.scheduleSave(match);
 	}
 };
 
@@ -343,6 +345,7 @@ const agreeCommand = async (
 					)[0].toLowerCase()}`
 				);
 			}
+			MatchService.scheduleSave(match);
 		} else {
 			await Match.say(match, `INVALID MAP: ${map}`);
 			await sayAvailableMaps(match);
@@ -369,6 +372,7 @@ const banCommand = async (
 				match.data.election.state = EElectionState.IN_PROGRESS;
 				await Match.say(match, `MAP ${match.data.election.remainingMaps[matchMap]} BANNED`);
 				match.data.election.remainingMaps.splice(matchMap, 1);
+				MatchService.scheduleSave(match);
 				await next(match);
 				await sayWhatIsUp(match);
 			} else {
@@ -400,6 +404,7 @@ const pickCommand = async (
 				match.data.election.state = EElectionState.IN_PROGRESS;
 				match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
 				match.data.election.remainingMaps.splice(matchMap, 1);
+				MatchService.scheduleSave(match);
 				await Match.say(
 					match,
 					`${match.data.matchMaps.length + 1}. MAP: ${match.data.election.currentStepMap}`
@@ -433,6 +438,7 @@ const tCommand = async (
 			match.data.matchMaps.push(
 				MatchMap.create(currentStepMap, false, getOtherTeamAB(teamAB))
 			);
+			MatchService.scheduleSave(match);
 			await Match.say(
 				match,
 				`${match.data.matchMaps.length}. MAP: ${
@@ -464,6 +470,7 @@ const ctCommand = async (
 			ensureTeamXY(match, currentElectionStep.side.who, teamAB);
 			match.data.election.state = EElectionState.IN_PROGRESS;
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, teamAB));
+			MatchService.scheduleSave(match);
 			await Match.say(
 				match,
 				`${match.data.matchMaps.length}. MAP: ${
@@ -514,6 +521,7 @@ const restartCommand = async (
 			)[0].toLowerCase()} TO CONFIRM AND RESTART`
 		);
 	}
+	MatchService.scheduleSave(match);
 };
 
 const next = async (match: Match.Match) => {
@@ -538,7 +546,7 @@ const next = async (match: Match.Match) => {
 			await Match.onElectionFinished(match);
 		}
 	}
-
+	MatchService.scheduleSave(match);
 	await auto(match);
 };
 
@@ -562,6 +570,7 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 			`${match.data.matchMaps.length + 1}. MAP: ${match.data.election.currentStepMap}`
 		);
 		await next(match);
+		MatchService.scheduleSave(match);
 		return;
 	}
 	if (
@@ -585,6 +594,7 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 		}
 		match.data.election.remainingMaps.splice(matchMap, 1);
 		await next(match);
+		MatchService.scheduleSave(match);
 		return;
 	}
 };

@@ -1,9 +1,10 @@
-import shortUUID, { generate as shortUuid } from 'short-uuid';
+import { generate as shortUuid } from 'short-uuid';
 import * as Election from './election';
 import * as Team from './team';
 import * as Player from './player';
 import { commandMapping, ECommand } from './commands';
 import * as MatchMap from './matchMap';
+import * as MatchService from './matchService';
 import { escapeRconString, sleep } from './utils';
 import * as GameServer from './gameServer';
 import * as Webhook from './webhook';
@@ -19,7 +20,6 @@ import { EMatchMapSate, ETeamAB, getOtherTeamAB } from './interfaces/matchMap';
 import { Settings } from './settings';
 import { ITeam } from './interfaces/team';
 import { ETeamSides } from './interfaces/stuff';
-import * as MatchService from './matchService';
 import { Rcon } from './rcon-client';
 
 export interface Match {
@@ -251,6 +251,7 @@ export const loadRoundBackup = async (match: Match, file: string) => {
 			currentMatchMap.state = EMatchMapSate.PAUSED;
 			currentMatchMap.readyTeams.teamA = false;
 			currentMatchMap.readyTeams.teamB = false;
+			MatchService.scheduleSave(match);
 		}
 		return true;
 	}
@@ -568,6 +569,7 @@ export const getTeamWins = (match: Match, teamAB: ETeamAB) => {
 const onMatchEnd = async (match: Match) => {
 	if (match.data.state !== EMatchSate.FINISHED) {
 		match.data.state = EMatchSate.FINISHED;
+		MatchService.scheduleSave(match);
 		const wonMapsTeamA = getTeamWins(match, ETeamAB.TEAM_A);
 		const wonMapsTeamB = getTeamWins(match, ETeamAB.TEAM_B);
 		Webhook.onMatchEnd(match, wonMapsTeamA, wonMapsTeamB);
@@ -586,6 +588,7 @@ const onMatchEnd = async (match: Match) => {
 
 export const stop = async (match: Match) => {
 	match.data.isStopped = true;
+	MatchService.scheduleSave(match);
 	if (match.periodicTimerId) {
 		clearTimeout(match.periodicTimerId);
 	}
@@ -604,6 +607,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 export const onElectionFinished = async (match: Match) => {
 	Webhook.onElectionEnd(match);
 	match.data.state = EMatchSate.MATCH_MAP;
+	MatchService.scheduleSave(match);
 	const currentMatchMap = getCurrentMatchMap(match);
 	if (currentMatchMap) {
 		await MatchMap.loadMap(match, currentMatchMap);

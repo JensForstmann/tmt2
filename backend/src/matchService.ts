@@ -15,6 +15,10 @@ const matches: Map<string, Match.Match> = new Map();
  */
 const startingMatches: Set<string> = new Set();
 
+const matchesToSave: Set<string> = new Set();
+
+let timeout: NodeJS.Timeout;
+
 export const setup = async () => {
 	setInterval(() => {
 		saveAll(); // TODO: change so that every map can save independently as soon as something happened
@@ -45,6 +49,33 @@ export const setup = async () => {
 			}
 		}
 	}
+
+	periodicSaver();
+};
+
+const periodicSaver = async () => {
+	if (timeout) {
+		clearTimeout(timeout);
+	}
+	const ids = Array.from(matchesToSave.values());
+	matchesToSave.clear();
+	for (let i = 0; i < ids.length; i++) {
+		const match = get(ids[i]);
+		if (match) {
+			try {
+				match.log(`Save match to disk`);
+				await save(match);
+			} catch (err) {
+				match.log(`Error saving match: ${err}`);
+				matchesToSave.add(ids[i]);
+			}
+		}
+	}
+	timeout = setTimeout(periodicSaver, 2_000);
+};
+
+export const scheduleSave = (match: Match.Match) => {
+	matchesToSave.add(match.data.id);
 };
 
 export const create = async (dto: IMatchCreateDto) => {
