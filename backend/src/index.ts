@@ -74,7 +74,7 @@ app.get('/api', (req, res) => {
 });
 
 const main = async () => {
-	console.log(`Start TMT (${process.env.COMMIT_SHA ?? 'no COMMIT_SHA set'})`);
+	console.log(`Start TMT (${process.env.COMMIT_SHA || 'no COMMIT_SHA set'})`);
 	await Storage.setup();
 	await Auth.setup();
 

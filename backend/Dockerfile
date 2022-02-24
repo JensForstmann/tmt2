@@ -1,4 +1,4 @@
-FROM node:14-alpine AS BUILD_IMAGE
+FROM node:16-alpine AS BUILD_IMAGE
 WORKDIR /app
 COPY package-lock.json .
 COPY package.json .
@@ -9,7 +9,7 @@ COPY tsoa.json .
 RUN npm run build
 RUN npm prune --production
 
-FROM node:14-alpine
+FROM node:16-alpine
 WORKDIR /app
 VOLUME /app/storage
 COPY --from=BUILD_IMAGE /app/package.json /app/swagger.json ./
