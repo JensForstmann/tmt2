@@ -30,12 +30,12 @@ const defaultOptions = {
 	maxPending: 1,
 };
 
-interface Events {
+type Events = {
 	connect: () => void;
 	authenticated: () => void;
 	end: () => void;
 	error: (error: any) => void;
-}
+};
 
 export class Rcon {
 	static async connect(config: RconOptions): Promise<Rcon> {
