@@ -406,6 +406,33 @@ export function RegisterRoutes(app: express.Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/matches',
+            authenticateMiddleware([{"bearer_token":[]}]),
+
+            function MatchesController_getAllMatches(request: any, response: any, next: any) {
+            const args = {
+                    undefined: {"in":"request","required":true,"dataType":"object"},
+                    state: {"in":"query","name":"state","dataType":"array","array":{"dataType":"string"}},
+                    passthrough: {"in":"query","name":"passthrough","dataType":"array","array":{"dataType":"string"}},
+                    isStopped: {"in":"query","name":"isStopped","dataType":"boolean"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.getAllMatches.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/matches/:id',
             authenticateMiddleware([{"bearer_token":[]}]),
 
@@ -528,30 +555,6 @@ export function RegisterRoutes(app: express.Router) {
 
 
               const promise = controller.deleteMatch.apply(controller, validatedArgs as any);
-              promiseHandler(controller, promise, response, undefined, next);
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/matches',
-            authenticateMiddleware([{"bearer_token":[]}]),
-
-            function MatchesController_getAllMatches(request: any, response: any, next: any) {
-            const args = {
-                    undefined: {"in":"request","required":true,"dataType":"object"},
-            };
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = getValidatedArgs(args, request, response);
-
-                const controller = new MatchesController();
-
-
-              const promise = controller.getAllMatches.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

@@ -30,15 +30,42 @@ export class MatchesController extends Controller {
 		return match.data;
 	}
 
+	@Get()
+	async getAllMatches(
+		@Request() { user }: { user: IAuthResponse },
+		@Query('state') state?: string[],
+		@Query('passthrough') passthrough?: string[],
+		@Query('isStopped') isStopped?: boolean
+	): Promise<IMatch[]> {
+		const matches = await MatchService.getAll();
+		console.log('state', state);
+		return matches
+			.filter((m) => state === undefined || state.includes(m.state))
+			.filter(
+				(m) =>
+					passthrough === undefined ||
+					(typeof m.passthrough === 'string' && passthrough.includes(m.passthrough))
+			)
+			.filter((m) => isStopped === undefined || m.isStopped === isStopped);
+	}
+
 	@Get('{id}')
-	getMatch(id: string, @Request() { user }: { user: IAuthResponse }): IMatch | void {
+	async getMatch(
+		id: string,
+		@Request() { user }: { user: IAuthResponse }
+	): Promise<IMatch | void> {
 		const match = MatchService.get(id);
 		if (match) {
 			return match.data;
-		} else {
-			this.setStatus(404);
-			return;
 		}
+
+		const matchFromStorage = await MatchService.getFromStorage(id);
+		if (matchFromStorage) {
+			return matchFromStorage;
+		}
+
+		this.setStatus(404);
+		return;
 	}
 
 	@Get('{id}/server/round_backups')
@@ -108,11 +135,6 @@ export class MatchesController extends Controller {
 		}
 	}
 
-	@Get()
-	getAllMatches(@Request() { user }: { user: IAuthResponse }): IMatch[] {
-		return MatchService.getAll().map((match) => match.data);
-	}
-
 	@NoSecurity()
 	@Post('{id}/server/log/{secret}')
 	receiveLog(id: string, secret: string, @Body() requestBody: any): void {
@@ -136,9 +158,9 @@ export class MatchesController extends Controller {
 
 	@Delete()
 	async deleteAll(@Request() { user }: { user: IAuthResponse }): Promise<void> {
-		const a = MatchService.getAll();
+		const a = MatchService.getAllLive();
 		for (let i = 0; i < a.length; i++) {
-			await MatchService.remove(a[i].data.id);
+			await MatchService.remove(a[i].id);
 		}
 	}
 }

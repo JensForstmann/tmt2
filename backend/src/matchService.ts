@@ -20,33 +20,22 @@ const matchesToSave: Set<string> = new Set();
 let timeout: NodeJS.Timeout;
 
 export const setup = async () => {
-	setInterval(() => {
-		saveAll(); // TODO: change so that every map can save independently as soon as something happened
-	}, 60000);
-
-	const matchesFromStorage = await Storage.list(STORAGE_PREFIX, STORAGE_SUFFIX);
+	const matchesFromStorage = await getAllFromStorage();
 
 	for (let i = 0; i < matchesFromStorage.length; i++) {
-		const fileName = matchesFromStorage[i];
-		const matchData: IMatch | undefined = await Storage.read(fileName);
-		if (matchData) {
-			if (
-				matchData.state !== EMatchSate.FINISHED &&
-				!matchData.isStopped &&
-				fileName === STORAGE_PREFIX + matchData.id + STORAGE_SUFFIX
-			) {
-				console.log(`load match ${matchData.id} from storage`);
-				startingMatches.add(matchData.id);
-				matchData.parseIncomingLogs = false;
-				try {
-					const match = await Match.createFromData(matchData);
-					matches.set(match.data.id, match);
-					await save(match);
-				} catch (err) {
-					console.error(`error creating match ${matchData.id} from storage: ${err}`);
-				}
-				startingMatches.delete(matchData.id);
+		const matchData = matchesFromStorage[i];
+		if (matchData.state !== EMatchSate.FINISHED && !matchData.isStopped) {
+			console.log(`load match ${matchData.id} from storage`);
+			startingMatches.add(matchData.id);
+			matchData.parseIncomingLogs = false;
+			try {
+				const match = await Match.createFromData(matchData);
+				matches.set(match.data.id, match);
+				await save(match);
+			} catch (err) {
+				console.error(`error creating match ${matchData.id} from storage: ${err}`);
 			}
+			startingMatches.delete(matchData.id);
 		}
 	}
 
@@ -93,8 +82,33 @@ export const get = (id: string) => {
 	return matches.get(id);
 };
 
-export const getAll = () => {
-	return Array.from(matches.values());
+export const getFromStorage = async (id: string) => {
+	const matchData: IMatch | undefined = await Storage.read(STORAGE_PREFIX + id + STORAGE_SUFFIX);
+	return matchData;
+};
+
+export const getAllLive = () => {
+	return Array.from(matches.values()).map((match) => match.data);
+};
+
+export const getAllFromStorage = async () => {
+	const matchesFromStorage = await Storage.list(STORAGE_PREFIX, STORAGE_SUFFIX);
+
+	const matches: IMatch[] = [];
+
+	for (let i = 0; i < matchesFromStorage.length; i++) {
+		const fileName = matchesFromStorage[i];
+		const matchData: IMatch | undefined = await Storage.read(fileName);
+		if (matchData && fileName === STORAGE_PREFIX + matchData.id + STORAGE_SUFFIX) {
+			matches.push(matchData);
+		}
+	}
+
+	return matches;
+};
+
+export const getAll = async () => {
+	return [...getAllLive(), ...(await getAllFromStorage())];
 };
 
 export const remove = async (id: string) => {

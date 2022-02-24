@@ -1088,7 +1088,38 @@
 						"bearer_token": []
 					}
 				],
-				"parameters": []
+				"parameters": [
+					{
+						"in": "query",
+						"name": "state",
+						"required": false,
+						"schema": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"in": "query",
+						"name": "passthrough",
+						"required": false,
+						"schema": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"in": "query",
+						"name": "isStopped",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
 			},
 			"delete": {
 				"operationId": "DeleteAll",
