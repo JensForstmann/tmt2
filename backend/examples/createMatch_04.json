@@ -33,13 +33,21 @@
 		},
 		{
 			"map": {
-				"mode": "BAN",
+				"mode": "PICK",
+				"who": "TEAM_A"
+			},
+			"side": {
+				"mode": "PICK",
 				"who": "TEAM_B"
 			}
 		},
 		{
 			"map": {
-				"mode": "BAN",
+				"mode": "PICK",
+				"who": "TEAM_B"
+			},
+			"side": {
+				"mode": "PICK",
 				"who": "TEAM_A"
 			}
 		},
