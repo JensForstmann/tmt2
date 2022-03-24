@@ -37,7 +37,7 @@ export const kickAll = async (match: Match.Match) => {
 		.split('\n')
 		.filter((line) => line.trim()[0] === '#')
 		.filter((line, lineNumber) => lineNumber > 0) // remove header line
-		.map((line) => line.substr(1).trim()) // remove # and trim line
+		.map((line) => line.substring(1).trim()) // remove # and trim line
 		.map((line) => line.split(' ')[0]); // extract first part (the user id)
 	for (let i = 0; i < userIds.length; i++) {
 		await exec(match, `kickid ${userIds[i]}`);

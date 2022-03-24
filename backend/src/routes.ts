@@ -20,7 +20,6 @@ const models: TsoaRoute.Models = {
     "ITeam": {
         "dataType": "refObject",
         "properties": {
-            "id": {"dataType":"string","required":true},
             "passthrough": {"dataType":"string"},
             "name": {"dataType":"string","required":true},
             "advantage": {"dataType":"double","required":true},
@@ -310,7 +309,7 @@ const models: TsoaRoute.Models = {
             "matchMaps": {"dataType":"array","array":{"dataType":"refObject","ref":"IMatchMap"},"required":true},
             "currentMap": {"dataType":"double","required":true},
             "webhookUrl": {"dataType":"string"},
-            "rconCommands": {"dataType":"nestedObjectLiteral","nestedProperties":{"end":{"dataType":"array","array":{"dataType":"string"}},"match":{"dataType":"array","array":{"dataType":"string"}},"knife":{"dataType":"array","array":{"dataType":"string"}},"init":{"dataType":"array","array":{"dataType":"string"}}}},
+            "rconCommands": {"dataType":"nestedObjectLiteral","nestedProperties":{"end":{"dataType":"array","array":{"dataType":"string"},"required":true},"match":{"dataType":"array","array":{"dataType":"string"},"required":true},"knife":{"dataType":"array","array":{"dataType":"string"},"required":true},"init":{"dataType":"array","array":{"dataType":"string"},"required":true}},"required":true},
             "canClinch": {"dataType":"boolean","required":true},
             "matchEndAction": {"ref":"EMatchEndAction","required":true},
             "logs": {"dataType":"array","array":{"dataType":"refAlias","ref":"TLogUnion"},"required":true},
@@ -364,11 +363,35 @@ const models: TsoaRoute.Models = {
             "canClinch": {"dataType":"boolean"},
             "matchEndAction": {"ref":"EMatchEndAction"},
             "electionMap": {"dataType":"string"},
-            "id": {"dataType":"string","required":true},
             "state": {"ref":"EMatchSate"},
             "logSecret": {"dataType":"string"},
-            "parseIncomingLogs": {"dataType":"boolean"},
             "currentMap": {"dataType":"double"},
+            "_restartElection": {"dataType":"boolean"},
+            "_init": {"dataType":"boolean"},
+            "_setup": {"dataType":"boolean"},
+            "_execRconCommandsInit": {"dataType":"boolean"},
+            "_execRconCommandsKnife": {"dataType":"boolean"},
+            "_execRconCommandsMatch": {"dataType":"boolean"},
+            "_execRconCommandsEnd": {"dataType":"boolean"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IMatchMapUpdateDto": {
+        "dataType": "refObject",
+        "properties": {
+            "name": {"dataType":"string"},
+            "knifeForSide": {"dataType":"boolean"},
+            "startAsCtTeam": {"ref":"ETeamAB"},
+            "state": {"ref":"EMatchMapSate"},
+            "knifeWinner": {"ref":"ETeamAB"},
+            "readyTeams": {"dataType":"nestedObjectLiteral","nestedProperties":{"teamB":{"dataType":"boolean","required":true},"teamA":{"dataType":"boolean","required":true}}},
+            "knifeRestart": {"dataType":"nestedObjectLiteral","nestedProperties":{"teamB":{"dataType":"boolean","required":true},"teamA":{"dataType":"boolean","required":true}}},
+            "score": {"dataType":"nestedObjectLiteral","nestedProperties":{"teamB":{"dataType":"double","required":true},"teamA":{"dataType":"double","required":true}}},
+            "overTimeEnabled": {"dataType":"boolean"},
+            "overTimeMaxRounds": {"dataType":"double"},
+            "maxRounds": {"dataType":"double"},
+            "_refreshOvertimeAndMaxRoundsSettings": {"dataType":"boolean"},
         },
         "additionalProperties": false,
     },
@@ -510,7 +533,7 @@ export function RegisterRoutes(app: express.Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.put('/api/matches/:id',
+        app.patch('/api/matches/:id',
             authenticateMiddleware([{"bearer_token":[]}]),
 
             function MatchesController_updateMatch(request: any, response: any, next: any) {
@@ -530,6 +553,33 @@ export function RegisterRoutes(app: express.Router) {
 
 
               const promise = controller.updateMatch.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.patch('/api/matches/:id/matchMap/:mapNumber',
+            authenticateMiddleware([{"bearer_token":[]}]),
+
+            function MatchesController_updateMatchMap(request: any, response: any, next: any) {
+            const args = {
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    mapNumber: {"in":"path","name":"mapNumber","required":true,"dataType":"double"},
+                    requestBody: {"in":"body","name":"requestBody","required":true,"ref":"IMatchMapUpdateDto"},
+                    undefined: {"in":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.updateMatchMap.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -561,6 +611,31 @@ export function RegisterRoutes(app: express.Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.patch('/api/matches/:id/revive',
+            authenticateMiddleware([{"bearer_token":[]}]),
+
+            function MatchesController_reviveMatch(request: any, response: any, next: any) {
+            const args = {
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    undefined: {"in":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MatchesController();
+
+
+              const promise = controller.reviveMatch.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.post('/api/matches/:id/server/log/:secret',
 
             function MatchesController_receiveLog(request: any, response: any, next: any) {
@@ -580,30 +655,6 @@ export function RegisterRoutes(app: express.Router) {
 
 
               const promise = controller.receiveLog.apply(controller, validatedArgs as any);
-              promiseHandler(controller, promise, response, undefined, next);
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.delete('/api/matches',
-            authenticateMiddleware([{"bearer_token":[]}]),
-
-            function MatchesController_deleteAll(request: any, response: any, next: any) {
-            const args = {
-                    undefined: {"in":"request","required":true,"dataType":"object"},
-            };
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = getValidatedArgs(args, request, response);
-
-                const controller = new MatchesController();
-
-
-              const promise = controller.deleteAll.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

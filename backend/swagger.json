@@ -16,9 +16,6 @@
 			},
 			"ITeam": {
 				"properties": {
-					"id": {
-						"type": "string"
-					},
 					"passthrough": {
 						"type": "string"
 					},
@@ -31,7 +28,6 @@
 					}
 				},
 				"required": [
-					"id",
 					"name",
 					"advantage"
 				],
@@ -736,6 +732,12 @@
 								"description": "executed exactly once on match init"
 							}
 						},
+						"required": [
+							"end",
+							"match",
+							"knife",
+							"init"
+						],
 						"type": "object"
 					},
 					"canClinch": {
@@ -759,7 +761,8 @@
 						"type": "array"
 					},
 					"tmtSecret": {
-						"type": "string"
+						"type": "string",
+						"description": "Access token to be used in the API."
 					},
 					"isStopped": {
 						"type": "boolean",
@@ -783,6 +786,7 @@
 					"parseIncomingLogs",
 					"matchMaps",
 					"currentMap",
+					"rconCommands",
 					"canClinch",
 					"matchEndAction",
 					"logs",
@@ -994,9 +998,6 @@
 						"type": "string",
 						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
 					},
-					"id": {
-						"type": "string"
-					},
 					"state": {
 						"$ref": "#/components/schemas/EMatchSate"
 					},
@@ -1004,17 +1005,117 @@
 						"type": "string",
 						"description": "updates the server's log address automatically"
 					},
-					"parseIncomingLogs": {
-						"type": "boolean"
-					},
 					"currentMap": {
 						"type": "number",
 						"format": "double"
+					},
+					"_restartElection": {
+						"type": "boolean"
+					},
+					"_init": {
+						"type": "boolean"
+					},
+					"_setup": {
+						"type": "boolean"
+					},
+					"_execRconCommandsInit": {
+						"type": "boolean"
+					},
+					"_execRconCommandsKnife": {
+						"type": "boolean"
+					},
+					"_execRconCommandsMatch": {
+						"type": "boolean"
+					},
+					"_execRconCommandsEnd": {
+						"type": "boolean"
 					}
 				},
-				"required": [
-					"id"
-				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IMatchMapUpdateDto": {
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "map name"
+					},
+					"knifeForSide": {
+						"type": "boolean"
+					},
+					"startAsCtTeam": {
+						"$ref": "#/components/schemas/ETeamAB",
+						"description": "may change after knife round"
+					},
+					"state": {
+						"$ref": "#/components/schemas/EMatchMapSate"
+					},
+					"knifeWinner": {
+						"$ref": "#/components/schemas/ETeamAB"
+					},
+					"readyTeams": {
+						"properties": {
+							"teamB": {
+								"type": "boolean"
+							},
+							"teamA": {
+								"type": "boolean"
+							}
+						},
+						"required": [
+							"teamB",
+							"teamA"
+						],
+						"type": "object"
+					},
+					"knifeRestart": {
+						"properties": {
+							"teamB": {
+								"type": "boolean"
+							},
+							"teamA": {
+								"type": "boolean"
+							}
+						},
+						"required": [
+							"teamB",
+							"teamA"
+						],
+						"type": "object"
+					},
+					"score": {
+						"properties": {
+							"teamB": {
+								"type": "number",
+								"format": "double"
+							},
+							"teamA": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"teamB",
+							"teamA"
+						],
+						"type": "object"
+					},
+					"overTimeEnabled": {
+						"type": "boolean"
+					},
+					"overTimeMaxRounds": {
+						"type": "number",
+						"format": "double"
+					},
+					"maxRounds": {
+						"type": "number",
+						"format": "double"
+					},
+					"_refreshOvertimeAndMaxRoundsSettings": {
+						"type": "boolean",
+						"description": "reads and refreshes mp_overtime_enable, mp_overtime_maxrounds and mp_maxrounds from rcon"
+					}
+				},
 				"type": "object",
 				"additionalProperties": false
 			}
@@ -1120,20 +1221,6 @@
 						}
 					}
 				]
-			},
-			"delete": {
-				"operationId": "DeleteAll",
-				"responses": {
-					"204": {
-						"description": "No content"
-					}
-				},
-				"security": [
-					{
-						"bearer_token": []
-					}
-				],
-				"parameters": []
 			}
 		},
 		"/api/matches/{id}": {
@@ -1172,23 +1259,11 @@
 					}
 				]
 			},
-			"put": {
+			"patch": {
 				"operationId": "UpdateMatch",
 				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"anyOf": [
-										{
-											"type": "boolean"
-										},
-										{}
-									]
-								}
-							}
-						}
+					"204": {
+						"description": "No content"
 					}
 				},
 				"security": [
@@ -1220,20 +1295,8 @@
 			"delete": {
 				"operationId": "DeleteMatch",
 				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"anyOf": [
-										{
-											"type": "boolean"
-										},
-										{}
-									]
-								}
-							}
-						}
+					"204": {
+						"description": "No content"
 					}
 				},
 				"security": [
@@ -1352,6 +1415,75 @@
 					{
 						"in": "path",
 						"name": "file",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/matchMap/{mapNumber}": {
+			"patch": {
+				"operationId": "UpdateMatchMap",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "mapNumber",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IMatchMapUpdateDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/matches/{id}/revive": {
+			"patch": {
+				"operationId": "ReviveMatch",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
 						"required": true,
 						"schema": {
 							"type": "string"

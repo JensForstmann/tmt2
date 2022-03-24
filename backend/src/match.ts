@@ -57,6 +57,12 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		currentMap: 0,
 		logs: [],
 		players: [],
+		rconCommands: {
+			init: dto.rconCommands?.init ?? [],
+			knife: dto.rconCommands?.knife ?? [],
+			match: dto.rconCommands?.match ?? [],
+			end: dto.rconCommands?.end ?? [],
+		},
 		canClinch: dto.canClinch ?? true,
 		matchEndAction: dto.matchEndAction ?? EMatchEndAction.NONE,
 		election: Election.create(dto.mapPool, dto.electionSteps),
@@ -64,7 +70,6 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		electionMap: dto.electionMap ?? 'de_dust2',
 		tmtSecret: shortUuid(),
 	};
-	// TODO: check if webhook is available
 	const match = await createFromData(data);
 	await init(match);
 	return match;
@@ -95,7 +100,7 @@ export const onRconConnectionEnd = async (match: Match) => {
 };
 
 /**
- * Executes once per match and every time the map will be loaded from storage.
+ * Executed once per match and every time the map will be loaded from storage.
  */
 const setup = async (match: Match) => {
 	// TMT does not need any special log settings to work. Only 'log on' must be executed.
@@ -105,8 +110,7 @@ const setup = async (match: Match) => {
 
 	await execRcon(match, 'log on');
 
-	const logAddress = `${process.env.TMT_LOG_ADDRESS}/api/matches/${match.data.id}/server/log/${match.data.logSecret}`;
-	await execRcon(match, `logaddress_add_http "${logAddress}"`);
+	await registerLogAddress(match);
 	await setTeamNames(match);
 
 	await execRcon(match, `mp_backup_round_file "round_backup_${match.data.id}"`);
@@ -117,7 +121,7 @@ const setup = async (match: Match) => {
 		'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%team1%_%team2%_%map%_round%round%_score_%score1%_%score2%.txt"'
 	);
 
-	// delay parsing of incoming log lines (because we don't about the initial big batch)
+	// delay parsing of incoming log lines (because we don't care about the initial big batch)
 	sleep(2000)
 		.then(async () => {
 			match.log('enable parsing of incoming log');
@@ -135,6 +139,11 @@ const setup = async (match: Match) => {
 	match.log('Setup finished');
 };
 
+const registerLogAddress = async (match: Match) => {
+	const logAddress = `${process.env.TMT_LOG_ADDRESS}/api/matches/${match.data.id}/server/log/${match.data.logSecret}`;
+	await execRcon(match, `logaddress_add_http "${logAddress}"`);
+};
+
 export const execRcon = async (match: Match, command: string) => {
 	return await GameServer.exec(match, command);
 };
@@ -145,18 +154,16 @@ export const execRcon = async (match: Match, command: string) => {
 const init = async (match: Match) => {
 	match.log('init match...');
 	await execRcon(match, `changelevel ${match.data.electionMap}`);
-	await execManyRcon(match, match.data.rconCommands?.init);
+	await execManyRcon(match, match.data.rconCommands.init);
 	await execRcon(match, 'mp_warmuptime 600');
 	await execRcon(match, 'mp_warmup_pausetimer 1');
 	await execRcon(match, 'mp_autokick 0');
 	match.log('init match finished');
 };
 
-export const execManyRcon = async (match: Match, commands?: string[]) => {
-	if (commands) {
-		for (let i = 0; i < commands.length; i++) {
-			await execRcon(match, commands[i]);
-		}
+export const execManyRcon = async (match: Match, commands: string[]) => {
+	for (let i = 0; i < commands.length; i++) {
+		await execRcon(match, commands[i]);
 	}
 };
 
@@ -190,7 +197,7 @@ const sayPeriodicMessage = async (match: Match) => {
 	}
 };
 
-const getCurrentMatchMap = (match: Match) => {
+export const getCurrentMatchMap = (match: Match) => {
 	if (match.data.state === EMatchSate.MATCH_MAP) {
 		return match.data.matchMaps[match.data.currentMap];
 	}
@@ -206,22 +213,13 @@ export const getTeamByAB = (match: Match, teamAB: ETeamAB): ITeam => {
 	}
 };
 
-// TODO: duplicate code here and in matchMap
-const setTeamNames = async (match: Match) => {
+export const setTeamNames = async (match: Match) => {
 	const currentMatchMap = getCurrentMatchMap(match);
 	if (currentMatchMap) {
-		await execRcon(
-			match,
-			`mp_teamname_1 "${escapeRconString(
-				getTeamByAB(match, currentMatchMap.startAsCtTeam).name
-			)}"`
-		);
-		await execRcon(
-			match,
-			`mp_teamname_2 "${escapeRconString(
-				getOtherTeam(match, getTeamByAB(match, currentMatchMap.startAsCtTeam)).name
-			)}"`
-		);
+		const team1 = getTeamByAB(match, currentMatchMap.startAsCtTeam);
+		const team2 = getOtherTeam(match, team1);
+		await execRcon(match, `mp_teamname_1 "${escapeRconString(team1.name)}"`);
+		await execRcon(match, `mp_teamname_2 "${escapeRconString(team2.name)}"`);
 	} else {
 		await execRcon(match, `mp_teamname_1 "${escapeRconString(match.data.teamA.name)}"`);
 		await execRcon(match, `mp_teamname_2 "${escapeRconString(match.data.teamB.name)}"`);
@@ -278,7 +276,7 @@ export const onLog = async (match: Match, body: string) => {
 const onLogLine = async (match: Match, line: string) => {
 	if (!line) return;
 
-	//09/14/2020 - 15:11:58.307 - "Yenz<2><STEAM_1:0:8520813><TERRORIST>" say "ajshdaosjkhdlaökjsdhlakjshd"
+	//09/14/2020 - 15:11:58.307 - "Yenz<2><STEAM_1:0:8520813><TERRORIST>" say "Hello World"
 	// console.log('line:', line);
 	const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
 
@@ -328,7 +326,7 @@ const onPlayerLogLine = async (
 	teamString: string,
 	remainingLine: string
 ) => {
-	//say "ajshdaosjkhdlaökjsdhlakjshd"
+	//say "Hello World"
 	if (steamId === 'BOT') {
 	} else if (steamId === 'Console') {
 	} else {
@@ -359,13 +357,15 @@ const onPlayerSay = async (
 	Webhook.onPlayerSay(match, player, message, isTeamChat);
 
 	if (Settings.COMMAND_PREFIXES.includes(message[0])) {
-		message = message.substr(1);
+		message = message.substring(1);
 		const parts = message.split(' ').filter((str) => str.length > 0);
 		const commandString = parts.shift()?.toLowerCase();
 		if (commandString) {
 			const command = commandMapping.get(commandString);
 			if (command) {
 				await onCommand(match, command, player, parts, teamString);
+			} else {
+				await say(match, `COMMAND UNKNOWN`);
 			}
 		}
 	}
@@ -573,7 +573,7 @@ const onMatchEnd = async (match: Match) => {
 		const wonMapsTeamA = getTeamWins(match, ETeamAB.TEAM_A);
 		const wonMapsTeamB = getTeamWins(match, ETeamAB.TEAM_B);
 		Webhook.onMatchEnd(match, wonMapsTeamA, wonMapsTeamB);
-		await sleep(Settings.MATCH_END_ACTION_DELAY); // TODO: remove await and make it async?
+		await sleep(Settings.MATCH_END_ACTION_DELAY);
 		switch (match.data.matchEndAction) {
 			case EMatchEndAction.KICK_ALL:
 				await GameServer.kickAll(match);
@@ -592,16 +592,11 @@ export const stop = async (match: Match) => {
 	if (match.periodicTimerId) {
 		clearTimeout(match.periodicTimerId);
 	}
-	await execManyRcon(match, match.data.rconCommands?.end).catch((err) => {
+	await execManyRcon(match, match.data.rconCommands.end).catch((err) => {
 		match.log(`error executing match end rcon commands: ${err}`);
 	});
 	await say(match, `TMT IS OFFLINE`).catch(() => {});
 	await GameServer.disconnect(match);
-};
-
-export const update = async (match: Match, dto: IMatchUpdateDto) => {
-	// TODO
-	return false;
 };
 
 export const onElectionFinished = async (match: Match) => {
@@ -614,64 +609,127 @@ export const onElectionFinished = async (match: Match) => {
 	}
 };
 
-// TODO: Implement match change handler
-
-/*
-function change(change: IMatchChange) {
-	if (change.state) {
-		this.changeState(change.state);
+export const update = async (match: Match, dto: IMatchUpdateDto) => {
+	if (dto.state) {
+		match.data.state = dto.state;
 	}
 
-	if (change.gameServer) {
-		this.changeGameServer(change.gameServer);
+	if (dto.mapPool) {
+		match.data.mapPool = dto.mapPool;
 	}
 
-	if (change.webhookUrl !== undefined) {
-		if (change.webhookUrl === null) {
-			this.webhookUrl = undefined;
-		} else {
-			this.webhookUrl = change.webhookUrl;
+	if (dto.teamA) {
+		match.data.teamA = Team.createFromCreateDto(dto.teamA);
+	}
+
+	if (dto.teamB) {
+		match.data.teamB = Team.createFromCreateDto(dto.teamB);
+	}
+
+	if (dto.teamA || dto.teamB) {
+		await setTeamNames(match);
+	}
+
+	if (dto.electionSteps) {
+		match.data.electionSteps = dto.electionSteps;
+	}
+
+	if (dto.gameServer) {
+		match.data.gameServer = dto.gameServer;
+		const addr = `${match.data.gameServer.ip}:${match.data.gameServer.port}`;
+		try {
+			match.log(`connect rcon ${addr}`);
+			const gameServer = await GameServer.create(match.data.gameServer, match.log);
+			const previous = match.rconConnection;
+			match.rconConnection = gameServer;
+			match.log(`connect rcon successful ${addr}`);
+			previous.end().catch(() => {});
+		} catch (err) {
+			match.log(`connect rcon failed ${addr}: ${err}`);
 		}
 	}
 
-	if (change.logSecret) {
-		this.logSecret = change.logSecret;
-		this.registerLogAddress();
+	if (dto.passthrough) {
+		match.data.passthrough = dto.passthrough;
 	}
 
-	if (typeof change.parseIncomingLogs === 'boolean') {
-		this.parseIncomingLogs = change.parseIncomingLogs;
+	if (dto.webhookUrl) {
+		match.data.webhookUrl = dto.webhookUrl;
 	}
 
-	if (change.currentMap) {
-		this.changeCurrentMap(change.currentMap);
+	if (dto.logSecret) {
+		match.data.logSecret = dto.logSecret;
+		await registerLogAddress(match);
 	}
 
-	if (typeof change.canClinch === 'boolean') {
-		this.canClinch = change.canClinch;
+	if (dto.currentMap !== undefined && dto.currentMap !== match.data.currentMap) {
+		const previous = match.data.currentMap;
+		match.data.currentMap = dto.currentMap;
+		const nextMap = getCurrentMatchMap(match);
+		if (nextMap) {
+			await MatchMap.loadMap(match, nextMap);
+		} else {
+			match.data.currentMap = previous;
+		}
 	}
 
-	if (change.matchEndAction) {
-		this.matchEndAction = change.matchEndAction;
+	if (dto.rconCommands?.init) {
+		match.data.rconCommands.init = dto.rconCommands.init;
 	}
-}
 
-function changeState(state: EMatchSate) {
-	if (this.state !== state) {
-		this.state = state; // TODO: think about if further actions must take place
+	if (dto.rconCommands?.knife) {
+		match.data.rconCommands.knife = dto.rconCommands.knife;
 	}
-}
 
-function changeGameServer(gameServer: ISerializedGameServer) {
-	this.gameServer = new GameServer(gameServer.ip, gameServer.port, gameServer.rconPassword);
-	this.setup();
-}
-
-function changeCurrentMap(currentMap: number) {
-	if (this.currentMap !== currentMap) {
-		this.currentMap = currentMap;
-		this.getCurrentMatchMap()?.loadMap();
+	if (dto.rconCommands?.match) {
+		match.data.rconCommands.match = dto.rconCommands.match;
 	}
-}
 
-*/
+	if (dto.rconCommands?.end) {
+		match.data.rconCommands.end = dto.rconCommands.end;
+	}
+
+	if (dto.canClinch !== undefined) {
+		match.data.canClinch = dto.canClinch;
+		if (isMatchEnd(match)) {
+			await onMatchEnd(match);
+		}
+	}
+
+	if (dto.matchEndAction) {
+		match.data.matchEndAction = dto.matchEndAction;
+	}
+
+	if (dto._restartElection) {
+		match.data.state = EMatchSate.ELECTION;
+		match.data.election = Election.create(match.data.mapPool, match.data.electionSteps);
+		match.data.matchMaps = [];
+		Election.auto(match);
+	}
+
+	if (dto._init) {
+		await init(match);
+	}
+
+	if (dto._setup) {
+		await setup(match);
+	}
+
+	if (dto._execRconCommandsInit) {
+		await execManyRcon(match, match.data.rconCommands.init);
+	}
+
+	if (dto._execRconCommandsKnife) {
+		await execManyRcon(match, match.data.rconCommands.knife);
+	}
+
+	if (dto._execRconCommandsMatch) {
+		await execManyRcon(match, match.data.rconCommands.match);
+	}
+
+	if (dto._execRconCommandsEnd) {
+		await execManyRcon(match, match.data.rconCommands.end);
+	}
+
+	MatchService.scheduleSave(match);
+};

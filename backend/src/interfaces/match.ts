@@ -49,15 +49,15 @@ export interface IMatch {
 	currentMap: number;
 	/** if set various events will be posted to this url */
 	webhookUrl?: string;
-	rconCommands?: {
+	rconCommands: {
 		/** executed exactly once on match init */
-		init?: string[];
+		init: string[];
 		/** executed before every knife round */
-		knife?: string[];
+		knife: string[];
 		/** executed before every match map start */
-		match?: string[];
+		match: string[];
 		/** executed after last match map */
-		end?: string[];
+		end: string[];
 	};
 	/** defaults to true, means that possibly not all maps will be played if the winner is determined before */
 	canClinch: boolean;
@@ -65,6 +65,7 @@ export interface IMatch {
 	matchEndAction: EMatchEndAction;
 	logs: TLogUnion[];
 	players: IPlayer[];
+	/** Access token to be used in the API. */
 	tmtSecret: string;
 	/** If match is finished or if the match was stopped/deleted this is true. */
 	isStopped: boolean;
@@ -106,10 +107,16 @@ export interface IMatchCreateDto {
 }
 
 export interface IMatchUpdateDto extends Partial<IMatchCreateDto> {
-	id: string;
 	state?: EMatchSate;
 	/** updates the server's log address automatically */
 	logSecret?: string;
-	parseIncomingLogs?: boolean;
 	currentMap?: number;
+
+	_restartElection?: boolean;
+	_init?: boolean;
+	_setup?: boolean;
+	_execRconCommandsInit?: boolean;
+	_execRconCommandsKnife?: boolean;
+	_execRconCommandsMatch?: boolean;
+	_execRconCommandsEnd?: boolean;
 }

@@ -4,8 +4,8 @@ import {
 	Delete,
 	Get,
 	NoSecurity,
+	Patch,
 	Post,
-	Put,
 	Query,
 	Request,
 	Route,
@@ -15,7 +15,9 @@ import {
 import { IMatch, IMatchCreateDto, IMatchUpdateDto } from './interfaces/match';
 import * as MatchService from './matchService';
 import * as Match from './match';
+import * as MatchMap from './matchMap';
 import { IAuthResponse } from './auth';
+import { IMatchMapUpdateDto } from './interfaces/matchMap';
 
 @Route('/api/matches')
 @Security('bearer_token')
@@ -103,32 +105,52 @@ export class MatchesController extends Controller {
 		}
 	}
 
-	@Put('{id}')
+	@Patch('{id}')
 	async updateMatch(
 		id: string,
 		@Body() requestBody: IMatchUpdateDto,
 		@Request() { user }: { user: IAuthResponse }
-	): Promise<boolean | void> {
+	): Promise<void> {
 		const match = MatchService.get(id);
 		if (match) {
-			if (await Match.update(match, requestBody)) {
-				return true;
-			} else {
-				this.setStatus(400);
-				return false;
-			}
+			await Match.update(match, requestBody);
 		} else {
 			this.setStatus(404);
-			return;
 		}
 	}
 
-	@Delete('{id}')
-	async deleteMatch(
+	@Patch('{id}/matchMap/{mapNumber}')
+	async updateMatchMap(
 		id: string,
+		mapNumber: number,
+		@Body() requestBody: IMatchMapUpdateDto,
 		@Request() { user }: { user: IAuthResponse }
-	): Promise<boolean | void> {
+	): Promise<void> {
+		const match = MatchService.get(id);
+		if (!match) {
+			this.setStatus(404);
+			return;
+		}
+		const matchMap = match.data.matchMaps[mapNumber];
+		if (!matchMap) {
+			this.setStatus(404);
+			return;
+		}
+		await MatchMap.update(match, matchMap, requestBody);
+	}
+
+	@Delete('{id}')
+	async deleteMatch(id: string, @Request() { user }: { user: IAuthResponse }): Promise<void> {
 		if (await MatchService.remove(id)) {
+			this.setStatus(200);
+		} else {
+			this.setStatus(404);
+		}
+	}
+
+	@Patch('{id}/revive')
+	async reviveMatch(id: string, @Request() { user }: { user: IAuthResponse }): Promise<void> {
+		if (await MatchService.revive(id)) {
 			this.setStatus(200);
 		} else {
 			this.setStatus(404);
@@ -153,14 +175,6 @@ export class MatchesController extends Controller {
 			// 410 tells the cs go server to stop send logs
 			console.log(`return 410 to gameserver (match id: ${id})`);
 			this.setStatus(410);
-		}
-	}
-
-	@Delete()
-	async deleteAll(@Request() { user }: { user: IAuthResponse }): Promise<void> {
-		const a = MatchService.getAllLive();
-		for (let i = 0; i < a.length; i++) {
-			await MatchService.remove(a[i].id);
 		}
 	}
 }

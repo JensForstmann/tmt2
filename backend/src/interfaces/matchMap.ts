@@ -32,9 +32,6 @@ export interface IMatchMap {
 	knifeForSide: boolean;
 	/** may change after knife round */
 	startAsCtTeam: ETeamAB;
-	// startAsTTeam: ETeamAB; // can be calculated
-	// currentCtTeam: ETeamAB; // can be calculated
-	// currentTTeam: ETeamAB; // can be calculated
 	state: EMatchMapSate;
 	knifeWinner?: ETeamAB;
 	readyTeams: {
@@ -54,16 +51,7 @@ export interface IMatchMap {
 	maxRounds: number;
 }
 
-export interface IMatchMapUpdateDto {
-	name?: string;
-	knifeForSide?: boolean;
-	startAsCtTeam?: ETeamAB;
-	state?: EMatchMapSate;
-	knifeWinner?: ETeamAB;
-	score?: {
-		teamA?: number;
-		teamB?: number;
-	};
+export interface IMatchMapUpdateDto extends Partial<IMatchMap> {
 	/** reads and refreshes mp_overtime_enable, mp_overtime_maxrounds and mp_maxrounds from rcon */
-	refreshOvertimeAndMaxRoundsSettings?: boolean;
+	_refreshOvertimeAndMaxRoundsSettings?: boolean;
 }

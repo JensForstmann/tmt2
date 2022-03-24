@@ -25,21 +25,25 @@ export const setup = async () => {
 	for (let i = 0; i < matchesFromStorage.length; i++) {
 		const matchData = matchesFromStorage[i];
 		if (matchData.state !== EMatchSate.FINISHED && !matchData.isStopped) {
-			console.log(`load match ${matchData.id} from storage`);
-			startingMatches.add(matchData.id);
-			matchData.parseIncomingLogs = false;
-			try {
-				const match = await Match.createFromData(matchData);
-				matches.set(match.data.id, match);
-				await save(match);
-			} catch (err) {
-				console.error(`error creating match ${matchData.id} from storage: ${err}`);
-			}
-			startingMatches.delete(matchData.id);
+			await loadMatchFromStorage(matchData);
 		}
 	}
 
 	periodicSaver();
+};
+
+const loadMatchFromStorage = async (matchData: IMatch) => {
+	console.log(`load match ${matchData.id} from storage`);
+	startingMatches.add(matchData.id);
+	matchData.parseIncomingLogs = false;
+	try {
+		const match = await Match.createFromData(matchData);
+		matches.set(match.data.id, match);
+		await save(match);
+	} catch (err) {
+		console.error(`error creating match ${matchData.id} from storage: ${err}`);
+	}
+	startingMatches.delete(matchData.id);
 };
 
 const periodicSaver = async () => {
@@ -121,6 +125,20 @@ export const remove = async (id: string) => {
 	} else {
 		return false;
 	}
+};
+
+export const revive = async (id: string) => {
+	const match = matches.get(id);
+	if (match) {
+		return false;
+	}
+	const matchFromStorage = await getFromStorage(id);
+	if (!matchFromStorage) {
+		return false;
+	}
+	matchFromStorage.isStopped = false;
+	await loadMatchFromStorage(matchFromStorage);
+	return true;
 };
 
 export const save = async (match: Match.Match) => {
