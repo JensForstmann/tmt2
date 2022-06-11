@@ -12,12 +12,11 @@ import {
 	Security,
 	SuccessResponse,
 } from '@tsoa/runtime';
-import { IMatch, IMatchCreateDto, IMatchUpdateDto } from './interfaces/match';
-import * as MatchService from './matchService';
+import { IMatch, IMatchCreateDto, IMatchMapUpdateDto, IMatchUpdateDto } from '../../common';
+import { IAuthResponse } from './auth';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
-import { IAuthResponse } from './auth';
-import { IMatchMapUpdateDto } from './interfaces/matchMap';
+import * as MatchService from './matchService';
 
 @Route('/api/matches')
 @Security('bearer_token')

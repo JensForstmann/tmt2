@@ -7,7 +7,7 @@ import { LogViewer } from '../components/LogViewer';
 import { MatchCard } from '../components/MatchCard';
 import { MatchMapCard } from '../components/MatchMapCard';
 import { PlayerListCard } from '../components/PlayerListCard';
-import { IMatch } from '../types/match';
+import { IMatch } from '../../../common';
 import { fetchResource, useMatch } from '../utils/fetcher';
 
 export const MatchPage: Component = () => {

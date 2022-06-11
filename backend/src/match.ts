@@ -1,26 +1,28 @@
 import { generate as shortUuid } from 'short-uuid';
-import * as Election from './election';
-import * as Team from './team';
-import * as Player from './player';
-import { commandMapping, ECommand } from './commands';
-import * as MatchMap from './matchMap';
-import * as MatchService from './matchService';
-import { escapeRconString, sleep } from './utils';
-import * as GameServer from './gameServer';
-import * as Webhook from './webhook';
 import {
-	EMatchEndAction,
-	EMatchSate,
+	TMatchEndAction,
+	TMatchMapSate,
+	TMatchSate,
+	TTeamAB,
+	TTeamSides,
+	getOtherTeamAB,
 	IMatch,
 	IMatchCreateDto,
 	IMatchUpdateDto,
-} from './interfaces/match';
-import { IPlayer } from './interfaces/player';
-import { EMatchMapSate, ETeamAB, getOtherTeamAB } from './interfaces/matchMap';
-import { Settings } from './settings';
-import { ITeam } from './interfaces/team';
-import { ETeamSides } from './interfaces/stuff';
+	IPlayer,
+	ITeam,
+} from '../../common';
+import { commandMapping, ECommand } from './commands';
+import * as Election from './election';
+import * as GameServer from './gameServer';
+import * as MatchMap from './matchMap';
+import * as MatchService from './matchService';
+import * as Player from './player';
 import { Rcon } from './rcon-client';
+import { Settings } from './settings';
+import * as Team from './team';
+import { escapeRconString, sleep } from './utils';
+import * as Webhook from './webhook';
 
 export interface Match {
 	data: IMatch;
@@ -48,7 +50,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		id: id,
 		teamA: Team.createFromCreateDto(dto.teamA),
 		teamB: Team.createFromCreateDto(dto.teamB),
-		state: EMatchSate.ELECTION,
+		state: 'ELECTION',
 		logSecret: logSecret,
 		parseIncomingLogs: false,
 		matchMaps: [],
@@ -62,7 +64,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 			end: dto.rconCommands?.end ?? [],
 		},
 		canClinch: dto.canClinch ?? true,
-		matchEndAction: dto.matchEndAction ?? EMatchEndAction.NONE,
+		matchEndAction: dto.matchEndAction ?? 'NONE',
 		election: Election.create(dto.mapPool, dto.electionSteps),
 		isStopped: false,
 		electionMap: dto.electionMap ?? 'de_dust2',
@@ -152,7 +154,7 @@ const registerLogAddress = async (match: Match) => {
 				match.data.parseIncomingLogs = true;
 				MatchService.scheduleSave(match);
 				await say(match, 'ONLINE');
-				if (match.data.state === EMatchSate.ELECTION) {
+				if (match.data.state === 'ELECTION') {
 					await Election.auto(match);
 				}
 				await sayPeriodicMessage(match);
@@ -204,30 +206,30 @@ const sayPeriodicMessage = async (match: Match) => {
 		}
 	}, Settings.PERIODIC_MESSAGE_FREQUENCY);
 
-	if (match.data.state === EMatchSate.ELECTION) {
+	if (match.data.state === 'ELECTION') {
 		await Election.sayPeriodicMessage(match);
-	} else if (match.data.state === EMatchSate.MATCH_MAP) {
+	} else if (match.data.state === 'MATCH_MAP') {
 		const matchMap = getCurrentMatchMap(match);
 		if (matchMap) {
 			await MatchMap.sayPeriodicMessage(match, matchMap);
 		}
-	} else if (match.data.state === EMatchSate.FINISHED) {
+	} else if (match.data.state === 'FINISHED') {
 		await say(match, 'MATCH IS FINISHED');
 	}
 };
 
 export const getCurrentMatchMap = (match: Match) => {
-	if (match.data.state === EMatchSate.MATCH_MAP) {
+	if (match.data.state === 'MATCH_MAP') {
 		return match.data.matchMaps[match.data.currentMap];
 	}
 	return undefined;
 };
 
-export const getTeamByAB = (match: Match, teamAB: ETeamAB): ITeam => {
+export const getTeamByAB = (match: Match, teamAB: TTeamAB): ITeam => {
 	switch (teamAB) {
-		case ETeamAB.TEAM_A:
+		case 'TEAM_A':
 			return match.data.teamA;
-		case ETeamAB.TEAM_B:
+		case 'TEAM_B':
 			return match.data.teamB;
 	}
 };
@@ -265,7 +267,7 @@ export const loadRoundBackup = async (match: Match, file: string) => {
 		match.log(`load round backup ${file}`);
 		const currentMatchMap = getCurrentMatchMap(match);
 		if (currentMatchMap) {
-			currentMatchMap.state = EMatchMapSate.PAUSED;
+			currentMatchMap.state = 'PAUSED';
 			currentMatchMap.readyTeams.teamA = false;
 			currentMatchMap.readyTeams.teamB = false;
 			MatchService.scheduleSave(match);
@@ -331,7 +333,7 @@ const onLogLine = async (match: Match, line: string) => {
 				currentMatchMap,
 				ctScore,
 				tScore,
-				winningTeam === 'CT' ? ETeamSides.CT : ETeamSides.T
+				winningTeam === 'CT' ? 'CT' : 'T'
 			);
 		}
 	}
@@ -408,7 +410,7 @@ const onCommand = async (
 	if (teamAB) {
 		const playerTeam = getTeamByAB(match, teamAB);
 
-		if (match.data.state === EMatchSate.ELECTION) {
+		if (match.data.state === 'ELECTION') {
 			await Election.onCommand(match, command, teamAB, parameters);
 		}
 
@@ -419,7 +421,7 @@ const onCommand = async (
 
 		const currentCtTeamAB = currentMatchMap
 			? MatchMap.getCurrentTeamSideAndRoundSwitch(currentMatchMap).currentCtTeamAB
-			: ETeamAB.TEAM_A;
+			: 'TEAM_A';
 		const currentTTeamAB = getOtherTeamAB(currentCtTeamAB);
 
 		if (
@@ -454,7 +456,7 @@ const sayWrongTeamOrSide = async (
 	player: IPlayer,
 	currentSite: 'CT' | 'TERRORIST',
 	currentTeam: ITeam,
-	currentTeamAB: ETeamAB
+	currentTeamAB: TTeamAB
 ) => {
 	const otherTeam = getOtherTeam(match, currentTeam);
 	await say(
@@ -466,7 +468,7 @@ const sayWrongTeamOrSide = async (
 	await say(
 		match,
 		`CHECK SCOREBOARD AND CHANGE TEAM OR TYPE "${Settings.COMMAND_PREFIXES[0]}team ${
-			currentTeamAB === ETeamAB.TEAM_A ? 'b' : 'a'
+			currentTeamAB === 'TEAM_A' ? 'b' : 'a'
 		}" TO CHANGE REGISTRATION`
 	);
 };
@@ -479,7 +481,7 @@ export const getOtherTeam = (match: Match, team: ITeam) => {
 const onTeamCommand = async (match: Match, player: IPlayer, firstParameter: string) => {
 	firstParameter = firstParameter.toUpperCase();
 	if (firstParameter === 'A') {
-		player.team = ETeamAB.TEAM_A;
+		player.team = 'TEAM_A';
 		say(
 			match,
 			`PLAYER ${escapeRconString(player.name)} JOINED TEAM ${escapeRconString(
@@ -487,7 +489,7 @@ const onTeamCommand = async (match: Match, player: IPlayer, firstParameter: stri
 			)}`
 		);
 	} else if (firstParameter === 'B') {
-		player.team = ETeamAB.TEAM_B;
+		player.team = 'TEAM_B';
 		say(
 			match,
 			`PLAYER ${escapeRconString(player.name)} JOINED TEAM ${escapeRconString(
@@ -499,8 +501,8 @@ const onTeamCommand = async (match: Match, player: IPlayer, firstParameter: stri
 		if (playerTeam) {
 			say(
 				match,
-				`YOU ARE IN TEAM ${playerTeam === ETeamAB.TEAM_A ? 'A' : 'B'}: ${escapeRconString(
-					playerTeam === ETeamAB.TEAM_A ? match.data.teamA.name : match.data.teamB.name
+				`YOU ARE IN TEAM ${playerTeam === 'TEAM_A' ? 'A' : 'B'}: ${escapeRconString(
+					playerTeam === 'TEAM_A' ? match.data.teamA.name : match.data.teamB.name
 				)}`
 			);
 		} else {
@@ -545,27 +547,23 @@ const onMapEnd = async (match: Match) => {
 
 const isMatchEnd = (match: Match) => {
 	if (match.data.canClinch) {
-		const wonMapsTeamA = getTeamWins(match, ETeamAB.TEAM_A);
-		const wonMapsTeamB = getTeamWins(match, ETeamAB.TEAM_B);
+		const wonMapsTeamA = getTeamWins(match, 'TEAM_A');
+		const wonMapsTeamB = getTeamWins(match, 'TEAM_B');
 		if (match.data.matchMaps.length / 2 < Math.max(wonMapsTeamA, wonMapsTeamB)) {
 			return true;
 		}
 	}
 
-	return match.data.matchMaps.reduce((pv, cv) => pv && cv.state === EMatchMapSate.FINISHED, true);
+	return match.data.matchMaps.reduce((pv, cv) => pv && cv.state === 'FINISHED', true);
 };
 
-export const getTeamWins = (match: Match, teamAB: ETeamAB) => {
-	if (teamAB === ETeamAB.TEAM_A) {
+export const getTeamWins = (match: Match, teamAB: TTeamAB) => {
+	if (teamAB === 'TEAM_A') {
 		return (
 			match.data.teamA.advantage +
 			match.data.matchMaps.reduce(
 				(pv: number, cv) =>
-					pv +
-					(cv.state === EMatchMapSate.FINISHED &&
-					MatchMap.getWinner(cv) === ETeamAB.TEAM_A
-						? 1
-						: 0),
+					pv + (cv.state === 'FINISHED' && MatchMap.getWinner(cv) === 'TEAM_A' ? 1 : 0),
 				0
 			)
 		);
@@ -574,11 +572,7 @@ export const getTeamWins = (match: Match, teamAB: ETeamAB) => {
 			match.data.teamB.advantage +
 			match.data.matchMaps.reduce(
 				(pv: number, cv) =>
-					pv +
-					(cv.state === EMatchMapSate.FINISHED &&
-					MatchMap.getWinner(cv) === ETeamAB.TEAM_B
-						? 1
-						: 0),
+					pv + (cv.state === 'FINISHED' && MatchMap.getWinner(cv) === 'TEAM_B' ? 1 : 0),
 				0
 			)
 		);
@@ -586,18 +580,18 @@ export const getTeamWins = (match: Match, teamAB: ETeamAB) => {
 };
 
 const onMatchEnd = async (match: Match) => {
-	if (match.data.state !== EMatchSate.FINISHED) {
-		match.data.state = EMatchSate.FINISHED;
+	if (match.data.state !== 'FINISHED') {
+		match.data.state = 'FINISHED';
 		MatchService.scheduleSave(match);
-		const wonMapsTeamA = getTeamWins(match, ETeamAB.TEAM_A);
-		const wonMapsTeamB = getTeamWins(match, ETeamAB.TEAM_B);
+		const wonMapsTeamA = getTeamWins(match, 'TEAM_A');
+		const wonMapsTeamB = getTeamWins(match, 'TEAM_B');
 		Webhook.onMatchEnd(match, wonMapsTeamA, wonMapsTeamB);
 		await sleep(Settings.MATCH_END_ACTION_DELAY);
 		switch (match.data.matchEndAction) {
-			case EMatchEndAction.KICK_ALL:
+			case 'KICK_ALL':
 				await GameServer.kickAll(match);
 				break;
-			case EMatchEndAction.QUIT_SERVER:
+			case 'QUIT_SERVER':
 				await execRcon(match, 'quit');
 				break;
 		}
@@ -620,7 +614,7 @@ export const stop = async (match: Match) => {
 
 export const onElectionFinished = async (match: Match) => {
 	Webhook.onElectionEnd(match);
-	match.data.state = EMatchSate.MATCH_MAP;
+	match.data.state = 'MATCH_MAP';
 	MatchService.scheduleSave(match);
 	const currentMatchMap = getCurrentMatchMap(match);
 	if (currentMatchMap) {
@@ -724,7 +718,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto._restartElection) {
-		match.data.state = EMatchSate.ELECTION;
+		match.data.state = 'ELECTION';
 		match.data.election = Election.create(match.data.mapPool, match.data.electionSteps);
 		match.data.matchMaps = [];
 		Election.auto(match);

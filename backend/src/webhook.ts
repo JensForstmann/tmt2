@@ -1,18 +1,19 @@
 import axios from 'axios';
-import { EMatchMapSate, ETeamAB, IMatchMap } from './interfaces/matchMap';
-import { IPlayer } from './interfaces/player';
-import { ITeam } from './interfaces/team';
 import {
-	EWebhookType,
+	TMatchMapSate,
+	TWebhookType,
 	IChatWebhook,
 	IElectionEndWebhook,
 	IKnifeRoundEndWebhook,
 	IMapEndWebhook,
 	IMapStartWebhook,
 	IMatchEndWebhook,
+	IMatchMap,
+	IPlayer,
 	IRoundEndWebhook,
+	ITeam,
 	IWebhook,
-} from './interfaces/webhook';
+} from '../../common';
 import * as Match from './match';
 
 const send = (match: Match.Match, data: IWebhook) => {
@@ -28,7 +29,7 @@ export const onElectionEnd = (match: Match.Match) => {
 	const data: IElectionEndWebhook = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
-		type: EWebhookType.MAP_ELECTION_END,
+		type: 'MAP_ELECTION_END',
 		mapNames: match.data.matchMaps.map((matchMaps) => matchMaps.name),
 	};
 	send(match, data);
@@ -38,7 +39,7 @@ export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerT
 	const data: IKnifeRoundEndWebhook = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
-		type: EWebhookType.KNIFE_END,
+		type: 'KNIFE_END',
 		winnerTeam: winnerTeam,
 	};
 	send(match, data);
@@ -48,7 +49,7 @@ export const onRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: 
 	const data: IRoundEndWebhook = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
-		type: EWebhookType.ROUND_END,
+		type: 'ROUND_END',
 		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
 		winnerTeam: winnerTeam,
@@ -67,7 +68,7 @@ export const onPlayerSay = (
 	const data: IChatWebhook = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
-		type: EWebhookType.CHAT,
+		type: 'CHAT',
 		player: player,
 		playerTeam: player.team ? Match.getTeamByAB(match, player.team) : null,
 		message: message,
@@ -80,7 +81,7 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 	const data: IMatchEndWebhook = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
-		type: EWebhookType.MATCH_END,
+		type: 'MATCH_END',
 		wonMapsTeamA: wonMapsTeamA,
 		wonMapsTeamB: wonMapsTeamB,
 		winnerTeam:
@@ -90,7 +91,7 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 				? match.data.teamA
 				: match.data.teamB,
 		mapResults: match.data.matchMaps
-			.filter((map) => map.state === EMatchMapSate.FINISHED)
+			.filter((map) => map.state === 'FINISHED')
 			.map((matchMap) => ({
 				mapName: matchMap.name,
 				scoreTeamA: matchMap.score.teamA,
@@ -110,7 +111,7 @@ export const onMapStart = (match: Match.Match, matchMap: IMatchMap) => {
 	const data: IMapStartWebhook = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
-		type: EWebhookType.MAP_START,
+		type: 'MAP_START',
 		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
 	};
@@ -121,7 +122,7 @@ export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 	const data: IMapEndWebhook = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
-		type: EWebhookType.MAP_END,
+		type: 'MAP_END',
 		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
 		scoreTeamA: matchMap.score.teamA,

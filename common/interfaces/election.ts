@@ -1,28 +1,24 @@
-import { ETeamAB } from './matchMap';
+import { TTeamAB } from './matchMap';
 
-export enum EElectionState {
-	NOT_STARTED = 'NOT_STARTED',
+export type TElectionState =
+	| 'NOT_STARTED'
 	/** Election process was restarted but is not (again) in progress yet */
-	RESTARTED = 'RESTARTED',
-	IN_PROGRESS = 'IN_PROGRESS',
-	FINISHED = 'FINISHED',
-}
+	| 'RESTARTED'
+	| 'IN_PROGRESS'
+	| 'FINISHED';
 
-export enum EStep {
-	MAP = 'MAP',
-	SIDE = 'SIDE',
-}
+export type TStep = 'MAP' | 'SIDE';
 
 export interface IElection {
-	state: EElectionState;
-	teamX?: ETeamAB;
-	teamY?: ETeamAB;
+	state: TElectionState;
+	teamX?: TTeamAB;
+	teamY?: TTeamAB;
 	/** Will be the same as the mapPool from the match, but will shrink when maps get picked, banned or randomly chosen. */
 	remainingMaps: string[];
 	/** Index of the current electionSteps of the match. */
 	currentStep: number;
 	/** Toggles between MAP and SIDE */
-	currentSubStep: EStep;
+	currentSubStep: TStep;
 	/** Current set map of the current selection step. */
 	currentStepMap?: string;
 	/** Holds the wanted maps of each team. */

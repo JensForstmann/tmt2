@@ -1,0 +1,18 @@
+{
+	"name": "tmt2",
+	"version": "2.0.0",
+	"description": "TMT is a tool that tracks/watches/observes a Counter-Strike: Global Offensive match.",
+	"repository": "github:JensForstmann/tmt2",
+	"author": "Jens Forstmann",
+	"license": "MIT",
+	"scripts": {
+		"clean": "prettier --write .",
+		"prepare": "husky install",
+		"pre-commit": "pretty-quick --staged"
+	},
+	"devDependencies": {
+		"husky": "^8.0.1",
+		"prettier": "^2.6.2",
+		"pretty-quick": "^3.1.3"
+	}
+}

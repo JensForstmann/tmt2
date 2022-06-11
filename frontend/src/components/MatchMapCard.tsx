@@ -1,6 +1,6 @@
 import { Component } from 'solid-js';
-import { IMatch } from '../types/match';
-import { ETeamAB, IMatchMap } from '../types/matchMap';
+import { IMatch } from '../../../common';
+import { TTeamAB, IMatchMap } from '../../../common';
 import { getCurrentTeamSideAndRoundSwitch } from '../utils/helper';
 import { t } from '../utils/locale';
 import classes from './MatchMapCard.module.scss';
@@ -11,7 +11,7 @@ export const MatchMapCard: Component<{
 	isCurrent: boolean;
 }> = (props) => {
 	const teamA =
-		getCurrentTeamSideAndRoundSwitch(props.map).currentCtTeamAB === ETeamAB.TEAM_A ? 'CT' : 'T';
+		getCurrentTeamSideAndRoundSwitch(props.map).currentCtTeamAB === 'TEAM_A' ? 'CT' : 'T';
 	const teamB = teamA === 'CT' ? 'T' : 'CT';
 	return (
 		<>

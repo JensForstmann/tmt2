@@ -1,8 +1,7 @@
 import { Component, For, Match, Show, Switch } from 'solid-js';
-import { ELogType, ILogChat, TLogUnion } from '../types/log';
-import { IMatch } from '../types/match';
-import { ETeamAB } from '../types/matchMap';
-import { IPlayer } from '../types/player';
+import { TLogUnion, TTeamAB } from '../../../common';
+import { IMatch } from '../../../common';
+import { IPlayer } from '../../../common';
 import { t } from '../utils/locale';
 import { getMapDraws, getMapScore } from '../utils/match';
 import classes from './MatchCard.module.scss';
@@ -25,11 +24,11 @@ export const LogViewer: Component<{
 const toText = (log: TLogUnion, players: IPlayer[]): string => {
 	const ts = new Date(log.timestamp);
 	switch (log.type) {
-		case ELogType.CHAT:
+		case 'CHAT':
 			return `${ts}: ${getPlayerName(log.steamId64, players)} ${
 				log.isTeamChat ? '(TEAM)' : '(ALL)'
 			}: ${log.message}`;
-		case ELogType.SYSTEM:
+		case 'SYSTEM':
 			return `${ts}: ${log.category} - ${log.message}`;
 	}
 };

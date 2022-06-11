@@ -1,5 +1,5 @@
 import { generate as shortUuid } from 'short-uuid';
-import { EMatchSate, IMatch, IMatchCreateDto } from './interfaces/match';
+import { TMatchSate, IMatch, IMatchCreateDto } from '../../common';
 import * as Match from './match';
 import * as Storage from './storage';
 
@@ -24,7 +24,7 @@ export const setup = async () => {
 
 	for (let i = 0; i < matchesFromStorage.length; i++) {
 		const matchData = matchesFromStorage[i];
-		if (matchData.state !== EMatchSate.FINISHED && !matchData.isStopped) {
+		if (matchData.state !== 'FINISHED' && !matchData.isStopped) {
 			await loadMatchFromStorage(matchData);
 		}
 	}

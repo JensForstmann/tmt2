@@ -1,5 +1,5 @@
 import { Component, For } from 'solid-js';
-import { IMatch } from '../types/match';
+import { IMatch } from '../../../common';
 import { t } from '../utils/locale';
 import classes from './PlayerListCard.module.scss';
 

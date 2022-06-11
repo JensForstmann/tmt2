@@ -1,5 +1,5 @@
 import { createResource, createSignal } from 'solid-js';
-import { IMatch, IMatchUpdateDto } from '../types/match';
+import { IMatch, IMatchUpdateDto } from '../../../common';
 import { sleep } from './sleep';
 
 export const fetcher = async <T>(path: string, host = 'http://localhost:8080'): Promise<T> => {

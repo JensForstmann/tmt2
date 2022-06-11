@@ -1,23 +1,26 @@
-import { getCommands, ECommand } from './commands';
-import * as MatchMap from './matchMap';
-import * as Match from './match';
-import * as MatchService from './matchService';
-import { escapeRconString } from './utils';
-import { EElectionState, EStep, IElection } from './interfaces/election';
-import { Settings } from './settings';
 import {
-	EMapMode,
-	ESideFixed,
-	ESideMode,
-	EWho,
+	TElectionState,
+	TMapMode,
+	TMatchSate,
+	TSideFixed,
+	TSideMode,
+	TStep,
+	TTeamAB,
+	TWho,
+	getOtherTeamAB,
+	IElection,
 	IElectionStep,
 	IElectionStepAdd,
 	IElectionStepSkip,
 	isElectionStepAdd,
 	isElectionStepSkip,
-} from './interfaces/electionStep';
-import { ETeamAB, getOtherTeamAB } from './interfaces/matchMap';
-import { EMatchSate } from './interfaces/match';
+} from '../../common';
+import { ECommand, getCommands } from './commands';
+import * as Match from './match';
+import * as MatchMap from './matchMap';
+import * as MatchService from './matchService';
+import { Settings } from './settings';
+import { escapeRconString } from './utils';
 
 /**
  * @throws if configuration is invalid
@@ -30,9 +33,9 @@ export const create = (
 		throw 'Combination of map pool and election steps is invalid (too few maps in map pool for these election steps).';
 	}
 	return {
-		state: EElectionState.NOT_STARTED,
+		state: 'NOT_STARTED',
 		currentStep: 0,
-		currentSubStep: EStep.MAP,
+		currentSubStep: 'MAP',
 		teamX: undefined,
 		teamY: undefined,
 		remainingMaps: mapPool.map((map) => map.toLowerCase()),
@@ -54,13 +57,13 @@ const isValidConfiguration = (
 ): boolean => {
 	const stepsWhichRemovesAMapFromMapPool = steps.filter((step): boolean => {
 		switch (step.map.mode) {
-			case EMapMode.PICK:
-			case EMapMode.RANDOM_PICK:
-			case EMapMode.AGREE:
-			case EMapMode.BAN:
-			case EMapMode.RANDOM_BAN:
+			case 'PICK':
+			case 'RANDOM_PICK':
+			case 'AGREE':
+			case 'BAN':
+			case 'RANDOM_BAN':
 				return true;
-			case EMapMode.FIXED:
+			case 'FIXED':
 				return false;
 		}
 	});
@@ -69,29 +72,26 @@ const isValidConfiguration = (
 };
 
 const getAvailableCommands = (match: Match.Match, currentElectionStep: IElectionStep): string[] => {
-	if (match.data.election.state === EElectionState.FINISHED) {
+	if (match.data.election.state === 'FINISHED') {
 		return [];
 	}
-	if (match.data.election.currentSubStep === EStep.MAP) {
+	if (match.data.election.currentSubStep === 'MAP') {
 		switch (currentElectionStep.map.mode) {
-			case EMapMode.AGREE:
+			case 'AGREE':
 				return [
 					...getCommands(ECommand.AGREE),
 					...getCommands(ECommand.PICK),
 					...getCommands(ECommand.RESTART),
 				];
-			case EMapMode.BAN:
+			case 'BAN':
 				return [...getCommands(ECommand.BAN), ...getCommands(ECommand.RESTART)];
-			case EMapMode.PICK:
+			case 'PICK':
 				return [...getCommands(ECommand.PICK), ...getCommands(ECommand.RESTART)];
 		}
 	}
-	if (
-		match.data.election.currentSubStep === EStep.SIDE &&
-		isElectionStepAdd(currentElectionStep)
-	) {
+	if (match.data.election.currentSubStep === 'SIDE' && isElectionStepAdd(currentElectionStep)) {
 		switch (currentElectionStep.side.mode) {
-			case ESideMode.PICK:
+			case 'PICK':
 				return [
 					...getCommands(ECommand.T),
 					...getCommands(ECommand.CT),
@@ -112,8 +112,8 @@ export const sayPeriodicMessage = async (match: Match.Match) => {
 	await Match.execRcon(match, 'mp_autokick 0');
 
 	if (
-		match.data.election.state === EElectionState.IN_PROGRESS ||
-		match.data.election.state === EElectionState.NOT_STARTED
+		match.data.election.state === 'IN_PROGRESS' ||
+		match.data.election.state === 'NOT_STARTED'
 	) {
 		const currentElectionStep = getCurrentElectionStep(match);
 		if (!currentElectionStep) {
@@ -140,8 +140,8 @@ const sayWhatIsUp = async (match: Match.Match) => {
 	const currentElectionStep = getCurrentElectionStep(match);
 	if (!currentElectionStep) return;
 
-	if (match.data.election.currentSubStep === EStep.MAP) {
-		if (currentElectionStep.map.mode === EMapMode.AGREE) {
+	if (match.data.election.currentSubStep === 'MAP') {
+		if (currentElectionStep.map.mode === 'AGREE') {
 			await Match.say(
 				match,
 				`BOTH TEAMS MUST ${Settings.COMMAND_PREFIXES[0]}${getCommands(
@@ -163,7 +163,7 @@ const sayWhatIsUp = async (match: Match.Match) => {
 					}`
 				);
 			await sayAvailableMaps(match);
-		} else if (currentElectionStep.map.mode === EMapMode.BAN) {
+		} else if (currentElectionStep.map.mode === 'BAN') {
 			const validTeam = getValidTeamAB(match, currentElectionStep.map.who);
 			if (validTeam)
 				await Match.say(
@@ -180,7 +180,7 @@ const sayWhatIsUp = async (match: Match.Match) => {
 					)} A MAP`
 				);
 			await sayAvailableMaps(match);
-		} else if (currentElectionStep.map.mode === EMapMode.PICK) {
+		} else if (currentElectionStep.map.mode === 'PICK') {
 			const validTeam = getValidTeamAB(match, currentElectionStep.map.who);
 			if (validTeam)
 				await Match.say(
@@ -199,10 +199,7 @@ const sayWhatIsUp = async (match: Match.Match) => {
 			await sayAvailableMaps(match);
 		}
 	} else {
-		if (
-			isElectionStepAdd(currentElectionStep) &&
-			currentElectionStep.side.mode === ESideMode.PICK
-		) {
+		if (isElectionStepAdd(currentElectionStep) && currentElectionStep.side.mode === 'PICK') {
 			const validTeam = getValidTeamAB(match, currentElectionStep.side.who);
 			if (validTeam)
 				await Match.say(
@@ -235,13 +232,12 @@ const sayAvailableMaps = async (match: Match.Match) => {
 export const onCommand = async (
 	match: Match.Match,
 	command: ECommand,
-	teamAB: ETeamAB,
+	teamAB: TTeamAB,
 	parameters: string[]
 ) => {
 	if (
-		match.data.state === EMatchSate.ELECTION &&
-		(match.data.election.state === EElectionState.IN_PROGRESS ||
-			match.data.election.state === EElectionState.NOT_STARTED)
+		match.data.state === 'ELECTION' &&
+		(match.data.election.state === 'IN_PROGRESS' || match.data.election.state === 'NOT_STARTED')
 	) {
 		const map = (parameters[0] || '').toLowerCase();
 		const currentElectionStep = getCurrentElectionStep(match);
@@ -274,13 +270,13 @@ export const onCommand = async (
 	}
 };
 
-const ensureTeamXY = (match: Match.Match, who: EWho, teamAB: ETeamAB) => {
+const ensureTeamXY = (match: Match.Match, who: TWho, teamAB: TTeamAB) => {
 	if (!match.data.election.teamX && !match.data.election.teamY) {
-		if (who === EWho.TEAM_X) {
+		if (who === 'TEAM_X') {
 			match.data.election.teamX = teamAB;
 			match.data.election.teamY = getOtherTeamAB(teamAB);
 		}
-		if (who === EWho.TEAM_Y) {
+		if (who === 'TEAM_Y') {
 			match.data.election.teamX = getOtherTeamAB(teamAB);
 			match.data.election.teamY = teamAB;
 		}
@@ -291,14 +287,14 @@ const ensureTeamXY = (match: Match.Match, who: EWho, teamAB: ETeamAB) => {
 /**
  * returns undefined if both teams are valid
  */
-const getValidTeamAB = (match: Match.Match, who: EWho): ETeamAB | undefined => {
-	if (who === EWho.TEAM_A) return ETeamAB.TEAM_A;
-	if (who === EWho.TEAM_B) return ETeamAB.TEAM_B;
-	if (who === EWho.TEAM_X) return match.data.election.teamX;
-	if (who === EWho.TEAM_Y) return match.data.election.teamY;
+const getValidTeamAB = (match: Match.Match, who: TWho): TTeamAB | undefined => {
+	if (who === 'TEAM_A') return 'TEAM_A';
+	if (who === 'TEAM_B') return 'TEAM_B';
+	if (who === 'TEAM_X') return match.data.election.teamX;
+	if (who === 'TEAM_Y') return match.data.election.teamY;
 };
 
-const isValidTeam = (match: Match.Match, who: EWho, teamAB: ETeamAB) => {
+const isValidTeam = (match: Match.Match, who: TWho, teamAB: TTeamAB) => {
 	const validTeam = getValidTeamAB(match, who);
 	return validTeam === teamAB || validTeam === undefined;
 };
@@ -306,17 +302,14 @@ const isValidTeam = (match: Match.Match, who: EWho, teamAB: ETeamAB) => {
 const agreeCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
-	teamAB: ETeamAB,
+	teamAB: TTeamAB,
 	map: string
 ) => {
-	if (
-		match.data.election.currentSubStep === EStep.MAP &&
-		currentElectionStep.map.mode === EMapMode.AGREE
-	) {
+	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'AGREE') {
 		const matchMap = match.data.election.remainingMaps.findIndex((mapName) => mapName === map);
 		if (matchMap > -1) {
-			match.data.election.state = EElectionState.IN_PROGRESS;
-			if (teamAB === ETeamAB.TEAM_A) {
+			match.data.election.state = 'IN_PROGRESS';
+			if (teamAB === 'TEAM_A') {
 				match.data.election.currentAgree.teamA = map;
 			} else {
 				match.data.election.currentAgree.teamB = map;
@@ -356,20 +349,17 @@ const agreeCommand = async (
 const banCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
-	teamAB: ETeamAB,
+	teamAB: TTeamAB,
 	map: string
 ) => {
-	if (
-		match.data.election.currentSubStep === EStep.MAP &&
-		currentElectionStep.map.mode === EMapMode.BAN
-	) {
+	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'BAN') {
 		if (isValidTeam(match, currentElectionStep.map.who, teamAB)) {
 			const matchMap = match.data.election.remainingMaps.findIndex(
 				(mapName) => mapName === map
 			);
 			if (matchMap > -1) {
 				ensureTeamXY(match, currentElectionStep.map.who, teamAB);
-				match.data.election.state = EElectionState.IN_PROGRESS;
+				match.data.election.state = 'IN_PROGRESS';
 				await Match.say(match, `MAP ${match.data.election.remainingMaps[matchMap]} BANNED`);
 				match.data.election.remainingMaps.splice(matchMap, 1);
 				MatchService.scheduleSave(match);
@@ -388,20 +378,17 @@ const banCommand = async (
 const pickCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
-	teamAB: ETeamAB,
+	teamAB: TTeamAB,
 	map: string
 ) => {
-	if (
-		match.data.election.currentSubStep === EStep.MAP &&
-		currentElectionStep.map.mode === EMapMode.PICK
-	) {
+	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'PICK') {
 		if (isValidTeam(match, currentElectionStep.map.who, teamAB)) {
 			const matchMap = match.data.election.remainingMaps.findIndex(
 				(mapName) => mapName === map
 			);
 			if (matchMap > -1) {
 				ensureTeamXY(match, currentElectionStep.map.who, teamAB);
-				match.data.election.state = EElectionState.IN_PROGRESS;
+				match.data.election.state = 'IN_PROGRESS';
 				match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
 				match.data.election.remainingMaps.splice(matchMap, 1);
 				MatchService.scheduleSave(match);
@@ -424,17 +411,17 @@ const pickCommand = async (
 const tCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
-	teamAB: ETeamAB
+	teamAB: TTeamAB
 ) => {
 	const currentStepMap = match.data.election.currentStepMap ?? '';
 	if (
-		match.data.election.currentSubStep === EStep.SIDE &&
+		match.data.election.currentSubStep === 'SIDE' &&
 		isElectionStepAdd(currentElectionStep) &&
-		currentElectionStep.side.mode === ESideMode.PICK
+		currentElectionStep.side.mode === 'PICK'
 	) {
 		if (isValidTeam(match, currentElectionStep.side.who, teamAB)) {
 			ensureTeamXY(match, currentElectionStep.side.who, teamAB);
-			match.data.election.state = EElectionState.IN_PROGRESS;
+			match.data.election.state = 'IN_PROGRESS';
 			match.data.matchMaps.push(
 				MatchMap.create(currentStepMap, false, getOtherTeamAB(teamAB))
 			);
@@ -458,17 +445,17 @@ const tCommand = async (
 const ctCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
-	teamAB: ETeamAB
+	teamAB: TTeamAB
 ) => {
 	const currentStepMap = match.data.election.currentStepMap ?? '';
 	if (
-		match.data.election.currentSubStep === EStep.SIDE &&
+		match.data.election.currentSubStep === 'SIDE' &&
 		isElectionStepAdd(currentElectionStep) &&
-		currentElectionStep.side.mode === ESideMode.PICK
+		currentElectionStep.side.mode === 'PICK'
 	) {
 		if (isValidTeam(match, currentElectionStep.side.who, teamAB)) {
 			ensureTeamXY(match, currentElectionStep.side.who, teamAB);
-			match.data.election.state = EElectionState.IN_PROGRESS;
+			match.data.election.state = 'IN_PROGRESS';
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, teamAB));
 			MatchService.scheduleSave(match);
 			await Match.say(
@@ -488,9 +475,9 @@ const ctCommand = async (
 const restartCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
-	teamAB: ETeamAB
+	teamAB: TTeamAB
 ) => {
-	if (teamAB === ETeamAB.TEAM_A) {
+	if (teamAB === 'TEAM_A') {
 		match.data.election.currentRestart.teamA = true;
 	} else {
 		match.data.election.currentRestart.teamB = true;
@@ -531,18 +518,18 @@ const next = async (match: Match.Match) => {
 	const currentElectionStep = getCurrentElectionStep(match);
 
 	if (
-		match.data.election.currentSubStep === EStep.MAP &&
-		(currentElectionStep?.map.mode === EMapMode.AGREE ||
-			currentElectionStep?.map.mode === EMapMode.FIXED ||
-			currentElectionStep?.map.mode === EMapMode.PICK ||
-			currentElectionStep?.map.mode === EMapMode.RANDOM_PICK)
+		match.data.election.currentSubStep === 'MAP' &&
+		(currentElectionStep?.map.mode === 'AGREE' ||
+			currentElectionStep?.map.mode === 'FIXED' ||
+			currentElectionStep?.map.mode === 'PICK' ||
+			currentElectionStep?.map.mode === 'RANDOM_PICK')
 	) {
-		match.data.election.currentSubStep = EStep.SIDE;
+		match.data.election.currentSubStep = 'SIDE';
 	} else {
-		match.data.election.currentSubStep = EStep.MAP;
+		match.data.election.currentSubStep = 'MAP';
 		match.data.election.currentStep++;
 		if (match.data.election.currentStep >= match.data.electionSteps.length) {
-			match.data.election.state = EElectionState.FINISHED;
+			match.data.election.state = 'FINISHED';
 			await Match.onElectionFinished(match);
 		}
 	}
@@ -552,18 +539,18 @@ const next = async (match: Match.Match) => {
 
 export const auto = async (match: Match.Match) => {
 	const currentElectionStep = getCurrentElectionStep(match);
-	if (match.data.election.state !== EElectionState.FINISHED && currentElectionStep) {
-		if (match.data.election.currentSubStep === EStep.MAP) {
+	if (match.data.election.state !== 'FINISHED' && currentElectionStep) {
+		if (match.data.election.currentSubStep === 'MAP') {
 			await autoMap(match, currentElectionStep);
 		}
-		if (match.data.election.currentSubStep === EStep.SIDE) {
+		if (match.data.election.currentSubStep === 'SIDE') {
 			await autoSide(match, currentElectionStep);
 		}
 	}
 };
 
 const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) => {
-	if (currentElectionStep.map.mode === EMapMode.FIXED) {
+	if (currentElectionStep.map.mode === 'FIXED') {
 		match.data.election.currentStepMap = currentElectionStep.map.fixed;
 		await Match.say(
 			match,
@@ -574,14 +561,14 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 		return;
 	}
 	if (
-		currentElectionStep.map.mode === EMapMode.RANDOM_BAN ||
-		currentElectionStep.map.mode === EMapMode.RANDOM_PICK
+		currentElectionStep.map.mode === 'RANDOM_BAN' ||
+		currentElectionStep.map.mode === 'RANDOM_PICK'
 	) {
 		const matchMap = Math.min(
 			Math.floor(Math.random() * match.data.election.remainingMaps.length),
 			match.data.election.remainingMaps.length
 		);
-		if (currentElectionStep.map.mode === EMapMode.RANDOM_PICK) {
+		if (currentElectionStep.map.mode === 'RANDOM_PICK') {
 			match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
 			await Match.say(
 				match,
@@ -606,35 +593,33 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 
 	const currentStepMap = match.data.election.currentStepMap ?? '';
 
-	if (currentElectionStep.side.mode === ESideMode.FIXED) {
-		if ([ESideFixed.TEAM_A_CT, ESideFixed.TEAM_B_T].includes(currentElectionStep.side.fixed)) {
-			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, ETeamAB.TEAM_A));
+	if (currentElectionStep.side.mode === 'FIXED') {
+		if (['TEAM_A_CT', 'TEAM_B_T'].includes(currentElectionStep.side.fixed)) {
+			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, 'TEAM_A'));
 			await Match.say(
 				match,
 				`${match.data.matchMaps.length}. MAP: ${
 					match.data.election.currentStepMap
-				} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, ETeamAB.TEAM_A).name)})`
+				} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, 'TEAM_A').name)})`
 			);
 			await next(match);
 			return;
 		}
 
-		if ([ESideFixed.TEAM_A_T, ESideFixed.TEAM_B_CT].includes(currentElectionStep.side.fixed)) {
-			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, ETeamAB.TEAM_B));
+		if (['TEAM_A_T', 'TEAM_B_CT'].includes(currentElectionStep.side.fixed)) {
+			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, 'TEAM_B'));
 			await Match.say(
 				match,
 				`${match.data.matchMaps.length}. MAP: ${
 					match.data.election.currentStepMap
-				} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, ETeamAB.TEAM_B).name)})`
+				} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, 'TEAM_B').name)})`
 			);
 			await next(match);
 			return;
 		}
 
 		if (match.data.election.teamX && match.data.election.teamY) {
-			if (
-				[ESideFixed.TEAM_X_CT, ESideFixed.TEAM_Y_T].includes(currentElectionStep.side.fixed)
-			) {
+			if (['TEAM_X_CT', 'TEAM_Y_T'].includes(currentElectionStep.side.fixed)) {
 				match.data.matchMaps.push(
 					MatchMap.create(currentStepMap, false, match.data.election.teamX)
 				);
@@ -650,9 +635,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 				return;
 			}
 
-			if (
-				[ESideFixed.TEAM_X_T, ESideFixed.TEAM_Y_CT].includes(currentElectionStep.side.fixed)
-			) {
+			if (['TEAM_X_T', 'TEAM_Y_CT'].includes(currentElectionStep.side.fixed)) {
 				match.data.matchMaps.push(
 					MatchMap.create(currentStepMap, false, match.data.election.teamY)
 				);
@@ -670,7 +653,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 		}
 	}
 
-	if (currentElectionStep.side.mode === ESideMode.KNIFE) {
+	if (currentElectionStep.side.mode === 'KNIFE') {
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, true));
 		await Match.say(
 			match,
@@ -680,8 +663,8 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 		return;
 	}
 
-	if (currentElectionStep.side.mode === ESideMode.RANDOM) {
-		const startAsCtTeam = Math.random() < 0.5 ? ETeamAB.TEAM_A : ETeamAB.TEAM_B;
+	if (currentElectionStep.side.mode === 'RANDOM') {
+		const startAsCtTeam = Math.random() < 0.5 ? 'TEAM_A' : 'TEAM_B';
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, false, startAsCtTeam));
 		await Match.say(
 			match,

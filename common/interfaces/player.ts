@@ -1,7 +1,7 @@
-import { ETeamAB } from './matchMap';
+import { TTeamAB } from './matchMap';
 
 export interface IPlayer {
 	steamId64: string;
 	name: string;
-	team?: ETeamAB;
+	team?: TTeamAB;
 }

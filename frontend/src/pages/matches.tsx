@@ -1,7 +1,7 @@
 import { Component, createResource } from 'solid-js';
 import { Loader } from '../components/Loader';
 import { MatchList } from '../components/MatchList';
-import { IMatch } from '../types/match';
+import { IMatch } from '../../../common';
 import { fetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { useSearchParams } from 'solid-app-router';

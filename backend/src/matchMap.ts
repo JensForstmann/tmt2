@@ -1,24 +1,23 @@
-import { ECommand, getCommands } from './commands';
-import { Settings } from './settings';
-import { escapeRconString, sleep } from './utils';
 import {
-	EMatchMapSate,
-	ETeamAB,
+	TMatchMapSate,
+	TTeamAB,
+	TTeamSides,
 	getOtherTeamAB,
 	IMatchMap,
 	IMatchMapUpdateDto,
-} from './interfaces/matchMap';
+	IPlayer,
+} from '../../common';
+import { ECommand, getCommands } from './commands';
 import * as Match from './match';
 import * as MatchService from './matchService';
-import { ETeamSides } from './interfaces/stuff';
+import { Settings } from './settings';
+import { escapeRconString, sleep } from './utils';
 import * as Webhook from './webhook';
-import { IPlayer } from './interfaces/player';
-import { IMatchUpdateDto } from './interfaces/match';
 
 export const create = (
 	map: string,
 	knifeForSide: boolean,
-	startAsCtTeam: ETeamAB = ETeamAB.TEAM_A
+	startAsCtTeam: TTeamAB = 'TEAM_A'
 ): IMatchMap => {
 	return {
 		knifeForSide: knifeForSide,
@@ -39,40 +38,40 @@ export const create = (
 			teamB: 0,
 		},
 		startAsCtTeam: startAsCtTeam,
-		state: EMatchMapSate.PENDING,
+		state: 'PENDING',
 	};
 };
 
 export const sayPeriodicMessage = async (match: Match.Match, matchMap: IMatchMap) => {
-	if (matchMap.state === EMatchMapSate.WARMUP) {
+	if (matchMap.state === 'WARMUP') {
 		await Match.execRcon(match, 'mp_warmuptime 600');
 		await Match.execRcon(match, 'mp_warmup_pausetimer 1');
 		await Match.execRcon(match, 'mp_autokick 0');
 	}
 
 	switch (matchMap.state) {
-		case EMatchMapSate.IN_PROGRESS:
+		case 'IN_PROGRESS':
 			return;
-		case EMatchMapSate.AFTER_KNIFE:
+		case 'AFTER_KNIFE':
 			if (matchMap.knifeWinner) {
 				const teamName = Match.getTeamByAB(match, matchMap.knifeWinner).name;
 				await Match.say(match, `${escapeRconString(teamName)} WON THE KNIFE`);
 				await Match.say(match, `PLEASE CHOOSE A SIDE TO START THE MATCH`);
 			}
 			break;
-		case EMatchMapSate.FINISHED:
+		case 'FINISHED':
 			break;
-		case EMatchMapSate.KNIFE:
+		case 'KNIFE':
 			await Match.say(match, `KNIFE ROUND IN PROGRESS`);
 			break;
-		case EMatchMapSate.MAP_CHANGE:
+		case 'MAP_CHANGE':
 			break;
-		case EMatchMapSate.PAUSED:
+		case 'PAUSED':
 			await Match.say(match, `MATCH IS PAUSED`);
 			break;
-		case EMatchMapSate.PENDING:
+		case 'PENDING':
 			break;
-		case EMatchMapSate.WARMUP:
+		case 'WARMUP':
 			await Match.say(match, `MATCH IS IN WARMUP`);
 			break;
 	}
@@ -80,28 +79,28 @@ export const sayPeriodicMessage = async (match: Match.Match, matchMap: IMatchMap
 	await sayAvailableCommands(match, matchMap);
 };
 
-const getAvailableCommandsEnums = (state: EMatchMapSate): ECommand[] => {
+const getAvailableCommandsEnums = (state: TMatchMapSate): ECommand[] => {
 	switch (state) {
-		case EMatchMapSate.AFTER_KNIFE:
+		case 'AFTER_KNIFE':
 			return [ECommand.RESTART, ECommand.CT, ECommand.T, ECommand.STAY, ECommand.SWITCH];
-		case EMatchMapSate.FINISHED:
+		case 'FINISHED':
 			return [];
-		case EMatchMapSate.IN_PROGRESS:
+		case 'IN_PROGRESS':
 			return [ECommand.PAUSE];
-		case EMatchMapSate.KNIFE:
+		case 'KNIFE':
 			return [ECommand.RESTART];
-		case EMatchMapSate.MAP_CHANGE:
+		case 'MAP_CHANGE':
 			return [];
-		case EMatchMapSate.PAUSED:
+		case 'PAUSED':
 			return [ECommand.READY, ECommand.UNREADY];
-		case EMatchMapSate.PENDING:
+		case 'PENDING':
 			return [];
-		case EMatchMapSate.WARMUP:
+		case 'WARMUP':
 			return [ECommand.READY, ECommand.UNREADY];
 	}
 };
 
-const getAvailableCommands = (state: EMatchMapSate): string[] => {
+const getAvailableCommands = (state: TMatchMapSate): string[] => {
 	return getAvailableCommandsEnums(state).reduce(
 		(pv: string[], cv: ECommand) => [...pv, ...getCommands(cv)],
 		[]
@@ -187,22 +186,21 @@ export const onRoundEnd = async (
 	matchMap: IMatchMap,
 	ctScore: number,
 	tScore: number,
-	winningTeamSide: ETeamSides
+	winningTeamSide: TTeamSides
 ) => {
 	/** Contains the state without the new score (without the just finished round). */
 	const magic = getCurrentTeamSideAndRoundSwitch(matchMap);
 	const currentCtTeam = Match.getTeamByAB(match, magic.currentCtTeamAB);
 	const currentTTeam = Match.getOtherTeam(match, currentCtTeam);
-	const winnerTeamAB =
-		winningTeamSide === ETeamSides.CT ? magic.currentCtTeamAB : magic.currentTTeamAB;
+	const winnerTeamAB = winningTeamSide === 'CT' ? magic.currentCtTeamAB : magic.currentTTeamAB;
 	const winnerTeam = Match.getTeamByAB(match, winnerTeamAB);
 	const loserTeam = Match.getOtherTeam(match, winnerTeam);
-	const winnerScore = winningTeamSide === ETeamSides.CT ? ctScore : tScore;
-	const loserScore = winningTeamSide === ETeamSides.CT ? tScore : ctScore;
+	const winnerScore = winningTeamSide === 'CT' ? ctScore : tScore;
+	const loserScore = winningTeamSide === 'CT' ? tScore : ctScore;
 
-	if (matchMap.state === EMatchMapSate.KNIFE) {
+	if (matchMap.state === 'KNIFE') {
 		matchMap.knifeWinner = winnerTeamAB;
-		matchMap.state = EMatchMapSate.AFTER_KNIFE;
+		matchMap.state = 'AFTER_KNIFE';
 		MatchService.scheduleSave(match);
 		await Match.execRcon(match, 'mp_pause_match');
 		await sayPeriodicMessage(match, matchMap);
@@ -210,9 +208,9 @@ export const onRoundEnd = async (
 		return;
 	}
 
-	if (matchMap.state === EMatchMapSate.IN_PROGRESS || matchMap.state === EMatchMapSate.PAUSED) {
-		matchMap.score.teamA = magic.currentCtTeamAB === ETeamAB.TEAM_A ? ctScore : tScore;
-		matchMap.score.teamB = magic.currentCtTeamAB === ETeamAB.TEAM_A ? tScore : ctScore;
+	if (matchMap.state === 'IN_PROGRESS' || matchMap.state === 'PAUSED') {
+		matchMap.score.teamA = magic.currentCtTeamAB === 'TEAM_A' ? ctScore : tScore;
+		matchMap.score.teamB = magic.currentCtTeamAB === 'TEAM_A' ? tScore : ctScore;
 		MatchService.scheduleSave(match);
 		await Match.say(match, `${escapeRconString(winnerTeam.name)} SCORED (${winnerScore})`);
 		await Match.say(match, `${escapeRconString(loserTeam.name)} (${loserScore})`);
@@ -226,13 +224,13 @@ export const onRoundEnd = async (
 
 export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, `MAP WILL BE CHANGED TO ${matchMap.name} IN 10 SECONDS`);
-	matchMap.state = EMatchMapSate.MAP_CHANGE;
+	matchMap.state = 'MAP_CHANGE';
 	await sleep(10000);
 
 	await Match.setTeamNames(match);
 	await Match.execRcon(match, `changelevel ${matchMap.name}`);
 
-	matchMap.state = EMatchMapSate.WARMUP;
+	matchMap.state = 'WARMUP';
 	matchMap.readyTeams.teamA = false;
 	matchMap.readyTeams.teamB = false;
 	matchMap.knifeRestart.teamA = false;
@@ -245,7 +243,7 @@ export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
 };
 
 const startMatch = async (match: Match.Match, matchMap: IMatchMap) => {
-	matchMap.state = EMatchMapSate.IN_PROGRESS;
+	matchMap.state = 'IN_PROGRESS';
 	MatchService.scheduleSave(match);
 
 	await Match.execManyRcon(match, match.data.rconCommands.match);
@@ -282,8 +280,8 @@ const getConfigVar = async (match: Match.Match, configVar: string): Promise<stri
 };
 
 export const onMapEnd = async (match: Match.Match, matchMap: IMatchMap) => {
-	if (matchMap.state === EMatchMapSate.IN_PROGRESS || matchMap.state === EMatchMapSate.PAUSED) {
-		matchMap.state = EMatchMapSate.FINISHED;
+	if (matchMap.state === 'IN_PROGRESS' || matchMap.state === 'PAUSED') {
+		matchMap.state = 'FINISHED';
 		MatchService.scheduleSave(match);
 		await Match.say(match, 'MAP FINISHED');
 		Webhook.onMapEnd(match, matchMap);
@@ -291,7 +289,7 @@ export const onMapEnd = async (match: Match.Match, matchMap: IMatchMap) => {
 };
 
 const startKnifeRound = async (match: Match.Match, matchMap: IMatchMap) => {
-	matchMap.state = EMatchMapSate.KNIFE;
+	matchMap.state = 'KNIFE';
 	matchMap.knifeRestart.teamA = false;
 	matchMap.knifeRestart.teamB = false;
 	matchMap.knifeWinner = undefined;
@@ -304,8 +302,8 @@ const startKnifeRound = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, 'KNIFE FOR SIDE');
 };
 
-const restartKnifeCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
-	if (teamAB === ETeamAB.TEAM_A) {
+const restartKnifeCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: TTeamAB) => {
+	if (teamAB === 'TEAM_A') {
 		matchMap.knifeRestart.teamA = true;
 	} else {
 		matchMap.knifeRestart.teamB = true;
@@ -329,8 +327,8 @@ const restartKnifeCommand = async (match: Match.Match, matchMap: IMatchMap, team
 	MatchService.scheduleSave(match);
 };
 
-const readyCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
-	if (teamAB === ETeamAB.TEAM_A) {
+const readyCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: TTeamAB) => {
+	if (teamAB === 'TEAM_A') {
 		matchMap.readyTeams.teamA = true;
 	} else {
 		matchMap.readyTeams.teamB = true;
@@ -339,31 +337,31 @@ const readyCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETe
 	await Match.say(match, `${escapeRconString(Match.getTeamByAB(match, teamAB).name)} IS READY`);
 
 	if (matchMap.readyTeams.teamA && matchMap.readyTeams.teamB) {
-		if (matchMap.state === EMatchMapSate.WARMUP) {
+		if (matchMap.state === 'WARMUP') {
 			await Match.execRcon(match, 'mp_warmup_end');
 			if (matchMap.knifeForSide) {
 				await startKnifeRound(match, matchMap);
 			} else {
 				await startMatch(match, matchMap);
 			}
-		} else if (matchMap.state === EMatchMapSate.PAUSED) {
+		} else if (matchMap.state === 'PAUSED') {
 			matchMap.readyTeams.teamA = false;
 			matchMap.readyTeams.teamB = false;
 			await Match.execRcon(match, 'mp_unpause_match');
 			await Match.say(match, 'CONTINUE MAP');
-			matchMap.state = EMatchMapSate.IN_PROGRESS;
+			matchMap.state = 'IN_PROGRESS';
 		}
 	}
 
 	MatchService.scheduleSave(match);
 };
 
-const unreadyCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
+const unreadyCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: TTeamAB) => {
 	await Match.say(
 		match,
 		`${escapeRconString(Match.getTeamByAB(match, teamAB).name)} IS NOT READY`
 	);
-	if (teamAB === ETeamAB.TEAM_A) {
+	if (teamAB === 'TEAM_A') {
 		matchMap.readyTeams.teamA = false;
 	} else {
 		matchMap.readyTeams.teamB = false;
@@ -371,19 +369,19 @@ const unreadyCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: E
 	MatchService.scheduleSave(match);
 };
 
-const pauseCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
+const pauseCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: TTeamAB) => {
 	await Match.say(
 		match,
 		`${escapeRconString(Match.getTeamByAB(match, teamAB).name)} PAUSED THE MAP`
 	);
 	matchMap.readyTeams.teamA = false;
 	matchMap.readyTeams.teamB = false;
-	matchMap.state = EMatchMapSate.PAUSED;
+	matchMap.state = 'PAUSED';
 	MatchService.scheduleSave(match);
 	await Match.execRcon(match, 'mp_pause_match');
 };
 
-const stayCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
+const stayCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: TTeamAB) => {
 	await Match.say(
 		match,
 		`${escapeRconString(Match.getTeamByAB(match, teamAB).name)} WANTS TO STAY`
@@ -391,7 +389,7 @@ const stayCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETea
 	await startMatch(match, matchMap);
 };
 
-const switchCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
+const switchCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: TTeamAB) => {
 	await Match.say(
 		match,
 		`${escapeRconString(Match.getTeamByAB(match, teamAB).name)} WANTS TO SWITCH SIDES`
@@ -402,7 +400,7 @@ const switchCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ET
 	await startMatch(match, matchMap);
 };
 
-const ctCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
+const ctCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: TTeamAB) => {
 	if (matchMap.startAsCtTeam === teamAB) {
 		await stayCommand(match, matchMap, teamAB);
 	} else {
@@ -410,7 +408,7 @@ const ctCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamA
 	}
 };
 
-const tCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: ETeamAB) => {
+const tCommand = async (match: Match.Match, matchMap: IMatchMap, teamAB: TTeamAB) => {
 	if (matchMap.startAsCtTeam === teamAB) {
 		await switchCommand(match, matchMap, teamAB);
 	} else {
@@ -422,7 +420,7 @@ export const onCommand = async (
 	match: Match.Match,
 	matchMap: IMatchMap,
 	command: ECommand,
-	teamAB: ETeamAB,
+	teamAB: TTeamAB,
 	player: IPlayer
 ) => {
 	if (command === ECommand.HELP) {
@@ -430,13 +428,13 @@ export const onCommand = async (
 	} else if (!getAvailableCommandsEnums(matchMap.state).includes(command)) {
 		await Match.say(match, `COMMAND CURRENTLY NO AVAILABLE`);
 		await sayAvailableCommands(match, matchMap);
-	} else if (matchMap.state === EMatchMapSate.KNIFE) {
+	} else if (matchMap.state === 'KNIFE') {
 		switch (command) {
 			case ECommand.RESTART:
 				await restartKnifeCommand(match, matchMap, teamAB);
 				break;
 		}
-	} else if (matchMap.state === EMatchMapSate.AFTER_KNIFE) {
+	} else if (matchMap.state === 'AFTER_KNIFE') {
 		if (matchMap.knifeWinner === teamAB) {
 			switch (command) {
 				case ECommand.STAY:
@@ -458,7 +456,7 @@ export const onCommand = async (
 		} else {
 			await Match.say(match, `ONLY THE WINNER OF THE KNIFE ROUND CAN CHOOSE THE SIDE!`);
 		}
-	} else if (matchMap.state === EMatchMapSate.WARMUP) {
+	} else if (matchMap.state === 'WARMUP') {
 		switch (command) {
 			case ECommand.READY:
 				await readyCommand(match, matchMap, teamAB);
@@ -467,13 +465,13 @@ export const onCommand = async (
 				await unreadyCommand(match, matchMap, teamAB);
 				break;
 		}
-	} else if (matchMap.state === EMatchMapSate.IN_PROGRESS) {
+	} else if (matchMap.state === 'IN_PROGRESS') {
 		switch (command) {
 			case ECommand.PAUSE:
 				await pauseCommand(match, matchMap, teamAB);
 				break;
 		}
-	} else if (matchMap.state === EMatchMapSate.PAUSED) {
+	} else if (matchMap.state === 'PAUSED') {
 		switch (command) {
 			case ECommand.READY:
 				await readyCommand(match, matchMap, teamAB);
@@ -488,19 +486,19 @@ export const onCommand = async (
  * Returns undefined if map is no finished, yet.
  */
 export const getWinner = (matchMap: IMatchMap) => {
-	if (matchMap.state !== EMatchMapSate.FINISHED) {
+	if (matchMap.state !== 'FINISHED') {
 		return undefined;
 	}
 	if (matchMap.score.teamA === matchMap.score.teamB) {
 		return null;
 	}
-	return matchMap.score.teamA > matchMap.score.teamB ? ETeamAB.TEAM_A : ETeamAB.TEAM_B;
+	return matchMap.score.teamA > matchMap.score.teamB ? 'TEAM_A' : 'TEAM_B';
 };
 
 export const update = async (match: Match.Match, matchMap: IMatchMap, dto: IMatchMapUpdateDto) => {
 	if (dto.state && matchMap.state !== dto.state) {
 		matchMap.state = dto.state;
-		if (matchMap.state === EMatchMapSate.PAUSED) {
+		if (matchMap.state === 'PAUSED') {
 			matchMap.readyTeams.teamA = false;
 			matchMap.readyTeams.teamB = false;
 			await Match.execRcon(match, 'mp_pause_match');

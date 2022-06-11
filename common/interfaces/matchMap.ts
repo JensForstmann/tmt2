@@ -1,28 +1,24 @@
-export enum EMatchMapSate {
+export type TMatchMapSate =
 	/** map will be played in the future, server has not changed to this map, yet */
-	PENDING = 'PENDING',
+	| 'PENDING'
 	/** server will change to this map, soon */
-	MAP_CHANGE = 'MAP_CHANGE',
-	WARMUP = 'WARMUP',
-	KNIFE = 'KNIFE',
+	| 'MAP_CHANGE'
+	| 'WARMUP'
+	| 'KNIFE'
 	/** knife round is over, waiting for winner to select side (or to restart the knife round) */
-	AFTER_KNIFE = 'AFTER_KNIFE',
-	IN_PROGRESS = 'IN_PROGRESS',
-	PAUSED = 'PAUSED',
-	FINISHED = 'FINISHED',
-}
+	| 'AFTER_KNIFE'
+	| 'IN_PROGRESS'
+	| 'PAUSED'
+	| 'FINISHED';
 
-export enum ETeamAB {
-	TEAM_A = 'TEAM_A',
-	TEAM_B = 'TEAM_B',
-}
+export type TTeamAB = 'TEAM_A' | 'TEAM_B';
 
-export const getOtherTeamAB = (team: ETeamAB): ETeamAB => {
+export const getOtherTeamAB = (team: TTeamAB): TTeamAB => {
 	switch (team) {
-		case ETeamAB.TEAM_A:
-			return ETeamAB.TEAM_B;
-		case ETeamAB.TEAM_B:
-			return ETeamAB.TEAM_A;
+		case 'TEAM_A':
+			return 'TEAM_B';
+		case 'TEAM_B':
+			return 'TEAM_A';
 	}
 };
 
@@ -31,9 +27,9 @@ export interface IMatchMap {
 	name: string;
 	knifeForSide: boolean;
 	/** may change after knife round */
-	startAsCtTeam: ETeamAB;
-	state: EMatchMapSate;
-	knifeWinner?: ETeamAB;
+	startAsCtTeam: TTeamAB;
+	state: TMatchMapSate;
+	knifeWinner?: TTeamAB;
 	readyTeams: {
 		teamA: boolean;
 		teamB: boolean;

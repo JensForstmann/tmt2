@@ -1,27 +1,26 @@
 import { IPlayer } from './player';
 import { ITeam } from './team';
 
-export enum EWebhookType {
-	CHAT = 'CHAT',
+export type TWebhookType =
+	| 'CHAT'
 	// MAP_ELECTION_STEP = 'MAP_ELECTION_STEP',
-	MAP_ELECTION_END = 'MAP_ELECTION_END',
+	| 'MAP_ELECTION_END'
 	// KNIFE_START = 'KNIFE_START',
 	// KNIFE_RESTART = 'KNIFE_RESTART',
-	KNIFE_END = 'KNIFE_END',
-	ROUND_END = 'ROUND_END',
-	MAP_START = 'MAP_START',
-	MAP_END = 'MAP_END',
-	MATCH_END = 'MATCH_END',
-}
+	| 'KNIFE_END'
+	| 'ROUND_END'
+	| 'MAP_START'
+	| 'MAP_END'
+	| 'MATCH_END';
 
 export interface IWebhook {
 	matchId: string;
 	matchPassthrough: string | null;
-	type: EWebhookType;
+	type: TWebhookType;
 }
 
 export interface IChatWebhook extends IWebhook {
-	type: EWebhookType.CHAT;
+	type: 'CHAT';
 	player: IPlayer;
 	playerTeam: ITeam | null;
 	message: string;
@@ -29,12 +28,12 @@ export interface IChatWebhook extends IWebhook {
 }
 
 export interface IElectionEndWebhook extends IWebhook {
-	type: EWebhookType.MAP_ELECTION_END;
+	type: 'MAP_ELECTION_END';
 	mapNames: string[];
 }
 
 export interface IRoundEndWebhook extends IWebhook {
-	type: EWebhookType.ROUND_END;
+	type: 'ROUND_END';
 	mapIndex: number;
 	mapName: string;
 	winnerTeam: ITeam;
@@ -43,7 +42,7 @@ export interface IRoundEndWebhook extends IWebhook {
 }
 
 export interface IMapEndWebhook extends IWebhook {
-	type: EWebhookType.MAP_END;
+	type: 'MAP_END';
 	mapIndex: number;
 	mapName: string;
 	scoreTeamA: number;
@@ -53,7 +52,7 @@ export interface IMapEndWebhook extends IWebhook {
 }
 
 export interface IMatchEndWebhook extends IWebhook {
-	type: EWebhookType.MATCH_END;
+	type: 'MATCH_END';
 	wonMapsTeamA: number;
 	wonMapsTeamB: number;
 	/** winner of the match or null if it's a draw */
@@ -68,12 +67,12 @@ export interface IMatchEndWebhook extends IWebhook {
 }
 
 export interface IKnifeRoundEndWebhook extends IWebhook {
-	type: EWebhookType.KNIFE_END;
+	type: 'KNIFE_END';
 	winnerTeam: ITeam;
 }
 
 export interface IMapStartWebhook extends IWebhook {
-	type: EWebhookType.MAP_START;
+	type: 'MAP_START';
 	mapIndex: number;
 	mapName: string;
 }

@@ -6,13 +6,13 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"EMatchSate": {
+			"TMatchSate": {
+				"type": "string",
 				"enum": [
 					"ELECTION",
 					"MATCH_MAP",
 					"FINISHED"
-				],
-				"type": "string"
+				]
 			},
 			"ITeam": {
 				"properties": {
@@ -34,16 +34,14 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"EMapMode.FIXED": {
-				"enum": [
-					"FIXED"
-				],
-				"type": "string"
-			},
 			"IFixedMap": {
 				"properties": {
 					"mode": {
-						"$ref": "#/components/schemas/EMapMode.FIXED"
+						"type": "string",
+						"enum": [
+							"FIXED"
+						],
+						"nullable": false
 					},
 					"fixed": {
 						"type": "string"
@@ -56,28 +54,26 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"EMapMode.PICK": {
-				"enum": [
-					"PICK"
-				],
-				"type": "string"
-			},
-			"EWho": {
+			"TWho": {
+				"type": "string",
 				"enum": [
 					"TEAM_A",
 					"TEAM_B",
 					"TEAM_X",
 					"TEAM_Y"
-				],
-				"type": "string"
+				]
 			},
 			"IPickMap": {
 				"properties": {
 					"mode": {
-						"$ref": "#/components/schemas/EMapMode.PICK"
+						"type": "string",
+						"enum": [
+							"PICK"
+						],
+						"nullable": false
 					},
 					"who": {
-						"$ref": "#/components/schemas/EWho"
+						"$ref": "#/components/schemas/TWho"
 					}
 				},
 				"required": [
@@ -87,37 +83,14 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"EMapMode.RANDOM_BAN": {
-				"enum": [
-					"RANDOM_BAN"
-				],
-				"type": "string"
-			},
-			"EMapMode.RANDOM_PICK": {
-				"enum": [
-					"RANDOM_PICK"
-				],
-				"type": "string"
-			},
-			"EMapMode.AGREE": {
-				"enum": [
-					"AGREE"
-				],
-				"type": "string"
-			},
 			"IAgreeOrRandomMap": {
 				"properties": {
 					"mode": {
-						"anyOf": [
-							{
-								"$ref": "#/components/schemas/EMapMode.RANDOM_BAN"
-							},
-							{
-								"$ref": "#/components/schemas/EMapMode.RANDOM_PICK"
-							},
-							{
-								"$ref": "#/components/schemas/EMapMode.AGREE"
-							}
+						"type": "string",
+						"enum": [
+							"RANDOM_BAN",
+							"RANDOM_PICK",
+							"AGREE"
 						]
 					}
 				},
@@ -127,13 +100,8 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ESideMode.FIXED": {
-				"enum": [
-					"FIXED"
-				],
-				"type": "string"
-			},
-			"ESideFixed": {
+			"TSideFixed": {
+				"type": "string",
 				"enum": [
 					"TEAM_A_CT",
 					"TEAM_A_T",
@@ -143,16 +111,19 @@
 					"TEAM_X_T",
 					"TEAM_Y_CT",
 					"TEAM_Y_T"
-				],
-				"type": "string"
+				]
 			},
 			"IFixedSide": {
 				"properties": {
 					"mode": {
-						"$ref": "#/components/schemas/ESideMode.FIXED"
+						"type": "string",
+						"enum": [
+							"FIXED"
+						],
+						"nullable": false
 					},
 					"fixed": {
-						"$ref": "#/components/schemas/ESideFixed"
+						"$ref": "#/components/schemas/TSideFixed"
 					}
 				},
 				"required": [
@@ -162,19 +133,17 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ESideMode.PICK": {
-				"enum": [
-					"PICK"
-				],
-				"type": "string"
-			},
 			"IPickSide": {
 				"properties": {
 					"mode": {
-						"$ref": "#/components/schemas/ESideMode.PICK"
+						"type": "string",
+						"enum": [
+							"PICK"
+						],
+						"nullable": false
 					},
 					"who": {
-						"$ref": "#/components/schemas/EWho"
+						"$ref": "#/components/schemas/TWho"
 					}
 				},
 				"required": [
@@ -184,28 +153,13 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ESideMode.RANDOM": {
-				"enum": [
-					"RANDOM"
-				],
-				"type": "string"
-			},
-			"ESideMode.KNIFE": {
-				"enum": [
-					"KNIFE"
-				],
-				"type": "string"
-			},
 			"IRandomOrKnifeSide": {
 				"properties": {
 					"mode": {
-						"anyOf": [
-							{
-								"$ref": "#/components/schemas/ESideMode.RANDOM"
-							},
-							{
-								"$ref": "#/components/schemas/ESideMode.KNIFE"
-							}
+						"type": "string",
+						"enum": [
+							"RANDOM",
+							"KNIFE"
 						]
 					}
 				},
@@ -251,19 +205,17 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"EMapMode.BAN": {
-				"enum": [
-					"BAN"
-				],
-				"type": "string"
-			},
 			"IBanMap": {
 				"properties": {
 					"mode": {
-						"$ref": "#/components/schemas/EMapMode.BAN"
+						"type": "string",
+						"enum": [
+							"BAN"
+						],
+						"nullable": false
 					},
 					"who": {
-						"$ref": "#/components/schemas/EWho"
+						"$ref": "#/components/schemas/TWho"
 					}
 				},
 				"required": [
@@ -285,39 +237,39 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"EElectionState": {
+			"TElectionState": {
+				"type": "string",
 				"enum": [
 					"NOT_STARTED",
 					"RESTARTED",
 					"IN_PROGRESS",
 					"FINISHED"
-				],
-				"type": "string"
+				]
 			},
-			"ETeamAB": {
+			"TTeamAB": {
+				"type": "string",
 				"enum": [
 					"TEAM_A",
 					"TEAM_B"
-				],
-				"type": "string"
+				]
 			},
-			"EStep": {
+			"TStep": {
+				"type": "string",
 				"enum": [
 					"MAP",
 					"SIDE"
-				],
-				"type": "string"
+				]
 			},
 			"IElection": {
 				"properties": {
 					"state": {
-						"$ref": "#/components/schemas/EElectionState"
+						"$ref": "#/components/schemas/TElectionState"
 					},
 					"teamX": {
-						"$ref": "#/components/schemas/ETeamAB"
+						"$ref": "#/components/schemas/TTeamAB"
 					},
 					"teamY": {
-						"$ref": "#/components/schemas/ETeamAB"
+						"$ref": "#/components/schemas/TTeamAB"
 					},
 					"remainingMaps": {
 						"items": {
@@ -332,7 +284,7 @@
 						"description": "Index of the current electionSteps of the match."
 					},
 					"currentSubStep": {
-						"$ref": "#/components/schemas/EStep",
+						"$ref": "#/components/schemas/TStep",
 						"description": "Toggles between MAP and SIDE"
 					},
 					"currentStepMap": {
@@ -406,7 +358,8 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"EMatchMapSate": {
+			"TMatchMapSate": {
+				"type": "string",
 				"enum": [
 					"PENDING",
 					"MAP_CHANGE",
@@ -416,8 +369,7 @@
 					"IN_PROGRESS",
 					"PAUSED",
 					"FINISHED"
-				],
-				"type": "string"
+				]
 			},
 			"IMatchMap": {
 				"properties": {
@@ -429,14 +381,14 @@
 						"type": "boolean"
 					},
 					"startAsCtTeam": {
-						"$ref": "#/components/schemas/ETeamAB",
+						"$ref": "#/components/schemas/TTeamAB",
 						"description": "may change after knife round"
 					},
 					"state": {
-						"$ref": "#/components/schemas/EMatchMapSate"
+						"$ref": "#/components/schemas/TMatchMapSate"
 					},
 					"knifeWinner": {
-						"$ref": "#/components/schemas/ETeamAB"
+						"$ref": "#/components/schemas/TTeamAB"
 					},
 					"readyTeams": {
 						"properties": {
@@ -512,31 +464,29 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"EMatchEndAction": {
+			"TMatchEndAction": {
+				"type": "string",
 				"enum": [
 					"KICK_ALL",
 					"QUIT_SERVER",
 					"NONE"
-				],
-				"type": "string"
+				]
 			},
-			"ELogType.CHAT": {
-				"enum": [
-					"CHAT"
-				],
-				"type": "string"
-			},
-			"ELogType": {
+			"TLogType": {
+				"type": "string",
 				"enum": [
 					"CHAT",
 					"SYSTEM"
-				],
-				"type": "string"
+				]
 			},
 			"ILogChat": {
 				"properties": {
 					"type": {
-						"$ref": "#/components/schemas/ELogType.CHAT"
+						"type": "string",
+						"enum": [
+							"CHAT"
+						],
+						"nullable": false
 					},
 					"timestamp": {
 						"type": "number",
@@ -562,32 +512,30 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ELogType.SYSTEM": {
-				"enum": [
-					"SYSTEM"
-				],
-				"type": "string"
-			},
-			"ESystemLogCategory": {
+			"TSystemLogCategory": {
+				"type": "string",
 				"enum": [
 					"ERROR",
 					"WARN",
 					"INFO",
 					"DEBUG"
-				],
-				"type": "string"
+				]
 			},
 			"ILogSystem": {
 				"properties": {
 					"type": {
-						"$ref": "#/components/schemas/ELogType.SYSTEM"
+						"type": "string",
+						"enum": [
+							"SYSTEM"
+						],
+						"nullable": false
 					},
 					"timestamp": {
 						"type": "number",
 						"format": "double"
 					},
 					"category": {
-						"$ref": "#/components/schemas/ESystemLogCategory"
+						"$ref": "#/components/schemas/TSystemLogCategory"
 					},
 					"message": {
 						"type": "string"
@@ -621,7 +569,7 @@
 						"type": "string"
 					},
 					"team": {
-						"$ref": "#/components/schemas/ETeamAB"
+						"$ref": "#/components/schemas/TTeamAB"
 					}
 				},
 				"required": [
@@ -638,7 +586,7 @@
 						"description": "tmt2 identifier for this match"
 					},
 					"state": {
-						"$ref": "#/components/schemas/EMatchSate"
+						"$ref": "#/components/schemas/TMatchSate"
 					},
 					"passthrough": {
 						"type": "string",
@@ -745,7 +693,7 @@
 						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
 					},
 					"matchEndAction": {
-						"$ref": "#/components/schemas/EMatchEndAction",
+						"$ref": "#/components/schemas/TMatchEndAction",
 						"description": "defaults to NONE"
 					},
 					"logs": {
@@ -896,7 +844,7 @@
 						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
 					},
 					"matchEndAction": {
-						"$ref": "#/components/schemas/EMatchEndAction",
+						"$ref": "#/components/schemas/TMatchEndAction",
 						"description": "defaults to NONE"
 					},
 					"electionMap": {
@@ -991,7 +939,7 @@
 						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
 					},
 					"matchEndAction": {
-						"$ref": "#/components/schemas/EMatchEndAction",
+						"$ref": "#/components/schemas/TMatchEndAction",
 						"description": "defaults to NONE"
 					},
 					"electionMap": {
@@ -999,7 +947,7 @@
 						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
 					},
 					"state": {
-						"$ref": "#/components/schemas/EMatchSate"
+						"$ref": "#/components/schemas/TMatchSate"
 					},
 					"logSecret": {
 						"type": "string",
@@ -1044,14 +992,14 @@
 						"type": "boolean"
 					},
 					"startAsCtTeam": {
-						"$ref": "#/components/schemas/ETeamAB",
+						"$ref": "#/components/schemas/TTeamAB",
 						"description": "may change after knife round"
 					},
 					"state": {
-						"$ref": "#/components/schemas/EMatchMapSate"
+						"$ref": "#/components/schemas/TMatchMapSate"
 					},
 					"knifeWinner": {
-						"$ref": "#/components/schemas/ETeamAB"
+						"$ref": "#/components/schemas/TTeamAB"
 					},
 					"readyTeams": {
 						"properties": {

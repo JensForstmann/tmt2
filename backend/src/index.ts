@@ -1,8 +1,9 @@
-import express, { ErrorRequestHandler } from 'express';
-import { RegisterRoutes } from './routes';
 import { ValidateError } from '@tsoa/runtime';
+import express, { ErrorRequestHandler } from 'express';
+import path from 'path';
 import * as Auth from './auth';
 import * as MatchService from './matchService';
+import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
 
 if (!process.env.TMT_LOG_ADDRESS) {
@@ -72,6 +73,12 @@ app.use(errorRequestHandler);
 app.get('/api', (req, res) => {
 	res.sendFile('swagger.json', { root: '.' });
 });
+
+const STATIC_PATH = path.join(__dirname, '../../../../frontend/dist');
+console.info(`Serve static files from: ${STATIC_PATH}`);
+
+app.get('*', express.static(STATIC_PATH));
+app.get('*', (req, res) => res.sendFile(path.join(STATIC_PATH, 'index.html')));
 
 const main = async () => {
 	console.info(`Start TMT (${process.env.COMMIT_SHA || 'no COMMIT_SHA set'})`);

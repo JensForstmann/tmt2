@@ -1,5 +1,5 @@
 import SteamID from 'steamid';
-import { IPlayer } from './interfaces/player';
+import { IPlayer } from '../../common';
 
 export const create = (steamId: string, name: string): IPlayer => {
 	return {
