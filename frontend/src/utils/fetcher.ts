@@ -1,8 +1,10 @@
-import { createResource, createSignal } from 'solid-js';
+import { createResource } from 'solid-js';
 import { IMatch, IMatchUpdateDto } from '../../../common';
 import { sleep } from './sleep';
 
-export const fetcher = async <T>(path: string, host = 'http://localhost:8080'): Promise<T> => {
+const API_HOST = import.meta.env.DEV ? 'http://localhost:8080' : '';
+
+export const fetcher = async <T>(path: string, host = API_HOST): Promise<T> => {
 	return fetch(`${host}${path}`, {
 		headers: {
 			Authorization: '2Mgog6ATqAs495NtUQUsph',
@@ -10,7 +12,7 @@ export const fetcher = async <T>(path: string, host = 'http://localhost:8080'): 
 	}).then((response) => response.json());
 };
 
-export const fetchResource = <T>(path: string, host = 'http://localhost:8080') => {
+export const fetchResource = <T>(path: string, host = API_HOST) => {
 	return createResource(() => fetcher<T>(path, host));
 };
 
@@ -18,7 +20,7 @@ export const fetchResource2 = <T>(source: any, path: any) => {
 	return createResource(source, (x) => fetcher<T>(x));
 };
 
-export const patcher = async (path: string, body: any, host = 'http://localhost:8080') => {
+export const patcher = async (path: string, body: any, host = API_HOST) => {
 	return fetch(`${host}${path}`, {
 		method: 'PATCH',
 		headers: {
