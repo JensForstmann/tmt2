@@ -1,0 +1,26 @@
+{
+	"name": "tmt2-frontend",
+	"version": "2.0.0",
+	"repository": "https://github.com/JensForstmann/tmt2",
+	"author": "Jens Forstmann",
+	"license": "MIT",
+	"scripts": {
+		"start": "vite",
+		"dev": "vite",
+		"build": "vite build",
+		"serve": "vite preview",
+		"clean": "prettier --write ."
+	},
+	"devDependencies": {
+		"prettier": "^2.6.2",
+		"sass": "^1.52.3",
+		"typescript": "^4.6.4",
+		"vite": "^2.9.9",
+		"vite-plugin-solid": "^2.2.6"
+	},
+	"dependencies": {
+		"@solid-primitives/scheduled": "^1.0.0",
+		"solid-app-router": "^0.3.3",
+		"solid-js": "^1.4.2"
+	}
+}

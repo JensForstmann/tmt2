@@ -1,0 +1,5 @@
+dist
+.yarn
+.pnp.js
+node_modules
+**/*.md

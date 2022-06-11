@@ -1,0 +1,30 @@
+.card {
+	padding: 1em;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	border: 2px solid #eee;
+	font-size: 1em;
+	text-align: center;
+
+	p > * {
+		vertical-align: middle;
+		display: inline-block;
+	}
+}
+
+.mapName {
+}
+
+.teamName {
+	// margin: 1em;
+	// font-size: 1.5em;
+}
+
+.score {
+	margin-left: 1em;
+	margin-right: 1em;
+}
+
+.state {
+	// margin: 1em;
+}
