@@ -74,12 +74,12 @@ app.get('/api', (req, res) => {
 });
 
 const main = async () => {
-	console.log(`Start TMT (${process.env.COMMIT_SHA || 'no COMMIT_SHA set'})`);
+	console.info(`Start TMT (${process.env.COMMIT_SHA || 'no COMMIT_SHA set'})`);
 	await Storage.setup();
 	await Auth.setup();
 
 	app.listen(PORT, async () => {
-		console.log(`App listening on port ${PORT}`);
+		console.info(`App listening on port ${PORT}`);
 		await MatchService.setup(); // can only be done when http server is up and running (so that incoming logs can be handled)
 	});
 };

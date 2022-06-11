@@ -239,16 +239,6 @@ const models: TsoaRoute.Models = {
         "enums": ["CHAT"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "IPlayer": {
-        "dataType": "refObject",
-        "properties": {
-            "steamId64": {"dataType":"string","required":true},
-            "name": {"dataType":"string","required":true},
-            "team": {"ref":"ETeamAB"},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ELogType": {
         "dataType": "refEnum",
         "enums": ["CHAT","SYSTEM"],
@@ -260,7 +250,7 @@ const models: TsoaRoute.Models = {
             "type": {"ref":"ELogType.CHAT","required":true},
             "timestamp": {"dataType":"double","required":true},
             "isTeamChat": {"dataType":"boolean","required":true},
-            "player": {"ref":"IPlayer","required":true},
+            "steamId64": {"dataType":"string","required":true},
             "message": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -290,6 +280,16 @@ const models: TsoaRoute.Models = {
     "TLogUnion": {
         "dataType": "refAlias",
         "type": {"dataType":"union","subSchemas":[{"ref":"ILogChat"},{"ref":"ILogSystem"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IPlayer": {
+        "dataType": "refObject",
+        "properties": {
+            "steamId64": {"dataType":"string","required":true},
+            "name": {"dataType":"string","required":true},
+            "team": {"ref":"ETeamAB"},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IMatch": {

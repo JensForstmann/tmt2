@@ -17,6 +17,9 @@ export const create = async (dto: IGameServer, log: (msg: string) => void): Prom
 
 export const exec = async (match: Match.Match, command: string, suppressError: boolean = true) => {
 	try {
+		if (!match.rconConnection) {
+			throw 'rconConnection is falsy';
+		}
 		return await match.rconConnection.send(command);
 	} catch (err) {
 		if (suppressError) {
@@ -46,7 +49,7 @@ export const kickAll = async (match: Match.Match) => {
 
 export const disconnect = async (match: Match.Match) => {
 	try {
-		await match.rconConnection.end();
+		await match.rconConnection?.end();
 	} catch (err) {
 		// ignore error
 	}

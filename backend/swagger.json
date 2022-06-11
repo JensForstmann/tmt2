@@ -526,25 +526,6 @@
 				],
 				"type": "string"
 			},
-			"IPlayer": {
-				"properties": {
-					"steamId64": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					},
-					"team": {
-						"$ref": "#/components/schemas/ETeamAB"
-					}
-				},
-				"required": [
-					"steamId64",
-					"name"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"ELogType": {
 				"enum": [
 					"CHAT",
@@ -564,8 +545,8 @@
 					"isTeamChat": {
 						"type": "boolean"
 					},
-					"player": {
-						"$ref": "#/components/schemas/IPlayer"
+					"steamId64": {
+						"type": "string"
 					},
 					"message": {
 						"type": "string"
@@ -575,7 +556,7 @@
 					"type",
 					"timestamp",
 					"isTeamChat",
-					"player",
+					"steamId64",
 					"message"
 				],
 				"type": "object",
@@ -630,6 +611,25 @@
 						"$ref": "#/components/schemas/ILogSystem"
 					}
 				]
+			},
+			"IPlayer": {
+				"properties": {
+					"steamId64": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"team": {
+						"$ref": "#/components/schemas/ETeamAB"
+					}
+				},
+				"required": [
+					"steamId64",
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
 			},
 			"IMatch": {
 				"properties": {

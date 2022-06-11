@@ -13,7 +13,7 @@ export interface ILog {
 export interface ILogChat extends ILog {
 	type: ELogType.CHAT;
 	isTeamChat: boolean;
-	player: IPlayer;
+	steamId64: string;
 	message: string;
 }
 

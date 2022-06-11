@@ -33,7 +33,7 @@ export const setup = async () => {
 };
 
 const loadMatchFromStorage = async (matchData: IMatch) => {
-	console.log(`load match ${matchData.id} from storage`);
+	console.info(`load match ${matchData.id} from storage`);
 	startingMatches.add(matchData.id);
 	matchData.parseIncomingLogs = false;
 	try {
@@ -112,7 +112,11 @@ export const getAllFromStorage = async () => {
 };
 
 export const getAll = async () => {
-	return [...getAllLive(), ...(await getAllFromStorage())];
+	const combined = [...getAllLive(), ...(await getAllFromStorage())];
+	const unique = combined.filter(
+		(match, index, arr) => arr.findIndex((m) => match.id === m.id) === index
+	);
+	return unique;
 };
 
 export const remove = async (id: string) => {

@@ -24,7 +24,7 @@ import { Rcon } from './rcon-client';
 
 export interface Match {
 	data: IMatch;
-	rconConnection: Rcon;
+	rconConnection?: Rcon;
 	periodicTimerId?: NodeJS.Timeout;
 	logBuffer: string[];
 	log: (msg: string) => void;
@@ -32,14 +32,12 @@ export interface Match {
 
 export const createFromData = async (data: IMatch) => {
 	const log = logger(data.id);
-	const gameServer = await GameServer.create(data.gameServer, log);
 	const match: Match = {
 		data: data,
-		rconConnection: gameServer,
 		logBuffer: [],
 		log: log,
 	};
-	gameServer.on('end', () => onRconConnectionEnd(match));
+	await connectToGameServer(match);
 	await setup(match);
 	return match;
 };
@@ -76,11 +74,23 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 };
 
 const logger = (id: string) => (msg: string) => {
-	console.log(`[${id}] ${msg}`);
+	console.info(`[${id}] ${msg}`);
+};
+
+export const connectToGameServer = async (match: Match): Promise<void> => {
+	const addr = `${match.data.gameServer.ip}:${match.data.gameServer.port}`;
+	match.log(`connect rcon ${addr}`);
+	const gameServer = await GameServer.create(match.data.gameServer, match.log);
+	gameServer.on('end', () => onRconConnectionEnd(match));
+	const previous = match.rconConnection;
+	match.rconConnection = gameServer;
+	previous?.end().catch(() => {});
+	match.log(`connect rcon successful ${addr}`);
+	await registerLogAddress(match);
 };
 
 export const onRconConnectionEnd = async (match: Match) => {
-	const addr = `${match.data.gameServer.ip}:${match.data.gameServer.port}`;
+	const addr = `${match.rconConnection?.config.host}:${match.rconConnection?.config.port}`;
 	match.log(`rcon connection lost: ${addr}`);
 	while (true) {
 		try {
@@ -88,10 +98,7 @@ export const onRconConnectionEnd = async (match: Match) => {
 			if (match.data.isStopped) {
 				return;
 			}
-			match.log(`reconnect rcon ${addr}`);
-			const gameServer = await GameServer.create(match.data.gameServer, match.log);
-			match.rconConnection = gameServer;
-			match.log(`reconnect rcon successful ${addr}`);
+			await connectToGameServer(match);
 			return;
 		} catch (err) {
 			match.log(`reconnect rcon failed ${addr}: ${err}`);
@@ -110,7 +117,6 @@ const setup = async (match: Match) => {
 
 	await execRcon(match, 'log on');
 
-	await registerLogAddress(match);
 	await setTeamNames(match);
 
 	await execRcon(match, `mp_backup_round_file "round_backup_${match.data.id}"`);
@@ -121,27 +127,40 @@ const setup = async (match: Match) => {
 		'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%team1%_%team2%_%map%_round%round%_score_%score1%_%score2%.txt"'
 	);
 
-	// delay parsing of incoming log lines (because we don't care about the initial big batch)
-	sleep(2000)
-		.then(async () => {
-			match.log('enable parsing of incoming log');
-			match.data.parseIncomingLogs = true;
-			await say(match, 'ONLINE');
-			if (match.data.state === EMatchSate.ELECTION) {
-				await Election.auto(match);
-			}
-			await sayPeriodicMessage(match);
-		})
-		.catch((err) => {
-			match.log(`Error in delayed setup: ${err}`);
-		});
-
 	match.log('Setup finished');
 };
 
 const registerLogAddress = async (match: Match) => {
 	const logAddress = `${process.env.TMT_LOG_ADDRESS}/api/matches/${match.data.id}/server/log/${match.data.logSecret}`;
-	await execRcon(match, `logaddress_add_http "${logAddress}"`);
+	const logAddressList = await execRcon(match, 'logaddress_list_http');
+	const existing = logAddressList
+		.trim()
+		.split('\n')
+		.map((line) => line.trim())
+		.find((line) => line.startsWith(logAddress));
+	if (!existing) {
+		match.data.parseIncomingLogs = false;
+		match.log('register log address');
+		await execRcon(match, `logaddress_add_http "${logAddress}"`);
+
+		MatchService.scheduleSave(match);
+
+		// delay parsing of incoming log lines (because we don't care about the initial big batch)
+		sleep(2000)
+			.then(async () => {
+				match.log('enable parsing of incoming log');
+				match.data.parseIncomingLogs = true;
+				MatchService.scheduleSave(match);
+				await say(match, 'ONLINE');
+				if (match.data.state === EMatchSate.ELECTION) {
+					await Election.auto(match);
+				}
+				await sayPeriodicMessage(match);
+			})
+			.catch((err) => {
+				match.log(`Error in delayed registerLogAddress: ${err}`);
+			});
+	}
 };
 
 export const execRcon = async (match: Match, command: string) => {
@@ -277,7 +296,7 @@ const onLogLine = async (match: Match, line: string) => {
 	if (!line) return;
 
 	//09/14/2020 - 15:11:58.307 - "Yenz<2><STEAM_1:0:8520813><TERRORIST>" say "Hello World"
-	// console.log('line:', line);
+	// console.debug('line:', line);
 	const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
 
 	const playerPattern = /"(.*)<(\d+)><(.*)><(|Unassigned|CT|TERRORIST|Console)>" (.*)$/;
@@ -635,17 +654,13 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto.gameServer) {
-		match.data.gameServer = dto.gameServer;
-		const addr = `${match.data.gameServer.ip}:${match.data.gameServer.port}`;
+		const previous = match.data.gameServer;
 		try {
-			match.log(`connect rcon ${addr}`);
-			const gameServer = await GameServer.create(match.data.gameServer, match.log);
-			const previous = match.rconConnection;
-			match.rconConnection = gameServer;
-			match.log(`connect rcon successful ${addr}`);
-			previous.end().catch(() => {});
+			match.data.gameServer = dto.gameServer;
+			await connectToGameServer(match);
 		} catch (err) {
-			match.log(`connect rcon failed ${addr}: ${err}`);
+			match.data.gameServer = previous;
+			throw err;
 		}
 	}
 
@@ -658,8 +673,14 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto.logSecret) {
+		const previous = match.data.logSecret;
 		match.data.logSecret = dto.logSecret;
-		await registerLogAddress(match);
+		try {
+			await registerLogAddress(match);
+		} catch (err) {
+			match.data.logSecret = previous;
+			throw err;
+		}
 	}
 
 	if (dto.currentMap !== undefined && dto.currentMap !== match.data.currentMap) {
@@ -667,7 +688,9 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		match.data.currentMap = dto.currentMap;
 		const nextMap = getCurrentMatchMap(match);
 		if (nextMap) {
-			await MatchMap.loadMap(match, nextMap);
+			MatchMap.loadMap(match, nextMap).catch((err) => {
+				match.log(`error load map: ${err}`);
+			});
 		} else {
 			match.data.currentMap = previous;
 		}

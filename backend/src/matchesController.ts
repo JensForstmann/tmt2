@@ -40,7 +40,6 @@ export class MatchesController extends Controller {
 		@Query('isStopped') isStopped?: boolean
 	): Promise<IMatch[]> {
 		const matches = await MatchService.getAll();
-		console.log('state', state);
 		return matches
 			.filter((m) => state === undefined || state.includes(m.state))
 			.filter(
@@ -173,7 +172,7 @@ export class MatchesController extends Controller {
 			this.setStatus(200);
 		} else {
 			// 410 tells the cs go server to stop send logs
-			console.log(`return 410 to gameserver (match id: ${id})`);
+			console.info(`return 410 to game server (match id: ${id})`);
 			this.setStatus(410);
 		}
 	}
