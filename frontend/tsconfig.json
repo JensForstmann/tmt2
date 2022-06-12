@@ -12,5 +12,5 @@
 		"noEmit": true,
 		"isolatedModules": true
 	},
-	"include": ["./src", "../common/src"]
+	"include": ["./src", "../common"]
 }

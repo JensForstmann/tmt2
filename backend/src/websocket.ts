@@ -1,11 +1,7 @@
 import http from 'http';
 import * as WebSocket from 'ws';
-import { TWebhook } from '../../common';
-import {
-	ISubscribeMessage,
-	IUnsubscribeMessage,
-	TWebSocketMessages,
-} from '../../common/interfaces/websocket';
+import { Event } from '../../common';
+import { SubscribeMessage, UnsubscribeMessage, WebSocketMessage } from '../../common';
 import * as Auth from './auth';
 
 const WS_CLIENTS = new Map<
@@ -40,7 +36,7 @@ export const setup = async (httpServer: http.Server) => {
 };
 
 const onMessage = (ws: WebSocket, data: WebSocket.RawData) => {
-	let msg: TWebSocketMessages | undefined;
+	let msg: WebSocketMessage | undefined;
 	try {
 		msg = JSON.parse(data + '');
 	} catch (err) {}
@@ -57,7 +53,7 @@ const onMessage = (ws: WebSocket, data: WebSocket.RawData) => {
 	}
 };
 
-const subscribe = (ws: WebSocket, msg: ISubscribeMessage) => {
+const subscribe = (ws: WebSocket, msg: SubscribeMessage) => {
 	const authResponse = Auth.isAuthorized(msg.token, msg.matchId);
 	if (!authResponse) {
 		console.warn(`prevent subscribe to match ${msg.matchId}: invalid token`);
@@ -70,11 +66,11 @@ const subscribe = (ws: WebSocket, msg: ISubscribeMessage) => {
 	}
 };
 
-const unSubscribe = (ws: WebSocket, msg: IUnsubscribeMessage) => {
+const unSubscribe = (ws: WebSocket, msg: UnsubscribeMessage) => {
 	WS_CLIENTS.get(ws)?.matches.delete(msg.matchId);
 };
 
-export const publish = (msg: TWebhook) => {
+export const publish = (msg: Event) => {
 	WS_CLIENTS.forEach((data, ws) => {
 		if (msg.matchId && data.matches.has(msg.matchId)) {
 			ws.send(JSON.stringify(msg));

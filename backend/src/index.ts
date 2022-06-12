@@ -6,7 +6,7 @@ import * as Auth from './auth';
 import * as MatchService from './matchService';
 import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
-import * as WebSocket from './websocket';
+import * as WebSocket from './webSocket';
 
 if (!process.env.TMT_LOG_ADDRESS) {
 	throw 'environment variable TMT_LOG_ADDRESS is not set';

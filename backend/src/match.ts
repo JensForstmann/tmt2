@@ -1,19 +1,16 @@
 import { generate as shortUuid } from 'short-uuid';
 import {
-	TMatchEndAction,
-	TMatchMapSate,
-	TMatchSate,
-	TTeamAB,
-	TTeamSides,
 	getOtherTeamAB,
 	IMatch,
 	IMatchCreateDto,
 	IMatchUpdateDto,
 	IPlayer,
 	ITeam,
+	TTeamAB,
 } from '../../common';
 import { commandMapping, ECommand } from './commands';
 import * as Election from './election';
+import * as Events from './events';
 import * as GameServer from './gameServer';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
@@ -22,7 +19,6 @@ import { Rcon } from './rcon-client';
 import { Settings } from './settings';
 import * as Team from './team';
 import { escapeRconString, sleep } from './utils';
-import * as Webhook from './webhook';
 
 export interface Match {
 	data: IMatch;
@@ -377,7 +373,7 @@ const onPlayerSay = async (
 ) => {
 	message = message.trim();
 
-	Webhook.onPlayerSay(match, player, message, isTeamChat);
+	Events.onPlayerSay(match, player, message, isTeamChat);
 
 	if (Settings.COMMAND_PREFIXES.includes(message[0])) {
 		message = message.substring(1);
@@ -587,7 +583,7 @@ const onMatchEnd = async (match: Match) => {
 		MatchService.scheduleSave(match);
 		const wonMapsTeamA = getTeamWins(match, 'TEAM_A');
 		const wonMapsTeamB = getTeamWins(match, 'TEAM_B');
-		Webhook.onMatchEnd(match, wonMapsTeamA, wonMapsTeamB);
+		Events.onMatchEnd(match, wonMapsTeamA, wonMapsTeamB);
 		await sleep(Settings.MATCH_END_ACTION_DELAY);
 		switch (match.data.matchEndAction) {
 			case 'KICK_ALL':
@@ -615,7 +611,7 @@ export const stop = async (match: Match) => {
 };
 
 export const onElectionFinished = async (match: Match) => {
-	Webhook.onElectionEnd(match);
+	Events.onElectionEnd(match);
 	match.data.state = 'MATCH_MAP';
 	MatchService.scheduleSave(match);
 	const currentMatchMap = getCurrentMatchMap(match);

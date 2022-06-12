@@ -1,32 +1,36 @@
-import axios from 'axios';
+import Events from 'axios';
 import {
-	IChatWebhook,
-	IElectionEndWebhook,
-	IKnifeRoundEndWebhook,
-	IMapEndWebhook,
-	IMapStartWebhook,
-	IMatchEndWebhook,
+	ChatEvent,
+	ElectionEndEvent,
+	Event,
 	IMatchMap,
 	IPlayer,
-	IRoundEndWebhook,
 	ITeam,
-	TWebhook,
+	KnifeRoundEndEvent,
+	MapEndEvent,
+	MapStartEvent,
+	MatchEndEvent,
+	RoundEndEvent,
 } from '../../common';
 import * as Match from './match';
-import * as WebSocket from './websocket';
+import * as WebSocket from './webSocket';
+import { Settings } from './settings';
 
-const send = (match: Match.Match, data: TWebhook) => {
+const send = (match: Match.Match, data: Event) => {
+	// WebSocket
+	WebSocket.publish(data);
+
+	// WebHook
 	const url = match.data.webhookUrl;
-	if (url?.startsWith('http')) {
-		axios.post(url, data).catch((err) => {
+	if (url?.startsWith('http') && Settings.WEBHOOK_EVENTS.includes(data.type)) {
+		Events.post(url, data).catch((err) => {
 			match.log(`sending webhook ${data.type} to ${url} failed: ${err}`);
 		});
 	}
-	WebSocket.publish(data);
 };
 
 export const onElectionEnd = (match: Match.Match) => {
-	const data: IElectionEndWebhook = {
+	const data: ElectionEndEvent = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
 		type: 'MAP_ELECTION_END',
@@ -36,7 +40,7 @@ export const onElectionEnd = (match: Match.Match) => {
 };
 
 export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
-	const data: IKnifeRoundEndWebhook = {
+	const data: KnifeRoundEndEvent = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
 		type: 'KNIFE_END',
@@ -46,7 +50,7 @@ export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerT
 };
 
 export const onRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
-	const data: IRoundEndWebhook = {
+	const data: RoundEndEvent = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
 		type: 'ROUND_END',
@@ -65,7 +69,7 @@ export const onPlayerSay = (
 	message: string,
 	isTeamChat: boolean
 ) => {
-	const data: IChatWebhook = {
+	const data: ChatEvent = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
 		type: 'CHAT',
@@ -78,7 +82,7 @@ export const onPlayerSay = (
 };
 
 export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeamB: number) => {
-	const data: IMatchEndWebhook = {
+	const data: MatchEndEvent = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
 		type: 'MATCH_END',
@@ -108,7 +112,7 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 };
 
 export const onMapStart = (match: Match.Match, matchMap: IMatchMap) => {
-	const data: IMapStartWebhook = {
+	const data: MapStartEvent = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
 		type: 'MAP_START',
@@ -119,7 +123,7 @@ export const onMapStart = (match: Match.Match, matchMap: IMatchMap) => {
 };
 
 export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
-	const data: IMapEndWebhook = {
+	const data: MapEndEvent = {
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
 		type: 'MAP_END',

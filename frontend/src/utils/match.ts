@@ -1,5 +1,6 @@
-import { IMatch } from '../../../common';
-import { TMatchMapSate, TTeamAB } from '../../../common';
+import { IMatch, TTeamAB } from '../../../common';
+
+// TODO: Move to common?
 
 export const getMapWins = (match: IMatch, team: TTeamAB): number => {
 	const teamKey = team === 'TEAM_A' ? 'teamA' : 'teamB';

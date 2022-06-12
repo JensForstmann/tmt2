@@ -1,18 +1,18 @@
 import {
-	TMatchMapSate,
-	TTeamAB,
-	TTeamSides,
 	getOtherTeamAB,
 	IMatchMap,
 	IMatchMapUpdateDto,
 	IPlayer,
+	TMatchMapSate,
+	TTeamAB,
+	TTeamSides,
 } from '../../common';
 import { ECommand, getCommands } from './commands';
+import * as Events from './events';
 import * as Match from './match';
 import * as MatchService from './matchService';
 import { Settings } from './settings';
 import { escapeRconString, sleep } from './utils';
-import * as Webhook from './webhook';
 
 export const create = (
 	map: string,
@@ -204,7 +204,7 @@ export const onRoundEnd = async (
 		MatchService.scheduleSave(match);
 		await Match.execRcon(match, 'mp_pause_match');
 		await sayPeriodicMessage(match, matchMap);
-		Webhook.onKnifeRoundEnd(match, matchMap, winnerTeam);
+		Events.onKnifeRoundEnd(match, matchMap, winnerTeam);
 		return;
 	}
 
@@ -214,7 +214,7 @@ export const onRoundEnd = async (
 		MatchService.scheduleSave(match);
 		await Match.say(match, `${escapeRconString(winnerTeam.name)} SCORED (${winnerScore})`);
 		await Match.say(match, `${escapeRconString(loserTeam.name)} (${loserScore})`);
-		Webhook.onRoundEnd(match, matchMap, winnerTeam);
+		Events.onRoundEnd(match, matchMap, winnerTeam);
 		if (magic.isSideSwitchNextRound) {
 			await Match.say(match, 'SWITCHING SIDES');
 		}
@@ -259,7 +259,7 @@ const startMatch = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, 'MAP IS LIVE!');
 	await Match.say(match, 'MAP IS LIVE!');
 
-	Webhook.onMapStart(match, matchMap);
+	Events.onMapStart(match, matchMap);
 };
 
 const refreshOvertimeAndMaxRoundsSettings = async (match: Match.Match, matchMap: IMatchMap) => {
@@ -284,7 +284,7 @@ export const onMapEnd = async (match: Match.Match, matchMap: IMatchMap) => {
 		matchMap.state = 'FINISHED';
 		MatchService.scheduleSave(match);
 		await Match.say(match, 'MAP FINISHED');
-		Webhook.onMapEnd(match, matchMap);
+		Events.onMapEnd(match, matchMap);
 	}
 };
 

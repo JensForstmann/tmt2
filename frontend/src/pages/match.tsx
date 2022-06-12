@@ -1,6 +1,6 @@
 import { useParams } from 'solid-app-router';
 import { Component, createEffect, createSignal, For, Match, onCleanup, Switch } from 'solid-js';
-import { TWebhook } from '../../../common';
+import { Event } from '../../../common';
 import { Error as ErrorComponent } from '../components/Error';
 import { GameServerCard } from '../components/GameServerCard';
 import { Loader } from '../components/Loader';
@@ -15,7 +15,7 @@ export const MatchPage: Component = () => {
 	const params = useParams();
 	const { resource: match, patcher, mutate } = useMatch(params.id);
 	const [logs, setLogs] = createSignal<string[]>([]);
-	const onWsMsg = (msg: TWebhook) => {
+	const onWsMsg = (msg: Event) => {
 		console.log(msg);
 		setLogs([...logs(), JSON.stringify(msg)]);
 	};

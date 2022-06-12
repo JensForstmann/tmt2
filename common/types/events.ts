@@ -1,7 +1,7 @@
 import { IPlayer } from './player';
 import { ITeam } from './team';
 
-export type TWebhookType =
+export type EventType =
 	| 'CHAT'
 	// MAP_ELECTION_STEP = 'MAP_ELECTION_STEP',
 	| 'MAP_ELECTION_END'
@@ -13,13 +13,13 @@ export type TWebhookType =
 	| 'MAP_END'
 	| 'MATCH_END';
 
-export interface IWebhook {
+export interface BaseEvent {
 	matchId: string;
 	matchPassthrough: string | null;
-	type: TWebhookType;
+	type: EventType;
 }
 
-export interface IChatWebhook extends IWebhook {
+export interface ChatEvent extends BaseEvent {
 	type: 'CHAT';
 	player: IPlayer;
 	playerTeam: ITeam | null;
@@ -27,12 +27,12 @@ export interface IChatWebhook extends IWebhook {
 	isTeamChat: boolean;
 }
 
-export interface IElectionEndWebhook extends IWebhook {
+export interface ElectionEndEvent extends BaseEvent {
 	type: 'MAP_ELECTION_END';
 	mapNames: string[];
 }
 
-export interface IRoundEndWebhook extends IWebhook {
+export interface RoundEndEvent extends BaseEvent {
 	type: 'ROUND_END';
 	mapIndex: number;
 	mapName: string;
@@ -41,7 +41,7 @@ export interface IRoundEndWebhook extends IWebhook {
 	scoreTeamB: number;
 }
 
-export interface IMapEndWebhook extends IWebhook {
+export interface MapEndEvent extends BaseEvent {
 	type: 'MAP_END';
 	mapIndex: number;
 	mapName: string;
@@ -51,7 +51,7 @@ export interface IMapEndWebhook extends IWebhook {
 	winnerTeam: ITeam | null;
 }
 
-export interface IMatchEndWebhook extends IWebhook {
+export interface MatchEndEvent extends BaseEvent {
 	type: 'MATCH_END';
 	wonMapsTeamA: number;
 	wonMapsTeamB: number;
@@ -66,22 +66,22 @@ export interface IMatchEndWebhook extends IWebhook {
 	}[];
 }
 
-export interface IKnifeRoundEndWebhook extends IWebhook {
+export interface KnifeRoundEndEvent extends BaseEvent {
 	type: 'KNIFE_END';
 	winnerTeam: ITeam;
 }
 
-export interface IMapStartWebhook extends IWebhook {
+export interface MapStartEvent extends BaseEvent {
 	type: 'MAP_START';
 	mapIndex: number;
 	mapName: string;
 }
 
-export type TWebhook =
-	| IChatWebhook
-	| IElectionEndWebhook
-	| IRoundEndWebhook
-	| IMapEndWebhook
-	| IMatchEndWebhook
-	| IKnifeRoundEndWebhook
-	| IMapStartWebhook;
+export type Event =
+	| ChatEvent
+	| ElectionEndEvent
+	| RoundEndEvent
+	| MapEndEvent
+	| MatchEndEvent
+	| KnifeRoundEndEvent
+	| MapStartEvent;

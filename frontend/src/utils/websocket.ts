@@ -1,12 +1,13 @@
 import { createEffect, createSignal } from 'solid-js';
-import { ISubscribeMessage, TWebhook } from '../../../common';
+import { Event, SubscribeMessage } from '../../../common';
+
 const WS_HOST = import.meta.env.DEV ? 'ws://localhost:8080' : '';
 
 type Options = {
 	connect?: boolean;
 	autoReconnect?: boolean;
 };
-export const createWebsocket = (onMsg: (msg: TWebhook) => void, options?: Options) => {
+export const createWebsocket = (onMsg: (msg: Event) => void, options?: Options) => {
 	let ws: WebSocket | undefined;
 
 	const [state, setState] = createSignal<'CLOSED' | 'CLOSING' | 'CONNECTING' | 'OPEN' | 'NEW'>(
@@ -27,7 +28,7 @@ export const createWebsocket = (onMsg: (msg: TWebhook) => void, options?: Option
 		newWs.onerror = () => setState('CLOSED');
 		newWs.onopen = () => setState('OPEN');
 		newWs.onmessage = (ev) => {
-			let msg: TWebhook | undefined;
+			let msg: Event | undefined;
 			try {
 				msg = JSON.parse(ev.data);
 			} catch (err) {
@@ -40,7 +41,7 @@ export const createWebsocket = (onMsg: (msg: TWebhook) => void, options?: Option
 		ws = newWs;
 	};
 
-	const subscribe = (msg: Omit<ISubscribeMessage, 'type'>) => {
+	const subscribe = (msg: Omit<SubscribeMessage, 'type'>) => {
 		const unSubscribe = () =>
 			ws?.send(
 				JSON.stringify({
@@ -48,7 +49,7 @@ export const createWebsocket = (onMsg: (msg: TWebhook) => void, options?: Option
 					matchId: msg.matchId,
 				})
 			);
-		const subMsg: ISubscribeMessage = {
+		const subMsg: SubscribeMessage = {
 			...msg,
 			type: 'SUBSCRIBE',
 		};
