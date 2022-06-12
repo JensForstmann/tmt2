@@ -146,10 +146,12 @@ const registerLogAddress = async (match: Match) => {
 		await execRcon(match, `logaddress_add_http "${logAddress}"`);
 
 		MatchService.scheduleSave(match);
+	}
 
-		// delay parsing of incoming log lines (because we don't care about the initial big batch)
-		sleep(2000)
-			.then(async () => {
+	// delay parsing of incoming log lines (because we don't care about the initial big batch)
+	sleep(2000)
+		.then(async () => {
+			if (!match.data.parseIncomingLogs) {
 				match.log('enable parsing of incoming log');
 				match.data.parseIncomingLogs = true;
 				MatchService.scheduleSave(match);
@@ -158,11 +160,11 @@ const registerLogAddress = async (match: Match) => {
 					await Election.auto(match);
 				}
 				await sayPeriodicMessage(match);
-			})
-			.catch((err) => {
-				match.log(`Error in delayed registerLogAddress: ${err}`);
-			});
-	}
+			}
+		})
+		.catch((err) => {
+			match.log(`Error in delayed registerLogAddress: ${err}`);
+		});
 };
 
 export const execRcon = async (match: Match, command: string) => {
@@ -721,7 +723,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		match.data.state = 'ELECTION';
 		match.data.election = Election.create(match.data.mapPool, match.data.electionSteps);
 		match.data.matchMaps = [];
-		Election.auto(match);
+		await Election.auto(match);
 	}
 
 	if (dto._init) {

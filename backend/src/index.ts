@@ -1,10 +1,12 @@
 import { ValidateError } from '@tsoa/runtime';
 import express, { ErrorRequestHandler } from 'express';
 import path from 'path';
+import http from 'http';
 import * as Auth from './auth';
 import * as MatchService from './matchService';
 import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
+import * as WebSocket from './websocket';
 
 if (!process.env.TMT_LOG_ADDRESS) {
 	throw 'environment variable TMT_LOG_ADDRESS is not set';
@@ -16,6 +18,7 @@ if (!process.env.TMT_LOG_ADDRESS.startsWith('http')) {
 const PORT = process.env.TMT_PORT || 8080;
 
 const app = express();
+const httpServer = http.createServer(app);
 
 // CORS
 app.use((req, res, next) => {
@@ -84,8 +87,9 @@ const main = async () => {
 	console.info(`Start TMT (${process.env.COMMIT_SHA || 'no COMMIT_SHA set'})`);
 	await Storage.setup();
 	await Auth.setup();
+	await WebSocket.setup(httpServer);
 
-	app.listen(PORT, async () => {
+	httpServer.listen(PORT, async () => {
 		console.info(`App listening on port ${PORT}`);
 		await MatchService.setup(); // can only be done when http server is up and running (so that incoming logs can be handled)
 	});

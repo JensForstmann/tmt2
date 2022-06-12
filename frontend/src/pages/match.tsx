@@ -1,5 +1,6 @@
 import { useParams } from 'solid-app-router';
-import { Component, createSignal, ErrorBoundary, For, Match, Switch } from 'solid-js';
+import { Component, createEffect, createSignal, For, Match, onCleanup, Switch } from 'solid-js';
+import { TWebhook } from '../../../common';
 import { Error as ErrorComponent } from '../components/Error';
 import { GameServerCard } from '../components/GameServerCard';
 import { Loader } from '../components/Loader';
@@ -7,15 +8,35 @@ import { LogViewer } from '../components/LogViewer';
 import { MatchCard } from '../components/MatchCard';
 import { MatchMapCard } from '../components/MatchMapCard';
 import { PlayerListCard } from '../components/PlayerListCard';
-import { IMatch } from '../../../common';
-import { fetchResource, useMatch } from '../utils/fetcher';
+import { useMatch } from '../utils/fetcher';
+import { createWebsocket } from '../utils/websocket';
 
 export const MatchPage: Component = () => {
 	const params = useParams();
-	const { resource: match, patcher } = useMatch(params.id);
-	const [editable, setEditable] = createSignal(false);
+	const { resource: match, patcher, mutate } = useMatch(params.id);
+	const [logs, setLogs] = createSignal<string[]>([]);
+	const onWsMsg = (msg: TWebhook) => {
+		console.log(msg);
+		setLogs([...logs(), JSON.stringify(msg)]);
+	};
+
+	const { state, subscribe, disconnect } = createWebsocket(onWsMsg, {
+		connect: true,
+		autoReconnect: true,
+	});
+	createEffect(() => {
+		if (state() === 'OPEN') {
+			subscribe({
+				matchId: params.id,
+				token: '2Mgog6ATqAs495NtUQUsph',
+			});
+		}
+	});
+	onCleanup(() => disconnect());
+
 	return (
 		<>
+			<p>{state()}</p>
 			<Switch>
 				<Match when={match.error || match() instanceof Error}>
 					<ErrorComponent />
@@ -33,7 +54,7 @@ export const MatchPage: Component = () => {
 					</For>
 					<GameServerCard match={match()!} />
 					<PlayerListCard match={match()!} />
-					<LogViewer match={match()!} />
+					<LogViewer match={match()!} logs={logs()} />
 					<pre>{JSON.stringify(match(), null, '    ')}</pre>
 				</Match>
 				<Match when={match.loading}>

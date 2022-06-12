@@ -1,7 +1,5 @@
 import axios from 'axios';
 import {
-	TMatchMapSate,
-	TWebhookType,
 	IChatWebhook,
 	IElectionEndWebhook,
 	IKnifeRoundEndWebhook,
@@ -12,17 +10,19 @@ import {
 	IPlayer,
 	IRoundEndWebhook,
 	ITeam,
-	IWebhook,
+	TWebhook,
 } from '../../common';
 import * as Match from './match';
+import * as WebSocket from './websocket';
 
-const send = (match: Match.Match, data: IWebhook) => {
+const send = (match: Match.Match, data: TWebhook) => {
 	const url = match.data.webhookUrl;
 	if (url?.startsWith('http')) {
 		axios.post(url, data).catch((err) => {
 			match.log(`sending webhook ${data.type} to ${url} failed: ${err}`);
 		});
 	}
+	WebSocket.publish(data);
 };
 
 export const onElectionEnd = (match: Match.Match) => {

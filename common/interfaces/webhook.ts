@@ -76,3 +76,12 @@ export interface IMapStartWebhook extends IWebhook {
 	mapIndex: number;
 	mapName: string;
 }
+
+export type TWebhook =
+	| IChatWebhook
+	| IElectionEndWebhook
+	| IRoundEndWebhook
+	| IMapEndWebhook
+	| IMatchEndWebhook
+	| IKnifeRoundEndWebhook
+	| IMapStartWebhook;

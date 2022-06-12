@@ -26,7 +26,7 @@ run container
 
 ### Persistence
 
-Matches will be written to `/app/storage` (can be configured). To keep the files with different containers you can either specify a docker volume or a path on the local system:
+Matches will be written to `/app/backend/storage` (can be configured). To keep the files with different containers you can either specify a docker volume or a path on the local system:
 
     docker run -e TMT_LOG_ADDRESS=http://localhost:8080 -v dockerVolumeName:/app/storage -p 8080:8080 jensforstmann/tmt2
 

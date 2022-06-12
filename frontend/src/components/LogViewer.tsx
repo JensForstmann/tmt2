@@ -1,4 +1,4 @@
-import { Component, For, Match, Show, Switch } from 'solid-js';
+import { Component, For, Index, Match, Show, Switch } from 'solid-js';
 import { TLogUnion, TTeamAB } from '../../../common';
 import { IMatch } from '../../../common';
 import { IPlayer } from '../../../common';
@@ -8,6 +8,7 @@ import classes from './MatchCard.module.scss';
 
 export const LogViewer: Component<{
 	match: IMatch;
+	logs: string[];
 }> = (props) => {
 	return (
 		<>
@@ -16,6 +17,7 @@ export const LogViewer: Component<{
 				<For each={props.match.logs}>
 					{(entry) => <span>{toText(entry, props.match.players)}</span>}
 				</For>
+				<Index each={props.logs}>{(entry, index) => <span>{entry()}</span>}</Index>
 			</div>
 		</>
 	);

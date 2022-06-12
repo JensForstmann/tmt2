@@ -30,7 +30,7 @@ export const setup = async () => {
 	});
 };
 
-const getGlobalToken = (token?: string) => {
+export const getGlobalToken = (token?: string) => {
 	if (!token) {
 		return;
 	}
@@ -40,8 +40,8 @@ const getGlobalToken = (token?: string) => {
 	return tokens.get(token);
 };
 
-const isValidMatchToken = (matchId: string, token?: string) => {
-	if (!token) {
+export const isValidMatchToken = (token?: string, matchId?: string) => {
+	if (!token || !matchId) {
 		return;
 	}
 	if (token.toLowerCase().startsWith('bearer ')) {
@@ -61,21 +61,29 @@ export const expressAuthentication = (
 ): Promise<IAuthResponse> => {
 	if (securityName === 'bearer_token') {
 		const bearerToken = req.get('Authorization');
-		const token = getGlobalToken(bearerToken);
-
-		if (token) {
-			return Promise.resolve({
-				type: 'GLOBAL',
-				comment: token.comment,
-			});
-		}
-
-		if (isValidMatchToken(req.params.id, bearerToken)) {
-			return Promise.resolve({
-				type: 'MATCH',
-			});
+		const result = isAuthorized(bearerToken, req.params.id);
+		if (result) {
+			return Promise.resolve(result);
 		}
 	}
 
 	return Promise.reject({});
+};
+
+export const isAuthorized = (token?: string, matchId?: string): IAuthResponse | false => {
+	const t = getGlobalToken(token);
+	if (t) {
+		return {
+			type: 'GLOBAL',
+			comment: t.comment,
+		};
+	}
+
+	if (isValidMatchToken(token, matchId)) {
+		return {
+			type: 'MATCH',
+		};
+	}
+
+	return false;
 };
