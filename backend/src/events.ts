@@ -1,12 +1,15 @@
 import Events from 'axios';
 import {
+	BaseEvent,
 	ChatEvent,
 	ElectionEndEvent,
 	Event,
+	EventType,
 	IMatchMap,
 	IPlayer,
 	ITeam,
 	KnifeRoundEndEvent,
+	LogEvent,
 	MapEndEvent,
 	MapStartEvent,
 	MatchEndEvent,
@@ -15,8 +18,15 @@ import {
 import * as Match from './match';
 import * as WebSocket from './webSocket';
 import { Settings } from './settings';
+import * as Storage from './storage';
+
+const STORAGE_EVENTS_PREFIX = 'events_';
+const STORAGE_EVENTS_SUFFIX = '.jsonl';
 
 const send = (match: Match.Match, data: Event) => {
+	// Storage
+	Storage.appendLine(STORAGE_EVENTS_PREFIX + match.data.id + STORAGE_EVENTS_SUFFIX, data);
+
 	// WebSocket
 	WebSocket.publish(data);
 
@@ -29,11 +39,29 @@ const send = (match: Match.Match, data: Event) => {
 	}
 };
 
-export const onElectionEnd = (match: Match.Match) => {
-	const data: ElectionEndEvent = {
+export const getEventsTail = async (matchId: string, numberOfLines = 100): Promise<Event[]> => {
+	return await Storage.readLines(
+		STORAGE_EVENTS_PREFIX + matchId + STORAGE_EVENTS_SUFFIX,
+		[],
+		numberOfLines
+	);
+};
+
+const getBaseEvent = <T extends EventType>(
+	match: Match.Match,
+	type: T
+): BaseEvent & { type: T } => {
+	return {
+		timestamp: new Date().toISOString(),
 		matchId: match.data.id,
 		matchPassthrough: match.data.passthrough ?? null,
-		type: 'MAP_ELECTION_END',
+		type: type,
+	};
+};
+
+export const onElectionEnd = (match: Match.Match) => {
+	const data: ElectionEndEvent = {
+		...getBaseEvent(match, 'MAP_ELECTION_END'),
 		mapNames: match.data.matchMaps.map((matchMaps) => matchMaps.name),
 	};
 	send(match, data);
@@ -41,9 +69,7 @@ export const onElectionEnd = (match: Match.Match) => {
 
 export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
 	const data: KnifeRoundEndEvent = {
-		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough ?? null,
-		type: 'KNIFE_END',
+		...getBaseEvent(match, 'KNIFE_END'),
 		winnerTeam: winnerTeam,
 	};
 	send(match, data);
@@ -51,9 +77,7 @@ export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerT
 
 export const onRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
 	const data: RoundEndEvent = {
-		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough ?? null,
-		type: 'ROUND_END',
+		...getBaseEvent(match, 'ROUND_END'),
 		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
 		winnerTeam: winnerTeam,
@@ -70,9 +94,7 @@ export const onPlayerSay = (
 	isTeamChat: boolean
 ) => {
 	const data: ChatEvent = {
-		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough ?? null,
-		type: 'CHAT',
+		...getBaseEvent(match, 'CHAT'),
 		player: player,
 		playerTeam: player.team ? Match.getTeamByAB(match, player.team) : null,
 		message: message,
@@ -83,9 +105,7 @@ export const onPlayerSay = (
 
 export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeamB: number) => {
 	const data: MatchEndEvent = {
-		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough ?? null,
-		type: 'MATCH_END',
+		...getBaseEvent(match, 'MATCH_END'),
 		wonMapsTeamA: wonMapsTeamA,
 		wonMapsTeamB: wonMapsTeamB,
 		winnerTeam:
@@ -113,9 +133,7 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 
 export const onMapStart = (match: Match.Match, matchMap: IMatchMap) => {
 	const data: MapStartEvent = {
-		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough ?? null,
-		type: 'MAP_START',
+		...getBaseEvent(match, 'MAP_START'),
 		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
 	};
@@ -124,9 +142,7 @@ export const onMapStart = (match: Match.Match, matchMap: IMatchMap) => {
 
 export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 	const data: MapEndEvent = {
-		matchId: match.data.id,
-		matchPassthrough: match.data.passthrough ?? null,
-		type: 'MAP_END',
+		...getBaseEvent(match, 'MAP_END'),
 		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
 		scoreTeamA: matchMap.score.teamA,
@@ -137,6 +153,14 @@ export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 				: matchMap.score.teamA > matchMap.score.teamB
 				? match.data.teamA
 				: match.data.teamB,
+	};
+	send(match, data);
+};
+
+export const onLog = (match: Match.Match, message: string) => {
+	const data: LogEvent = {
+		...getBaseEvent(match, 'LOG'),
+		message: message,
 	};
 	send(match, data);
 };

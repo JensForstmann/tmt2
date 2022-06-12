@@ -862,6 +862,439 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"EventType": {
+				"type": "string",
+				"enum": [
+					"CHAT",
+					"MAP_ELECTION_END",
+					"KNIFE_END",
+					"ROUND_END",
+					"MAP_START",
+					"MAP_END",
+					"MATCH_END",
+					"LOG"
+				]
+			},
+			"ChatEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"CHAT"
+						],
+						"nullable": false
+					},
+					"player": {
+						"$ref": "#/components/schemas/IPlayer"
+					},
+					"playerTeam": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ITeam"
+							}
+						],
+						"nullable": true
+					},
+					"message": {
+						"type": "string"
+					},
+					"isTeamChat": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"player",
+					"playerTeam",
+					"message",
+					"isTeamChat"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ElectionEndEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"MAP_ELECTION_END"
+						],
+						"nullable": false
+					},
+					"mapNames": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mapNames"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RoundEndEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"ROUND_END"
+						],
+						"nullable": false
+					},
+					"mapIndex": {
+						"type": "number",
+						"format": "double"
+					},
+					"mapName": {
+						"type": "string"
+					},
+					"winnerTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					},
+					"scoreTeamA": {
+						"type": "number",
+						"format": "double"
+					},
+					"scoreTeamB": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mapIndex",
+					"mapName",
+					"winnerTeam",
+					"scoreTeamA",
+					"scoreTeamB"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MapEndEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"MAP_END"
+						],
+						"nullable": false
+					},
+					"mapIndex": {
+						"type": "number",
+						"format": "double"
+					},
+					"mapName": {
+						"type": "string"
+					},
+					"scoreTeamA": {
+						"type": "number",
+						"format": "double"
+					},
+					"scoreTeamB": {
+						"type": "number",
+						"format": "double"
+					},
+					"winnerTeam": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ITeam"
+							}
+						],
+						"nullable": true,
+						"description": "winner of the match or null if it's a draw"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mapIndex",
+					"mapName",
+					"scoreTeamA",
+					"scoreTeamB",
+					"winnerTeam"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MatchEndEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"MATCH_END"
+						],
+						"nullable": false
+					},
+					"wonMapsTeamA": {
+						"type": "number",
+						"format": "double"
+					},
+					"wonMapsTeamB": {
+						"type": "number",
+						"format": "double"
+					},
+					"winnerTeam": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ITeam"
+							}
+						],
+						"nullable": true,
+						"description": "winner of the match or null if it's a draw"
+					},
+					"mapResults": {
+						"items": {
+							"properties": {
+								"winnerTeam": {
+									"allOf": [
+										{
+											"$ref": "#/components/schemas/ITeam"
+										}
+									],
+									"nullable": true,
+									"description": "winner of the match or null if it's a draw"
+								},
+								"scoreTeamB": {
+									"type": "number",
+									"format": "double"
+								},
+								"scoreTeamA": {
+									"type": "number",
+									"format": "double"
+								},
+								"mapName": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"winnerTeam",
+								"scoreTeamB",
+								"scoreTeamA",
+								"mapName"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"wonMapsTeamA",
+					"wonMapsTeamB",
+					"winnerTeam",
+					"mapResults"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"KnifeRoundEndEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"KNIFE_END"
+						],
+						"nullable": false
+					},
+					"winnerTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"winnerTeam"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MapStartEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"MAP_START"
+						],
+						"nullable": false
+					},
+					"mapIndex": {
+						"type": "number",
+						"format": "double"
+					},
+					"mapName": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mapIndex",
+					"mapName"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"LogEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"LOG"
+						],
+						"nullable": false
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Event": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/ChatEvent"
+					},
+					{
+						"$ref": "#/components/schemas/ElectionEndEvent"
+					},
+					{
+						"$ref": "#/components/schemas/RoundEndEvent"
+					},
+					{
+						"$ref": "#/components/schemas/MapEndEvent"
+					},
+					{
+						"$ref": "#/components/schemas/MatchEndEvent"
+					},
+					{
+						"$ref": "#/components/schemas/KnifeRoundEndEvent"
+					},
+					{
+						"$ref": "#/components/schemas/MapStartEvent"
+					},
+					{
+						"$ref": "#/components/schemas/LogEvent"
+					}
+				]
+			},
 			"IMatchUpdateDto": {
 				"properties": {
 					"passthrough": {
@@ -1087,6 +1520,22 @@
 	},
 	"openapi": "3.0.0",
 	"paths": {
+		"/api/login": {
+			"post": {
+				"operationId": "Login",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": []
+			}
+		},
 		"/api/matches": {
 			"post": {
 				"operationId": "CreateMatch",
@@ -1245,6 +1694,76 @@
 				"responses": {
 					"204": {
 						"description": "No content"
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/logs": {
+			"get": {
+				"operationId": "GetLogs",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"type": "string"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/events": {
+			"get": {
+				"operationId": "GetEvents",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Event"
+									},
+									"type": "array"
+								}
+							}
+						}
 					}
 				},
 				"security": [

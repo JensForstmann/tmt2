@@ -53,15 +53,19 @@ const onMessage = (ws: WebSocket, data: WebSocket.RawData) => {
 	}
 };
 
-const subscribe = (ws: WebSocket, msg: SubscribeMessage) => {
-	const authResponse = Auth.isAuthorized(msg.token, msg.matchId);
+const subscribe = async (ws: WebSocket, msg: SubscribeMessage) => {
+	const authResponse = await Auth.isAuthorized(msg.token, msg.matchId);
 	if (!authResponse) {
-		console.warn(`prevent subscribe to match ${msg.matchId}: invalid token`);
+		console.warn(`prevent subscribe to match ${msg.matchId}: invalid token ${msg.token}`);
 		return;
 	}
 	const client = WS_CLIENTS.get(ws);
 	if (client) {
-		console.info(`subscribe client to match ${msg.matchId} (${WS_CLIENTS.size} clients)`);
+		console.info(
+			`subscribe client to match ${
+				msg.matchId
+			} with ${authResponse.type.toLocaleLowerCase()} token (${WS_CLIENTS.size} clients)`
+		);
 		WS_CLIENTS.get(ws)?.matches.add(msg.matchId);
 	}
 };

@@ -61,8 +61,6 @@ TMT_LOG_ADDRESS=http://127.0.0.1:8080
 
 # where tmt will store match data in
 TMT_STORAGE_FOLDER=storage
-TMT_STORAGE_PREFIX=match_
-TMT_STORAGE_SUFFIX=.json
 
 # ingame prefix to every chat message sent by this application
 TMT_SAY_PREFIX="[TMT] "

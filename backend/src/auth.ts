@@ -40,28 +40,35 @@ export const getGlobalToken = (token?: string) => {
 	return tokens.get(token);
 };
 
-export const isValidMatchToken = (token?: string, matchId?: string) => {
+export const isValidMatchToken = async (token?: string, matchId?: string) => {
 	if (!token || !matchId) {
 		return;
 	}
 	if (token.toLowerCase().startsWith('bearer ')) {
 		token = token.substring(7);
 	}
+
 	const match = MatchService.get(matchId);
-	if (!match) {
-		return false;
+	if (match) {
+		return match.data.tmtSecret === token;
 	}
-	return match?.data.tmtSecret === token;
+
+	const matchFromStorage = await MatchService.getFromStorage(matchId);
+	if (matchFromStorage) {
+		return matchFromStorage.tmtSecret === token;
+	}
+
+	return false;
 };
 
-export const expressAuthentication = (
+export const expressAuthentication = async (
 	req: Request,
 	securityName: string,
 	scopes?: string[]
 ): Promise<IAuthResponse> => {
 	if (securityName === 'bearer_token') {
 		const bearerToken = req.get('Authorization');
-		const result = isAuthorized(bearerToken, req.params.id);
+		const result = await isAuthorized(bearerToken, req.params.id);
 		if (result) {
 			return Promise.resolve(result);
 		}
@@ -70,7 +77,10 @@ export const expressAuthentication = (
 	return Promise.reject({});
 };
 
-export const isAuthorized = (token?: string, matchId?: string): IAuthResponse | false => {
+export const isAuthorized = async (
+	token?: string,
+	matchId?: string
+): Promise<IAuthResponse | false> => {
 	const t = getGlobalToken(token);
 	if (t) {
 		return {
@@ -79,7 +89,7 @@ export const isAuthorized = (token?: string, matchId?: string): IAuthResponse | 
 		};
 	}
 
-	if (isValidMatchToken(token, matchId)) {
+	if (await isValidMatchToken(token, matchId)) {
 		return {
 			type: 'MATCH',
 		};

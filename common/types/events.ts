@@ -11,9 +11,12 @@ export type EventType =
 	| 'ROUND_END'
 	| 'MAP_START'
 	| 'MAP_END'
-	| 'MATCH_END';
+	| 'MATCH_END'
+	| 'LOG';
 
 export interface BaseEvent {
+	/** ISO */
+	timestamp: string;
 	matchId: string;
 	matchPassthrough: string | null;
 	type: EventType;
@@ -77,6 +80,11 @@ export interface MapStartEvent extends BaseEvent {
 	mapName: string;
 }
 
+export interface LogEvent extends BaseEvent {
+	type: 'LOG';
+	message: string;
+}
+
 export type Event =
 	| ChatEvent
 	| ElectionEndEvent
@@ -84,4 +92,5 @@ export type Event =
 	| MapEndEvent
 	| MatchEndEvent
 	| KnifeRoundEndEvent
-	| MapStartEvent;
+	| MapStartEvent
+	| LogEvent;

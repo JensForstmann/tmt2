@@ -11,6 +11,8 @@ import {
 	TsoaResponse,
 } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { LoginController } from './loginController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MatchesController } from './matchesController';
 import { expressAuthentication } from './auth';
 // @ts-ignore - no great way to install types from subpackage
@@ -508,6 +510,213 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	EventType: {
+		dataType: 'refAlias',
+		type: {
+			dataType: 'union',
+			subSchemas: [
+				{ dataType: 'enum', enums: ['CHAT'] },
+				{ dataType: 'enum', enums: ['MAP_ELECTION_END'] },
+				{ dataType: 'enum', enums: ['KNIFE_END'] },
+				{ dataType: 'enum', enums: ['ROUND_END'] },
+				{ dataType: 'enum', enums: ['MAP_START'] },
+				{ dataType: 'enum', enums: ['MAP_END'] },
+				{ dataType: 'enum', enums: ['MATCH_END'] },
+				{ dataType: 'enum', enums: ['LOG'] },
+			],
+			validators: {},
+		},
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	ChatEvent: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['CHAT'], required: true },
+			player: { ref: 'IPlayer', required: true },
+			playerTeam: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'ITeam' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			message: { dataType: 'string', required: true },
+			isTeamChat: { dataType: 'boolean', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	ElectionEndEvent: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['MAP_ELECTION_END'], required: true },
+			mapNames: { dataType: 'array', array: { dataType: 'string' }, required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	RoundEndEvent: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['ROUND_END'], required: true },
+			mapIndex: { dataType: 'double', required: true },
+			mapName: { dataType: 'string', required: true },
+			winnerTeam: { ref: 'ITeam', required: true },
+			scoreTeamA: { dataType: 'double', required: true },
+			scoreTeamB: { dataType: 'double', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	MapEndEvent: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['MAP_END'], required: true },
+			mapIndex: { dataType: 'double', required: true },
+			mapName: { dataType: 'string', required: true },
+			scoreTeamA: { dataType: 'double', required: true },
+			scoreTeamB: { dataType: 'double', required: true },
+			winnerTeam: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'ITeam' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	MatchEndEvent: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['MATCH_END'], required: true },
+			wonMapsTeamA: { dataType: 'double', required: true },
+			wonMapsTeamB: { dataType: 'double', required: true },
+			winnerTeam: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'ITeam' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			mapResults: {
+				dataType: 'array',
+				array: {
+					dataType: 'nestedObjectLiteral',
+					nestedProperties: {
+						winnerTeam: {
+							dataType: 'union',
+							subSchemas: [{ ref: 'ITeam' }, { dataType: 'enum', enums: [null] }],
+							required: true,
+						},
+						scoreTeamB: { dataType: 'double', required: true },
+						scoreTeamA: { dataType: 'double', required: true },
+						mapName: { dataType: 'string', required: true },
+					},
+				},
+				required: true,
+			},
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	KnifeRoundEndEvent: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['KNIFE_END'], required: true },
+			winnerTeam: { ref: 'ITeam', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	MapStartEvent: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['MAP_START'], required: true },
+			mapIndex: { dataType: 'double', required: true },
+			mapName: { dataType: 'string', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	LogEvent: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['LOG'], required: true },
+			message: { dataType: 'string', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	Event: {
+		dataType: 'refAlias',
+		type: {
+			dataType: 'union',
+			subSchemas: [
+				{ ref: 'ChatEvent' },
+				{ ref: 'ElectionEndEvent' },
+				{ ref: 'RoundEndEvent' },
+				{ ref: 'MapEndEvent' },
+				{ ref: 'MatchEndEvent' },
+				{ ref: 'KnifeRoundEndEvent' },
+				{ ref: 'MapStartEvent' },
+				{ ref: 'LogEvent' },
+			],
+			validators: {},
+		},
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	IMatchUpdateDto: {
 		dataType: 'refObject',
 		properties: {
@@ -598,6 +807,29 @@ export function RegisterRoutes(app: express.Router) {
 	//      Please look into the "controllerPathGlobs" config option described in the readme: https://github.com/lukeautry/tsoa
 	// ###########################################################################################################
 	app.post(
+		'/api/login',
+		authenticateMiddleware([{ bearer_token: [] }]),
+
+		function LoginController_login(request: any, response: any, next: any) {
+			const args = {};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new LoginController();
+
+				const promise = controller.login.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.post(
 		'/api/matches',
 
 		function MatchesController_createMatch(request: any, response: any, next: any) {
@@ -683,6 +915,58 @@ export function RegisterRoutes(app: express.Router) {
 				const controller = new MatchesController();
 
 				const promise = controller.getMatch.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get(
+		'/api/matches/:id/logs',
+		authenticateMiddleware([{ bearer_token: [] }]),
+
+		function MatchesController_getLogs(request: any, response: any, next: any) {
+			const args = {
+				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
+				undefined: { in: 'request', required: true, dataType: 'object' },
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new MatchesController();
+
+				const promise = controller.getLogs.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get(
+		'/api/matches/:id/events',
+		authenticateMiddleware([{ bearer_token: [] }]),
+
+		function MatchesController_getEvents(request: any, response: any, next: any) {
+			const args = {
+				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
+				undefined: { in: 'request', required: true, dataType: 'object' },
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new MatchesController();
+
+				const promise = controller.getEvents.apply(controller, validatedArgs as any);
 				promiseHandler(controller, promise, response, undefined, next);
 			} catch (err) {
 				return next(err);

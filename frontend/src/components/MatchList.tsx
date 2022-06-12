@@ -2,6 +2,7 @@ import { Component, For } from 'solid-js';
 import { IMatch } from '../../../common';
 import { t } from '../utils/locale';
 import { Link } from 'solid-app-router';
+import classes from './MatchList.module.scss';
 
 export const MatchList: Component<{ matches: IMatch[] }> = (props) => {
 	return (

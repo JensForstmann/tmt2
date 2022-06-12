@@ -1,41 +1,99 @@
+import { useLocation, useNavigate } from 'solid-app-router';
 import { createResource } from 'solid-js';
 import { IMatch, IMatchUpdateDto } from '../../../common';
 import { sleep } from './sleep';
 
 const API_HOST = import.meta.env.DEV ? 'http://localhost:8080' : '';
 
-export const fetcher = async <T>(path: string, host = API_HOST): Promise<T> => {
-	return fetch(`${host}${path}`, {
+export const getToken = () => localStorage.getItem('token');
+
+export const login = async (token: string): Promise<boolean> => {
+	const response = await fetch(`${API_HOST}/api/login`, {
+		method: 'POST',
 		headers: {
-			Authorization: '2Mgog6ATqAs495NtUQUsph',
+			Authorization: token,
 		},
-	}).then((response) => response.json());
+	});
+	if (response.status >= 200 && response.status <= 299) {
+		localStorage.setItem('token', token);
+		return true;
+	}
+	return false;
 };
 
-export const fetchResource = <T>(path: string, host = API_HOST) => {
-	return createResource(() => fetcher<T>(path, host));
+export const logout = () => {
+	localStorage.removeItem('token');
+	useNavigate()('/');
 };
 
-export const fetchResource2 = <T>(source: any, path: any) => {
-	return createResource(source, (x) => fetcher<T>(x));
-};
+// export const fetcher = async (path: string, init?: RequestInit): Promise<any> => {
+// 	const token = getToken();
+// 	const response = await fetch(`${API_HOST}${path}`, {
+// 		...init,
+// 		headers: {
+// 			...(token ? { Authorization: token } : {}),
+// 			...init?.headers,
+// 		},
+// 	});
+// 	if (response.status === 401) {
+// 		const {pathname, search, hash} = useLocation();
+// 		const encodedPath = encodeURIComponent(pathname + search + hash);
+// 		useNavigate()(`/login?path=${encodedPath}`);
+// 	}
+// 	return response.json();
+// };
 
-export const patcher = async (path: string, body: any, host = API_HOST) => {
-	return fetch(`${host}${path}`, {
-		method: 'PATCH',
-		headers: {
-			Authorization: '2Mgog6ATqAs495NtUQUsph',
-			'Content-type': 'application/json; charset=UTF-8',
-		},
-		body: JSON.stringify(body),
-	}).then((response) => response.status >= 200 && response.status <= 299);
-};
+type HttpMethods = 'GET' | 'PATCH' | 'POST' | 'DELETE';
+export const createFetcher =
+	(token?: string) =>
+	async (method: HttpMethods, path: string, body?: any, init?: RequestInit) => {
+		const tkn = token ?? getToken();
+		const response = await fetch(`${API_HOST}${path}`, {
+			...init,
+			method: method,
+			headers: {
+				'Content-type': 'application/json; charset=UTF-8',
+				...(tkn ? { Authorization: tkn } : {}),
+				...init?.headers,
+			},
+			body: body ? JSON.stringify(body) : undefined,
+		});
+		if (response.status === 401) {
+			const { pathname, search, hash } = window.location;
+			const encodedPath = encodeURIComponent(pathname + search + hash);
+			// useNavigate()(`/login?path=${encodedPath}`);
+			window.location.assign(`/login?path=${encodedPath}`);
+		}
+		return response.json();
+	};
 
-export const useMatch = (id: string) => {
-	const [resource, { mutate, refetch }] = createResource(() =>
-		fetcher<IMatch>(`/api/matches/${id}`)
+// export const patcher = async (path: string, body: any): Promise<any> => {
+// 	return fetcher(path, {
+// 		method: 'PATCH',
+// 		headers: {
+// 			'Content-type': 'application/json; charset=UTF-8',
+// 		},
+// 		body: JSON.stringify(body),
+// 	});
+// };
+
+// export const poster = async (path: string, body: any): Promise<any> => {
+// 	return fetcher(path, {
+// 		method: 'POST',
+// 		headers: {
+// 			'Content-type': 'application/json; charset=UTF-8',
+// 		},
+// 		body: JSON.stringify(body),
+// 	});
+// };
+
+export const useMatch = (id: string, tmtSecret?: string) => {
+	const fetcher = createFetcher(tmtSecret);
+	const [resource, { mutate, refetch }] = createResource(
+		() => fetcher('GET', `/api/matches/${id}`) as Promise<IMatch>
 	);
 	return {
+		fetcher,
 		resource,
 		mutate,
 		refetch,
@@ -43,12 +101,12 @@ export const useMatch = (id: string) => {
 			await sleep(500);
 			const successful2 = Math.random() > 0.5;
 			if (successful2) {
-				const successful = await patcher(`/api/matches/${id}`, body);
+				const successful = await fetcher('PATCH', `/api/matches/${id}`, body);
 				// mutate({
 				//     ...resource(),
 				//     ...body,
 				// } as IMatch);
-				mutate(await fetcher<IMatch>(`/api/matches/${id}`));
+				mutate(await fetcher('GET', `/api/matches/${id}`));
 				return successful;
 			}
 			return successful2;

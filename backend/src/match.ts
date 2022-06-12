@@ -19,6 +19,10 @@ import { Rcon } from './rcon-client';
 import { Settings } from './settings';
 import * as Team from './team';
 import { escapeRconString, sleep } from './utils';
+import * as Storage from './storage';
+
+export const STORAGE_LOGS_PREFIX = 'logs_';
+export const STORAGE_LOGS_SUFFIX = '.jsonl';
 
 export interface Match {
 	data: IMatch;
@@ -29,12 +33,12 @@ export interface Match {
 }
 
 export const createFromData = async (data: IMatch) => {
-	const log = logger(data.id);
 	const match: Match = {
 		data: data,
 		logBuffer: [],
-		log: log,
+		log: () => {},
 	};
+	match.log = createLogger(match);
 	await connectToGameServer(match);
 	await setup(match);
 	return match;
@@ -71,8 +75,19 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 	return match;
 };
 
-const logger = (id: string) => (msg: string) => {
-	console.info(`[${id}] ${msg}`);
+const createLogger = (match: Match) => (msg: string) => {
+	const ds = new Date().toISOString();
+	Storage.appendLine(STORAGE_LOGS_PREFIX + match.data.id + STORAGE_LOGS_SUFFIX, `${ds} | ${msg}`);
+	console.info(`${ds} [${match.data.id}] ${msg}`);
+	Events.onLog(match, msg);
+};
+
+export const getLogsTail = async (matchId: string, numberOfLines = 100): Promise<string[]> => {
+	return await Storage.readLines(
+		STORAGE_LOGS_PREFIX + matchId + STORAGE_LOGS_SUFFIX,
+		[],
+		numberOfLines
+	);
 };
 
 export const connectToGameServer = async (match: Match): Promise<void> => {

@@ -3,8 +3,8 @@ import { TMatchSate, IMatch, IMatchCreateDto } from '../../common';
 import * as Match from './match';
 import * as Storage from './storage';
 
-const STORAGE_PREFIX = process.env.TMT_STORAGE_PREFIX || 'match_';
-const STORAGE_SUFFIX = process.env.TMT_STORAGE_SUFFIX || '.json';
+const STORAGE_PREFIX = 'match_';
+const STORAGE_SUFFIX = '.json';
 
 const matches: Map<string, Match.Match> = new Map();
 
@@ -56,7 +56,6 @@ const periodicSaver = async () => {
 		const match = get(ids[i]);
 		if (match) {
 			try {
-				match.log(`Save match to disk`);
 				await save(match);
 			} catch (err) {
 				match.log(`Error saving match: ${err}`);

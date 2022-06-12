@@ -12,8 +12,9 @@ import {
 	Security,
 	SuccessResponse,
 } from '@tsoa/runtime';
-import { IMatch, IMatchCreateDto, IMatchMapUpdateDto, IMatchUpdateDto } from '../../common';
+import { Event, IMatch, IMatchCreateDto, IMatchMapUpdateDto, IMatchUpdateDto } from '../../common';
 import { IAuthResponse } from './auth';
+import * as Events from './events';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
@@ -66,6 +67,16 @@ export class MatchesController extends Controller {
 
 		this.setStatus(404);
 		return;
+	}
+
+	@Get('{id}/logs')
+	async getLogs(id: string, @Request() { user }: { user: IAuthResponse }): Promise<string[]> {
+		return await Match.getLogsTail(id);
+	}
+
+	@Get('{id}/events')
+	async getEvents(id: string, @Request() { user }: { user: IAuthResponse }): Promise<Event[]> {
+		return await Events.getEventsTail(id);
 	}
 
 	@Get('{id}/server/round_backups')
