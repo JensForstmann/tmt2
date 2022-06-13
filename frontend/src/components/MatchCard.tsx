@@ -1,12 +1,11 @@
 import { Component, Show } from 'solid-js';
-import { IMatch } from '../../../common';
-import { TTeamAB } from '../../../common';
+import { IMatchResponse } from '../../../common';
 import { t } from '../utils/locale';
 import { getMapDraws, getMapScore } from '../utils/match';
 import classes from './MatchCard.module.scss';
 
 export const MatchCard: Component<{
-	match: IMatch;
+	match: IMatchResponse;
 }> = (props) => {
 	const scoreTeamA = getMapScore(props.match, 'TEAM_A');
 	const scoreTeamB = getMapScore(props.match, 'TEAM_B');
@@ -33,7 +32,10 @@ export const MatchCard: Component<{
 					<span class={classes.teamName}>{props.match.teamB.name}</span>
 				</p>
 				<p>
-					<span class={classes.state}>{t(props.match.state)}</span>
+					<span class={classes.state}>
+						{t(props.match.state)}
+						{!props.match.isLive && ` (${t('not live')})`}
+					</span>
 				</p>
 			</div>
 		</>

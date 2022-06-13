@@ -24,7 +24,7 @@ export interface BaseEvent {
 
 export interface ChatEvent extends BaseEvent {
 	type: 'CHAT';
-	player: IPlayer;
+	player: IPlayer | null;
 	playerTeam: ITeam | null;
 	message: string;
 	isTeamChat: boolean;

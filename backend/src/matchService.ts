@@ -111,11 +111,13 @@ export const getAllFromStorage = async () => {
 };
 
 export const getAll = async () => {
-	const combined = [...getAllLive(), ...(await getAllFromStorage())];
-	const unique = combined.filter(
-		(match, index, arr) => arr.findIndex((m) => match.id === m.id) === index
-	);
-	return unique;
+	const live = getAllLive();
+	const storage = await getAllFromStorage();
+	const notLive = storage.filter((match) => !live.find((m) => match.id === m.id));
+	return {
+		live,
+		notLive,
+	};
 };
 
 export const remove = async (id: string) => {

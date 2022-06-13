@@ -224,6 +224,7 @@ export const onRoundEnd = async (
 
 export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, `MAP WILL BE CHANGED TO ${matchMap.name} IN 10 SECONDS`);
+	match.data.state = 'MATCH_MAP';
 	matchMap.state = 'MAP_CHANGE';
 	await sleep(10000);
 

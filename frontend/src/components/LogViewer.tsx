@@ -1,5 +1,5 @@
-import { Component, For, Index } from 'solid-js';
-import { IMatch, IPlayer, LogEvent, TLogUnion } from '../../../common';
+import { Component, For } from 'solid-js';
+import { LogEvent } from '../../../common';
 import { t } from '../utils/locale';
 import classes from './LogViewer.module.scss';
 
@@ -10,9 +10,18 @@ export const LogViewer: Component<{
 		<>
 			<div class={classes.card}>
 				<h2>{t('Logs')}</h2>
-				<pre>
-					<For each={props.logs}>{(log) => eventToString(log) + '\n'}</For>
-				</pre>
+				<div class={classes.content}>
+					<div>
+						<For each={props.logs}>
+							{(log) => (
+								<>
+									{eventToString(log)}
+									<br />
+								</>
+							)}
+						</For>
+					</div>
+				</div>
 			</div>
 		</>
 	);

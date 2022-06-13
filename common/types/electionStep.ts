@@ -65,3 +65,7 @@ export const isElectionStepAdd = (u: IElectionStep): u is IElectionStepAdd => {
 export const isElectionStepSkip = (u: IElectionStep): u is IElectionStepSkip => {
 	return u.map.mode === 'BAN';
 };
+
+export const getTotalNumberOfMaps = (electionSteps: IElectionStep[]) => {
+	return electionSteps.filter((step) => isElectionStepAdd(step)).length;
+};

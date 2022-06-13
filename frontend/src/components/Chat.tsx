@@ -1,41 +1,49 @@
-import { Component, For, Index } from 'solid-js';
-import { ChatEvent, IMatch, IPlayer, LogEvent, TLogUnion } from '../../../common';
+import { Component, For } from 'solid-js';
+import { ChatEvent } from '../../../common';
 import { t } from '../utils/locale';
+import { onEnter } from '../utils/onEnter';
 import classes from './Chat.module.scss';
 
 export const Chat: Component<{
 	messages: ChatEvent[];
+	sendMessage: (msg: string) => void;
 }> = (props) => {
 	return (
 		<>
 			<div class={classes.card}>
 				<h2>{t('Chat')}</h2>
-				<pre>
-					<For each={props.messages}>{(msg) => eventToString(msg) + '\n'}</For>
-				</pre>
+				<div class={classes.content}>
+					<div>
+						<For each={props.messages}>
+							{(msg) => (
+								<>
+									{eventToString(msg)}
+									<br />
+								</>
+							)}
+						</For>
+					</div>
+				</div>
+				<input
+					type="text"
+					onKeyDown={onEnter((e) => {
+						const msg = e.currentTarget.value.trim();
+						if (msg) {
+							props.sendMessage(msg);
+							e.currentTarget.value = '';
+						}
+					})}
+					placeholder={t('Send chat message...')}
+				/>
 			</div>
 		</>
 	);
 };
 
 const eventToString = (e: ChatEvent) => {
-	return `${new Date(e.timestamp).toLocaleTimeString()}: (${e.isTeamChat ? 'TEAM' : 'ALL'}) [${
-		e.playerTeam?.name ?? ''
-	}] ${e.player.name} : ${e.message}`;
-};
-
-const toText = (log: TLogUnion, players: IPlayer[]): string => {
-	const ts = new Date(log.timestamp);
-	switch (log.type) {
-		case 'CHAT':
-			return `${ts}: ${getPlayerName(log.steamId64, players)} ${
-				log.isTeamChat ? '(TEAM)' : '(ALL)'
-			}: ${log.message}`;
-		case 'SYSTEM':
-			return `${ts}: ${log.category} - ${log.message}`;
-	}
-};
-
-export const getPlayerName = (steamId64: string, players: IPlayer[]) => {
-	return players.find((player) => player.steamId64 === steamId64)?.name || 'Unknown Player';
+	const timestamp = new Date(e.timestamp).toLocaleTimeString();
+	const teamChat = e.isTeamChat ? '(TEAM)' : '(ALL)';
+	const teamName = e.playerTeam ? ` [${e.playerTeam.name}]` : '';
+	const playerName = e.player?.name ?? 'Console';
+	return `${timestamp}: ${teamChat}${teamName} ${playerName}: ${e.message}`;
 };

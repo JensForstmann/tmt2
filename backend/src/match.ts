@@ -120,6 +120,19 @@ export const onRconConnectionEnd = async (match: Match) => {
 };
 
 /**
+ * Executed only once per match (at creation).
+ */
+const init = async (match: Match) => {
+	match.log('init match...');
+	await execRcon(match, `changelevel ${match.data.electionMap}`);
+	await execManyRcon(match, match.data.rconCommands.init);
+	await execRcon(match, 'mp_warmuptime 600');
+	await execRcon(match, 'mp_warmup_pausetimer 1');
+	await execRcon(match, 'mp_autokick 0');
+	match.log('init match finished');
+};
+
+/**
  * Executed once per match and every time the map will be loaded from storage.
  */
 const setup = async (match: Match) => {
@@ -180,19 +193,6 @@ const registerLogAddress = async (match: Match) => {
 
 export const execRcon = async (match: Match, command: string) => {
 	return await GameServer.exec(match, command);
-};
-
-/**
- * Executes only once per match (at creation).
- */
-const init = async (match: Match) => {
-	match.log('init match...');
-	await execRcon(match, `changelevel ${match.data.electionMap}`);
-	await execManyRcon(match, match.data.rconCommands.init);
-	await execRcon(match, 'mp_warmuptime 600');
-	await execRcon(match, 'mp_warmup_pausetimer 1');
-	await execRcon(match, 'mp_autokick 0');
-	match.log('init match finished');
 };
 
 export const execManyRcon = async (match: Match, commands: string[]) => {
@@ -361,8 +361,16 @@ const onPlayerLogLine = async (
 	remainingLine: string
 ) => {
 	//say "Hello World"
+	const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
+	if (!sayMatch) {
+		return;
+	}
+	const isTeamChat = sayMatch[1] === '_team';
+	const message = sayMatch[2];
+
 	if (steamId === 'BOT') {
 	} else if (steamId === 'Console') {
+		await onConsoleSay(match, message);
 	} else {
 		const steamId64 = Player.getSteamID64(steamId);
 		let player = match.data.players.find((p) => p.steamId64 === steamId64);
@@ -370,12 +378,7 @@ const onPlayerLogLine = async (
 			player = Player.create(steamId, name);
 			match.data.players.push(player);
 		}
-		const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
-		if (sayMatch) {
-			const isTeamChat = sayMatch[1] === '_team';
-			const message = sayMatch[2];
-			await onPlayerSay(match, player, message, isTeamChat, teamString);
-		}
+		await onPlayerSay(match, player, message, isTeamChat, teamString);
 	}
 };
 
@@ -402,6 +405,13 @@ const onPlayerSay = async (
 				await say(match, `COMMAND UNKNOWN`);
 			}
 		}
+	}
+};
+
+const onConsoleSay = async (match: Match, message: string) => {
+	message = message.trim();
+	if (!message.startsWith(Settings.SAY_PREFIX)) {
+		Events.onConsoleSay(match, message);
 	}
 };
 
@@ -691,15 +701,12 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto.currentMap !== undefined && dto.currentMap !== match.data.currentMap) {
-		const previous = match.data.currentMap;
-		match.data.currentMap = dto.currentMap;
-		const nextMap = getCurrentMatchMap(match);
+		const nextMap = match.data.matchMaps[dto.currentMap];
 		if (nextMap) {
+			match.data.currentMap = dto.currentMap;
 			MatchMap.loadMap(match, nextMap).catch((err) => {
 				match.log(`error load map: ${err}`);
 			});
-		} else {
-			match.data.currentMap = previous;
 		}
 	}
 

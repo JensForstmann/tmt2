@@ -5,4 +5,16 @@
 	border: 2px solid #eee;
 	font-size: 1em;
 	text-align: center;
+
+	.left {
+		display: inline-block;
+		margin-right: 1em;
+		vertical-align: top;
+	}
+
+	.right {
+		display: inline-block;
+		margin-left: 1em;
+		vertical-align: top;
+	}
 }

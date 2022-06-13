@@ -1,11 +1,18 @@
 import { useParams, useSearchParams } from 'solid-app-router';
 import { Component, createEffect, createSignal, For, Match, onCleanup, Switch } from 'solid-js';
-import { ChatEvent, Event, LogEvent } from '../../../common';
+import {
+	ChatEvent,
+	Event,
+	getTotalNumberOfMaps,
+	isElectionStepAdd,
+	LogEvent,
+} from '../../../common';
 import { Chat } from '../components/Chat';
 import { Error as ErrorComponent } from '../components/Error';
 import { GameServerCard } from '../components/GameServerCard';
 import { Loader } from '../components/Loader';
 import { LogViewer } from '../components/LogViewer';
+import { MatchActionPanel } from '../components/MatchActionPanel';
 import { MatchCard } from '../components/MatchCard';
 import { MatchMapCard } from '../components/MatchMapCard';
 import { PlayerListCard } from '../components/PlayerListCard';
@@ -66,14 +73,18 @@ export const MatchPage: Component = () => {
 
 	onCleanup(() => disconnect());
 
+	const sendChatMessage = (msg: string) => {
+		fetcher('POST', `/api/matches/${params.id}/server/rcon`, [`say ${msg.replace(/;/g, '')}`]);
+	};
+
 	return (
 		<>
-			<p>{state()}</p>
 			<Switch>
 				<Match when={match.error || match() instanceof Error}>
 					<ErrorComponent />
 				</Match>
 				<Match when={match() !== undefined}>
+					<MatchActionPanel match={match()!} />
 					<MatchCard match={match()!} />
 					<For each={match()?.matchMaps}>
 						{(map, i) => (
@@ -86,7 +97,7 @@ export const MatchPage: Component = () => {
 					</For>
 					<GameServerCard match={match()!} />
 					<PlayerListCard match={match()!} />
-					<Chat messages={chatEvents()} />
+					<Chat messages={chatEvents()} sendMessage={sendChatMessage} />
 					<LogViewer logs={logEvents()} />
 					<pre>{JSON.stringify(match(), null, '    ')}</pre>
 				</Match>

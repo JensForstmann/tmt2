@@ -7,21 +7,24 @@ import { t } from '../utils/locale';
 import { useSearchParams } from 'solid-app-router';
 
 export const MatchesPage: Component = () => {
-	const [searchParams, setSearchParams] = useSearchParams<{ isStopped?: string }>();
+	const [searchParams, setSearchParams] = useSearchParams<{ isLive?: string }>();
 	const fetcher = createFetcher();
 	const [matches] = createResource<IMatch[], any>(
-		() => searchParams.isStopped ?? 'false',
-		(s: string) => fetcher('GET', `/api/matches?isStopped=${s}`)
+		() => searchParams.isLive ?? 'true',
+		(s: string) => fetcher('GET', `/api/matches?isLive=${s}`)
 	);
 	return (
 		<>
-			<input
-				type="checkbox"
-				checked={searchParams.isStopped === 'true'}
-				onchange={(e) =>
-					setSearchParams({ isStopped: e.currentTarget.checked + '' }, { replace: true })
-				}
-			/>
+			<label>
+				<input
+					type="checkbox"
+					checked={searchParams.isLive !== 'false'}
+					onchange={(e) =>
+						setSearchParams({ isLive: e.currentTarget.checked + '' }, { replace: true })
+					}
+				/>
+				{t('live matches')}
+			</label>
 			{matches.loading ? <Loader /> : <MatchList matches={matches() ?? []} />}
 		</>
 	);

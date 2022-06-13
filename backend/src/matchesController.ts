@@ -12,7 +12,14 @@ import {
 	Security,
 	SuccessResponse,
 } from '@tsoa/runtime';
-import { Event, IMatch, IMatchCreateDto, IMatchMapUpdateDto, IMatchUpdateDto } from '../../common';
+import {
+	Event,
+	IMatch,
+	IMatchCreateDto,
+	IMatchMapUpdateDto,
+	IMatchResponse,
+	IMatchUpdateDto,
+} from '../../common';
 import { IAuthResponse } from './auth';
 import * as Events from './events';
 import * as Match from './match';
@@ -37,32 +44,43 @@ export class MatchesController extends Controller {
 		@Request() { user }: { user: IAuthResponse },
 		@Query('state') state?: string[],
 		@Query('passthrough') passthrough?: string[],
-		@Query('isStopped') isStopped?: boolean
-	): Promise<IMatch[]> {
-		const matches = await MatchService.getAll();
-		return matches
+		@Query('isStopped') isStopped?: boolean,
+		@Query('isLive') isLive?: boolean
+	): Promise<IMatchResponse[]> {
+		const live = MatchService.getAllLive();
+		const storage = isLive === true ? [] : await MatchService.getAllFromStorage();
+		const notLive = storage.filter((match) => !live.find((m) => match.id === m.id));
+		return [...live, ...notLive]
+			.map((m) => ({ ...m, isLive: !!live.find((l) => l.id === m.id) }))
 			.filter((m) => state === undefined || state.includes(m.state))
 			.filter(
 				(m) =>
 					passthrough === undefined ||
 					(typeof m.passthrough === 'string' && passthrough.includes(m.passthrough))
 			)
-			.filter((m) => isStopped === undefined || m.isStopped === isStopped);
+			.filter((m) => isStopped === undefined || m.isStopped === isStopped)
+			.filter((m) => isLive === undefined || m.isLive === isLive);
 	}
 
 	@Get('{id}')
 	async getMatch(
 		id: string,
 		@Request() { user }: { user: IAuthResponse }
-	): Promise<IMatch | void> {
+	): Promise<IMatchResponse | void> {
 		const match = MatchService.get(id);
 		if (match) {
-			return match.data;
+			return {
+				...match.data,
+				isLive: true,
+			};
 		}
 
 		const matchFromStorage = await MatchService.getFromStorage(id);
 		if (matchFromStorage) {
-			return matchFromStorage;
+			return {
+				...matchFromStorage,
+				isLive: false,
+			};
 		}
 
 		this.setStatus(404);
@@ -164,6 +182,20 @@ export class MatchesController extends Controller {
 		} else {
 			this.setStatus(404);
 		}
+	}
+
+	@Post('{id}/server/rcon')
+	async rcon(
+		id: string,
+		@Body() requestBody: string[],
+		@Request() { user }: { user: IAuthResponse }
+	): Promise<void> {
+		const match = MatchService.get(id);
+		if (!match) {
+			this.setStatus(404);
+			return;
+		}
+		await Match.execManyRcon(match, requestBody);
 	}
 
 	@NoSecurity()

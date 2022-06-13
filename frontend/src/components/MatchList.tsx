@@ -1,5 +1,5 @@
-import { Component, For } from 'solid-js';
-import { IMatch } from '../../../common';
+import { Component, For, Show } from 'solid-js';
+import { getTotalNumberOfMaps, IMatch } from '../../../common';
 import { t } from '../utils/locale';
 import { Link } from 'solid-app-router';
 import classes from './MatchList.module.scss';
@@ -7,7 +7,7 @@ import classes from './MatchList.module.scss';
 export const MatchList: Component<{ matches: IMatch[] }> = (props) => {
 	return (
 		<>
-			<table>
+			<table class={classes.table}>
 				<thead>
 					<tr>
 						<th>{t('#')}</th>
@@ -17,8 +17,7 @@ export const MatchList: Component<{ matches: IMatch[] }> = (props) => {
 						<th>{t('Match State')}</th>
 						<th>{t('Current Map')}</th>
 						<th>{t('Map State')}</th>
-						<th>{t('Score')}</th>
-						<th>{t('Is Stopped')}</th>
+						<th>{t('Map Score')}</th>
 						<th>{t('Link')}</th>
 					</tr>
 				</thead>
@@ -31,13 +30,22 @@ export const MatchList: Component<{ matches: IMatch[] }> = (props) => {
 								<td>{match.teamA.name}</td>
 								<td>{match.teamB.name}</td>
 								<td>{match.state}</td>
-								<td>{match.currentMap + 1}</td>
+								<td>
+									<Show when={match.state === 'MATCH_MAP'}>
+										{match.matchMaps[match.currentMap]?.name ?? ''}
+										<Show when={getTotalNumberOfMaps(match.electionSteps) > 1}>
+											{` (${match.currentMap + 1}/${getTotalNumberOfMaps(
+												match.electionSteps
+											)})`}
+										</Show>
+									</Show>
+								</td>
 								<td>{match.matchMaps[match.currentMap]?.state}</td>
 								<td>
-									{match.matchMaps[match.currentMap]?.score.teamA} :{' '}
-									{match.matchMaps[match.currentMap]?.score.teamB}
+									{match.matchMaps[match.currentMap]?.score.teamA ?? 0}
+									{' : '}
+									{match.matchMaps[match.currentMap]?.score.teamB ?? 0}
 								</td>
-								<td>{match.isStopped ? 'stopped' : ''}</td>
 								<td>
 									<Link href={`/matches/${match.id}`}>{t('Open')}</Link>
 								</td>

@@ -103,6 +103,17 @@ export const onPlayerSay = (
 	send(match, data);
 };
 
+export const onConsoleSay = (match: Match.Match, message: string) => {
+	const data: ChatEvent = {
+		...getBaseEvent(match, 'CHAT'),
+		player: null,
+		playerTeam: null,
+		message: message,
+		isTeamChat: false,
+	};
+	send(match, data);
+};
+
 export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeamB: number) => {
 	const data: MatchEndEvent = {
 		...getBaseEvent(match, 'MATCH_END'),

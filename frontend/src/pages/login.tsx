@@ -29,7 +29,7 @@ export const LoginPage: Component = () => {
 					}
 				}}
 			/>
-			<input type="button" value={t('Login')} onClick={() => submit()} />
+			<button onClick={() => submit()}>{t('Login')}</button>
 			<p>{msg()}</p>
 		</>
 	);

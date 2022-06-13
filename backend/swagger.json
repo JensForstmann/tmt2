@@ -237,6 +237,16 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"IElectionStep": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/IElectionStepAdd"
+					},
+					{
+						"$ref": "#/components/schemas/IElectionStepSkip"
+					}
+				]
+			},
 			"TElectionState": {
 				"type": "string",
 				"enum": [
@@ -607,14 +617,7 @@
 					},
 					"electionSteps": {
 						"items": {
-							"anyOf": [
-								{
-									"$ref": "#/components/schemas/IElectionStepAdd"
-								},
-								{
-									"$ref": "#/components/schemas/IElectionStepSkip"
-								}
-							]
+							"$ref": "#/components/schemas/IElectionStep"
 						},
 						"type": "array"
 					},
@@ -862,6 +865,170 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"IMatchResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "tmt2 identifier for this match"
+					},
+					"state": {
+						"$ref": "#/components/schemas/TMatchSate"
+					},
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
+					},
+					"mapPool": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
+					},
+					"teamA": {
+						"$ref": "#/components/schemas/ITeam"
+					},
+					"teamB": {
+						"$ref": "#/components/schemas/ITeam"
+					},
+					"electionSteps": {
+						"items": {
+							"$ref": "#/components/schemas/IElectionStep"
+						},
+						"type": "array"
+					},
+					"election": {
+						"$ref": "#/components/schemas/IElection",
+						"description": "election state data"
+					},
+					"gameServer": {
+						"$ref": "#/components/schemas/IGameServer"
+					},
+					"logSecret": {
+						"type": "string",
+						"description": "log secret that is given as part of the url to the cs go server it will send the logs to"
+					},
+					"parseIncomingLogs": {
+						"type": "boolean",
+						"description": "Indicates if incoming logs from the cs go server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
+					},
+					"matchMaps": {
+						"items": {
+							"$ref": "#/components/schemas/IMatchMap"
+						},
+						"type": "array",
+						"description": "The maps which will be played. If match state is still ELECTION than this is not final."
+					},
+					"currentMap": {
+						"type": "number",
+						"format": "double",
+						"description": "Index of the matchMaps array indicating the current map."
+					},
+					"webhookUrl": {
+						"type": "string",
+						"description": "if set various events will be posted to this url"
+					},
+					"rconCommands": {
+						"properties": {
+							"end": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed after last match map"
+							},
+							"match": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every match map start"
+							},
+							"knife": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every knife round"
+							},
+							"init": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed exactly once on match init"
+							}
+						},
+						"required": [
+							"end",
+							"match",
+							"knife",
+							"init"
+						],
+						"type": "object"
+					},
+					"canClinch": {
+						"type": "boolean",
+						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
+					},
+					"matchEndAction": {
+						"$ref": "#/components/schemas/TMatchEndAction",
+						"description": "defaults to NONE"
+					},
+					"logs": {
+						"items": {
+							"$ref": "#/components/schemas/TLogUnion"
+						},
+						"type": "array"
+					},
+					"players": {
+						"items": {
+							"$ref": "#/components/schemas/IPlayer"
+						},
+						"type": "array"
+					},
+					"tmtSecret": {
+						"type": "string",
+						"description": "Access token to be used in the API."
+					},
+					"isStopped": {
+						"type": "boolean",
+						"description": "If match is finished or if the match was stopped/deleted this is true."
+					},
+					"electionMap": {
+						"type": "string",
+						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
+					},
+					"isLive": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"id",
+					"state",
+					"mapPool",
+					"teamA",
+					"teamB",
+					"electionSteps",
+					"election",
+					"gameServer",
+					"logSecret",
+					"parseIncomingLogs",
+					"matchMaps",
+					"currentMap",
+					"rconCommands",
+					"canClinch",
+					"matchEndAction",
+					"logs",
+					"players",
+					"tmtSecret",
+					"isStopped",
+					"electionMap",
+					"isLive"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"EventType": {
 				"type": "string",
 				"enum": [
@@ -896,7 +1063,12 @@
 						"nullable": false
 					},
 					"player": {
-						"$ref": "#/components/schemas/IPlayer"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/IPlayer"
+							}
+						],
+						"nullable": true
 					},
 					"playerTeam": {
 						"allOf": [
@@ -1573,7 +1745,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/IMatch"
+										"$ref": "#/components/schemas/IMatchResponse"
 									},
 									"type": "array"
 								}
@@ -1616,6 +1788,14 @@
 						"schema": {
 							"type": "boolean"
 						}
+					},
+					{
+						"in": "query",
+						"name": "isLive",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
 					}
 				]
 			}
@@ -1631,7 +1811,7 @@
 								"schema": {
 									"anyOf": [
 										{
-											"$ref": "#/components/schemas/IMatch"
+											"$ref": "#/components/schemas/IMatchResponse"
 										},
 										{}
 									]
@@ -1957,6 +2137,44 @@
 						}
 					}
 				]
+			}
+		},
+		"/api/matches/{id}/server/rcon": {
+			"post": {
+				"operationId": "Rcon",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/matches/{id}/server/log/{secret}": {

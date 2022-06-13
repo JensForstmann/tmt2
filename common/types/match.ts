@@ -1,5 +1,5 @@
 import { IElection } from './election';
-import { IElectionStepAdd, IElectionStepSkip } from './electionStep';
+import { IElectionStep, IElectionStepAdd, IElectionStepSkip } from './electionStep';
 import { IGameServer } from './gameServer';
 import { TLogUnion } from './log';
 import { IMatchMap } from './matchMap';
@@ -24,7 +24,7 @@ export interface IMatch {
 	mapPool: string[];
 	teamA: ITeam;
 	teamB: ITeam;
-	electionSteps: Array<IElectionStepAdd | IElectionStepSkip>;
+	electionSteps: IElectionStep[];
 	/** election state data */
 	election: IElection;
 	gameServer: IGameServer;
@@ -63,6 +63,10 @@ export interface IMatch {
 	isStopped: boolean;
 	/** this map will be loaded on match init (defaults to de_dust2 if not set) */
 	electionMap: string;
+}
+
+export interface IMatchResponse extends IMatch {
+	isLive: boolean;
 }
 
 export interface IMatchCreateDto {
