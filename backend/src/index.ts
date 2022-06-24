@@ -51,8 +51,6 @@ const errorRequestHandler: ErrorRequestHandler = (err, req, res, next) => {
 		if (err instanceof ValidateError) {
 			res.status(400).send(err);
 		} else {
-			console.error(err);
-			console.error(`ERROR: ${req.method} ${req.url}: ${err}`);
 			const status =
 				typeof err?.status === 'number' &&
 				Number.isInteger(err?.status) &&
@@ -60,6 +58,10 @@ const errorRequestHandler: ErrorRequestHandler = (err, req, res, next) => {
 				err?.status <= 599
 					? err.status
 					: 500;
+			if (status !== 401) {
+				console.error(err);
+				console.error(`ERROR: ${req.method} ${req.url}: ${err}`);
+			}
 			if (err + '' !== '[object Object]') {
 				res.status(status).send(err + '');
 			} else {

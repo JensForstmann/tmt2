@@ -1,12 +1,6 @@
 import { useParams, useSearchParams } from 'solid-app-router';
 import { Component, createEffect, createSignal, For, Match, onCleanup, Switch } from 'solid-js';
-import {
-	ChatEvent,
-	Event,
-	getTotalNumberOfMaps,
-	isElectionStepAdd,
-	LogEvent,
-} from '../../../common';
+import { ChatEvent, Event, LogEvent } from '../../../common';
 import { Chat } from '../components/Chat';
 import { Error as ErrorComponent } from '../components/Error';
 import { GameServerCard } from '../components/GameServerCard';
@@ -78,7 +72,7 @@ export const MatchPage: Component = () => {
 	};
 
 	return (
-		<>
+		<div class="space-y-5">
 			<Switch>
 				<Match when={match.error || match() instanceof Error}>
 					<ErrorComponent />
@@ -99,12 +93,11 @@ export const MatchPage: Component = () => {
 					<PlayerListCard match={match()!} />
 					<Chat messages={chatEvents()} sendMessage={sendChatMessage} />
 					<LogViewer logs={logEvents()} />
-					<pre>{JSON.stringify(match(), null, '    ')}</pre>
 				</Match>
 				<Match when={match.loading}>
 					<Loader />
 				</Match>
 			</Switch>
-		</>
+		</div>
 	);
 };

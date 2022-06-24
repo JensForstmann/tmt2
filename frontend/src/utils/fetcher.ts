@@ -1,21 +1,36 @@
-import { useLocation, useNavigate } from 'solid-app-router';
-import { createResource } from 'solid-js';
-import { IMatch, IMatchResponse, IMatchUpdateDto } from '../../../common';
+import { useNavigate } from 'solid-app-router';
+import { createResource, createSignal } from 'solid-js';
+import { IMatchResponse, IMatchUpdateDto } from '../../../common';
 import { sleep } from './sleep';
 
-const API_HOST = import.meta.env.DEV ? 'http://localhost:8080' : '';
+const API_HOST = import.meta.env.DEV
+	? `${window.location.protocol}//${window.location.hostname}:8080`
+	: '';
 
 export const getToken = () => localStorage.getItem('token');
 
-export const login = async (token: string): Promise<boolean> => {
+const isTokenOk = async (token?: string): Promise<boolean> => {
+	const tkn = token ?? getToken();
 	const response = await fetch(`${API_HOST}/api/login`, {
 		method: 'POST',
 		headers: {
-			Authorization: token,
+			...(tkn ? { Authorization: tkn } : {}),
 		},
 	});
 	if (response.status >= 200 && response.status <= 299) {
+		return true;
+	}
+	return false;
+};
+
+const [isLoggedIn, setIsLoggedIn] = createSignal<boolean>();
+export { isLoggedIn };
+isTokenOk().then((ok) => setIsLoggedIn(ok));
+
+export const login = async (token: string): Promise<boolean> => {
+	if (await isTokenOk(token)) {
 		localStorage.setItem('token', token);
+		setIsLoggedIn(true);
 		return true;
 	}
 	return false;
@@ -23,6 +38,7 @@ export const login = async (token: string): Promise<boolean> => {
 
 export const logout = () => {
 	localStorage.removeItem('token');
+	setIsLoggedIn(false);
 	useNavigate()('/');
 };
 
@@ -34,7 +50,7 @@ export const createFetcher = (token?: string) => {
 			...init,
 			method: method,
 			headers: {
-				'Content-type': 'application/json; charset=UTF-8',
+				'Content-Type': 'application/json; charset=UTF-8',
 				...(tkn ? { Authorization: tkn } : {}),
 				...init?.headers,
 			},
@@ -43,15 +59,15 @@ export const createFetcher = (token?: string) => {
 
 		const status = response.status;
 		if (status === 401) {
+			setIsLoggedIn(false);
 			const { pathname, search, hash } = window.location;
 			const encodedPath = encodeURIComponent(pathname + search + hash);
-			// useNavigate()(`/login?path=${encodedPath}`);
 			window.location.assign(`/login?path=${encodedPath}`);
 			return;
-		} else if (status === 204) {
-			return;
-		} else {
+		} else if (response.headers.get('Content-Type')?.startsWith('application/json')) {
 			return response.json();
+		} else {
+			return;
 		}
 	};
 };

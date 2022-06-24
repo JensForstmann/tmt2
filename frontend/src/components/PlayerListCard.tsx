@@ -1,33 +1,31 @@
 import { Component, For } from 'solid-js';
 import { IMatch, IPlayer } from '../../../common';
 import { t } from '../utils/locale';
-import classes from './PlayerListCard.module.scss';
+import { Card } from './Card';
 
 export const PlayerListCard: Component<{
 	match: IMatch;
 }> = (props) => {
 	return (
-		<>
-			<div class={classes.card}>
-				<h2>{t('Players')}</h2>
-				<div>
-					<div class={classes.left}>
-						<h4>{t('Team A')}</h4>
-						{List(props.match.players.filter((p) => p.team === 'TEAM_A'))}
-					</div>
-					<div class={classes.right}>
-						<h4>{t('Team B')}</h4>
-						{List(props.match.players.filter((p) => p.team === 'TEAM_B'))}
-					</div>
+		<Card>
+			<h2 class="font-bold text-lg">{t('Players')}</h2>
+			<div class="space-x-5 flex basis-1/2 justify-center items-start text-left">
+				<div class="flex-1 text-right">
+					<h4>{props.match.teamA.name}</h4>
+					{List(props.match.players.filter((p) => p.team === 'TEAM_A'))}
 				</div>
-				<div>
-					<div>
-						<h4>{t('Not Assigned')}</h4>
-						{List(props.match.players.filter((p) => !p.team))}
-					</div>
+				<div class="flex-1">
+					<h4>{props.match.teamB.name}</h4>
+					{List(props.match.players.filter((p) => p.team === 'TEAM_B'))}
 				</div>
 			</div>
-		</>
+			<div>
+				<div>
+					<h4>{t('Not Assigned')}</h4>
+					{List(props.match.players.filter((p) => !p.team))}
+				</div>
+			</div>
+		</Card>
 	);
 };
 

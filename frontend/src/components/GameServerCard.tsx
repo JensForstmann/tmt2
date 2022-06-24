@@ -1,7 +1,7 @@
 import { Component } from 'solid-js';
 import { IMatch } from '../../../common';
 import { t } from '../utils/locale';
-import classes from './GameServerCard.module.scss';
+import { Card } from './Card';
 
 export const GameServerCard: Component<{
 	match: IMatch;
@@ -10,15 +10,13 @@ export const GameServerCard: Component<{
 	const password = ``;
 	const steamUrl = `steam://connect/${ipPort}/${password}`;
 	return (
-		<>
-			<div class={classes.card}>
-				<h2>{t('Game Server')}</h2>
-				<p>
-					<a href={steamUrl}>{steamUrl}</a>
-					<br />
-					sv_password "{password}"; connect {ipPort};
-				</p>
-			</div>
-		</>
+		<Card>
+			<h2 class="font-bold text-lg">{t('Game Server')}</h2>
+			<p>
+				<a href={steamUrl}>{steamUrl}</a>
+				<br />
+				sv_password "{password}"; connect {ipPort};
+			</p>
+		</Card>
 	);
 };

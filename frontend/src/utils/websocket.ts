@@ -1,7 +1,9 @@
 import { createEffect, createSignal } from 'solid-js';
 import { Event, SubscribeMessage } from '../../../common';
 
-const WS_HOST = import.meta.env.DEV ? 'ws://localhost:8080' : '';
+const WS_HOST = import.meta.env.DEV
+	? `${window.location.protocol.replace('http', 'ws')}//${window.location.hostname}:8080`
+	: '';
 
 type Options = {
 	connect?: boolean;
