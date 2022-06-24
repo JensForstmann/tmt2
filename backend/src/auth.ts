@@ -68,7 +68,7 @@ export const expressAuthentication = async (
 ): Promise<IAuthResponse> => {
 	if (securityName === 'bearer_token') {
 		const bearerToken = req.get('Authorization');
-		const result = await isAuthorized(bearerToken, req.params.id);
+		const result = await isAuthorized(bearerToken, req.params['id']);
 		if (result) {
 			return Promise.resolve(result);
 		}

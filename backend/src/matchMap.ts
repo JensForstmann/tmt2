@@ -275,7 +275,7 @@ const getConfigVar = async (match: Match.Match, configVar: string): Promise<stri
 	const configVarPattern = new RegExp(`^"${configVar}" = "(.*?)"`);
 	const configVarMatch = response.match(configVarPattern);
 	if (configVarMatch) {
-		return configVarMatch[1];
+		return configVarMatch[1]!;
 	}
 	return '';
 };

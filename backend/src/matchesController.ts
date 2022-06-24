@@ -123,7 +123,7 @@ export class MatchesController extends Controller {
 			if (await Match.loadRoundBackup(match, file)) {
 				return true;
 			} else {
-				this.setStatus(400);
+				this.setStatus(500);
 				return false;
 			}
 		} else {
@@ -168,18 +168,14 @@ export class MatchesController extends Controller {
 
 	@Delete('{id}')
 	async deleteMatch(id: string, @Request() { user }: { user: IAuthResponse }): Promise<void> {
-		if (await MatchService.remove(id)) {
-			this.setStatus(200);
-		} else {
+		if (!(await MatchService.remove(id))) {
 			this.setStatus(404);
 		}
 	}
 
 	@Patch('{id}/revive')
 	async reviveMatch(id: string, @Request() { user }: { user: IAuthResponse }): Promise<void> {
-		if (await MatchService.revive(id)) {
-			this.setStatus(200);
-		} else {
+		if (!(await MatchService.revive(id))) {
 			this.setStatus(404);
 		}
 	}

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
 
-const STORAGE_DIR = process.env.STORAGE_DIR || 'storage';
+const STORAGE_DIR = process.env['STORAGE_DIR'] || 'storage';
 
 export const setup = async () => {
 	await fsp.mkdir(STORAGE_DIR, {

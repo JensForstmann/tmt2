@@ -157,7 +157,7 @@ const setup = async (match: Match) => {
 };
 
 const registerLogAddress = async (match: Match) => {
-	const logAddress = `${process.env.TMT_LOG_ADDRESS}/api/matches/${match.data.id}/server/log/${match.data.logSecret}`;
+	const logAddress = `${process.env['TMT_LOG_ADDRESS']}/api/matches/${match.data.id}/server/log/${match.data.logSecret}`;
 	const logAddressList = await execRcon(match, 'logaddress_list_http');
 	const existing = logAddressList
 		.trim()
@@ -197,7 +197,7 @@ export const execRcon = async (match: Match, command: string) => {
 
 export const execManyRcon = async (match: Match, commands: string[]) => {
 	for (let i = 0; i < commands.length; i++) {
-		await execRcon(match, commands[i]);
+		await execRcon(match, commands[i]!);
 	}
 };
 
@@ -264,7 +264,7 @@ export const getRoundBackups = async (match: Match, count: number = 5) => {
 	const response = await execRcon(match, `mp_backup_restore_list_files ${count}`);
 	const lines = response.trim().split('\n');
 	const files = lines.filter((line) => line[0] === ' ').map((line) => line.trim());
-	const totalFiles = parseInt(lines[lines.length - 1].split(' ')[0]);
+	const totalFiles = parseInt(lines[lines.length - 1]!.split(' ')[0]!);
 	return {
 		latestFiles: files,
 		total: isNaN(totalFiles) ? 0 : totalFiles,
@@ -300,7 +300,7 @@ export const onLog = async (match: Match, body: string) => {
 	if (match.logBuffer.length === lines.length) {
 		// logBuffer was empty before -> no other onLogLine is in progress right now
 		while (match.logBuffer.length > 0) {
-			const oldestLine = match.logBuffer[0];
+			const oldestLine = match.logBuffer[0]!;
 			await onLogLine(match, oldestLine);
 			match.logBuffer.splice(0, 1);
 		}
@@ -317,11 +317,11 @@ const onLogLine = async (match: Match, line: string) => {
 	const playerPattern = /"(.*)<(\d+)><(.*)><(|Unassigned|CT|TERRORIST|Console)>" (.*)$/;
 	const playerMatch = line.match(new RegExp(dateTimePattern.source + playerPattern.source));
 	if (playerMatch) {
-		const name = playerMatch[1];
-		const ingamePlayerId = playerMatch[2];
-		const steamId = playerMatch[3];
-		const teamString = playerMatch[4];
-		const remainingLine = playerMatch[5];
+		const name = playerMatch[1]!;
+		const ingamePlayerId = playerMatch[2]!;
+		const steamId = playerMatch[3]!;
+		const teamString = playerMatch[4]!;
+		const remainingLine = playerMatch[5]!;
 		await onPlayerLogLine(match, name, ingamePlayerId, steamId, teamString, remainingLine);
 	}
 
@@ -335,10 +335,10 @@ const onLogLine = async (match: Match, line: string) => {
 		/Team "(CT|TERRORIST)" triggered "([a-zA-Z_]+)" \(CT "(\d+)"\) \(T "(\d+)"\)/;
 	const roundEndMatch = line.match(new RegExp(dateTimePattern.source + roundEndPattern.source));
 	if (roundEndMatch) {
-		const winningTeam = roundEndMatch[1];
-		const winningReason = roundEndMatch[2];
-		const ctScore = parseInt(roundEndMatch[3]);
-		const tScore = parseInt(roundEndMatch[4]);
+		const winningTeam = roundEndMatch[1]!;
+		const winningReason = roundEndMatch[2]!;
+		const ctScore = parseInt(roundEndMatch[3]!);
+		const tScore = parseInt(roundEndMatch[4]!);
 		const currentMatchMap = getCurrentMatchMap(match);
 		if (currentMatchMap) {
 			await MatchMap.onRoundEnd(
@@ -366,7 +366,7 @@ const onPlayerLogLine = async (
 		return;
 	}
 	const isTeamChat = sayMatch[1] === '_team';
-	const message = sayMatch[2];
+	const message = sayMatch[2]!;
 
 	if (steamId === 'BOT') {
 	} else if (steamId === 'Console') {
@@ -393,7 +393,7 @@ const onPlayerSay = async (
 
 	Events.onPlayerSay(match, player, message, isTeamChat);
 
-	if (Settings.COMMAND_PREFIXES.includes(message[0])) {
+	if (Settings.COMMAND_PREFIXES.includes(message[0]!)) {
 		message = message.substring(1);
 		const parts = message.split(' ').filter((str) => str.length > 0);
 		const commandString = parts.shift()?.toLowerCase();

@@ -23,7 +23,7 @@ export const setup = async () => {
 	const matchesFromStorage = await getAllFromStorage();
 
 	for (let i = 0; i < matchesFromStorage.length; i++) {
-		const matchData = matchesFromStorage[i];
+		const matchData = matchesFromStorage[i]!;
 		if (matchData.state !== 'FINISHED' && !matchData.isStopped) {
 			await loadMatchFromStorage(matchData);
 		}
@@ -53,13 +53,14 @@ const periodicSaver = async () => {
 	const ids = Array.from(matchesToSave.values());
 	matchesToSave.clear();
 	for (let i = 0; i < ids.length; i++) {
-		const match = get(ids[i]);
+		const id = ids[i]!;
+		const match = get(id);
 		if (match) {
 			try {
 				await save(match);
 			} catch (err) {
 				match.log(`Error saving match: ${err}`);
-				matchesToSave.add(ids[i]);
+				matchesToSave.add(id);
 			}
 		}
 	}
@@ -100,7 +101,7 @@ export const getAllFromStorage = async () => {
 	const matches: IMatch[] = [];
 
 	for (let i = 0; i < matchesFromStorage.length; i++) {
-		const fileName = matchesFromStorage[i];
+		const fileName = matchesFromStorage[i]!;
 		const matchData: IMatch | undefined = await Storage.read(fileName);
 		if (matchData && fileName === STORAGE_PREFIX + matchData.id + STORAGE_SUFFIX) {
 			matches.push(matchData);
@@ -153,7 +154,7 @@ export const save = async (match: Match.Match) => {
 export const saveAll = async () => {
 	const allMatches = Array.from(matches.values());
 	for (let i = 0; i < allMatches.length; i++) {
-		await save(allMatches[i]);
+		await save(allMatches[i]!);
 	}
 };
 

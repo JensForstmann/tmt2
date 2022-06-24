@@ -288,10 +288,16 @@ const ensureTeamXY = (match: Match.Match, who: TWho, teamAB: TTeamAB) => {
  * returns undefined if both teams are valid
  */
 const getValidTeamAB = (match: Match.Match, who: TWho): TTeamAB | undefined => {
-	if (who === 'TEAM_A') return 'TEAM_A';
-	if (who === 'TEAM_B') return 'TEAM_B';
-	if (who === 'TEAM_X') return match.data.election.teamX;
-	if (who === 'TEAM_Y') return match.data.election.teamY;
+	switch (who) {
+		case 'TEAM_A':
+			return 'TEAM_A';
+		case 'TEAM_B':
+			return 'TEAM_B';
+		case 'TEAM_X':
+			return match.data.election.teamX;
+		case 'TEAM_Y':
+			return match.data.election.teamY;
+	}
 };
 
 const isValidTeam = (match: Match.Match, who: TWho, teamAB: TTeamAB) => {
@@ -335,7 +341,7 @@ const agreeCommand = async (
 					match,
 					`AGREE WITH ${Settings.COMMAND_PREFIXES[0]}${getCommands(
 						ECommand.AGREE
-					)[0].toLowerCase()}`
+					)[0]?.toLowerCase()}`
 				);
 			}
 			MatchService.scheduleSave(match);
@@ -505,7 +511,7 @@ const restartCommand = async (
 			match,
 			`TYPE ${Settings.COMMAND_PREFIXES[0]}${getCommands(
 				ECommand.RESTART
-			)[0].toLowerCase()} TO CONFIRM AND RESTART`
+			)[0]?.toLowerCase()} TO CONFIRM AND RESTART`
 		);
 	}
 	MatchService.scheduleSave(match);

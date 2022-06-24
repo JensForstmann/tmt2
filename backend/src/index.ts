@@ -8,14 +8,14 @@ import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
 import * as WebSocket from './webSocket';
 
-if (!process.env.TMT_LOG_ADDRESS) {
+if (!process.env['TMT_LOG_ADDRESS']) {
 	throw 'environment variable TMT_LOG_ADDRESS is not set';
 }
-if (!process.env.TMT_LOG_ADDRESS.startsWith('http')) {
+if (!process.env['TMT_LOG_ADDRESS'].startsWith('http')) {
 	throw 'environment variable TMT_LOG_ADDRESS must be an http address';
 }
 
-const PORT = process.env.TMT_PORT || 8080;
+const PORT = process.env['TMT_PORT'] || 8080;
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -84,7 +84,7 @@ app.get('*', express.static(STATIC_PATH));
 app.get('*', (req, res) => res.sendFile(path.join(STATIC_PATH, 'index.html')));
 
 const main = async () => {
-	console.info(`Start TMT (${process.env.COMMIT_SHA || 'no COMMIT_SHA set'})`);
+	console.info(`Start TMT (${process.env['COMMIT_SHA'] || 'no COMMIT_SHA set'})`);
 	await Storage.setup();
 	await Auth.setup();
 	await WebSocket.setup(httpServer);
