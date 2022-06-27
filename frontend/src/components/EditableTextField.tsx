@@ -1,5 +1,4 @@
 import { Component, createSignal, Match, splitProps, Switch } from 'solid-js';
-import classes from './EditableTextField.module.scss';
 
 export const EditableTextField: Component<{
 	label: string;
@@ -69,12 +68,6 @@ export const EditableTextField: Component<{
 					}
 				}}
 				style={props.align === 'right' ? 'text-align: right;' : undefined}
-				classList={{
-					[classes.error]: state() === 'error',
-					[classes.saved]: state() === 'saved',
-					[classes.saving]: state() === 'saving',
-					[classes.changed]: state() === 'changed',
-				}}
 			/>
 			{props.align === 'left' && local.label}
 		</label>

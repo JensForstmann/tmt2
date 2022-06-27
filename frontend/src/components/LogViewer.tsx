@@ -1,29 +1,28 @@
 import { Component, For } from 'solid-js';
 import { LogEvent } from '../../../common';
 import { t } from '../utils/locale';
-import classes from './LogViewer.module.scss';
+import { Card } from './Card';
 
 export const LogViewer: Component<{
 	logs: LogEvent[];
 }> = (props) => {
 	return (
-		<>
-			<div class={classes.card}>
-				<h2>{t('Logs')}</h2>
-				<div class={classes.content}>
-					<div>
-						<For each={props.logs}>
-							{(log) => (
-								<>
-									{eventToString(log)}
-									<br />
-								</>
-							)}
-						</For>
-					</div>
+		<Card>
+			<h2 class="font-bold text-lg">{t('Logs')}</h2>
+			<div class="h-80 overflow-scroll text-left flex flex-col-reverse bg-gray-50">
+				<div>
+					<For each={props.logs}>
+						{(log) => (
+							<>
+								{eventToString(log)}
+								<br />
+							</>
+						)}
+					</For>
+					<br />
 				</div>
 			</div>
-		</>
+		</Card>
 	);
 };
 

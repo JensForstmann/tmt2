@@ -99,7 +99,7 @@ Example:
         "comment": "first auto generated token" // optional comment, might be used in logging
     },
 
-    // mutliple tokens are also possible
+    // multiple tokens are also possible
     "knRRkV41yLBUw1eVwRD9VF": {
         "comment": "Jens"
     },

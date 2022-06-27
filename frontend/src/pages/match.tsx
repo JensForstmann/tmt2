@@ -72,7 +72,7 @@ export const MatchPage: Component = () => {
 	};
 
 	return (
-		<div class="space-y-5">
+		<div class="space-y-5 mt-5 mb-16">
 			<Switch>
 				<Match when={match.error || match() instanceof Error}>
 					<ErrorComponent />

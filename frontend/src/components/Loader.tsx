@@ -1,9 +1,8 @@
 import { Component } from 'solid-js';
-import classes from './Loader.module.scss';
 
 export const Loader: Component = () => (
-	<div class={classes.container}>
-		<div class={classes['lds-ellipsis']}>
+	<div class="w-full text-center">
+		<div class="lds-ellipsis">
 			<div></div>
 			<div></div>
 			<div></div>

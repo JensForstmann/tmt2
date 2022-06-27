@@ -1,8 +1,8 @@
-import { Component, For } from 'solid-js';
-import { IMatch, IMatchUpdateDto, LogEvent } from '../../../common';
+import { Component } from 'solid-js';
+import { IMatch, IMatchUpdateDto } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
-import classes from './MatchActionPanel.module.scss';
+import { Card } from './Card';
 
 export const MatchActionPanel: Component<{
 	match: IMatch;
@@ -33,14 +33,16 @@ export const MatchActionPanel: Component<{
 		};
 
 	return (
-		<div class={classes.card}>
-			<h2>{t('Actions')}</h2>
-			<button onClick={revive}>{t('revive')}</button>
-			<button onClick={mustConfirm(stop)}>{t('stop')}</button>
-			<button onClick={setCurrentMap}>{t('setCurrentMap')}</button>
-			<button onClick={restartElection}>{t('restartElection')}</button>
-			<button onClick={mustConfirm(init)}>{t('init')}</button>
-			<button onClick={mustConfirm(setup)}>{t('setup')}</button>
-		</div>
+		<Card>
+			<h2 class="font-bold text-lg">{t('Actions')}</h2>
+			<div class="space-x-10">
+				<button onClick={revive}>{t('revive')}</button>
+				<button onClick={mustConfirm(stop)}>{t('stop')}</button>
+				<button onClick={setCurrentMap}>{t('setCurrentMap')}</button>
+				<button onClick={restartElection}>{t('restartElection')}</button>
+				<button onClick={mustConfirm(init)}>{t('init')}</button>
+				<button onClick={mustConfirm(setup)}>{t('setup')}</button>
+			</div>
+		</Card>
 	);
 };
