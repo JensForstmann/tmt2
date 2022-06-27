@@ -1,7 +1,5 @@
 import { Component } from 'solid-js';
-import { IMatch } from '../../../common';
-import { TTeamAB, IMatchMap } from '../../../common';
-import { getCurrentTeamSideAndRoundSwitch } from '../utils/helper';
+import { getCurrentTeamSideAndRoundSwitch, IMatch, IMatchMap } from '../../../common';
 import { t } from '../utils/locale';
 import { Card } from './Card';
 

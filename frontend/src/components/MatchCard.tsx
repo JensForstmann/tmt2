@@ -1,7 +1,6 @@
 import { Component, Show } from 'solid-js';
-import { IMatchResponse } from '../../../common';
+import { getMapDraws, getMapScore, IMatchResponse } from '../../../common';
 import { t } from '../utils/locale';
-import { getMapDraws, getMapScore } from '../utils/match';
 import { Card } from './Card';
 
 export const MatchCard: Component<{

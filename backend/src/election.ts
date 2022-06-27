@@ -1,12 +1,5 @@
 import {
-	TElectionState,
-	TMapMode,
-	TMatchSate,
-	TSideFixed,
-	TSideMode,
-	TStep,
-	TTeamAB,
-	TWho,
+	escapeRconString,
 	getOtherTeamAB,
 	IElection,
 	IElectionStep,
@@ -14,13 +7,14 @@ import {
 	IElectionStepSkip,
 	isElectionStepAdd,
 	isElectionStepSkip,
+	TTeamAB,
+	TWho,
 } from '../../common';
 import { ECommand, getCommands } from './commands';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
 import { Settings } from './settings';
-import { escapeRconString } from './utils';
 
 /**
  * @throws if configuration is invalid

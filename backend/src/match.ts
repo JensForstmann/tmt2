@@ -1,11 +1,14 @@
 import { generate as shortUuid } from 'short-uuid';
 import {
+	escapeRconString,
+	getCurrentTeamSideAndRoundSwitch,
 	getOtherTeamAB,
 	IMatch,
 	IMatchCreateDto,
 	IMatchUpdateDto,
 	IPlayer,
 	ITeam,
+	sleep,
 	TTeamAB,
 } from '../../common';
 import { commandMapping, ECommand } from './commands';
@@ -18,7 +21,6 @@ import * as Player from './player';
 import { Rcon } from './rcon-client';
 import { Settings } from './settings';
 import * as Team from './team';
-import { escapeRconString, sleep } from './utils';
 import * as Storage from './storage';
 
 export const STORAGE_LOGS_PREFIX = 'logs_';
@@ -443,7 +445,7 @@ const onCommand = async (
 		}
 
 		const currentCtTeamAB = currentMatchMap
-			? MatchMap.getCurrentTeamSideAndRoundSwitch(currentMatchMap).currentCtTeamAB
+			? getCurrentTeamSideAndRoundSwitch(currentMatchMap).currentCtTeamAB
 			: 'TEAM_A';
 		const currentTTeamAB = getOtherTeamAB(currentCtTeamAB);
 

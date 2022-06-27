@@ -13,15 +13,6 @@ export type TMatchMapSate =
 
 export type TTeamAB = 'TEAM_A' | 'TEAM_B';
 
-export const getOtherTeamAB = (team: TTeamAB): TTeamAB => {
-	switch (team) {
-		case 'TEAM_A':
-			return 'TEAM_B';
-		case 'TEAM_B':
-			return 'TEAM_A';
-	}
-};
-
 export interface IMatchMap {
 	/** map name */
 	name: string;

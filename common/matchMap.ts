@@ -1,7 +1,4 @@
-import { getOtherTeamAB, IMatchMap } from '../../../common';
-// import { getOtherTeamAB } from 'tmt2-common/dist/interfaces/matchMap';
-
-// TODO: duplicate code here & in backend -> move to common
+import { getOtherTeamAB, IMatchMap } from '.';
 
 export const getCurrentTeamSideAndRoundSwitch = (matchMap: IMatchMap) => {
 	const roundsPlayed = matchMap.score.teamA + matchMap.score.teamB;

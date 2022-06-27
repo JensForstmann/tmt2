@@ -1,6 +1,4 @@
-import { IMatch, TTeamAB } from '../../../common';
-
-// TODO: Move to common?
+import { IMatch, TTeamAB } from './types';
 
 export const getMapWins = (match: IMatch, team: TTeamAB): number => {
 	const teamKey = team === 'TEAM_A' ? 'teamA' : 'teamB';
