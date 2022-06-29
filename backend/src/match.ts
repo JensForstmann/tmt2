@@ -1,5 +1,6 @@
 import { generate as shortUuid } from 'short-uuid';
 import {
+	escapeRconSayString,
 	escapeRconString,
 	getCurrentTeamSideAndRoundSwitch,
 	getOtherTeamAB,
@@ -152,7 +153,7 @@ const setup = async (match: Match) => {
 	await execRcon(match, 'mp_backup_round_auto 1');
 	await execRcon(
 		match,
-		'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%team1%_%team2%_%map%_round%round%_score_%score1%_%score2%.txt"'
+		'mp_backup_round_file_pattern "%prefix%_%date%_%time%_%map%_round%round%_score_%score1%_%score2%.txt"'
 	);
 
 	match.log('Setup finished');
@@ -204,7 +205,7 @@ export const execManyRcon = async (match: Match, commands: string[]) => {
 };
 
 export const say = async (match: Match, message: string) => {
-	message = (Settings.SAY_PREFIX + message).replace(/;/g, '');
+	message = escapeRconSayString(Settings.SAY_PREFIX + message);
 	await execRcon(match, `say ${message}`);
 };
 
@@ -266,7 +267,11 @@ export const getRoundBackups = async (match: Match, count: number = 5) => {
 	const response = await execRcon(match, `mp_backup_restore_list_files ${count}`);
 	const lines = response.trim().split('\n');
 	const files = lines.filter((line) => line[0] === ' ').map((line) => line.trim());
-	const totalFiles = parseInt(lines[lines.length - 1]!.split(' ')[0]!);
+	const summaryPattern = /^(\d+) backup files/;
+	const summaryMatch = lines
+		.map((line) => line.match(summaryPattern))
+		.filter((match) => match !== null)[0];
+	const totalFiles = summaryMatch ? parseInt(summaryMatch[1]!) : 0;
 	return {
 		latestFiles: files,
 		total: isNaN(totalFiles) ? 0 : totalFiles,

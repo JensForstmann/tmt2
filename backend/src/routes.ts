@@ -726,6 +726,8 @@ const models: TsoaRoute.Models = {
 				required: true,
 			},
 			type: { dataType: 'enum', enums: ['KNIFE_END'], required: true },
+			mapIndex: { dataType: 'double', required: true },
+			mapName: { dataType: 'string', required: true },
 			winnerTeam: { ref: 'ITeam', required: true },
 		},
 		additionalProperties: false,

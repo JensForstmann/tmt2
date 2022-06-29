@@ -1,8 +1,11 @@
-import { Component } from 'solid-js';
+import { Component, createSignal } from 'solid-js';
 import { IMatch, IMatchUpdateDto } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
+import { mustConfirm } from '../utils/mustConfirm';
 import { Card } from './Card';
+import { Modal } from './Modal';
+import { RoundBackups } from './RoundBackups';
 
 export const MatchActionPanel: Component<{
 	match: IMatch;
@@ -24,13 +27,7 @@ export const MatchActionPanel: Component<{
 	const init = () => patchMatch({ _init: true });
 	const setup = () => patchMatch({ _setup: true });
 
-	const mustConfirm =
-		(fn: Function, msg = t('caution, please confirm')) =>
-		() => {
-			if (confirm(msg)) {
-				fn();
-			}
-		};
+	const [showModal, setShowModal] = createSignal(false);
 
 	return (
 		<Card>
@@ -42,7 +39,14 @@ export const MatchActionPanel: Component<{
 				<button onClick={restartElection}>{t('restartElection')}</button>
 				<button onClick={mustConfirm(init)}>{t('init')}</button>
 				<button onClick={mustConfirm(setup)}>{t('setup')}</button>
+				<button onClick={() => setShowModal(true)}>{t('loadRoundBackup')}</button>
 			</div>
+			<Modal show={showModal()} onBackdropClick={() => setShowModal(false)}>
+				<div class="text-left">
+					<RoundBackups match={props.match} onClose={() => setShowModal(false)} />
+				</div>
+				<button onClick={() => setShowModal(false)}>{t('close')}</button>
+			</Modal>
 		</Card>
 	);
 };

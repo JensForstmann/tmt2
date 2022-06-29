@@ -1,8 +1,8 @@
 import { useParams, useSearchParams } from 'solid-app-router';
-import { Component, createEffect, createSignal, For, Match, onCleanup, Switch } from 'solid-js';
-import { ChatEvent, Event, LogEvent } from '../../../common';
+import { Component, createEffect, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js';
+import { createStore } from 'solid-js/store';
+import { ChatEvent, escapeRconSayString, Event, IMatchResponse, LogEvent } from '../../../common';
 import { Chat } from '../components/Chat';
-import { Error as ErrorComponent } from '../components/Error';
 import { GameServerCard } from '../components/GameServerCard';
 import { Loader } from '../components/Loader';
 import { LogViewer } from '../components/LogViewer';
@@ -10,38 +10,63 @@ import { MatchActionPanel } from '../components/MatchActionPanel';
 import { MatchCard } from '../components/MatchCard';
 import { MatchMapCard } from '../components/MatchMapCard';
 import { PlayerListCard } from '../components/PlayerListCard';
-import { useMatch } from '../utils/fetcher';
+import { createFetcher } from '../utils/fetcher';
 import { createWebsocket } from '../utils/websocket';
 
 export const MatchPage: Component = () => {
 	const params = useParams();
-	const [searchParams, setSearchParams] = useSearchParams();
-	const { resource: match, patcher, mutate, fetcher } = useMatch(params.id, searchParams.secret);
-	const [logEvents, setLogEvents] = createSignal<LogEvent[]>([]);
-	const [chatEvents, setChatEvents] = createSignal<ChatEvent[]>([]);
+	const [searchParams] = useSearchParams();
+	const [data, setData] = createStore<{
+		match?: IMatchResponse;
+		logEvents?: LogEvent[];
+		chatEvents?: ChatEvent[];
+	}>({});
+	const fetcher = createFetcher(searchParams.secret);
+	const setMatchData = () =>
+		fetcher<IMatchResponse>('GET', `/api/matches/${params.id}`).then((match) => {
+			setData('match', match);
+		});
+	const timer = setInterval(setMatchData, 10000);
+	onCleanup(() => clearInterval(timer));
 
-	fetcher('GET', `/api/matches/${params.id}/events`).then((events: Event[]) => {
-		setChatEvents([
-			...chatEvents(),
-			...events.filter((event): event is ChatEvent => event.type === 'CHAT'),
-		]);
-		setLogEvents([
-			...logEvents(),
-			...events.filter((event): event is LogEvent => event.type === 'LOG'),
-		]);
+	onMount(async () => {
+		setMatchData();
+		fetcher<Event[]>('GET', `/api/matches/${params.id}/events`).then((events) => {
+			if (!events) {
+				return;
+			}
+			setData('chatEvents', [
+				...(data.chatEvents ?? []),
+				...events.filter((event): event is ChatEvent => event.type === 'CHAT'),
+			]);
+			setData('logEvents', [
+				...(data.logEvents! ?? []),
+				...events.filter((event): event is LogEvent => event.type === 'LOG'),
+			]);
+		});
 	});
 
 	const onWsMsg = (msg: Event) => {
-		console.log(msg);
-		const m = match();
-		if (!m) {
-			return;
-		}
+		console.log('onWsMsg', msg.type, msg);
 
 		if (msg.type === 'CHAT') {
-			setChatEvents([...chatEvents(), msg]);
+			setData('chatEvents', (x) => [...(x ?? []), msg]);
 		} else if (msg.type === 'LOG') {
-			setLogEvents([...logEvents(), msg]);
+			setData('logEvents', [...(data.logEvents ?? []), msg]);
+		} else if (msg.type === 'MAP_ELECTION_END') {
+			setData('match', 'state', 'MATCH_MAP');
+		} else if (msg.type === 'KNIFE_END') {
+			setData('match', 'matchMaps', msg.mapIndex, 'state', 'AFTER_KNIFE');
+			// setData('match', 'matchMaps', msg.mapIndex, 'knifeWinner', msg.); // TODO: set knife winner
+		} else if (msg.type === 'ROUND_END') {
+			setData('match', 'matchMaps', msg.mapIndex, 'score', 'teamA', msg.scoreTeamA);
+			setData('match', 'matchMaps', msg.mapIndex, 'score', 'teamB', msg.scoreTeamB);
+		} else if (msg.type === 'MAP_START') {
+			setData('match', 'matchMaps', msg.mapIndex, 'state', 'IN_PROGRESS');
+		} else if (msg.type === 'MAP_END') {
+			setData('match', 'matchMaps', msg.mapIndex, 'state', 'FINISHED');
+		} else if (msg.type === 'MATCH_END') {
+			setData('match', 'state', 'FINISHED');
 		}
 	};
 
@@ -50,17 +75,16 @@ export const MatchPage: Component = () => {
 	});
 
 	createEffect(() => {
-		if (match()) {
+		if (data.match) {
 			connect();
 		}
 	});
 
 	createEffect(() => {
-		const m = match();
-		if (state() === 'OPEN' && m) {
+		if (state() === 'OPEN' && data.match) {
 			subscribe({
 				matchId: params.id,
-				token: m.tmtSecret,
+				token: data.match.tmtSecret,
 			});
 		}
 	});
@@ -68,34 +92,41 @@ export const MatchPage: Component = () => {
 	onCleanup(() => disconnect());
 
 	const sendChatMessage = (msg: string) => {
-		fetcher('POST', `/api/matches/${params.id}/server/rcon`, [`say ${msg.replace(/;/g, '')}`]);
+		fetcher('POST', `/api/matches/${params.id}/server/rcon`, [
+			`say ${escapeRconSayString(msg)}`,
+		]);
 	};
 
 	return (
 		<div class="space-y-5 mt-5 mb-16">
 			<Switch>
-				<Match when={match.error || match() instanceof Error}>
-					<ErrorComponent />
-				</Match>
-				<Match when={match() !== undefined}>
-					<MatchActionPanel match={match()!} />
-					<MatchCard match={match()!} />
-					<For each={match()?.matchMaps}>
-						{(map, i) => (
-							<MatchMapCard
-								map={map}
-								match={match()!}
-								isCurrent={match()!.currentMap === i()}
-							/>
-						)}
-					</For>
-					<GameServerCard match={match()!} />
-					<PlayerListCard match={match()!} />
-					<Chat messages={chatEvents()} sendMessage={sendChatMessage} />
-					<LogViewer logs={logEvents()} />
-				</Match>
-				<Match when={match.loading}>
+				<Match when={!data.match}>
 					<Loader />
+				</Match>
+				<Match when={data.match}>
+					{(match) => (
+						<>
+							<MatchActionPanel match={match} />
+							<MatchCard match={match} />
+							<For each={match.matchMaps}>
+								{(map, i) => (
+									<MatchMapCard
+										map={map}
+										match={match}
+										isCurrent={match.currentMap === i()}
+									/>
+								)}
+							</For>
+							<GameServerCard match={match} />
+							<PlayerListCard match={match} />
+							<Show when={data.chatEvents}>
+								<Chat messages={data.chatEvents!} sendMessage={sendChatMessage} />
+							</Show>
+							<Show when={data.logEvents}>
+								<LogViewer logs={data.logEvents!} />
+							</Show>
+						</>
+					)}
 				</Match>
 			</Switch>
 		</div>

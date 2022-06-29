@@ -1352,6 +1352,13 @@
 						],
 						"nullable": false
 					},
+					"mapIndex": {
+						"type": "number",
+						"format": "double"
+					},
+					"mapName": {
+						"type": "string"
+					},
 					"winnerTeam": {
 						"$ref": "#/components/schemas/ITeam"
 					}
@@ -1361,6 +1368,8 @@
 					"matchId",
 					"matchPassthrough",
 					"type",
+					"mapIndex",
+					"mapName",
 					"winnerTeam"
 				],
 				"type": "object",

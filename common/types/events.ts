@@ -71,6 +71,8 @@ export interface MatchEndEvent extends BaseEvent {
 
 export interface KnifeRoundEndEvent extends BaseEvent {
 	type: 'KNIFE_END';
+	mapIndex: number;
+	mapName: string;
 	winnerTeam: ITeam;
 }
 

@@ -1,7 +1,5 @@
 import { useNavigate } from 'solid-app-router';
-import { createResource, createSignal } from 'solid-js';
-import { IMatchResponse, IMatchUpdateDto } from '../../../common';
-import { sleep } from './sleep';
+import { createSignal } from 'solid-js';
 
 const API_HOST = import.meta.env.DEV
 	? `${window.location.protocol}//${window.location.hostname}:8080`
@@ -44,7 +42,12 @@ export const logout = () => {
 
 type HttpMethods = 'GET' | 'PATCH' | 'POST' | 'DELETE';
 export const createFetcher = (token?: string) => {
-	return async (method: HttpMethods, path: string, body?: any, init?: RequestInit) => {
+	return async <T>(
+		method: HttpMethods,
+		path: string,
+		body?: any,
+		init?: RequestInit
+	): Promise<T | undefined> => {
 		const tkn = token ?? getToken();
 		const response = await fetch(`${API_HOST}${path}`, {
 			...init,
@@ -63,38 +66,11 @@ export const createFetcher = (token?: string) => {
 			const { pathname, search, hash } = window.location;
 			const encodedPath = encodeURIComponent(pathname + search + hash);
 			window.location.assign(`/login?path=${encodedPath}`);
-			return;
+			return undefined;
 		} else if (response.headers.get('Content-Type')?.startsWith('application/json')) {
 			return response.json();
 		} else {
-			return;
+			return undefined;
 		}
-	};
-};
-
-export const useMatch = (id: string, tmtSecret?: string) => {
-	const fetcher = createFetcher(tmtSecret);
-	const [resource, { mutate, refetch }] = createResource(
-		() => fetcher('GET', `/api/matches/${id}`) as Promise<IMatchResponse>
-	);
-	return {
-		fetcher,
-		resource,
-		mutate,
-		refetch,
-		patcher: async (body: IMatchUpdateDto) => {
-			await sleep(500);
-			const successful2 = Math.random() > 0.5;
-			if (successful2) {
-				const successful = await fetcher('PATCH', `/api/matches/${id}`, body);
-				// mutate({
-				//     ...resource(),
-				//     ...body,
-				// } as IMatch);
-				mutate(await fetcher('GET', `/api/matches/${id}`));
-				return successful;
-			}
-			return successful2;
-		},
 	};
 };

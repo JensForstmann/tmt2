@@ -70,6 +70,8 @@ export const onElectionEnd = (match: Match.Match) => {
 export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: ITeam) => {
 	const data: KnifeRoundEndEvent = {
 		...getBaseEvent(match, 'KNIFE_END'),
+		mapIndex: match.data.currentMap,
+		mapName: matchMap.name,
 		winnerTeam: winnerTeam,
 	};
 	send(match, data);

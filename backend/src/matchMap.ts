@@ -459,5 +459,9 @@ export const update = async (match: Match.Match, matchMap: IMatchMap, dto: IMatc
 		matchMap.startAsCtTeam = dto.startAsCtTeam;
 	}
 
+	if (dto.score) {
+		matchMap.score = dto.score;
+	}
+
 	MatchService.scheduleSave(match);
 };
