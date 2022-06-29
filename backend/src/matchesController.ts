@@ -185,13 +185,13 @@ export class MatchesController extends Controller {
 		id: string,
 		@Body() requestBody: string[],
 		@Request() { user }: { user: IAuthResponse }
-	): Promise<void> {
+	): Promise<string[] | void> {
 		const match = MatchService.get(id);
 		if (!match) {
 			this.setStatus(404);
 			return;
 		}
-		await Match.execManyRcon(match, requestBody);
+		return await Match.execManyRcon(match, requestBody);
 	}
 
 	@NoSecurity()

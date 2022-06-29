@@ -199,9 +199,11 @@ export const execRcon = async (match: Match, command: string) => {
 };
 
 export const execManyRcon = async (match: Match, commands: string[]) => {
+	const responses = [];
 	for (let i = 0; i < commands.length; i++) {
-		await execRcon(match, commands[i]!);
+		responses.push(await execRcon(match, commands[i]!));
 	}
+	return responses;
 };
 
 export const say = async (match: Match, message: string) => {

@@ -10,6 +10,7 @@ import { MatchActionPanel } from '../components/MatchActionPanel';
 import { MatchCard } from '../components/MatchCard';
 import { MatchMapCard } from '../components/MatchMapCard';
 import { PlayerListCard } from '../components/PlayerListCard';
+import { Rcon } from '../components/Rcon';
 import { createFetcher } from '../utils/fetcher';
 import { createWebsocket } from '../utils/websocket';
 
@@ -125,6 +126,7 @@ export const MatchPage: Component = () => {
 							<Show when={data.logEvents}>
 								<LogViewer logs={data.logEvents!} />
 							</Show>
+							<Rcon match={match} />
 						</>
 					)}
 				</Match>
