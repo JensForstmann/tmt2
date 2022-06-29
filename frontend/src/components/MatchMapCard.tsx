@@ -9,13 +9,24 @@ export const MatchMapCard: Component<{
 	map: IMatchMap;
 	isCurrent: boolean;
 }> = (props) => {
-	const teamA = () =>
-		!props.isCurrent
-			? ''
-			: getCurrentTeamSideAndRoundSwitch(props.map).currentCtTeamAB === 'TEAM_A'
+	const teamA = () => {
+		if (!props.isCurrent || props.map.state === 'FINISHED') {
+			return '';
+		}
+		return getCurrentTeamSideAndRoundSwitch(props.map).currentCtTeamAB === 'TEAM_A'
 			? '(CT)'
 			: '(T)';
-	const teamB = () => (!props.isCurrent ? '' : teamA() === '(CT)' ? '(T)' : '(CT)');
+	};
+	const teamB = () => {
+		switch (teamA()) {
+			case '(CT)':
+				return '(T)';
+			case '(T)':
+				return '(CT)';
+			default:
+				return '';
+		}
+	};
 	return (
 		<Card>
 			<h3 class="font-light text-base">
