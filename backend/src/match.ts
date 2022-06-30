@@ -281,6 +281,7 @@ export const getRoundBackups = async (match: Match, count: number = 5) => {
 };
 
 export const loadRoundBackup = async (match: Match, file: string) => {
+	await execRcon(match, 'mp_backup_restore_load_autopause 1');
 	const response = await execRcon(match, `mp_backup_restore_load_file "${file}"`);
 	if (response.includes('Failed to load file:')) {
 		match.log(`Error loading round backup: ${response}`);
@@ -319,7 +320,7 @@ export const onLog = async (match: Match, body: string) => {
 const onLogLine = async (match: Match, line: string) => {
 	if (!line) return;
 
-	//09/14/2020 - 15:11:58.307 - "Yenz<2><STEAM_1:0:8520813><TERRORIST>" say "Hello World"
+	//09/14/2020 - 15:11:58.307 - "PlayerName<2><STEAM_1:0:7426845><TERRORIST>" say "Hello World"
 	// console.debug('line:', line);
 	const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
 
@@ -750,6 +751,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		match.data.state = 'ELECTION';
 		match.data.election = Election.create(match.data.mapPool, match.data.electionSteps);
 		match.data.matchMaps = [];
+		match.data.currentMap = 0;
 		await Election.auto(match);
 	}
 

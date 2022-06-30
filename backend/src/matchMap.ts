@@ -463,5 +463,9 @@ export const update = async (match: Match.Match, matchMap: IMatchMap, dto: IMatc
 		matchMap.score = dto.score;
 	}
 
+	if (dto._refreshOvertimeAndMaxRoundsSettings) {
+		await refreshOvertimeAndMaxRoundsSettings(match, matchMap);
+	}
+
 	MatchService.scheduleSave(match);
 };

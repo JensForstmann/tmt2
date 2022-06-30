@@ -3,6 +3,7 @@ import { getCurrentTeamSideAndRoundSwitch, IMatch, IMatchMap } from '../../../co
 import pencil from '../assets/icons/pencil.svg';
 import { t } from '../utils/locale';
 import { Card } from './Card';
+import { CardMenu } from './CardMenu';
 
 export const MatchMapCard: Component<{
 	match: IMatch;
@@ -29,6 +30,13 @@ export const MatchMapCard: Component<{
 	};
 	return (
 		<Card>
+			<CardMenu
+				entries={[
+					[t('change map'), () => {}],
+					[t('change state'), () => {}],
+					[t('load this map'), () => {}],
+				]}
+			/>
 			<h3 class="font-light text-base">
 				{props.map.name}
 				<img class="inline align-baseline ml-1" src={pencil} />

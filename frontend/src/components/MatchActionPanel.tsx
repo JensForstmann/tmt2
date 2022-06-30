@@ -13,7 +13,6 @@ export const MatchActionPanel: Component<{
 	const fetcher = createFetcher(props.match.tmtSecret);
 	const patchMatch = (dto: IMatchUpdateDto) =>
 		fetcher('PATCH', `/api/matches/${props.match.id}`, dto);
-	const revive = () => fetcher('PATCH', `/api/matches/${props.match.id}/revive`);
 	const stop = () => fetcher('DELETE', `/api/matches/${props.match.id}`);
 	const setCurrentMap = () => {
 		const response = prompt(t('set current map'), '0');
@@ -33,7 +32,6 @@ export const MatchActionPanel: Component<{
 		<Card>
 			<h2 class="font-bold text-lg">{t('Actions')}</h2>
 			<div class="space-x-10">
-				<button onClick={revive}>{t('revive')}</button>
 				<button onClick={mustConfirm(stop)}>{t('stop')}</button>
 				<button onClick={setCurrentMap}>{t('setCurrentMap')}</button>
 				<button onClick={restartElection}>{t('restartElection')}</button>

@@ -9,6 +9,7 @@ import { LogViewer } from '../components/LogViewer';
 import { MatchActionPanel } from '../components/MatchActionPanel';
 import { MatchCard } from '../components/MatchCard';
 import { MatchMapCard } from '../components/MatchMapCard';
+import { NotLiveCard } from '../components/NotLiveCard';
 import { PlayerListCard } from '../components/PlayerListCard';
 import { Rcon } from '../components/Rcon';
 import { createFetcher } from '../utils/fetcher';
@@ -27,8 +28,8 @@ export const MatchPage: Component = () => {
 		fetcher<IMatchResponse>('GET', `/api/matches/${params.id}`).then((match) => {
 			setData('match', match);
 		});
-	const timer = setInterval(setMatchData, 10000);
-	onCleanup(() => clearInterval(timer));
+	// const timer = setInterval(setMatchData, 10000);
+	// onCleanup(() => clearInterval(timer));
 
 	onMount(async () => {
 		setMatchData();
@@ -99,38 +100,34 @@ export const MatchPage: Component = () => {
 	};
 
 	return (
-		<div class="space-y-5 mt-5 mb-16">
-			<Switch>
-				<Match when={!data.match}>
-					<Loader />
-				</Match>
-				<Match when={data.match}>
-					{(match) => (
-						<>
-							<MatchActionPanel match={match} />
-							<MatchCard match={match} />
-							<For each={match.matchMaps}>
-								{(map, i) => (
-									<MatchMapCard
-										map={map}
-										match={match}
-										isCurrent={match.currentMap === i()}
-									/>
-								)}
-							</For>
-							<GameServerCard match={match} />
-							<PlayerListCard match={match} />
-							<Show when={data.chatEvents}>
-								<Chat messages={data.chatEvents!} sendMessage={sendChatMessage} />
-							</Show>
-							<Show when={data.logEvents}>
-								<LogViewer logs={data.logEvents!} />
-							</Show>
-							<Rcon match={match} />
-						</>
-					)}
-				</Match>
-			</Switch>
-		</div>
+		<Show when={data.match} fallback={<Loader />}>
+			{(match) => (
+				<div class="space-y-5 mt-5 mb-16">
+					<Show when={!match.isLive}>
+						<NotLiveCard match={match} />
+					</Show>
+					<MatchActionPanel match={match} />
+					<MatchCard match={match} />
+					<For each={match.matchMaps}>
+						{(map, i) => (
+							<MatchMapCard
+								map={map}
+								match={match}
+								isCurrent={match.currentMap === i()}
+							/>
+						)}
+					</For>
+					<GameServerCard match={match} />
+					<PlayerListCard match={match} />
+					<Show when={data.chatEvents}>
+						<Chat messages={data.chatEvents!} sendMessage={sendChatMessage} />
+					</Show>
+					<Show when={data.logEvents}>
+						<LogViewer logs={data.logEvents!} />
+					</Show>
+					<Rcon match={match} />
+				</div>
+			)}
+		</Show>
 	);
 };
