@@ -1,7 +1,7 @@
 import { Component, createResource, onCleanup } from 'solid-js';
 import { Loader } from '../components/Loader';
 import { MatchList } from '../components/MatchList';
-import { IMatch } from '../../../common';
+import { IMatchResponse } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { useSearchParams } from 'solid-app-router';
@@ -12,7 +12,7 @@ export const MatchesPage: Component = () => {
 	const fetcher = createFetcher();
 	const [matches] = createResource(
 		() => searchParams.isLive ?? 'true',
-		(s: string) => fetcher<IMatch[]>('GET', `/api/matches?isLive=${s}`)
+		(s: string) => fetcher<IMatchResponse[]>('GET', `/api/matches?isLive=${s}`)
 	);
 	return (
 		<>

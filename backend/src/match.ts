@@ -72,6 +72,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		isStopped: false,
 		electionMap: dto.electionMap ?? 'de_dust2',
 		tmtSecret: shortUuid(),
+		serverPassword: '',
 	};
 	const match = await createFromData(data);
 	await init(match);
@@ -211,6 +212,16 @@ export const say = async (match: Match, message: string) => {
 	await execRcon(match, `say ${message}`);
 };
 
+export const getConfigVar = async (match: Match, configVar: string): Promise<string> => {
+	const response = await execRcon(match, configVar);
+	const configVarPattern = new RegExp(`^"${configVar}" = "(.*?)"`);
+	const configVarMatch = response.match(configVarPattern);
+	if (configVarMatch) {
+		return configVarMatch[1]!;
+	}
+	return '';
+};
+
 const sayPeriodicMessage = async (match: Match) => {
 	if (match.periodicTimerId) {
 		clearTimeout(match.periodicTimerId);
@@ -223,6 +234,9 @@ const sayPeriodicMessage = async (match: Match) => {
 			match.log(`Error in sayPeriodicMessage: ${err}`);
 		}
 	}, Settings.PERIODIC_MESSAGE_FREQUENCY);
+
+	match.data.serverPassword =
+		(await getConfigVar(match, 'sv_password')) || match.data.serverPassword;
 
 	if (match.data.state === 'ELECTION') {
 		await Election.sayPeriodicMessage(match);

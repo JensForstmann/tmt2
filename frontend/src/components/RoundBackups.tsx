@@ -1,12 +1,12 @@
 import { Component, createResource, For, Match, Switch } from 'solid-js';
-import { IMatch } from '../../../common';
+import { IMatchResponse } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { mustConfirm } from '../utils/mustConfirm';
 import { ErrorComponent } from './ErrorComponent';
 import { Loader } from './Loader';
 
 export const RoundBackups: Component<{
-	match: IMatch;
+	match: IMatchResponse;
 	onClose?: () => void;
 }> = (props) => {
 	const fetcher = createFetcher(props.match.tmtSecret);

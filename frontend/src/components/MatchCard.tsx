@@ -1,21 +1,52 @@
 import { Component, Show } from 'solid-js';
-import { getMapDraws, getMapScore, IMatchResponse } from '../../../common';
+import {
+	getMapDraws,
+	getMapScore,
+	IMatchResponse,
+	IMatchUpdateDto,
+	TMatchSate,
+} from '../../../common';
+import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
+import { mustConfirm } from '../utils/mustConfirm';
 import { Card } from './Card';
 import { CardMenu } from './CardMenu';
 
 export const MatchCard: Component<{
 	match: IMatchResponse;
 }> = (props) => {
+	const fetcher = createFetcher(props.match.tmtSecret);
+	const patchMatch = (dto: IMatchUpdateDto) =>
+		fetcher('PATCH', `/api/matches/${props.match.id}`, dto);
+	const stop = () => fetcher('DELETE', `/api/matches/${props.match.id}`);
+	const restartElection = () => patchMatch({ _restartElection: true });
+	const init = () => patchMatch({ _init: true });
+	const setup = () => patchMatch({ _setup: true });
+	const revive = () => fetcher('PATCH', `/api/matches/${props.match.id}/revive`);
+	const changeState = () => {
+		const response = prompt(t('enter state'), 'MATCH_MAP');
+		if (response) {
+			patchMatch({
+				state: response as TMatchSate,
+			});
+		}
+	};
+
 	return (
 		<Card>
 			<CardMenu
-				entries={[
-					[t('stop'), () => {}],
-					[t('restart election'), () => {}],
-					[t('init'), () => {}],
-					[t('setup'), () => {}],
-				]}
+				show
+				entries={
+					props.match.isLive
+						? [
+								[t('stop'), mustConfirm(stop)],
+								[t('restart election'), mustConfirm(restartElection)],
+								[t('init'), init],
+								[t('setup'), setup],
+								[t('change state'), changeState],
+						  ]
+						: [[t('revive'), mustConfirm(revive)]]
+				}
 			/>
 			<h2 class="font-bold text-lg">{t('Map Wins')}</h2>
 			<p class="space-x-5 flex basis-1/3 justify-center items-center">

@@ -63,6 +63,8 @@ export interface IMatch {
 	isStopped: boolean;
 	/** this map will be loaded on match init (defaults to de_dust2 if not set) */
 	electionMap: string;
+	/** Server password, periodically fetched from game server */
+	serverPassword: string;
 }
 
 export interface IMatchResponse extends IMatch {

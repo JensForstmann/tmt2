@@ -1,8 +1,9 @@
-import { Component, createSignal, For, JSX, onCleanup, Show } from 'solid-js';
+import { Component, createSignal, For, JSX, onCleanup } from 'solid-js';
 import threeDotsVertical from '../assets/icons/three-dots-vertical.svg';
 
 export const CardMenu: Component<{
-	entries: [JSX.Element, () => void][];
+	show: boolean;
+	entries: Array<false | [JSX.Element, () => void]>;
 }> = (props) => {
 	let ref: HTMLDivElement | undefined;
 
@@ -35,16 +36,26 @@ export const CardMenu: Component<{
 	onCleanup(closeMenu);
 
 	return (
-		<div ref={ref} class="absolute right-3 top-3 text-right">
-			<button onClick={toggleMenu}>
-				<img src={threeDotsVertical} />
-			</button>
-			<Show when={showMenu()}>
-				<div class="text-left">
-					<ul>
-						<For each={props.entries}>
-							{(entry) => (
+		<>
+			<div
+				ref={ref}
+				class={`absolute right-3 top-3 text-right ${props.show ? '' : 'hidden'}`}
+			>
+				<button onClick={toggleMenu}>
+					<img src={threeDotsVertical} />
+				</button>
+			</div>
+			<div
+				class={`${
+					showMenu() ? 'max-h-full' : 'max-h-0'
+				} overflow-hidden text-left absolute rounded-br-lg rounded-bl-lg shadow-md shadow-gray-400 right-9 top-0 bg-gray-300 transition-all hover:cursor-pointer`}
+			>
+				<ul>
+					<For each={props.entries}>
+						{(entry) =>
+							entry && (
 								<li
+									class="hover:bg-gray-200 pl-2 pr-2 first:pt-1 last:pb-1 text-sm"
 									onClick={() => {
 										closeMenu();
 										entry[1]();
@@ -52,11 +63,11 @@ export const CardMenu: Component<{
 								>
 									{entry[0]}
 								</li>
-							)}
-						</For>
-					</ul>
-				</div>
-			</Show>
-		</div>
+							)
+						}
+					</For>
+				</ul>
+			</div>
+		</>
 	);
 };

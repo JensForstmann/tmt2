@@ -1,12 +1,12 @@
 import { Component, createSignal, For } from 'solid-js';
-import { IMatch } from '../../../common';
+import { IMatchResponse } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
 import { Card } from './Card';
 
 export const Rcon: Component<{
-	match: IMatch;
+	match: IMatchResponse;
 }> = (props) => {
 	const fetcher = createFetcher(props.match.tmtSecret);
 	const execRcon = async (command: string) => {

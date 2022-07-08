@@ -6,7 +6,6 @@ import { Chat } from '../components/Chat';
 import { GameServerCard } from '../components/GameServerCard';
 import { Loader } from '../components/Loader';
 import { LogViewer } from '../components/LogViewer';
-import { MatchActionPanel } from '../components/MatchActionPanel';
 import { MatchCard } from '../components/MatchCard';
 import { MatchMapCard } from '../components/MatchMapCard';
 import { NotLiveCard } from '../components/NotLiveCard';
@@ -106,16 +105,9 @@ export const MatchPage: Component = () => {
 					<Show when={!match.isLive}>
 						<NotLiveCard match={match} />
 					</Show>
-					<MatchActionPanel match={match} />
 					<MatchCard match={match} />
 					<For each={match.matchMaps}>
-						{(map, i) => (
-							<MatchMapCard
-								map={map}
-								match={match}
-								isCurrent={match.currentMap === i()}
-							/>
-						)}
+						{(map, i) => <MatchMapCard match={match} map={map} mapIndex={i()} />}
 					</For>
 					<GameServerCard match={match} />
 					<PlayerListCard match={match} />

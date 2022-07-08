@@ -1,9 +1,9 @@
 import { Link } from 'solid-app-router';
 import { Component, For, Show } from 'solid-js';
-import { getTotalNumberOfMaps, IMatch } from '../../../common';
+import { getTotalNumberOfMaps, IMatchResponse } from '../../../common';
 import { t } from '../utils/locale';
 
-export const MatchList: Component<{ matches: IMatch[] }> = (props) => {
+export const MatchList: Component<{ matches: IMatchResponse[] }> = (props) => {
 	return (
 		<>
 			<table>

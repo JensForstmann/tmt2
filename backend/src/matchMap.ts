@@ -202,20 +202,10 @@ const startMatch = async (match: Match.Match, matchMap: IMatchMap) => {
 };
 
 const refreshOvertimeAndMaxRoundsSettings = async (match: Match.Match, matchMap: IMatchMap) => {
-	matchMap.overTimeEnabled = (await getConfigVar(match, 'mp_overtime_enable')) === '1';
-	matchMap.overTimeMaxRounds = parseInt(await getConfigVar(match, 'mp_overtime_maxrounds'));
-	matchMap.maxRounds = parseInt(await getConfigVar(match, 'mp_maxrounds'));
+	matchMap.overTimeEnabled = (await Match.getConfigVar(match, 'mp_overtime_enable')) === '1';
+	matchMap.overTimeMaxRounds = parseInt(await Match.getConfigVar(match, 'mp_overtime_maxrounds'));
+	matchMap.maxRounds = parseInt(await Match.getConfigVar(match, 'mp_maxrounds'));
 	MatchService.scheduleSave(match);
-};
-
-const getConfigVar = async (match: Match.Match, configVar: string): Promise<string> => {
-	const response = await Match.execRcon(match, configVar);
-	const configVarPattern = new RegExp(`^"${configVar}" = "(.*?)"`);
-	const configVarMatch = response.match(configVarPattern);
-	if (configVarMatch) {
-		return configVarMatch[1]!;
-	}
-	return '';
 };
 
 export const onMapEnd = async (match: Match.Match, matchMap: IMatchMap) => {

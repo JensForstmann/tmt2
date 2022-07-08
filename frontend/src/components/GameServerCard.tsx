@@ -1,25 +1,20 @@
 import { Component } from 'solid-js';
-import { IMatch } from '../../../common';
-import pencil from '../assets/icons/pencil.svg';
+import { IMatchResponse } from '../../../common';
 import { t } from '../utils/locale';
 import { Card } from './Card';
 
 export const GameServerCard: Component<{
-	match: IMatch;
+	match: IMatchResponse;
 }> = (props) => {
-	const ipPort = `${props.match.gameServer.ip}:${props.match.gameServer.port}`;
-	const password = ``;
-	const steamUrl = `steam://connect/${ipPort}/${password}`;
+	const ipPort = () => `${props.match.gameServer.ip}:${props.match.gameServer.port}`;
+	const steamUrl = () => `steam://connect/${ipPort()}/${props.match.serverPassword}`;
 	return (
 		<Card>
-			<h2 class="font-bold text-lg">
-				{t('Game Server')}
-				<img class="inline align-baseline ml-1" src={pencil} />
-			</h2>
+			<h2 class="font-bold text-lg">{t('Game Server')}</h2>
 			<p>
-				<a href={steamUrl}>{steamUrl}</a>
+				<a href={steamUrl()}>{steamUrl()}</a>
 				<br />
-				sv_password "{password}"; connect {ipPort};
+				sv_password "{props.match.serverPassword}"; connect {ipPort()};
 			</p>
 		</Card>
 	);
