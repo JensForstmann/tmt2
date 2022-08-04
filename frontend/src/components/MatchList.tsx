@@ -1,4 +1,4 @@
-import { Link } from 'solid-app-router';
+import { Link } from '@solidjs/router';
 import { Component, For, Show } from 'solid-js';
 import { getTotalNumberOfMaps, IMatchResponse } from '../../../common';
 import { t } from '../utils/locale';

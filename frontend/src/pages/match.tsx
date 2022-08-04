@@ -1,4 +1,4 @@
-import { useParams, useSearchParams } from 'solid-app-router';
+import { useParams, useSearchParams } from '@solidjs/router';
 import { Component, createEffect, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { ChatEvent, escapeRconSayString, Event, IMatchResponse, LogEvent } from '../../../common';

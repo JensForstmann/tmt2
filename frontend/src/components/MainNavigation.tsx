@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'solid-app-router';
+import { Link, useLocation } from '@solidjs/router';
 import { Component, createSignal, Match, Show, splitProps, Switch } from 'solid-js';
 import { cycleDarkMode } from '../App';
 import logo from '../assets/logo.svg';

@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from 'solid-app-router';
+import { useNavigate, useSearchParams } from '@solidjs/router';
 import { Component, createSignal } from 'solid-js';
 import { getToken, login } from '../utils/fetcher';
 import { t } from '../utils/locale';

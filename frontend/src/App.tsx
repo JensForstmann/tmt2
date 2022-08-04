@@ -1,4 +1,4 @@
-import { Route, Routes } from 'solid-app-router';
+import { Route, Routes } from '@solidjs/router';
 import { Component, onMount } from 'solid-js';
 import { MainNavigation } from './components/MainNavigation';
 import { CreatePage } from './pages/create';
@@ -45,7 +45,7 @@ export const App: Component = () => {
 					<Route path="/matches/:id" element={<MatchPage />} />
 					<Route path="/login" element={<LoginPage />} />
 					<Route path="/logout" element={<LogoutPage />} />
-					<Route path={['/', '/create'] as any as string} element={<CreatePage />} />
+					<Route path={['/', '/create']} element={<CreatePage />} />
 					<Route path="/*" element={<NotFoundPage />} />
 				</Routes>
 			</main>

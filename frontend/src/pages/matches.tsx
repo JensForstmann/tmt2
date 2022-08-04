@@ -4,7 +4,7 @@ import { MatchList } from '../components/MatchList';
 import { IMatchResponse } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
-import { useSearchParams } from 'solid-app-router';
+import { useSearchParams } from '@solidjs/router';
 import { ErrorComponent } from '../components/ErrorComponent';
 
 export const MatchesPage: Component = () => {

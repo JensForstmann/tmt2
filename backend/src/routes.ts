@@ -9,6 +9,7 @@ import {
 	TsoaRoute,
 	HttpStatusCodeLiteral,
 	TsoaResponse,
+	fetchMiddlewares,
 } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { LoginController } from './loginController';
@@ -17,6 +18,7 @@ import { MatchesController } from './matchesController';
 import { expressAuthentication } from './auth';
 // @ts-ignore - no great way to install types from subpackage
 const promiseAny = require('promise.any');
+import type { RequestHandler } from 'express';
 import * as express from 'express';
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -878,6 +880,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.post(
 		'/api/login',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(LoginController),
+		...fetchMiddlewares<RequestHandler>(LoginController.prototype.login),
 
 		function LoginController_login(request: any, response: any, next: any) {
 			const args = {};
@@ -900,6 +904,8 @@ export function RegisterRoutes(app: express.Router) {
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.post(
 		'/api/matches',
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.createMatch),
 
 		function MatchesController_createMatch(request: any, response: any, next: any) {
 			const args = {
@@ -920,7 +926,7 @@ export function RegisterRoutes(app: express.Router) {
 				const controller = new MatchesController();
 
 				const promise = controller.createMatch.apply(controller, validatedArgs as any);
-				promiseHandler(controller, promise, response, undefined, next);
+				promiseHandler(controller, promise, response, 201, next);
 			} catch (err) {
 				return next(err);
 			}
@@ -930,6 +936,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.get(
 		'/api/matches',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getAllMatches),
 
 		function MatchesController_getAllMatches(request: any, response: any, next: any) {
 			const args = {
@@ -969,6 +977,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.get(
 		'/api/matches/:id',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getMatch),
 
 		function MatchesController_getMatch(request: any, response: any, next: any) {
 			const args = {
@@ -995,6 +1005,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.get(
 		'/api/matches/:id/logs',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getLogs),
 
 		function MatchesController_getLogs(request: any, response: any, next: any) {
 			const args = {
@@ -1021,6 +1033,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.get(
 		'/api/matches/:id/events',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getEvents),
 
 		function MatchesController_getEvents(request: any, response: any, next: any) {
 			const args = {
@@ -1047,6 +1061,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.get(
 		'/api/matches/:id/server/round_backups',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getRoundBackups),
 
 		function MatchesController_getRoundBackups(request: any, response: any, next: any) {
 			const args = {
@@ -1074,6 +1090,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.post(
 		'/api/matches/:id/server/round_backups/:file',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.loadRoundBackup),
 
 		function MatchesController_loadRoundBackup(request: any, response: any, next: any) {
 			const args = {
@@ -1101,6 +1119,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.patch(
 		'/api/matches/:id',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.updateMatch),
 
 		function MatchesController_updateMatch(request: any, response: any, next: any) {
 			const args = {
@@ -1133,6 +1153,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.patch(
 		'/api/matches/:id/matchMap/:mapNumber',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.updateMatchMap),
 
 		function MatchesController_updateMatchMap(request: any, response: any, next: any) {
 			const args = {
@@ -1166,6 +1188,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.delete(
 		'/api/matches/:id',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.deleteMatch),
 
 		function MatchesController_deleteMatch(request: any, response: any, next: any) {
 			const args = {
@@ -1192,6 +1216,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.patch(
 		'/api/matches/:id/revive',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.reviveMatch),
 
 		function MatchesController_reviveMatch(request: any, response: any, next: any) {
 			const args = {
@@ -1218,6 +1244,8 @@ export function RegisterRoutes(app: express.Router) {
 	app.post(
 		'/api/matches/:id/server/rcon',
 		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.rcon),
 
 		function MatchesController_rcon(request: any, response: any, next: any) {
 			const args = {
@@ -1250,6 +1278,8 @@ export function RegisterRoutes(app: express.Router) {
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.post(
 		'/api/matches/:id/server/log/:secret',
+		...fetchMiddlewares<RequestHandler>(MatchesController),
+		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.receiveLog),
 
 		function MatchesController_receiveLog(request: any, response: any, next: any) {
 			const args = {

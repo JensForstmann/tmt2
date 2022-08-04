@@ -1,4 +1,4 @@
-import { useNavigate } from 'solid-app-router';
+import { useNavigate } from '@solidjs/router';
 import { createSignal } from 'solid-js';
 
 const API_HOST = import.meta.env.DEV
