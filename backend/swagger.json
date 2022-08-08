@@ -88,7 +88,6 @@
 					"mode": {
 						"type": "string",
 						"enum": [
-							"RANDOM_BAN",
 							"RANDOM_PICK",
 							"AGREE"
 						]
@@ -205,6 +204,22 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"IRandomMapBan": {
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": [
+							"RANDOM_BAN"
+						],
+						"nullable": false
+					}
+				},
+				"required": [
+					"mode"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"IBanMap": {
 				"properties": {
 					"mode": {
@@ -228,7 +243,14 @@
 			"IElectionStepSkip": {
 				"properties": {
 					"map": {
-						"$ref": "#/components/schemas/IBanMap"
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/IRandomMapBan"
+							},
+							{
+								"$ref": "#/components/schemas/IBanMap"
+							}
+						]
 					}
 				},
 				"required": [
@@ -1043,6 +1065,8 @@
 				"type": "string",
 				"enum": [
 					"CHAT",
+					"ELECTION_MAP_STEP",
+					"ELECTION_SIDE_STEP",
 					"MAP_ELECTION_END",
 					"KNIFE_END",
 					"ROUND_END",
@@ -1458,6 +1482,120 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"TMapMode": {
+				"type": "string",
+				"enum": [
+					"FIXED",
+					"BAN",
+					"PICK",
+					"RANDOM_BAN",
+					"RANDOM_PICK",
+					"AGREE"
+				]
+			},
+			"ElectionMapStep": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"ELECTION_MAP_STEP"
+						],
+						"nullable": false
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TMapMode"
+					},
+					"mapName": {
+						"type": "string"
+					},
+					"pickerTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mode",
+					"mapName"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TSideMode": {
+				"type": "string",
+				"enum": [
+					"FIXED",
+					"PICK",
+					"RANDOM",
+					"KNIFE"
+				]
+			},
+			"TTeamSides": {
+				"type": "string",
+				"enum": [
+					"CT",
+					"T"
+				]
+			},
+			"ElectionSideStep": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"ELECTION_SIDE_STEP"
+						],
+						"nullable": false
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TSideMode"
+					},
+					"pickerTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					},
+					"pickerSide": {
+						"$ref": "#/components/schemas/TTeamSides"
+					},
+					"ctTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					},
+					"tTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mode"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Event": {
 				"anyOf": [
 					{
@@ -1483,6 +1621,12 @@
 					},
 					{
 						"$ref": "#/components/schemas/LogEvent"
+					},
+					{
+						"$ref": "#/components/schemas/ElectionMapStep"
+					},
+					{
+						"$ref": "#/components/schemas/ElectionSideStep"
 					}
 				]
 			},

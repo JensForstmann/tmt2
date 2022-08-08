@@ -1,9 +1,12 @@
+import { TMapMode, TSideMode } from './electionStep';
 import { IPlayer } from './player';
+import { TTeamSides } from './stuff';
 import { ITeam } from './team';
 
 export type EventType =
 	| 'CHAT'
-	// MAP_ELECTION_STEP = 'MAP_ELECTION_STEP',
+	| 'ELECTION_MAP_STEP'
+	| 'ELECTION_SIDE_STEP'
 	| 'MAP_ELECTION_END'
 	// KNIFE_START = 'KNIFE_START',
 	// KNIFE_RESTART = 'KNIFE_RESTART',
@@ -87,6 +90,22 @@ export interface LogEvent extends BaseEvent {
 	message: string;
 }
 
+export interface ElectionMapStep extends BaseEvent {
+	type: 'ELECTION_MAP_STEP';
+	mode: TMapMode;
+	mapName: string;
+	pickerTeam?: ITeam;
+}
+
+export interface ElectionSideStep extends BaseEvent {
+	type: 'ELECTION_SIDE_STEP';
+	mode: TSideMode;
+	pickerTeam?: ITeam;
+	pickerSide?: TTeamSides;
+	ctTeam?: ITeam;
+	tTeam?: ITeam;
+}
+
 export type Event =
 	| ChatEvent
 	| ElectionEndEvent
@@ -95,4 +114,6 @@ export type Event =
 	| MatchEndEvent
 	| KnifeRoundEndEvent
 	| MapStartEvent
-	| LogEvent;
+	| LogEvent
+	| ElectionMapStep
+	| ElectionSideStep;

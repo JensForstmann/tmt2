@@ -3,6 +3,8 @@ import {
 	BaseEvent,
 	ChatEvent,
 	ElectionEndEvent,
+	ElectionMapStep,
+	ElectionSideStep,
 	Event,
 	EventType,
 	IMatchMap,
@@ -14,6 +16,8 @@ import {
 	MapStartEvent,
 	MatchEndEvent,
 	RoundEndEvent,
+	TMapMode,
+	TSideMode,
 } from '../../common';
 import * as Match from './match';
 import * as WebSocket from './webSocket';
@@ -63,6 +67,36 @@ export const onElectionEnd = (match: Match.Match) => {
 	const data: ElectionEndEvent = {
 		...getBaseEvent(match, 'MAP_ELECTION_END'),
 		mapNames: match.data.matchMaps.map((matchMaps) => matchMaps.name),
+	};
+	send(match, data);
+};
+
+export const onElectionMapStep = (
+	match: Match.Match,
+	mode: TMapMode,
+	mapName: string,
+	pickerTeam?: ITeam
+) => {
+	const data: ElectionMapStep = {
+		...getBaseEvent(match, 'ELECTION_MAP_STEP'),
+		mode: mode,
+		mapName: mapName,
+		pickerTeam: pickerTeam,
+	};
+	send(match, data);
+};
+
+export const onElectionSideStep = (
+	match: Match.Match,
+	mode: TSideMode,
+	options?: Omit<ElectionSideStep, 'mode' | 'type' | keyof BaseEvent>
+) => {
+	const data: ElectionSideStep = {
+		...getBaseEvent(match, 'ELECTION_SIDE_STEP'),
+		mode: mode,
+		pickerTeam: options?.pickerTeam,
+		ctTeam: options?.ctTeam,
+		tTeam: options?.tTeam,
 	};
 	send(match, data);
 };

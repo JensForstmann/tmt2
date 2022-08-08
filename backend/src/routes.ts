@@ -85,7 +85,6 @@ const models: TsoaRoute.Models = {
 			mode: {
 				dataType: 'union',
 				subSchemas: [
-					{ dataType: 'enum', enums: ['RANDOM_BAN'] },
 					{ dataType: 'enum', enums: ['RANDOM_PICK'] },
 					{ dataType: 'enum', enums: ['AGREE'] },
 				],
@@ -171,6 +170,14 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IRandomMapBan: {
+		dataType: 'refObject',
+		properties: {
+			mode: { dataType: 'enum', enums: ['RANDOM_BAN'], required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	IBanMap: {
 		dataType: 'refObject',
 		properties: {
@@ -183,7 +190,11 @@ const models: TsoaRoute.Models = {
 	IElectionStepSkip: {
 		dataType: 'refObject',
 		properties: {
-			map: { ref: 'IBanMap', required: true },
+			map: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'IRandomMapBan' }, { ref: 'IBanMap' }],
+				required: true,
+			},
 		},
 		additionalProperties: false,
 	},
@@ -581,6 +592,8 @@ const models: TsoaRoute.Models = {
 			dataType: 'union',
 			subSchemas: [
 				{ dataType: 'enum', enums: ['CHAT'] },
+				{ dataType: 'enum', enums: ['ELECTION_MAP_STEP'] },
+				{ dataType: 'enum', enums: ['ELECTION_SIDE_STEP'] },
 				{ dataType: 'enum', enums: ['MAP_ELECTION_END'] },
 				{ dataType: 'enum', enums: ['KNIFE_END'] },
 				{ dataType: 'enum', enums: ['ROUND_END'] },
@@ -770,6 +783,86 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	TMapMode: {
+		dataType: 'refAlias',
+		type: {
+			dataType: 'union',
+			subSchemas: [
+				{ dataType: 'enum', enums: ['FIXED'] },
+				{ dataType: 'enum', enums: ['BAN'] },
+				{ dataType: 'enum', enums: ['PICK'] },
+				{ dataType: 'enum', enums: ['RANDOM_BAN'] },
+				{ dataType: 'enum', enums: ['RANDOM_PICK'] },
+				{ dataType: 'enum', enums: ['AGREE'] },
+			],
+			validators: {},
+		},
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	ElectionMapStep: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['ELECTION_MAP_STEP'], required: true },
+			mode: { ref: 'TMapMode', required: true },
+			mapName: { dataType: 'string', required: true },
+			pickerTeam: { ref: 'ITeam' },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	TSideMode: {
+		dataType: 'refAlias',
+		type: {
+			dataType: 'union',
+			subSchemas: [
+				{ dataType: 'enum', enums: ['FIXED'] },
+				{ dataType: 'enum', enums: ['PICK'] },
+				{ dataType: 'enum', enums: ['RANDOM'] },
+				{ dataType: 'enum', enums: ['KNIFE'] },
+			],
+			validators: {},
+		},
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	TTeamSides: {
+		dataType: 'refAlias',
+		type: {
+			dataType: 'union',
+			subSchemas: [
+				{ dataType: 'enum', enums: ['CT'] },
+				{ dataType: 'enum', enums: ['T'] },
+			],
+			validators: {},
+		},
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	ElectionSideStep: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['ELECTION_SIDE_STEP'], required: true },
+			mode: { ref: 'TSideMode', required: true },
+			pickerTeam: { ref: 'ITeam' },
+			pickerSide: { ref: 'TTeamSides' },
+			ctTeam: { ref: 'ITeam' },
+			tTeam: { ref: 'ITeam' },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	Event: {
 		dataType: 'refAlias',
 		type: {
@@ -783,6 +876,8 @@ const models: TsoaRoute.Models = {
 				{ ref: 'KnifeRoundEndEvent' },
 				{ ref: 'MapStartEvent' },
 				{ ref: 'LogEvent' },
+				{ ref: 'ElectionMapStep' },
+				{ ref: 'ElectionSideStep' },
 			],
 			validators: {},
 		},

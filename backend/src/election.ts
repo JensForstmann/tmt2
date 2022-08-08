@@ -10,6 +10,7 @@ import {
 	TTeamAB,
 	TWho,
 } from '../../common';
+import * as Events from './events';
 import { ECommand, getCommands } from './commands';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
@@ -323,6 +324,12 @@ const agreeCommand = async (
 				match.data.election.currentAgree.teamA = null;
 				match.data.election.currentAgree.teamB = null;
 				match.data.election.remainingMaps.splice(matchMap, 1);
+				Events.onElectionMapStep(
+					match,
+					'AGREE',
+					match.data.election.currentStepMap!,
+					Match.getTeamByAB(match, teamAB)
+				);
 				await next(match);
 			} else {
 				await Match.say(
@@ -360,6 +367,12 @@ const banCommand = async (
 			if (matchMap > -1) {
 				ensureTeamXY(match, currentElectionStep.map.who, teamAB);
 				match.data.election.state = 'IN_PROGRESS';
+				Events.onElectionMapStep(
+					match,
+					'BAN',
+					match.data.election.remainingMaps[matchMap]!,
+					Match.getTeamByAB(match, teamAB)
+				);
 				await Match.say(match, `MAP ${match.data.election.remainingMaps[matchMap]} BANNED`);
 				match.data.election.remainingMaps.splice(matchMap, 1);
 				MatchService.scheduleSave(match);
@@ -389,6 +402,12 @@ const pickCommand = async (
 			if (matchMap > -1) {
 				ensureTeamXY(match, currentElectionStep.map.who, teamAB);
 				match.data.election.state = 'IN_PROGRESS';
+				Events.onElectionMapStep(
+					match,
+					'PICK',
+					match.data.election.currentStepMap!,
+					Match.getTeamByAB(match, teamAB)
+				);
 				match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
 				match.data.election.remainingMaps.splice(matchMap, 1);
 				MatchService.scheduleSave(match);
@@ -422,6 +441,12 @@ const tCommand = async (
 		if (isValidTeam(match, currentElectionStep.side.who, teamAB)) {
 			ensureTeamXY(match, currentElectionStep.side.who, teamAB);
 			match.data.election.state = 'IN_PROGRESS';
+			Events.onElectionSideStep(match, 'PICK', {
+				pickerTeam: Match.getTeamByAB(match, teamAB),
+				pickerSide: 'T',
+				ctTeam: Match.getTeamByAB(match, getOtherTeamAB(teamAB)),
+				tTeam: Match.getTeamByAB(match, teamAB),
+			});
 			match.data.matchMaps.push(
 				MatchMap.create(currentStepMap, false, getOtherTeamAB(teamAB))
 			);
@@ -430,9 +455,7 @@ const tCommand = async (
 				match,
 				`${match.data.matchMaps.length}. MAP: ${
 					match.data.election.currentStepMap
-				} (T-SIDE: ${escapeRconString(
-					Match.getTeamByAB(match, getOtherTeamAB(teamAB)).name
-				)})`
+				} (T-SIDE: ${escapeRconString(Match.getTeamByAB(match, teamAB).name)})`
 			);
 			await next(match);
 			await sayWhatIsUp(match);
@@ -456,6 +479,12 @@ const ctCommand = async (
 		if (isValidTeam(match, currentElectionStep.side.who, teamAB)) {
 			ensureTeamXY(match, currentElectionStep.side.who, teamAB);
 			match.data.election.state = 'IN_PROGRESS';
+			Events.onElectionSideStep(match, 'PICK', {
+				pickerTeam: Match.getTeamByAB(match, teamAB),
+				pickerSide: 'CT',
+				ctTeam: Match.getTeamByAB(match, teamAB),
+				tTeam: Match.getTeamByAB(match, getOtherTeamAB(teamAB)),
+			});
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, teamAB));
 			MatchService.scheduleSave(match);
 			await Match.say(
@@ -552,6 +581,7 @@ export const auto = async (match: Match.Match) => {
 const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) => {
 	if (currentElectionStep.map.mode === 'FIXED') {
 		match.data.election.currentStepMap = currentElectionStep.map.fixed;
+		Events.onElectionMapStep(match, 'FIXED', match.data.election.currentStepMap);
 		await Match.say(
 			match,
 			`${match.data.matchMaps.length + 1}. MAP: ${match.data.election.currentStepMap}`
@@ -570,6 +600,11 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 		);
 		if (currentElectionStep.map.mode === 'RANDOM_PICK') {
 			match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
+			Events.onElectionMapStep(
+				match,
+				'RANDOM_PICK',
+				match.data.election.remainingMaps[matchMap]!
+			);
 			await Match.say(
 				match,
 				`${match.data.election.remainingMaps.length > 1 ? 'RANDOM ' : ''}${
@@ -577,6 +612,11 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 				}. MAP: ${match.data.election.currentStepMap}`
 			);
 		} else {
+			Events.onElectionMapStep(
+				match,
+				'RANDOM_BAN',
+				match.data.election.remainingMaps[matchMap]!
+			);
 			await Match.say(match, `MAP ${match.data.election.remainingMaps[matchMap]} BANNED`);
 		}
 		match.data.election.remainingMaps.splice(matchMap, 1);
@@ -595,6 +635,10 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 
 	if (currentElectionStep.side.mode === 'FIXED') {
 		if (['TEAM_A_CT', 'TEAM_B_T'].includes(currentElectionStep.side.fixed)) {
+			Events.onElectionSideStep(match, 'FIXED', {
+				ctTeam: Match.getTeamByAB(match, 'TEAM_A'),
+				tTeam: Match.getTeamByAB(match, 'TEAM_B'),
+			});
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, 'TEAM_A'));
 			await Match.say(
 				match,
@@ -607,6 +651,10 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 		}
 
 		if (['TEAM_A_T', 'TEAM_B_CT'].includes(currentElectionStep.side.fixed)) {
+			Events.onElectionSideStep(match, 'FIXED', {
+				ctTeam: Match.getTeamByAB(match, 'TEAM_B'),
+				tTeam: Match.getTeamByAB(match, 'TEAM_A'),
+			});
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, 'TEAM_B'));
 			await Match.say(
 				match,
@@ -620,6 +668,10 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 
 		if (match.data.election.teamX && match.data.election.teamY) {
 			if (['TEAM_X_CT', 'TEAM_Y_T'].includes(currentElectionStep.side.fixed)) {
+				Events.onElectionSideStep(match, 'FIXED', {
+					ctTeam: Match.getTeamByAB(match, match.data.election.teamX),
+					tTeam: Match.getTeamByAB(match, match.data.election.teamY),
+				});
 				match.data.matchMaps.push(
 					MatchMap.create(currentStepMap, false, match.data.election.teamX)
 				);
@@ -636,6 +688,10 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 			}
 
 			if (['TEAM_X_T', 'TEAM_Y_CT'].includes(currentElectionStep.side.fixed)) {
+				Events.onElectionSideStep(match, 'FIXED', {
+					ctTeam: Match.getTeamByAB(match, match.data.election.teamY),
+					tTeam: Match.getTeamByAB(match, match.data.election.teamX),
+				});
 				match.data.matchMaps.push(
 					MatchMap.create(currentStepMap, false, match.data.election.teamY)
 				);
@@ -654,6 +710,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 	}
 
 	if (currentElectionStep.side.mode === 'KNIFE') {
+		Events.onElectionSideStep(match, 'KNIFE');
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, true));
 		await Match.say(
 			match,
@@ -665,6 +722,10 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 
 	if (currentElectionStep.side.mode === 'RANDOM') {
 		const startAsCtTeam = Math.random() < 0.5 ? 'TEAM_A' : 'TEAM_B';
+		Events.onElectionSideStep(match, 'RANDOM', {
+			ctTeam: Match.getTeamByAB(match, startAsCtTeam),
+			tTeam: Match.getTeamByAB(match, getOtherTeamAB(startAsCtTeam)),
+		});
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, false, startAsCtTeam));
 		await Match.say(
 			match,

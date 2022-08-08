@@ -28,7 +28,11 @@ export interface IPickMap {
 }
 
 export interface IAgreeOrRandomMap {
-	mode: 'RANDOM_BAN' | 'RANDOM_PICK' | 'AGREE';
+	mode: 'RANDOM_PICK' | 'AGREE';
+}
+
+export interface IRandomMapBan {
+	mode: 'RANDOM_BAN';
 }
 
 export type TSideMode = 'FIXED' | 'PICK' | 'RANDOM' | 'KNIFE';
@@ -53,7 +57,7 @@ export interface IElectionStepAdd {
 }
 
 export interface IElectionStepSkip {
-	map: IBanMap;
+	map: IRandomMapBan | IBanMap;
 }
 
 export type IElectionStep = IElectionStepAdd | IElectionStepSkip;
