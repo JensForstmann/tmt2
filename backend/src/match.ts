@@ -43,7 +43,6 @@ export const createFromData = async (data: IMatch) => {
 	};
 	match.log = createLogger(match);
 	await connectToGameServer(match);
-	await setup(match);
 	return match;
 };
 
@@ -103,6 +102,7 @@ export const connectToGameServer = async (match: Match): Promise<void> => {
 	match.rconConnection = gameServer;
 	previous?.end().catch(() => {});
 	match.log(`connect rcon successful ${addr}`);
+	await setup(match);
 	await registerLogAddress(match);
 };
 
@@ -137,7 +137,7 @@ const init = async (match: Match) => {
 };
 
 /**
- * Executed once per match and every time the map will be loaded from storage.
+ * Executed every time after the connection to the game server is established.
  */
 const setup = async (match: Match) => {
 	// TMT does not need any special log settings to work. Only 'log on' must be executed.
