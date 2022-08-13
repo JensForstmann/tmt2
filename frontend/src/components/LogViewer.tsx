@@ -1,7 +1,8 @@
-import { Component, For } from 'solid-js';
+import { Component } from 'solid-js';
 import { LogEvent } from '../../../common';
 import { t } from '../utils/locale';
 import { Card } from './Card';
+import { ScrollArea } from './ScrollArea';
 
 export const LogViewer: Component<{
 	logs: LogEvent[];
@@ -9,23 +10,17 @@ export const LogViewer: Component<{
 	return (
 		<Card>
 			<h2 class="font-bold text-lg">{t('Logs')}</h2>
-			<div class="h-80 overflow-scroll text-left flex flex-col-reverse bg-gray-50">
-				<div>
-					<For each={props.logs}>
-						{(log) => (
-							<>
-								{eventToString(log)}
-								<br />
-							</>
-						)}
-					</For>
-					<br />
-				</div>
-			</div>
+			<ScrollArea scroll>{props.logs.map(formatLogEvent)}</ScrollArea>
 		</Card>
 	);
 };
 
-const eventToString = (e: LogEvent) => {
-	return `${new Date(e.timestamp).toLocaleTimeString()}: ${e.message}`;
+const formatLogEvent = (e: LogEvent) => {
+	const d = new Date(e.timestamp);
+	return (
+		<>
+			<span title={d.toLocaleString()}>{d.toLocaleTimeString()}</span>
+			{`: ${e.message}`}
+		</>
+	);
 };

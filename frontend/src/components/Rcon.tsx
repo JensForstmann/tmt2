@@ -1,9 +1,14 @@
-import { Component, createSignal, For } from 'solid-js';
+import { Component, createSignal } from 'solid-js';
 import { IMatchResponse } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
 import { Card } from './Card';
+import { ScrollArea } from './ScrollArea';
+
+const formatRconResponse = (response: string): string[] => {
+	return response.trim().split('\n');
+};
 
 export const Rcon: Component<{
 	match: IMatchResponse;
@@ -19,7 +24,10 @@ export const Rcon: Component<{
 			[command]
 		);
 		if (response) {
-			setOutput([...output(), command, ...response]);
+			const newLines = response.reduce((pv: string[], cv) => {
+				return [...pv, ...formatRconResponse(cv)];
+			}, []);
+			setOutput([...output(), command, ...newLines]);
 		} else {
 			setOutput([...output(), command, 'error']);
 		}
@@ -38,26 +46,7 @@ export const Rcon: Component<{
 	return (
 		<Card>
 			<h2 class="font-bold text-lg">{t('Rcon')}</h2>
-			<div class="h-80 overflow-scroll text-left flex flex-col-reverse bg-gray-50">
-				<div>
-					<For each={output()}>
-						{(line) => (
-							<>
-								{line
-									.trim()
-									.split('\n')
-									.map((l) => (
-										<>
-											{l}
-											<br />
-										</>
-									))}
-							</>
-						)}
-					</For>
-					<br />
-				</div>
-			</div>
+			<ScrollArea scroll>{output()}</ScrollArea>
 			<input
 				class="w-full"
 				type="text"

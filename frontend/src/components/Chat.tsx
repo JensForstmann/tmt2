@@ -1,8 +1,9 @@
-import { Component, For } from 'solid-js';
+import { Component } from 'solid-js';
 import { ChatEvent } from '../../../common';
 import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
 import { Card } from './Card';
+import { ScrollArea } from './ScrollArea';
 
 export const Chat: Component<{
 	messages: ChatEvent[];
@@ -11,19 +12,7 @@ export const Chat: Component<{
 	return (
 		<Card>
 			<h2 class="font-bold text-lg">{t('Chat')}</h2>
-			<div class="h-80 overflow-scroll text-left flex flex-col-reverse bg-gray-50">
-				<div>
-					<For each={props.messages}>
-						{(msg) => (
-							<>
-								{eventToString(msg)}
-								<br />
-							</>
-						)}
-					</For>
-					<br />
-				</div>
-			</div>
+			<ScrollArea scroll>{props.messages.map(formatChatEvent)}</ScrollArea>
 			<input
 				class="w-full"
 				type="text"
@@ -40,7 +29,7 @@ export const Chat: Component<{
 	);
 };
 
-const eventToString = (e: ChatEvent) => {
+const formatChatEvent = (e: ChatEvent) => {
 	const d = new Date(e.timestamp);
 	const teamChat = e.isTeamChat ? '(TEAM)' : '(ALL)';
 	const teamName = e.playerTeam ? ` [${e.playerTeam.name}]` : '';
