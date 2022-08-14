@@ -1,6 +1,6 @@
-import { Rcon } from './rcon-client';
-import { IGameServer } from './interfaces/gameServer';
+import { IGameServer } from '../../common';
 import * as Match from './match';
+import { Rcon } from './rcon-client';
 
 export const create = async (dto: IGameServer, log: (msg: string) => void): Promise<Rcon> => {
 	const rcon = new Rcon({
@@ -34,7 +34,7 @@ export const exec = async (match: Match.Match, command: string, suppressError: b
 export const kickAll = async (match: Match.Match) => {
 	const status = await exec(match, 'status');
 	//# userid name uniqueid connected ping loss state rate adr
-	//#  2 1 "Yenz" STEAM_1:0:8520813 02:50 25 0 active 196608 172.24.16.1:27005
+	//#  2 1 "PlayerName" STEAM_1:0:7426845 02:50 25 0 active 196608 172.24.16.1:27005
 	const userIds = status
 		.trim()
 		.split('\n')

@@ -26,7 +26,7 @@ run container
 
 ### Persistence
 
-Matches will be written to `/app/storage` (can be configured). To keep the files with different containers you can either specify a docker volume or a path on the local system:
+Matches will be written to `/app/backend/storage` (can be configured). To keep the files with different containers you can either specify a docker volume or a path on the local system:
 
     docker run -e TMT_LOG_ADDRESS=http://localhost:8080 -v dockerVolumeName:/app/storage -p 8080:8080 jensforstmann/tmt2
 
@@ -61,8 +61,6 @@ TMT_LOG_ADDRESS=http://127.0.0.1:8080
 
 # where tmt will store match data in
 TMT_STORAGE_FOLDER=storage
-TMT_STORAGE_PREFIX=match_
-TMT_STORAGE_SUFFIX=.json
 
 # ingame prefix to every chat message sent by this application
 TMT_SAY_PREFIX="[TMT] "
@@ -101,7 +99,7 @@ Example:
         "comment": "first auto generated token" // optional comment, might be used in logging
     },
 
-    // mutliple tokens are also possible
+    // multiple tokens are also possible
     "knRRkV41yLBUw1eVwRD9VF": {
         "comment": "Jens"
     },

@@ -12,12 +12,19 @@ import {
 	Security,
 	SuccessResponse,
 } from '@tsoa/runtime';
-import { IMatch, IMatchCreateDto, IMatchUpdateDto } from './interfaces/match';
-import * as MatchService from './matchService';
+import {
+	Event,
+	IMatch,
+	IMatchCreateDto,
+	IMatchMapUpdateDto,
+	IMatchResponse,
+	IMatchUpdateDto,
+} from '../../common';
+import { IAuthResponse } from './auth';
+import * as Events from './events';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
-import { IAuthResponse } from './auth';
-import { IMatchMapUpdateDto } from './interfaces/matchMap';
+import * as MatchService from './matchService';
 
 @Route('/api/matches')
 @Security('bearer_token')
@@ -37,36 +44,57 @@ export class MatchesController extends Controller {
 		@Request() { user }: { user: IAuthResponse },
 		@Query('state') state?: string[],
 		@Query('passthrough') passthrough?: string[],
-		@Query('isStopped') isStopped?: boolean
-	): Promise<IMatch[]> {
-		const matches = await MatchService.getAll();
-		return matches
+		@Query('isStopped') isStopped?: boolean,
+		@Query('isLive') isLive?: boolean
+	): Promise<IMatchResponse[]> {
+		const live = MatchService.getAllLive();
+		const storage = isLive === true ? [] : await MatchService.getAllFromStorage();
+		const notLive = storage.filter((match) => !live.find((m) => match.id === m.id));
+		return [...live, ...notLive]
+			.map((m) => ({ ...m, isLive: !!live.find((l) => l.id === m.id) }))
 			.filter((m) => state === undefined || state.includes(m.state))
 			.filter(
 				(m) =>
 					passthrough === undefined ||
 					(typeof m.passthrough === 'string' && passthrough.includes(m.passthrough))
 			)
-			.filter((m) => isStopped === undefined || m.isStopped === isStopped);
+			.filter((m) => isStopped === undefined || m.isStopped === isStopped)
+			.filter((m) => isLive === undefined || m.isLive === isLive);
 	}
 
 	@Get('{id}')
 	async getMatch(
 		id: string,
 		@Request() { user }: { user: IAuthResponse }
-	): Promise<IMatch | void> {
+	): Promise<IMatchResponse | void> {
 		const match = MatchService.get(id);
 		if (match) {
-			return match.data;
+			return {
+				...match.data,
+				isLive: true,
+			};
 		}
 
 		const matchFromStorage = await MatchService.getFromStorage(id);
 		if (matchFromStorage) {
-			return matchFromStorage;
+			return {
+				...matchFromStorage,
+				isLive: false,
+			};
 		}
 
 		this.setStatus(404);
 		return;
+	}
+
+	@Get('{id}/logs')
+	async getLogs(id: string, @Request() { user }: { user: IAuthResponse }): Promise<string[]> {
+		return await Match.getLogsTail(id);
+	}
+
+	@Get('{id}/events')
+	async getEvents(id: string, @Request() { user }: { user: IAuthResponse }): Promise<Event[]> {
+		return await Events.getEventsTail(id);
 	}
 
 	@Get('{id}/server/round_backups')
@@ -95,7 +123,7 @@ export class MatchesController extends Controller {
 			if (await Match.loadRoundBackup(match, file)) {
 				return true;
 			} else {
-				this.setStatus(400);
+				this.setStatus(500);
 				return false;
 			}
 		} else {
@@ -140,20 +168,30 @@ export class MatchesController extends Controller {
 
 	@Delete('{id}')
 	async deleteMatch(id: string, @Request() { user }: { user: IAuthResponse }): Promise<void> {
-		if (await MatchService.remove(id)) {
-			this.setStatus(200);
-		} else {
+		if (!(await MatchService.remove(id))) {
 			this.setStatus(404);
 		}
 	}
 
 	@Patch('{id}/revive')
 	async reviveMatch(id: string, @Request() { user }: { user: IAuthResponse }): Promise<void> {
-		if (await MatchService.revive(id)) {
-			this.setStatus(200);
-		} else {
+		if (!(await MatchService.revive(id))) {
 			this.setStatus(404);
 		}
+	}
+
+	@Post('{id}/server/rcon')
+	async rcon(
+		id: string,
+		@Body() requestBody: string[],
+		@Request() { user }: { user: IAuthResponse }
+	): Promise<string[] | void> {
+		const match = MatchService.get(id);
+		if (!match) {
+			this.setStatus(404);
+			return;
+		}
+		return await Match.execManyRcon(match, requestBody);
 	}
 
 	@NoSecurity()

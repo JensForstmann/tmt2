@@ -1,0 +1,5 @@
+{
+	// Purpose of this file:
+	// Support refactoring in VS Code across different typescript projects
+	"include": ["./backend/src", "./common", "./frontend/src"]
+}

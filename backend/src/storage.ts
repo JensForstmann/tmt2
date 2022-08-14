@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
 
-const STORAGE_DIR = process.env.STORAGE_DIR || 'storage';
+const STORAGE_DIR = process.env['STORAGE_DIR'] || 'storage';
 
 export const setup = async () => {
 	await fsp.mkdir(STORAGE_DIR, {
@@ -32,11 +32,19 @@ export const read: TRead = async <T>(fileName: string, fallback?: T) => {
 	}
 };
 
-export const appendLine = async (fileName: string, content: object) => {
-	await fsp.appendFile(path.join(STORAGE_DIR, fileName), JSON.stringify(content) + '\n');
+export const appendLine = async (fileName: string, content: any) => {
+	try {
+		await fsp.appendFile(path.join(STORAGE_DIR, fileName), JSON.stringify(content) + '\n');
+	} catch (err) {
+		console.warn(`error storage appendLine ${fileName}: ${err}`);
+	}
 };
 
-export const readLines = async (fileName: string, fallback: Array<any>) => {
+export const readLines = async (
+	fileName: string,
+	fallback: Array<any>,
+	numberLastOfLines?: number
+) => {
 	try {
 		const fullPath = path.join(STORAGE_DIR, fileName);
 		if (!fs.existsSync(fullPath) && fallback) {
@@ -46,7 +54,8 @@ export const readLines = async (fileName: string, fallback: Array<any>) => {
 		return content
 			.split('\n')
 			.filter((line) => line.trim().length > 0)
-			.map((line) => JSON.parse(line));
+			.map((line) => JSON.parse(line))
+			.slice(-(numberLastOfLines ?? 0));
 	} catch (err) {
 		console.warn(`error storage readLines ${fileName}: ${err}. Use fallback.`);
 		return fallback;

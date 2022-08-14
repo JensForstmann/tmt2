@@ -1,20 +1,24 @@
-import express, { ErrorRequestHandler } from 'express';
-import { RegisterRoutes } from './routes';
 import { ValidateError } from '@tsoa/runtime';
+import express, { ErrorRequestHandler } from 'express';
+import path from 'path';
+import http from 'http';
 import * as Auth from './auth';
 import * as MatchService from './matchService';
+import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
+import * as WebSocket from './webSocket';
 
-if (!process.env.TMT_LOG_ADDRESS) {
+if (!process.env['TMT_LOG_ADDRESS']) {
 	throw 'environment variable TMT_LOG_ADDRESS is not set';
 }
-if (!process.env.TMT_LOG_ADDRESS.startsWith('http')) {
+if (!process.env['TMT_LOG_ADDRESS'].startsWith('http')) {
 	throw 'environment variable TMT_LOG_ADDRESS must be an http address';
 }
 
-const PORT = process.env.TMT_PORT || 8080;
+const PORT = process.env['TMT_PORT'] || 8080;
 
 const app = express();
+const httpServer = http.createServer(app);
 
 // CORS
 app.use((req, res, next) => {
@@ -47,8 +51,6 @@ const errorRequestHandler: ErrorRequestHandler = (err, req, res, next) => {
 		if (err instanceof ValidateError) {
 			res.status(400).send(err);
 		} else {
-			console.error(err);
-			console.error(`ERROR: ${req.method} ${req.url}: ${err}`);
 			const status =
 				typeof err?.status === 'number' &&
 				Number.isInteger(err?.status) &&
@@ -56,6 +58,10 @@ const errorRequestHandler: ErrorRequestHandler = (err, req, res, next) => {
 				err?.status <= 599
 					? err.status
 					: 500;
+			if (status !== 401) {
+				console.error(err);
+				console.error(`ERROR: ${req.method} ${req.url}: ${err}`);
+			}
 			if (err + '' !== '[object Object]') {
 				res.status(status).send(err + '');
 			} else {
@@ -73,12 +79,19 @@ app.get('/api', (req, res) => {
 	res.sendFile('swagger.json', { root: '.' });
 });
 
+const STATIC_PATH = path.join(__dirname, '../../../../frontend/dist');
+console.info(`Serve static files from: ${STATIC_PATH}`);
+
+app.get('*', express.static(STATIC_PATH));
+app.get('*', (req, res) => res.sendFile(path.join(STATIC_PATH, 'index.html')));
+
 const main = async () => {
-	console.info(`Start TMT (${process.env.COMMIT_SHA || 'no COMMIT_SHA set'})`);
+	console.info(`Start TMT (${process.env['COMMIT_SHA'] || 'no COMMIT_SHA set'})`);
 	await Storage.setup();
 	await Auth.setup();
+	await WebSocket.setup(httpServer);
 
-	app.listen(PORT, async () => {
+	httpServer.listen(PORT, async () => {
 		console.info(`App listening on port ${PORT}`);
 		await MatchService.setup(); // can only be done when http server is up and running (so that incoming logs can be handled)
 	});

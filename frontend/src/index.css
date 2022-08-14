@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+a:hover {
+	text-decoration: underline;
+}
+
+.lds-ellipsis {
+	display: inline-block;
+	position: relative;
+	width: 80px;
+	height: 80px;
+}
+
+.lds-ellipsis div {
+	position: absolute;
+	top: 33px;
+	width: 13px;
+	height: 13px;
+	border-radius: 50%;
+	background: #aaa;
+	animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.lds-ellipsis div:nth-child(1) {
+	left: 8px;
+	animation: lds-ellipsis1 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(2) {
+	left: 8px;
+	animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(3) {
+	left: 32px;
+	animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(4) {
+	left: 56px;
+	animation: lds-ellipsis3 0.6s infinite;
+}
+
+@keyframes lds-ellipsis1 {
+	0% {
+		transform: scale(0);
+	}
+
+	100% {
+		transform: scale(1);
+	}
+}
+
+@keyframes lds-ellipsis3 {
+	0% {
+		transform: scale(1);
+	}
+
+	100% {
+		transform: scale(0);
+	}
+}
+
+@keyframes lds-ellipsis2 {
+	0% {
+		transform: translate(0, 0);
+	}
+
+	100% {
+		transform: translate(24px, 0);
+	}
+}
+
+.error-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	box-shadow: 0 2px 10px 10px rgba(#000, 0.05);
+}
+
+.error-container > div:nth-child(1),
+.error-container > div:nth-child(2) {
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+}
+
+.error-container > div:nth-child(2) {
+	z-index: 1;
+	position: relative;
+	background: white;
+	transform: scale(0);
+	animation: error-anim 2000ms infinite ease-in-out;
+}
+
+.error-container > div:nth-child(1) {
+	z-index: 0;
+	position: absolute;
+	transform: scale(1);
+	animation: error-circle-anim 400ms;
+	background: #f86;
+}
+
+@keyframes error-anim {
+	0% {
+		transform: scale(0.7);
+	}
+
+	50% {
+		transform: scale(0.9);
+	}
+
+	100% {
+		transform: scale(0.7);
+	}
+}
+
+@keyframes error-circle-anim {
+	from {
+		transform: scale(0);
+	}
+
+	to {
+		transform: scale(1);
+	}
+}
+
+.error-container > div:nth-child(2) > div:nth-child(1)::before,
+.error-container > div:nth-child(2) > div:nth-child(1)::after {
+	content: '';
+	display: block;
+	height: 4px;
+	background: #f86;
+	position: absolute;
+}
+
+.error-container > div:nth-child(2) > div:nth-child(1)::before {
+	width: 40px;
+	top: 48%;
+	left: 16%;
+	transform: rotateZ(50deg);
+}
+
+.error-container > div:nth-child(2) > div:nth-child(1)::after {
+	width: 40px;
+	top: 48%;
+	left: 16%;
+	transform: rotateZ(-50deg);
+}

@@ -30,7 +30,7 @@ export const setup = async () => {
 	});
 };
 
-const getGlobalToken = (token?: string) => {
+export const getGlobalToken = (token?: string) => {
 	if (!token) {
 		return;
 	}
@@ -40,42 +40,60 @@ const getGlobalToken = (token?: string) => {
 	return tokens.get(token);
 };
 
-const isValidMatchToken = (matchId: string, token?: string) => {
-	if (!token) {
+export const isValidMatchToken = async (token?: string, matchId?: string) => {
+	if (!token || !matchId) {
 		return;
 	}
 	if (token.toLowerCase().startsWith('bearer ')) {
 		token = token.substring(7);
 	}
+
 	const match = MatchService.get(matchId);
-	if (!match) {
-		return false;
+	if (match) {
+		return match.data.tmtSecret === token;
 	}
-	return match?.data.tmtSecret === token;
+
+	const matchFromStorage = await MatchService.getFromStorage(matchId);
+	if (matchFromStorage) {
+		return matchFromStorage.tmtSecret === token;
+	}
+
+	return false;
 };
 
-export const expressAuthentication = (
+export const expressAuthentication = async (
 	req: Request,
 	securityName: string,
 	scopes?: string[]
 ): Promise<IAuthResponse> => {
 	if (securityName === 'bearer_token') {
 		const bearerToken = req.get('Authorization');
-		const token = getGlobalToken(bearerToken);
-
-		if (token) {
-			return Promise.resolve({
-				type: 'GLOBAL',
-				comment: token.comment,
-			});
-		}
-
-		if (isValidMatchToken(req.params.id, bearerToken)) {
-			return Promise.resolve({
-				type: 'MATCH',
-			});
+		const result = await isAuthorized(bearerToken, req.params['id']);
+		if (result) {
+			return Promise.resolve(result);
 		}
 	}
 
 	return Promise.reject({});
+};
+
+export const isAuthorized = async (
+	token?: string,
+	matchId?: string
+): Promise<IAuthResponse | false> => {
+	const t = getGlobalToken(token);
+	if (t) {
+		return {
+			type: 'GLOBAL',
+			comment: t.comment,
+		};
+	}
+
+	if (await isValidMatchToken(token, matchId)) {
+		return {
+			type: 'MATCH',
+		};
+	}
+
+	return false;
 };

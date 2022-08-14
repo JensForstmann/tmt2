@@ -1,4 +1,4 @@
-import { ITeam, ITeamCreateDto } from './interfaces/team';
+import { ITeam, ITeamCreateDto } from '../../common';
 
 export interface ITeamChange {
 	name?: string;

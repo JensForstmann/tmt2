@@ -1,10 +1,10 @@
 import { generate as shortUuid } from 'short-uuid';
-import { EMatchSate, IMatch, IMatchCreateDto } from './interfaces/match';
+import { TMatchSate, IMatch, IMatchCreateDto } from '../../common';
 import * as Match from './match';
 import * as Storage from './storage';
 
-const STORAGE_PREFIX = process.env.TMT_STORAGE_PREFIX || 'match_';
-const STORAGE_SUFFIX = process.env.TMT_STORAGE_SUFFIX || '.json';
+const STORAGE_PREFIX = 'match_';
+const STORAGE_SUFFIX = '.json';
 
 const matches: Map<string, Match.Match> = new Map();
 
@@ -23,8 +23,8 @@ export const setup = async () => {
 	const matchesFromStorage = await getAllFromStorage();
 
 	for (let i = 0; i < matchesFromStorage.length; i++) {
-		const matchData = matchesFromStorage[i];
-		if (matchData.state !== EMatchSate.FINISHED && !matchData.isStopped) {
+		const matchData = matchesFromStorage[i]!;
+		if (matchData.state !== 'FINISHED' && !matchData.isStopped) {
 			await loadMatchFromStorage(matchData);
 		}
 	}
@@ -53,14 +53,14 @@ const periodicSaver = async () => {
 	const ids = Array.from(matchesToSave.values());
 	matchesToSave.clear();
 	for (let i = 0; i < ids.length; i++) {
-		const match = get(ids[i]);
+		const id = ids[i]!;
+		const match = get(id);
 		if (match) {
 			try {
-				match.log(`Save match to disk`);
 				await save(match);
 			} catch (err) {
 				match.log(`Error saving match: ${err}`);
-				matchesToSave.add(ids[i]);
+				matchesToSave.add(id);
 			}
 		}
 	}
@@ -101,7 +101,7 @@ export const getAllFromStorage = async () => {
 	const matches: IMatch[] = [];
 
 	for (let i = 0; i < matchesFromStorage.length; i++) {
-		const fileName = matchesFromStorage[i];
+		const fileName = matchesFromStorage[i]!;
 		const matchData: IMatch | undefined = await Storage.read(fileName);
 		if (matchData && fileName === STORAGE_PREFIX + matchData.id + STORAGE_SUFFIX) {
 			matches.push(matchData);
@@ -112,11 +112,13 @@ export const getAllFromStorage = async () => {
 };
 
 export const getAll = async () => {
-	const combined = [...getAllLive(), ...(await getAllFromStorage())];
-	const unique = combined.filter(
-		(match, index, arr) => arr.findIndex((m) => match.id === m.id) === index
-	);
-	return unique;
+	const live = getAllLive();
+	const storage = await getAllFromStorage();
+	const notLive = storage.filter((match) => !live.find((m) => match.id === m.id));
+	return {
+		live,
+		notLive,
+	};
 };
 
 export const remove = async (id: string) => {
@@ -152,7 +154,7 @@ export const save = async (match: Match.Match) => {
 export const saveAll = async () => {
 	const allMatches = Array.from(matches.values());
 	for (let i = 0; i < allMatches.length; i++) {
-		await save(allMatches[i]);
+		await save(allMatches[i]!);
 	}
 };
 
