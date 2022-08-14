@@ -8,6 +8,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Source
+        uses: actions/checkout@v2
+
       - name: Get tag name
         uses: olegtarasov/get-tag@v2.1
         id: tagName
