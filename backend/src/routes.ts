@@ -1540,7 +1540,7 @@ export function RegisterRoutes(app: express.Router) {
 						name,
 						fieldErrors,
 						undefined,
-						{ noImplicitAdditionalProperties: 'throw-on-extras' }
+						{ noImplicitAdditionalProperties: 'silently-remove-extras' }
 					);
 				case 'path':
 					return validationService.ValidateParam(
@@ -1549,7 +1549,7 @@ export function RegisterRoutes(app: express.Router) {
 						name,
 						fieldErrors,
 						undefined,
-						{ noImplicitAdditionalProperties: 'throw-on-extras' }
+						{ noImplicitAdditionalProperties: 'silently-remove-extras' }
 					);
 				case 'header':
 					return validationService.ValidateParam(
@@ -1558,7 +1558,7 @@ export function RegisterRoutes(app: express.Router) {
 						name,
 						fieldErrors,
 						undefined,
-						{ noImplicitAdditionalProperties: 'throw-on-extras' }
+						{ noImplicitAdditionalProperties: 'silently-remove-extras' }
 					);
 				case 'body':
 					return validationService.ValidateParam(
@@ -1567,7 +1567,7 @@ export function RegisterRoutes(app: express.Router) {
 						name,
 						fieldErrors,
 						undefined,
-						{ noImplicitAdditionalProperties: 'throw-on-extras' }
+						{ noImplicitAdditionalProperties: 'silently-remove-extras' }
 					);
 				case 'body-prop':
 					return validationService.ValidateParam(
@@ -1576,7 +1576,7 @@ export function RegisterRoutes(app: express.Router) {
 						name,
 						fieldErrors,
 						'body.',
-						{ noImplicitAdditionalProperties: 'throw-on-extras' }
+						{ noImplicitAdditionalProperties: 'silently-remove-extras' }
 					);
 				case 'formData':
 					if (args[key].dataType === 'file') {
@@ -1586,7 +1586,7 @@ export function RegisterRoutes(app: express.Router) {
 							name,
 							fieldErrors,
 							undefined,
-							{ noImplicitAdditionalProperties: 'throw-on-extras' }
+							{ noImplicitAdditionalProperties: 'silently-remove-extras' }
 						);
 					} else if (
 						args[key].dataType === 'array' &&
@@ -1598,7 +1598,7 @@ export function RegisterRoutes(app: express.Router) {
 							name,
 							fieldErrors,
 							undefined,
-							{ noImplicitAdditionalProperties: 'throw-on-extras' }
+							{ noImplicitAdditionalProperties: 'silently-remove-extras' }
 						);
 					} else {
 						return validationService.ValidateParam(
@@ -1607,7 +1607,7 @@ export function RegisterRoutes(app: express.Router) {
 							name,
 							fieldErrors,
 							undefined,
-							{ noImplicitAdditionalProperties: 'throw-on-extras' }
+							{ noImplicitAdditionalProperties: 'silently-remove-extras' }
 						);
 					}
 				case 'res':
