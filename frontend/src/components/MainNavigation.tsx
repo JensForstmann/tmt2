@@ -2,7 +2,6 @@ import { Link, useLocation } from '@solidjs/router';
 import { Component, createSignal, Match, Show, splitProps, Switch } from 'solid-js';
 import { cycleDarkMode } from '../App';
 import logo from '../assets/logo.svg';
-import logoSmall from '../assets/logo_small.svg';
 import { isLoggedIn } from '../utils/fetcher';
 import { t } from '../utils/locale';
 
@@ -73,12 +72,7 @@ export const MainNavigation: Component = () => {
 				<div class="relative flex items-center justify-between h-16">
 					<div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
 						<div class="flex-shrink-0 flex items-center">
-							<img
-								class="block lg:hidden h-8 w-auto"
-								src={logoSmall}
-								alt="Workflow"
-							/>
-							<img class="hidden lg:block h-8 w-auto" src={logo} alt="Workflow" />
+							<img class="h-8 w-auto" src={logo} alt="Logo" />
 						</div>
 						<div>
 							<div class="flex space-x-4">
