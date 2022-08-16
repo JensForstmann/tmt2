@@ -3,7 +3,7 @@ import { Event, SubscribeMessage } from '../../../common';
 
 const WS_HOST = import.meta.env.DEV
 	? `${window.location.protocol.replace('http', 'ws')}//${window.location.hostname}:8080`
-	: '';
+	: `${window.location.protocol.replace('http', 'ws')}//${window.location.host}`;
 
 type Options = {
 	connect?: boolean;
