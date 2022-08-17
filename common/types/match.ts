@@ -65,6 +65,8 @@ export interface IMatch {
 	electionMap: string;
 	/** Server password, periodically fetched from game server */
 	serverPassword: string;
+	/** if set will be used to register the target logaddress for the game server */
+	tmtLogAddress?: string;
 }
 
 export interface IMatchResponse extends IMatch {
@@ -102,6 +104,8 @@ export interface IMatchCreateDto {
 	matchEndAction?: TMatchEndAction;
 	/** this map will be loaded on match init (defaults to de_dust2 if not set) */
 	electionMap?: string;
+	/** if set will be used to register the target logaddress for the game server */
+	tmtLogAddress?: string;
 }
 
 export interface IMatchUpdateDto extends Partial<IMatchCreateDto> {

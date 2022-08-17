@@ -23,6 +23,7 @@ import { Rcon } from './rcon-client';
 import { Settings } from './settings';
 import * as Team from './team';
 import * as Storage from './storage';
+import { TMT_LOG_ADDRESS } from '.';
 
 export const STORAGE_LOGS_PREFIX = 'logs_';
 export const STORAGE_LOGS_SUFFIX = '.jsonl';
@@ -42,6 +43,18 @@ export const createFromData = async (data: IMatch) => {
 		log: () => {},
 	};
 	match.log = createLogger(match);
+
+	// http log address checks
+	if (match.data.tmtLogAddress) {
+		const la = checkAndNormalizeLogAddress(match.data.tmtLogAddress);
+		if (!la) {
+			throw 'invalid tmtLogAddress';
+		}
+		match.data.tmtLogAddress = la;
+	} else if (!TMT_LOG_ADDRESS) {
+		throw 'tmtLogAddress must be set';
+	}
+
 	await connectToGameServer(match);
 	return match;
 };
@@ -72,6 +85,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		electionMap: dto.electionMap ?? 'de_dust2',
 		tmtSecret: shortUuid(),
 		serverPassword: '',
+		tmtLogAddress: dto.tmtLogAddress,
 	};
 	const match = await createFromData(data);
 	await init(match);
@@ -160,8 +174,26 @@ const setup = async (match: Match) => {
 	match.log('Setup finished');
 };
 
+/**
+ * @returns string (valid log address) or null (invalid input)
+ */
+export const checkAndNormalizeLogAddress = (url: string): string | null => {
+	try {
+		const urlParts = new URL(url);
+		if (urlParts.protocol !== 'http:' && urlParts.protocol !== 'https:') {
+			return null;
+		}
+		// normalize: "http:////127.1.1.1:8080////whatever"" -> "http://127.1.1.1:8080"
+		return urlParts.protocol + '//' + urlParts.host;
+	} catch (err) {
+		return null;
+	}
+};
+
 const registerLogAddress = async (match: Match) => {
-	const logAddress = `${process.env['TMT_LOG_ADDRESS']}/api/matches/${match.data.id}/server/log/${match.data.logSecret}`;
+	const logAddress = `${match.data.tmtLogAddress || TMT_LOG_ADDRESS}/api/matches/${
+		match.data.id
+	}/server/log/${match.data.logSecret}`;
 	const logAddressList = await execRcon(match, 'logaddress_list_http');
 	const existing = logAddressList
 		.trim()
@@ -722,6 +754,16 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 			match.data.logSecret = previous;
 			throw err;
 		}
+	}
+
+	if (dto.tmtLogAddress) {
+		const addr = checkAndNormalizeLogAddress(dto.tmtLogAddress);
+		if (!addr) {
+			throw 'invalid tmtLogAddress';
+		}
+		match.data.tmtLogAddress = addr;
+		await execRcon(match, 'logaddress_delall_http');
+		await registerLogAddress(match);
 	}
 
 	if (dto.currentMap !== undefined && dto.currentMap !== match.data.currentMap) {

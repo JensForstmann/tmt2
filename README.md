@@ -21,13 +21,13 @@ TMT2 is available on docker hub: https://hub.docker.com/r/jensforstmann/tmt2
 
 Run it with:
 
-    docker run -e TMT_LOG_ADDRESS=http://localhost:8080 -p 8080:8080 jensforstmann/tmt2
+    docker run -p 8080:8080 jensforstmann/tmt2
 
 Data will be written to `/app/backend/storage` (can be configured). To keep the files with different containers you can either specify a docker volume or a path on the local system:
 
-    docker run -e TMT_LOG_ADDRESS=http://localhost:8080 -v dockerVolumeName:/app/storage -p 8080:8080 jensforstmann/tmt2
+    docker run -v dockerVolumeName:/app/storage -p 8080:8080 jensforstmann/tmt2
 
-    docker run -e TMT_LOG_ADDRESS=http://localhost:8080 -v /home/tmt2/storage:/app/storage -p 8080:8080 jensforstmann/tmt2
+    docker run -v /home/tmt2/storage:/app/storage -p 8080:8080 jensforstmann/tmt2
 
 The matches which are neither finished nor stopped will be loaded on application start.
 
@@ -41,6 +41,7 @@ Just use these environment variables:
 TMT_PORT=8080
 
 # the address the game server must send the logs to (from the pov of the game server)
+# if not set a tmtLogAddress must be for every match
 TMT_LOG_ADDRESS=http://127.0.0.1:8080
 
 # where tmt will store match data in

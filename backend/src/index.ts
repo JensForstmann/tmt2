@@ -7,13 +7,20 @@ import * as MatchService from './matchService';
 import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
 import * as WebSocket from './webSocket';
+import { checkAndNormalizeLogAddress } from './match';
 
-if (!process.env['TMT_LOG_ADDRESS']) {
-	throw 'environment variable TMT_LOG_ADDRESS is not set';
-}
-if (!process.env['TMT_LOG_ADDRESS'].startsWith('http')) {
-	throw 'environment variable TMT_LOG_ADDRESS must be an http address';
-}
+export const TMT_LOG_ADDRESS: string | null = (() => {
+	if (!process.env['TMT_LOG_ADDRESS']) {
+		console.warn('environment variable TMT_LOG_ADDRESS is not set');
+		console.warn('every match must be init with tmtLogAddress');
+		return null;
+	}
+	const addr = checkAndNormalizeLogAddress(process.env['TMT_LOG_ADDRESS']);
+	if (!addr) {
+		throw 'invalid environment variable: TMT_LOG_ADDRESS';
+	}
+	return addr;
+})();
 
 const PORT = process.env['TMT_PORT'] || 8080;
 
@@ -80,8 +87,6 @@ app.get('/api', (req, res) => {
 });
 
 const STATIC_PATH = path.join(__dirname, '../../../../frontend/dist');
-console.info(`Serve static files from: ${STATIC_PATH}`);
-
 app.get('*', express.static(STATIC_PATH));
 app.get('*', (req, res) => res.sendFile(path.join(STATIC_PATH, 'index.html')));
 

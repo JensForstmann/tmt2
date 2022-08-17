@@ -748,6 +748,10 @@
 					"serverPassword": {
 						"type": "string",
 						"description": "Server password, periodically fetched from game server"
+					},
+					"tmtLogAddress": {
+						"type": "string",
+						"description": "if set will be used to register the target logaddress for the game server"
 					}
 				},
 				"required": [
@@ -880,6 +884,10 @@
 					"electionMap": {
 						"type": "string",
 						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
+					},
+					"tmtLogAddress": {
+						"type": "string",
+						"description": "if set will be used to register the target logaddress for the game server"
 					}
 				},
 				"required": [
@@ -1029,6 +1037,10 @@
 					"serverPassword": {
 						"type": "string",
 						"description": "Server password, periodically fetched from game server"
+					},
+					"tmtLogAddress": {
+						"type": "string",
+						"description": "if set will be used to register the target logaddress for the game server"
 					},
 					"isLive": {
 						"type": "boolean"
@@ -1713,6 +1725,10 @@
 					"electionMap": {
 						"type": "string",
 						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
+					},
+					"tmtLogAddress": {
+						"type": "string",
+						"description": "if set will be used to register the target logaddress for the game server"
 					},
 					"state": {
 						"$ref": "#/components/schemas/TMatchSate"
