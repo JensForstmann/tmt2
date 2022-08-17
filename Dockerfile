@@ -17,9 +17,11 @@ COPY frontend/package.json .
 RUN npm install
 COPY common ../common
 COPY frontend/src src
+COPY frontend/index.html .
+COPY frontend/postcss.config.js .
+COPY frontend/tailwind.config.js .
 COPY frontend/tsconfig.json .
 COPY frontend/vite.config.ts .
-COPY frontend/index.html .
 RUN npm run build
 
 FROM node:16-alpine
