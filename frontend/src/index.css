@@ -149,3 +149,7 @@ a:hover {
 	left: 16%;
 	transform: rotateZ(-50deg);
 }
+
+.dark {
+	color-scheme: dark;
+}

@@ -1,5 +1,6 @@
 import { useNavigate, useSearchParams } from '@solidjs/router';
 import { Component, createSignal } from 'solid-js';
+import { TextInput } from '../components/TextInput';
 import { getToken, login } from '../utils/fetcher';
 import { t } from '../utils/locale';
 
@@ -19,7 +20,7 @@ export const LoginPage: Component = () => {
 
 	return (
 		<>
-			<input
+			<TextInput
 				type="password"
 				value={token()}
 				onInput={(e) => setToken(e.currentTarget.value)}

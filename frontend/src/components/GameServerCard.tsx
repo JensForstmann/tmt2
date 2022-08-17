@@ -10,7 +10,7 @@ export const GameServerCard: Component<{
 	const steamUrl = () => `steam://connect/${ipPort()}/${props.match.serverPassword}`;
 	return (
 		<Card>
-			<h2 class="font-bold text-lg">{t('Game Server')}</h2>
+			<h2 class="text-lg font-bold">{t('Game Server')}</h2>
 			<p>
 				<a href={steamUrl()}>{steamUrl()}</a>
 				<br />

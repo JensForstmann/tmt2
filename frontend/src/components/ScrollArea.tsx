@@ -12,7 +12,7 @@ export const ScrollArea: Component<{
 		}
 	});
 	return (
-		<div class="h-80 overflow-scroll text-left bg-gray-50" ref={ref!}>
+		<div class="h-80 overflow-y-auto bg-zinc-100 text-left dark:bg-zinc-600" ref={ref!}>
 			<For each={props.children}>
 				{(line) => (
 					<Line scroll={props.scroll} containerRef={ref}>

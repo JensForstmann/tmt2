@@ -78,17 +78,17 @@ export const MatchMapCard: Component<{
 						: [t('switch to this map'), mustConfirm(loadThisMap)],
 				]}
 			/>
-			<h3 class="font-light text-base">{props.map.name}</h3>
-			<p class="space-x-5 flex basis-1/3 justify-center items-center">
-				<span class="text-right flex-1">
+			<h3 class="text-base font-light">{props.map.name}</h3>
+			<p class="flex basis-1/3 items-center justify-center space-x-5">
+				<span class="flex-1 text-right">
 					{teamA()} {props.match.teamA.name}
 				</span>
-				<span class="text-2xl text-center">
+				<span class="text-center text-2xl">
 					{props.map.score.teamA}
 					{' : '}
 					{props.map.score.teamB}
 				</span>
-				<span class="text-left flex-1">
+				<span class="flex-1 text-left">
 					{props.match.teamB.name} {teamB()}
 				</span>
 			</p>

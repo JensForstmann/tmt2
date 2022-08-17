@@ -8,8 +8,8 @@ export const PlayerListCard: Component<{
 }> = (props) => {
 	return (
 		<Card>
-			<h2 class="font-bold text-lg">{t('Players')}</h2>
-			<div class="space-x-5 flex basis-1/2 justify-center items-start text-left">
+			<h2 class="text-lg font-bold">{t('Players')}</h2>
+			<div class="flex basis-1/2 items-start justify-center space-x-5 text-left">
 				<div class="flex-1 text-right">
 					<h4>{props.match.teamA.name}</h4>
 					{List(props.match.players.filter((p) => p.team === 'TEAM_A'))}

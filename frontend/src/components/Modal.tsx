@@ -8,12 +8,12 @@ export const Modal: Component<{
 	return (
 		<Show when={props.show}>
 			<div
-				class={`fixed z-30 inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center`}
+				class={`fixed inset-0 z-30 flex items-center justify-center bg-zinc-500/50`}
 				style="margin: 0; padding: 0;"
 				onClick={props.onBackdropClick}
 			>
 				<div
-					class="relative bg-gray-100 rounded-lg transition-all space-y-5 p-5 max-w-2xl mx-auto w-full"
+					class="relative mx-auto w-full max-w-2xl space-y-5 rounded-lg bg-zinc-100 p-5 transition-all dark:bg-zinc-800"
 					onClick={(e) => e.stopPropagation()}
 				>
 					{props.children}

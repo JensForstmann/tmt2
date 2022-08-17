@@ -101,7 +101,7 @@ export const MatchPage: Component = () => {
 	return (
 		<Show when={data.match} fallback={<Loader />}>
 			{(match) => (
-				<div class="space-y-5 mt-5 mb-16">
+				<div class="mt-5 mb-16 space-y-5">
 					<Show when={!match.isLive}>
 						<NotLiveCard match={match} />
 					</Show>

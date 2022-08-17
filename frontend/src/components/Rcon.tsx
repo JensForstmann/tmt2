@@ -5,6 +5,7 @@ import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
 import { Card } from './Card';
 import { ScrollArea } from './ScrollArea';
+import { TextInput } from './TextInput';
 
 const formatRconResponse = (response: string): string[] => {
 	return response.trim().split('\n');
@@ -45,10 +46,9 @@ export const Rcon: Component<{
 
 	return (
 		<Card>
-			<h2 class="font-bold text-lg">{t('Rcon')}</h2>
+			<h2 class="text-lg font-bold">{t('Rcon')}</h2>
 			<ScrollArea scroll>{output()}</ScrollArea>
-			<input
-				class="w-full"
+			<TextInput
 				type="text"
 				onKeyDown={onEnter(
 					(e) => {

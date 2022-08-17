@@ -1,43 +1,100 @@
-import { Route, Routes } from '@solidjs/router';
-import { Component, onMount } from 'solid-js';
-import { MainNavigation } from './components/MainNavigation';
+import { Link, LinkProps, Route, Routes, useLocation } from '@solidjs/router';
+import { Component, Match, onMount, Switch } from 'solid-js';
+import { SvgComputer, SvgDarkMode, SvgFlagDE, SvgFlagUS, SvgLightMode } from './assets/Icons';
+import logo from './assets/logo.svg';
 import { CreatePage } from './pages/create';
 import { LoginPage } from './pages/login';
 import { LogoutPage } from './pages/logout';
 import { MatchPage } from './pages/match';
 import { MatchesPage } from './pages/matches';
 import { NotFoundPage } from './pages/notFound';
+import { isLoggedIn } from './utils/fetcher';
+import { currentLocale, cycleLocale, t } from './utils/locale';
+import { currentTheme, cycleDarkMode, updateDarkClasses } from './utils/theme';
 
-export const setTheme = () => {
-	if (isDark()) {
-		document.documentElement.classList.add('dark');
+const NavLink = (props: LinkProps) => {
+	const l = useLocation();
+	if (l.pathname === props.href) {
+		return (
+			<Link
+				{...props}
+				class="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white"
+			>
+				{props.children}
+			</Link>
+		);
 	} else {
-		document.documentElement.classList.remove('dark');
+		return (
+			<Link
+				{...props}
+				class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+			>
+				{props.children}
+			</Link>
+		);
 	}
 };
 
-export const isDark = () => {
+const NavBar: Component = () => {
 	return (
-		localStorage.theme === 'dark' ||
-		(!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+		<nav class="flex h-12 items-center justify-center space-x-1 bg-gray-800 lg:space-x-10">
+			<div class="w-1 lg:w-20"></div>
+			<div>
+				<img class="mr-1 inline-block h-10 w-auto align-middle" src={logo} alt="Logo" />
+				<div class="inline-block align-middle text-xs text-teal-400 lg:hidden">TMT</div>
+				<div class="hidden align-middle text-xs text-teal-400 lg:inline-block">
+					Tournament
+					<br />
+					MatchTracker
+				</div>
+			</div>
+			<div class="grow"></div>
+			<NavLink href="/create">{t('Create')}</NavLink>
+			<NavLink href="/matches">{t('Matches')}</NavLink>
+			<Switch>
+				<Match when={isLoggedIn() === undefined}>...</Match>
+				<Match when={isLoggedIn() === false}>
+					<NavLink href="/login">{t('Login')}</NavLink>
+				</Match>
+				<Match when={isLoggedIn() === true}>
+					<NavLink href="/logout">{t('Logout')}</NavLink>
+				</Match>
+			</Switch>
+			<div class="grow"></div>
+			<div onClick={() => cycleDarkMode()}>
+				<Switch>
+					<Match when={currentTheme() === 'system'}>
+						<SvgComputer class="cursor-pointer fill-gray-300 hover:fill-white" />
+					</Match>
+					<Match when={currentTheme() === 'dark'}>
+						<SvgDarkMode class="cursor-pointer fill-gray-300 hover:fill-white" />
+					</Match>
+					<Match when={currentTheme() === 'light'}>
+						<SvgLightMode class="cursor-pointer fill-gray-300 hover:fill-white" />
+					</Match>
+				</Switch>
+			</div>
+			<div onClick={() => cycleLocale()}>
+				<Switch>
+					<Match when={currentLocale() === 'de'}>
+						<SvgFlagDE class="h-6 w-auto cursor-pointer" />
+					</Match>
+					<Match when={currentLocale() === 'en'}>
+						<SvgFlagUS class="h-6 w-auto cursor-pointer" />
+					</Match>
+				</Switch>
+			</div>
+			<div class="w-1 lg:w-20"></div>
+		</nav>
 	);
 };
 
-export const cycleDarkMode = () => {
-	if (isDark()) {
-		localStorage.setItem('theme', 'light');
-	} else {
-		localStorage.setItem('theme', 'dark');
-	}
-	setTheme();
-};
-
 export const App: Component = () => {
-	onMount(setTheme);
+	onMount(updateDarkClasses);
 	return (
 		<>
-			<header>
-				<MainNavigation />
+			<header class="sticky top-0 z-10">
+				<NavBar />
 			</header>
 			<main class="container mx-auto px-4">
 				<Routes>
@@ -49,6 +106,7 @@ export const App: Component = () => {
 					<Route path="/*" element={<NotFoundPage />} />
 				</Routes>
 			</main>
+			<footer></footer>
 		</>
 	);
 };

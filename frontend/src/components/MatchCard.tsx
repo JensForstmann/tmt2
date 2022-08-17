@@ -48,15 +48,15 @@ export const MatchCard: Component<{
 						: [[t('revive'), mustConfirm(revive)]]
 				}
 			/>
-			<h2 class="font-bold text-lg">{t('Map Wins')}</h2>
-			<p class="space-x-5 flex basis-1/3 justify-center items-center">
-				<span class="text-right flex-1">{props.match.teamA.name}</span>
+			<h2 class="text-lg font-bold">{t('Map Wins')}</h2>
+			<p class="flex basis-1/3 items-center justify-center space-x-5">
+				<span class="flex-1 text-right">{props.match.teamA.name}</span>
 				<span class="text-5xl">
 					{getMapScore(props.match, 'TEAM_A')}
 					{' : '}
 					{getMapScore(props.match, 'TEAM_B')}
 				</span>
-				<span class="text-left flex-1">{props.match.teamB.name}</span>
+				<span class="flex-1 text-left">{props.match.teamB.name}</span>
 			</p>
 			<Show when={getMapDraws(props.match) > 0}>
 				<span class="shrink-0 grow">

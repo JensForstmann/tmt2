@@ -4,6 +4,7 @@ import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
 import { Card } from './Card';
 import { ScrollArea } from './ScrollArea';
+import { TextInput } from './TextInput';
 
 export const Chat: Component<{
 	messages: ChatEvent[];
@@ -11,10 +12,9 @@ export const Chat: Component<{
 }> = (props) => {
 	return (
 		<Card>
-			<h2 class="font-bold text-lg">{t('Chat')}</h2>
+			<h2 class="text-lg font-bold">{t('Chat')}</h2>
 			<ScrollArea scroll>{props.messages.map(formatChatEvent)}</ScrollArea>
-			<input
-				class="w-full"
+			<TextInput
 				type="text"
 				onKeyDown={onEnter((e) => {
 					const msg = e.currentTarget.value.trim();

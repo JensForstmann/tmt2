@@ -2,15 +2,9 @@ import { Component, JSX } from 'solid-js';
 
 export const Card: Component<{
 	children: JSX.Element;
-	class?: string;
 }> = (props) => {
 	return (
-		<div
-			class={
-				'relative text-center bg-gray-100 rounded-lg shadow-gray-300 shadow-md hover:shadow-lg transition-all p-5 ' +
-					props.class || ''
-			}
-		>
+		<div class="relative rounded-lg bg-zinc-200 p-5 text-center shadow shadow-zinc-400 transition-all hover:shadow-lg dark:bg-zinc-700 dark:shadow-zinc-900">
 			{props.children}
 		</div>
 	);

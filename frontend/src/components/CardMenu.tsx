@@ -1,5 +1,5 @@
 import { Component, createSignal, For, JSX, onCleanup } from 'solid-js';
-import threeDotsVertical from '../assets/icons/three-dots-vertical.svg';
+import { SvgThreeDotsVertical } from '../assets/Icons';
 
 export const CardMenu: Component<{
 	show: boolean;
@@ -42,20 +42,21 @@ export const CardMenu: Component<{
 				class={`absolute right-3 top-3 text-right ${props.show ? '' : 'hidden'}`}
 			>
 				<button onClick={toggleMenu}>
-					<img src={threeDotsVertical} />
+					<SvgThreeDotsVertical />
 				</button>
 			</div>
 			<div
 				class={`${
 					showMenu() ? 'max-h-full' : 'max-h-0'
-				} overflow-hidden text-left absolute rounded-br-lg rounded-bl-lg shadow-md shadow-gray-400 right-9 top-0 bg-gray-300 transition-all hover:cursor-pointer`}
+				} absolute right-9 top-0 overflow-hidden rounded-br-lg rounded-bl-lg bg-teal-50 text-left shadow-sm shadow-teal-100 transition-all
+				hover:cursor-pointer dark:bg-teal-900 dark:shadow-teal-700`}
 			>
 				<ul>
 					<For each={props.entries}>
 						{(entry) =>
 							entry && (
 								<li
-									class="hover:bg-gray-200 pl-2 pr-2 first:pt-1 last:pb-1 text-sm"
+									class="pl-2 pr-2 text-sm first:pt-1 last:pb-1 hover:bg-teal-100 dark:hover:bg-teal-700"
 									onClick={() => {
 										closeMenu();
 										entry[1]();
