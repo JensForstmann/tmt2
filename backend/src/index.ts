@@ -11,8 +11,8 @@ import { checkAndNormalizeLogAddress } from './match';
 
 export const TMT_LOG_ADDRESS: string | null = (() => {
 	if (!process.env['TMT_LOG_ADDRESS']) {
-		console.warn('environment variable TMT_LOG_ADDRESS is not set');
-		console.warn('every match must be init with tmtLogAddress');
+		console.warn('Environment variable TMT_LOG_ADDRESS is not set');
+		console.warn('Every match must be init with tmtLogAddress');
 		return null;
 	}
 	const addr = checkAndNormalizeLogAddress(process.env['TMT_LOG_ADDRESS']);

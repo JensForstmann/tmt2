@@ -19,15 +19,29 @@ interface IAccessTokens {
 }
 
 export const setup = async () => {
+	const randomKey = shortUuid();
 	const firstToken: IAccessTokens = {
-		[shortUuid()]: {
-			comment: 'first auto generated token',
+		[randomKey]: {
+			comment: 'first auto generated access token',
 		},
 	};
 	const tokensFromStorage = await Storage.read('access_tokens.json', firstToken);
+	const tokenComments: string[] = [];
 	Object.entries(tokensFromStorage).forEach(([token, content]) => {
 		tokens.set(token, content);
+		if (content.comment) {
+			tokenComments.push(content.comment);
+		}
 	});
+	if (tokens.has(randomKey)) {
+		console.info(`First auto generated access token: ${randomKey}`);
+	} else {
+		console.info(
+			`Access tokens: ${tokens.size} in total, ${
+				tokens.size - tokenComments.length
+			} without comment, ${tokenComments.length} with comment: ${tokenComments.join(', ')}`
+		);
+	}
 };
 
 export const getGlobalToken = (token?: string) => {

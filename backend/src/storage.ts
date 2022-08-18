@@ -22,7 +22,7 @@ export const read: TRead = async <T>(fileName: string, fallback?: T) => {
 	try {
 		const fullPath = path.join(STORAGE_DIR, fileName);
 		if (!fs.existsSync(fullPath) && fallback) {
-			write(fileName, fallback);
+			await write(fileName, fallback);
 		}
 		const content = await fsp.readFile(fullPath, { encoding: 'utf-8' });
 		return JSON.parse(content);

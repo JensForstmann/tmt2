@@ -679,6 +679,7 @@ const onMatchEnd = async (match: Match) => {
 };
 
 export const stop = async (match: Match) => {
+	match.log(`stop match`);
 	match.data.isStopped = true;
 	MatchService.scheduleSave(match);
 	if (match.periodicTimerId) {
