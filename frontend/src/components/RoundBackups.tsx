@@ -13,7 +13,7 @@ export const RoundBackups: Component<{
 	const [roundBackups] = createResource(() =>
 		fetcher<{ latestFiles: string[]; total: number }>(
 			'GET',
-			`/api/matches/${props.match.id}/server/round_backups`
+			`/api/matches/${props.match.id}/server/round_backups?count=15`
 		)
 	);
 	const loadBackup = async (file: string) => {
