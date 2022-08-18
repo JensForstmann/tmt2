@@ -4,12 +4,23 @@ import en from '../locales/en.json';
 
 export const t = (key: string) => {
 	const l = getCurrentLocale() as { [key: string]: string };
-	return l[key] ?? key;
+	const value = l[key];
+	if (!value) {
+		console.debug(`no entry for "${key}" in locale "${currentLocale()}"`);
+	}
+	return value ?? key;
 };
 
-// TODO: read wanted locale from browser
+const fromBrowserLanguage = () => {
+	const nl = navigator.language?.substring(0, 2);
+	if (['de', 'en'].includes(nl)) {
+		return nl;
+	}
+	return 'en';
+};
+
 const [currentLocale, setCurrentLocale] = createSignal<'de' | 'en'>(
-	(localStorage.getItem('locale') as 'de' | 'en') ?? 'de'
+	(localStorage.getItem('locale') as 'de' | 'en') ?? fromBrowserLanguage()
 );
 export { currentLocale };
 

@@ -2,10 +2,8 @@ import { createSignal } from 'solid-js';
 
 export const updateDarkClasses = () => {
 	if (currentMode() === 'dark') {
-		console.log('updateDarkClasses add dark');
 		document.documentElement.classList.add('dark');
 	} else {
-		console.log('updateDarkClasses remove dark');
 		document.documentElement.classList.remove('dark');
 	}
 };
