@@ -14,7 +14,7 @@ export const GameServerCard: Component<{
 			<p>
 				<a href={steamUrl()}>{steamUrl()}</a>
 				<br />
-				sv_password "{props.match.serverPassword}"; connect {ipPort()};
+				password "{props.match.serverPassword}"; connect {ipPort()};
 			</p>
 		</Card>
 	);
