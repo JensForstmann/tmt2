@@ -81,7 +81,7 @@ export const MatchCard: Component<{
 							class="ml-4"
 							onClick={() => navigator.clipboard.writeText(shareLink)}
 						>
-							<SvgCopyAll class="dark:fill-zinc-300" />
+							<SvgCopyAll />
 						</button>
 					</div>
 					<p>{t('Warning: The link gives full admin access to (only) this match.')}</p>

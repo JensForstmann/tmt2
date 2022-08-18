@@ -7,7 +7,7 @@ export const SvgLightMode: Component<ComponentProps<'svg'>> = (props) => (
 		height="24px"
 		viewBox="0 0 24 24"
 		width="24px"
-		fill="#000000"
+		fill="currentColor"
 		{...props}
 	>
 		<rect fill="none" height="24" width="24" />
@@ -23,7 +23,7 @@ export const SvgDarkMode: Component<ComponentProps<'svg'>> = (props) => () =>
 			height="24px"
 			viewBox="0 0 24 24"
 			width="24px"
-			fill="#000000"
+			fill="currentColor"
 			{...props}
 		>
 			<rect fill="none" height="24" width="24" />
@@ -37,7 +37,7 @@ export const SvgComputer: Component<ComponentProps<'svg'>> = (props) => (
 		height="24px"
 		viewBox="0 0 24 24"
 		width="24px"
-		fill="#000000"
+		fill="currentColor"
 		{...props}
 	>
 		<path d="M0 0h24v24H0V0z" fill="none" />
@@ -81,7 +81,6 @@ export const SvgThreeDotsVertical: Component<ComponentProps<'svg'>> = (props) =>
 		width="16"
 		height="16"
 		fill="currentColor"
-		class="bi bi-three-dots-vertical"
 		viewBox="0 0 16 16"
 		{...props}
 	>
@@ -96,9 +95,24 @@ export const SvgCopyAll: Component<ComponentProps<'svg'>> = (props) => (
 		height="24px"
 		viewBox="0 0 24 24"
 		width="24px"
+		fill="currentColor"
 		{...props}
 	>
 		<rect fill="none" height="24" width="24" />
 		<path d="M18,2H9C7.9,2,7,2.9,7,4v12c0,1.1,0.9,2,2,2h9c1.1,0,2-0.9,2-2V4C20,2.9,19.1,2,18,2z M18,16H9V4h9V16z M3,15v-2h2v2H3z M3,9.5h2v2H3V9.5z M10,20h2v2h-2V20z M3,18.5v-2h2v2H3z M5,22c-1.1,0-2-0.9-2-2h2V22z M8.5,22h-2v-2h2V22z M13.5,22L13.5,22l0-2h2 v0C15.5,21.1,14.6,22,13.5,22z M5,6L5,6l0,2H3v0C3,6.9,3.9,6,5,6z" />
+	</svg>
+);
+
+export const SvgOpenInNew: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<path d="M0 0h24v24H0V0z" fill="none" />
+		<path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
 	</svg>
 );
