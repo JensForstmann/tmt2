@@ -18,9 +18,9 @@ export const GameServerCard: Component<{
 					{steamUrl()} <SvgOpenInNew class="inline-block" />
 				</a>
 				<br />
-				{command()}
+				<span class="align-middle">{command()}</span>
 				<button
-					class="ml-2 align-middle"
+					class="ml-1 align-middle"
 					onClick={() => navigator.clipboard.writeText(command())}
 				>
 					<SvgCopyAll />

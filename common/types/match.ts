@@ -67,6 +67,8 @@ export interface IMatch {
 	serverPassword: string;
 	/** if set will be used to register the target logaddress for the game server */
 	tmtLogAddress?: string;
+	/** Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC) */
+	createdAt: number;
 }
 
 export interface IMatchResponse extends IMatch {

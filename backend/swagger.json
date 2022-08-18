@@ -752,6 +752,11 @@
 					"tmtLogAddress": {
 						"type": "string",
 						"description": "if set will be used to register the target logaddress for the game server"
+					},
+					"createdAt": {
+						"type": "number",
+						"format": "double",
+						"description": "Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC)"
 					}
 				},
 				"required": [
@@ -775,7 +780,8 @@
 					"tmtSecret",
 					"isStopped",
 					"electionMap",
-					"serverPassword"
+					"serverPassword",
+					"createdAt"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1042,6 +1048,11 @@
 						"type": "string",
 						"description": "if set will be used to register the target logaddress for the game server"
 					},
+					"createdAt": {
+						"type": "number",
+						"format": "double",
+						"description": "Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC)"
+					},
 					"isLive": {
 						"type": "boolean"
 					}
@@ -1068,6 +1079,7 @@
 					"isStopped",
 					"electionMap",
 					"serverPassword",
+					"createdAt",
 					"isLive"
 				],
 				"type": "object",
@@ -1848,7 +1860,8 @@
 						"description": "reads and refreshes mp_overtime_enable, mp_overtime_maxrounds and mp_maxrounds from rcon"
 					},
 					"_switchTeamInternals": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "switch team internals, i.e. swap team names (and internal score)"
 					}
 				},
 				"type": "object",

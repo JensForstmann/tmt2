@@ -3,15 +3,23 @@ import { Component, For, Show } from 'solid-js';
 import { getTotalNumberOfMaps, IMatchResponse } from '../../../common';
 import { t } from '../utils/locale';
 
+const diffString = (createdAt: number) => {
+	if (createdAt) {
+		return Math.round((Date.now() - createdAt) / 1000 / 60) + 'min';
+	}
+	return '';
+};
+
 export const MatchList: Component<{ matches: IMatchResponse[] }> = (props) => {
 	return (
 		<>
-			<table>
+			<table class="mx-auto">
 				<thead>
 					<tr>
 						<th>{t('#')}</th>
 						<th>{t('Team A')}</th>
 						<th>{t('Team B')}</th>
+						<th>{t('Age')}</th>
 						<th>{t('Best of')}</th>
 						<th>{t('Match State')}</th>
 						<th>{t('Current Map')}</th>
@@ -27,6 +35,7 @@ export const MatchList: Component<{ matches: IMatchResponse[] }> = (props) => {
 								<td>{i() + 1}</td>
 								<td>{match.teamA.name}</td>
 								<td>{match.teamB.name}</td>
+								<td>{diffString(match.createdAt)}</td>
 								<td>{getTotalNumberOfMaps(match.electionSteps)}</td>
 								<td>{match.state}</td>
 								<td>

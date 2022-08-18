@@ -86,6 +86,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		tmtSecret: shortUuid(),
 		serverPassword: '',
 		tmtLogAddress: dto.tmtLogAddress,
+		createdAt: Date.now(),
 	};
 	const match = await createFromData(data);
 	await init(match);

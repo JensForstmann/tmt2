@@ -16,7 +16,7 @@ export const MatchesPage: Component = () => {
 	);
 	return (
 		<>
-			<div>
+			<div class="mx-auto text-center">
 				<label>
 					<input
 						type="checkbox"
