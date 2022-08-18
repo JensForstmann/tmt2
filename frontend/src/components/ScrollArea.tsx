@@ -1,5 +1,5 @@
 import autoAnimate from '@formkit/auto-animate';
-import { Component, For, JSXElement, onMount } from 'solid-js';
+import { Component, Index, JSXElement, onMount } from 'solid-js';
 
 export const ScrollArea: Component<{
 	children: JSXElement[];
@@ -13,13 +13,13 @@ export const ScrollArea: Component<{
 	});
 	return (
 		<div class="h-80 overflow-y-auto bg-zinc-100 text-left dark:bg-zinc-600" ref={ref!}>
-			<For each={props.children}>
+			<Index each={props.children}>
 				{(line) => (
 					<Line scroll={props.scroll} containerRef={ref}>
-						{line}
+						{line()}
 					</Line>
 				)}
-			</For>
+			</Index>
 		</div>
 	);
 };

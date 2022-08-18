@@ -1846,6 +1846,9 @@
 					"_refreshOvertimeAndMaxRoundsSettings": {
 						"type": "boolean",
 						"description": "reads and refreshes mp_overtime_enable, mp_overtime_maxrounds and mp_maxrounds from rcon"
+					},
+					"_switchTeamInternals": {
+						"type": "boolean"
 					}
 				},
 				"type": "object",

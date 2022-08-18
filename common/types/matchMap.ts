@@ -41,4 +41,6 @@ export interface IMatchMap {
 export interface IMatchMapUpdateDto extends Partial<IMatchMap> {
 	/** reads and refreshes mp_overtime_enable, mp_overtime_maxrounds and mp_maxrounds from rcon */
 	_refreshOvertimeAndMaxRoundsSettings?: boolean;
+	/** switch team internals, i.e. swap team names (and internal score) */
+	_switchTeamInternals?: boolean;
 }

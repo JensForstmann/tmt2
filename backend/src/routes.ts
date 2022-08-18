@@ -962,6 +962,7 @@ const models: TsoaRoute.Models = {
 			overTimeMaxRounds: { dataType: 'double' },
 			maxRounds: { dataType: 'double' },
 			_refreshOvertimeAndMaxRoundsSettings: { dataType: 'boolean' },
+			_switchTeamInternals: { dataType: 'boolean' },
 		},
 		additionalProperties: false,
 	},

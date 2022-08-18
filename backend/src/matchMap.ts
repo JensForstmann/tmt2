@@ -457,5 +457,14 @@ export const update = async (match: Match.Match, matchMap: IMatchMap, dto: IMatc
 		await refreshOvertimeAndMaxRoundsSettings(match, matchMap);
 	}
 
+	if (dto._switchTeamInternals) {
+		matchMap.startAsCtTeam = getOtherTeamAB(matchMap.startAsCtTeam);
+		matchMap.score = {
+			teamA: matchMap.score.teamB,
+			teamB: matchMap.score.teamA,
+		};
+		await Match.setTeamNames(match);
+	}
+
 	MatchService.scheduleSave(match);
 };

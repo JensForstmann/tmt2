@@ -1,10 +1,10 @@
 import { Component, createSignal } from 'solid-js';
 import {
 	getCurrentTeamSideAndRoundSwitch,
-	IMatchResponse,
 	IMatchMap,
-	IMatchUpdateDto,
 	IMatchMapUpdateDto,
+	IMatchResponse,
+	IMatchUpdateDto,
 	TMatchMapSate,
 } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
@@ -45,6 +45,11 @@ export const MatchMapCard: Component<{
 			});
 		}
 	};
+	const switchTeamInternals = () => {
+		patchMatchMap({
+			_switchTeamInternals: true,
+		});
+	};
 
 	const [showRoundBackupsModal, setShowRoundBackupsModal] = createSignal(false);
 
@@ -76,6 +81,7 @@ export const MatchMapCard: Component<{
 					props.match.currentMap === props.mapIndex
 						? [t('load round backup'), () => setShowRoundBackupsModal(true)]
 						: [t('switch to this map'), mustConfirm(loadThisMap)],
+					[t('switch team internals'), switchTeamInternals],
 				]}
 			/>
 			<h3 class="text-base font-light">{props.map.name}</h3>
