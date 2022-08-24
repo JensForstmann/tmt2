@@ -16,7 +16,7 @@ export const MatchesPage: Component = () => {
 	);
 	return (
 		<>
-			<div class="mx-auto text-center">
+			<div class="mx-auto p-4 text-center">
 				<label>
 					<input
 						type="checkbox"
@@ -28,7 +28,7 @@ export const MatchesPage: Component = () => {
 							)
 						}
 					/>
-					{t('live matches')}
+					<span class="ml-1">{t('live matches')}</span>
 				</label>
 			</div>
 			{matches.error ? (

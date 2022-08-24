@@ -1,7 +1,9 @@
 import { Link } from '@solidjs/router';
 import { Component, For, Show } from 'solid-js';
 import { getTotalNumberOfMaps, IMatchResponse } from '../../../common';
+import { SvgNavigateNext } from '../assets/Icons';
 import { t } from '../utils/locale';
+import { Card } from './Card';
 
 const diffString = (createdAt: number) => {
 	if (createdAt) {
@@ -12,8 +14,8 @@ const diffString = (createdAt: number) => {
 
 export const MatchList: Component<{ matches: IMatchResponse[] }> = (props) => {
 	return (
-		<>
-			<table class="mx-auto">
+		<Card>
+			<table class="tmt-table w-full">
 				<thead>
 					<tr>
 						<th>{t('#')}</th>
@@ -25,13 +27,19 @@ export const MatchList: Component<{ matches: IMatchResponse[] }> = (props) => {
 						<th>{t('Current Map')}</th>
 						<th>{t('Map State')}</th>
 						<th>{t('Map Score')}</th>
-						<th>{t('Link')}</th>
+						<th>{t('Details')}</th>
 					</tr>
 				</thead>
 				<tbody>
 					<For each={props.matches}>
 						{(match, i) => (
-							<tr>
+							<tr
+								class={
+									i() % 2 === 0
+										? 'bg-transparent/5 dark:bg-transparent/10'
+										: 'bg-transparent/10 dark:bg-transparent/20'
+								}
+							>
 								<td>{i() + 1}</td>
 								<td>{match.teamA.name}</td>
 								<td>{match.teamB.name}</td>
@@ -55,13 +63,15 @@ export const MatchList: Component<{ matches: IMatchResponse[] }> = (props) => {
 									{match.matchMaps[match.currentMap]?.score.teamB ?? 0}
 								</td>
 								<td>
-									<Link href={`/matches/${match.id}`}>{t('Open')}</Link>
+									<Link href={`/matches/${match.id}`}>
+										<SvgNavigateNext class="inline-block" />
+									</Link>
 								</td>
 							</tr>
 						)}
 					</For>
 				</tbody>
 			</table>
-		</>
+		</Card>
 	);
 };

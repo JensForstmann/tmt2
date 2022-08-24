@@ -153,3 +153,8 @@ a:hover {
 .dark {
 	color-scheme: dark;
 }
+
+.tmt-table td,
+.tmt-table th {
+	padding: 0.5rem;
+}
