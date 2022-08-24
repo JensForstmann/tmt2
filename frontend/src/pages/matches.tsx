@@ -1,19 +1,28 @@
-import { Component, createResource, onCleanup } from 'solid-js';
+import { useSearchParams } from '@solidjs/router';
+import { Component, createResource, onCleanup, onMount } from 'solid-js';
+import { IMatchResponse } from '../../../common';
+import { ErrorComponent } from '../components/ErrorComponent';
 import { Loader } from '../components/Loader';
 import { MatchList } from '../components/MatchList';
-import { IMatchResponse } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
-import { useSearchParams } from '@solidjs/router';
-import { ErrorComponent } from '../components/ErrorComponent';
 
 export const MatchesPage: Component = () => {
 	const [searchParams, setSearchParams] = useSearchParams<{ isLive?: string }>();
 	const fetcher = createFetcher();
-	const [matches] = createResource(
+	const [matches, { refetch }] = createResource(
 		() => searchParams.isLive ?? 'true',
 		(s: string) => fetcher<IMatchResponse[]>('GET', `/api/matches?isLive=${s}`)
 	);
+
+	let interval: number;
+	onMount(() => {
+		interval = setInterval(refetch, 10000);
+	});
+	onCleanup(() => {
+		clearInterval(interval);
+	});
+
 	return (
 		<>
 			<div class="mx-auto p-4 text-center">
