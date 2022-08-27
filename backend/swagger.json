@@ -1097,7 +1097,9 @@
 					"MAP_START",
 					"MAP_END",
 					"MATCH_END",
-					"LOG"
+					"LOG",
+					"MATCH_CREATE",
+					"MATCH_UPDATE"
 				]
 			},
 			"ChatEvent": {
@@ -1620,6 +1622,87 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"MatchCreateEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"MATCH_CREATE"
+						],
+						"nullable": false
+					},
+					"match": {
+						"$ref": "#/components/schemas/IMatchResponse"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"match"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MatchUpdateEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"MATCH_UPDATE"
+						],
+						"nullable": false
+					},
+					"path": {
+						"items": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "number",
+									"format": "double"
+								}
+							]
+						},
+						"type": "array"
+					},
+					"value": {}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"path",
+					"value"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Event": {
 				"anyOf": [
 					{
@@ -1651,6 +1734,12 @@
 					},
 					{
 						"$ref": "#/components/schemas/ElectionSideStep"
+					},
+					{
+						"$ref": "#/components/schemas/MatchCreateEvent"
+					},
+					{
+						"$ref": "#/components/schemas/MatchUpdateEvent"
 					}
 				]
 			},
@@ -2422,6 +2511,30 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/debug/webSockets": {
+			"get": {
+				"operationId": "GetWebSocketClients",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": []
 			}
 		}
 	},

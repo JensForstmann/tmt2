@@ -14,25 +14,27 @@ import {
 	LogEvent,
 	MapEndEvent,
 	MapStartEvent,
+	MatchCreateEvent,
 	MatchEndEvent,
+	MatchUpdateEvent,
 	RoundEndEvent,
 	TMapMode,
 	TSideMode,
 } from '../../common';
 import * as Match from './match';
-import * as WebSocket from './webSocket';
 import { Settings } from './settings';
 import * as Storage from './storage';
+import * as WebSocket from './webSocket';
 
 const STORAGE_EVENTS_PREFIX = 'events_';
 const STORAGE_EVENTS_SUFFIX = '.jsonl';
 
-const send = (match: Match.Match, data: Event) => {
+const send = (match: Match.Match, data: Event, isSystemEvent?: boolean) => {
 	// Storage
 	Storage.appendLine(STORAGE_EVENTS_PREFIX + match.data.id + STORAGE_EVENTS_SUFFIX, data);
 
 	// WebSocket
-	WebSocket.publish(data);
+	WebSocket.publish(data, isSystemEvent);
 
 	// WebHook
 	const url = match.data.webhookUrl;
@@ -210,4 +212,26 @@ export const onLog = (match: Match.Match, message: string) => {
 		message: message,
 	};
 	send(match, data);
+};
+
+export const onMatchCreate = (match: Match.Match) => {
+	const data: MatchCreateEvent = {
+		...getBaseEvent(match, 'MATCH_CREATE'),
+		match: {
+			...match.data,
+			isLive: true,
+		},
+	};
+	send(match, data, true);
+};
+
+export const onMatchUpdate = (match: Match.Match, path: Array<string | number>, value: any) => {
+	const data: MatchUpdateEvent = {
+		...getBaseEvent(match, 'MATCH_UPDATE'),
+		path: path,
+		value: value,
+	};
+	// send as a system event if the match was created less than 10 seconds ago
+	const sendAsSysEvent = match.data.createdAt + 10000 > Date.now();
+	send(match, data, sendAsSysEvent);
 };

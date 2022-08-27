@@ -1,4 +1,5 @@
 import { TMapMode, TSideMode } from './electionStep';
+import { IMatchResponse } from './match';
 import { IPlayer } from './player';
 import { TTeamSides } from './stuff';
 import { ITeam } from './team';
@@ -15,7 +16,9 @@ export type EventType =
 	| 'MAP_START'
 	| 'MAP_END'
 	| 'MATCH_END'
-	| 'LOG';
+	| 'LOG'
+	| 'MATCH_CREATE'
+	| 'MATCH_UPDATE';
 
 export interface BaseEvent {
 	/** ISO */
@@ -106,6 +109,17 @@ export interface ElectionSideStep extends BaseEvent {
 	tTeam?: ITeam;
 }
 
+export interface MatchCreateEvent extends BaseEvent {
+	type: 'MATCH_CREATE';
+	match: IMatchResponse;
+}
+
+export interface MatchUpdateEvent extends BaseEvent {
+	type: 'MATCH_UPDATE';
+	path: Array<string | number>;
+	value: any;
+}
+
 export type Event =
 	| ChatEvent
 	| ElectionEndEvent
@@ -116,4 +130,6 @@ export type Event =
 	| MapStartEvent
 	| LogEvent
 	| ElectionMapStep
-	| ElectionSideStep;
+	| ElectionSideStep
+	| MatchCreateEvent
+	| MatchUpdateEvent;

@@ -1,5 +1,6 @@
 import { generate as shortUuid } from 'short-uuid';
-import { TMatchSate, IMatch, IMatchCreateDto } from '../../common';
+import { IMatch, IMatchCreateDto } from '../../common';
+import * as Events from './events';
 import * as Match from './match';
 import * as Storage from './storage';
 
@@ -33,17 +34,36 @@ export const setup = async () => {
 };
 
 const loadMatchFromStorage = async (matchData: IMatch) => {
-	console.info(`load match ${matchData.id} from storage`);
-	startingMatches.add(matchData.id);
-	matchData.parseIncomingLogs = false;
 	try {
+		console.info(`load match ${matchData.id} from storage`);
+		startingMatches.add(matchData.id);
+		matchData.parseIncomingLogs = false;
 		const match = await Match.createFromData(matchData);
 		matches.set(match.data.id, match);
 		await save(match);
 	} catch (err) {
 		console.error(`error creating match ${matchData.id} from storage: ${err}`);
+	} finally {
+		startingMatches.delete(matchData.id);
 	}
-	startingMatches.delete(matchData.id);
+};
+
+export const create = async (dto: IMatchCreateDto) => {
+	const id = shortUuid();
+	try {
+		const logSecret = shortUuid();
+		startingMatches.add(id);
+		const match = await Match.createFromCreateDto(dto, id, logSecret);
+		matches.set(match.data.id, match);
+		await save(match);
+		Events.onMatchCreate(match);
+		return match;
+	} catch (err) {
+		console.error(`error creating new match: ${err}`);
+		throw err;
+	} finally {
+		startingMatches.delete(id);
+	}
 };
 
 const periodicSaver = async () => {
@@ -69,17 +89,6 @@ const periodicSaver = async () => {
 
 export const scheduleSave = (match: Match.Match) => {
 	matchesToSave.add(match.data.id);
-};
-
-export const create = async (dto: IMatchCreateDto) => {
-	const id = shortUuid();
-	const logSecret = shortUuid();
-	startingMatches.add(id);
-	const match = await Match.createFromCreateDto(dto, id, logSecret);
-	matches.set(match.data.id, match);
-	startingMatches.delete(id);
-	await save(match);
-	return match;
 };
 
 export const get = (id: string) => {

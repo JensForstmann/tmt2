@@ -1,5 +1,5 @@
 import { useParams, useSearchParams } from '@solidjs/router';
-import { Component, createEffect, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js';
+import { Component, createEffect, For, onCleanup, onMount, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { ChatEvent, escapeRconSayString, Event, IMatchResponse, LogEvent } from '../../../common';
 import { Chat } from '../components/Chat';
@@ -12,66 +12,49 @@ import { NotLiveCard } from '../components/NotLiveCard';
 import { PlayerListCard } from '../components/PlayerListCard';
 import { Rcon } from '../components/Rcon';
 import { createFetcher } from '../utils/fetcher';
-import { createWebsocket } from '../utils/websocket';
+import { createWebSocket } from '../utils/webSocket';
 
 export const MatchPage: Component = () => {
 	const params = useParams();
 	const [searchParams] = useSearchParams();
+	const fetcher = createFetcher(searchParams.secret);
 	const [data, setData] = createStore<{
 		match?: IMatchResponse;
 		logEvents?: LogEvent[];
 		chatEvents?: ChatEvent[];
 	}>({});
-	const fetcher = createFetcher(searchParams.secret);
-	const setMatchData = () =>
+
+	onMount(async () => {
 		fetcher<IMatchResponse>('GET', `/api/matches/${params.id}`).then((match) => {
 			setData('match', match);
 		});
-	// const timer = setInterval(setMatchData, 10000);
-	// onCleanup(() => clearInterval(timer));
-
-	onMount(async () => {
-		setMatchData();
 		fetcher<Event[]>('GET', `/api/matches/${params.id}/events`).then((events) => {
 			if (!events) {
 				return;
 			}
-			setData('chatEvents', [
-				...(data.chatEvents ?? []),
-				...events.filter((event): event is ChatEvent => event.type === 'CHAT'),
-			]);
-			setData('logEvents', [
-				...(data.logEvents! ?? []),
-				...events.filter((event): event is LogEvent => event.type === 'LOG'),
-			]);
+			setData(
+				'chatEvents',
+				events.filter((event): event is ChatEvent => event.type === 'CHAT')
+			);
+			setData(
+				'logEvents',
+				events.filter((event): event is LogEvent => event.type === 'LOG')
+			);
 		});
 	});
 
 	const onWsMsg = (msg: Event) => {
 		console.log('onWsMsg', msg.type, msg);
-
 		if (msg.type === 'CHAT') {
-			setData('chatEvents', (x) => [...(x ?? []), msg]);
+			setData('chatEvents', (existing) => [...(existing ?? []), msg]);
 		} else if (msg.type === 'LOG') {
-			setData('logEvents', [...(data.logEvents ?? []), msg]);
-		} else if (msg.type === 'MAP_ELECTION_END') {
-			setData('match', 'state', 'MATCH_MAP');
-		} else if (msg.type === 'KNIFE_END') {
-			setData('match', 'matchMaps', msg.mapIndex, 'state', 'AFTER_KNIFE');
-			// setData('match', 'matchMaps', msg.mapIndex, 'knifeWinner', msg.); // TODO: set knife winner
-		} else if (msg.type === 'ROUND_END') {
-			setData('match', 'matchMaps', msg.mapIndex, 'score', 'teamA', msg.scoreTeamA);
-			setData('match', 'matchMaps', msg.mapIndex, 'score', 'teamB', msg.scoreTeamB);
-		} else if (msg.type === 'MAP_START') {
-			setData('match', 'matchMaps', msg.mapIndex, 'state', 'IN_PROGRESS');
-		} else if (msg.type === 'MAP_END') {
-			setData('match', 'matchMaps', msg.mapIndex, 'state', 'FINISHED');
-		} else if (msg.type === 'MATCH_END') {
-			setData('match', 'state', 'FINISHED');
+			setData('logEvents', (existing) => [...(existing ?? []), msg]);
+		} else if (msg.type === 'MATCH_UPDATE') {
+			(setData as any)('match', ...msg.path, msg.value);
 		}
 	};
 
-	const { state, subscribe, disconnect, connect } = createWebsocket(onWsMsg, {
+	const { state, subscribe, disconnect, connect } = createWebSocket(onWsMsg, {
 		autoReconnect: true,
 	});
 

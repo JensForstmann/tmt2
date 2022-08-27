@@ -1,4 +1,5 @@
 import { generate as shortUuid } from 'short-uuid';
+import { TMT_LOG_ADDRESS } from '.';
 import {
 	escapeRconSayString,
 	escapeRconString,
@@ -12,6 +13,7 @@ import {
 	sleep,
 	TTeamAB,
 } from '../../common';
+import { addChangeListener } from './changeListener';
 import { commandMapping, ECommand } from './commands';
 import * as Election from './election';
 import * as Events from './events';
@@ -21,9 +23,8 @@ import * as MatchService from './matchService';
 import * as Player from './player';
 import { Rcon } from './rcon-client';
 import { Settings } from './settings';
-import * as Team from './team';
 import * as Storage from './storage';
-import { TMT_LOG_ADDRESS } from '.';
+import * as Team from './team';
 
 export const STORAGE_LOGS_PREFIX = 'logs_';
 export const STORAGE_LOGS_SUFFIX = '.jsonl';
@@ -42,6 +43,7 @@ export const createFromData = async (data: IMatch) => {
 		logBuffer: [],
 		log: () => {},
 	};
+	match.data = addChangeListener(data, createOnDataChangeHandler(match));
 	match.log = createLogger(match);
 
 	// http log address checks
@@ -98,6 +100,10 @@ const createLogger = (match: Match) => (msg: string) => {
 	Storage.appendLine(STORAGE_LOGS_PREFIX + match.data.id + STORAGE_LOGS_SUFFIX, `${ds} | ${msg}`);
 	console.info(`${ds} [${match.data.id}] ${msg}`);
 	Events.onLog(match, msg);
+};
+
+const createOnDataChangeHandler = (match: Match) => (path: Array<string | number>, value: any) => {
+	Events.onMatchUpdate(match, path, value);
 };
 
 export const getLogsTail = async (matchId: string, numberOfLines = 100): Promise<string[]> => {
@@ -268,8 +274,10 @@ const sayPeriodicMessage = async (match: Match) => {
 		}
 	}, Settings.PERIODIC_MESSAGE_FREQUENCY);
 
-	match.data.serverPassword =
-		(await getConfigVar(match, 'sv_password')) || match.data.serverPassword;
+	const sv_password = await getConfigVar(match, 'sv_password');
+	if (sv_password && sv_password !== match.data.serverPassword) {
+		match.data.serverPassword = sv_password;
+	}
 
 	if (match.data.state === 'ELECTION') {
 		await Election.sayPeriodicMessage(match);
@@ -479,39 +487,44 @@ const onCommand = async (
 	parameters: string[],
 	teamString: string
 ) => {
-	let warnAboutTeam = true;
 	if (command === ECommand.TEAM) {
 		await onTeamCommand(match, player, parameters[0] || '');
-		warnAboutTeam = false;
 	}
 
 	const teamAB = player.team;
 
-	if (teamAB) {
-		const playerTeam = getTeamByAB(match, teamAB);
-
-		if (match.data.state === 'ELECTION') {
-			await Election.onCommand(match, command, teamAB, parameters);
+	if (!teamAB) {
+		if (command !== ECommand.TEAM) {
+			await sayNotAssigned(match, player);
 		}
+		return;
+	}
 
-		const currentMatchMap = getCurrentMatchMap(match);
-		if (currentMatchMap) {
-			await MatchMap.onCommand(match, currentMatchMap, command, teamAB, player);
-		}
+	const playerTeam = getTeamByAB(match, teamAB);
+	const currentMatchMap = getCurrentMatchMap(match);
 
-		const currentCtTeamAB = currentMatchMap
-			? getCurrentTeamSideAndRoundSwitch(currentMatchMap).currentCtTeamAB
-			: 'TEAM_A';
-		const currentTTeamAB = getOtherTeamAB(currentCtTeamAB);
+	const currentCtTeamAB = currentMatchMap
+		? getCurrentTeamSideAndRoundSwitch(currentMatchMap).currentCtTeamAB
+		: 'TEAM_A';
+	const currentTTeamAB = getOtherTeamAB(currentCtTeamAB);
 
-		if (
-			(teamString === 'TERRORIST' && player.team !== currentTTeamAB) ||
-			(teamString === 'CT' && player.team !== currentCtTeamAB)
-		) {
-			await sayWrongTeamOrSide(match, player, teamString, playerTeam, teamAB);
-		}
-	} else if (warnAboutTeam) {
-		await sayNotAssigned(match, player);
+	if (
+		(teamString === 'TERRORIST' && player.team !== currentTTeamAB) ||
+		(teamString === 'CT' && player.team !== currentCtTeamAB)
+	) {
+		await sayWrongTeamOrSide(match, player, teamString, playerTeam, teamAB);
+	}
+
+	if (command === ECommand.TEAM) {
+		return;
+	}
+
+	if (match.data.state === 'ELECTION') {
+		await Election.onCommand(match, command, teamAB, parameters);
+	}
+
+	if (currentMatchMap) {
+		await MatchMap.onCommand(match, currentMatchMap, command, teamAB, player);
 	}
 };
 

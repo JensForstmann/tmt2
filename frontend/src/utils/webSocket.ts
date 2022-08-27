@@ -1,5 +1,11 @@
 import { createEffect, createSignal } from 'solid-js';
-import { Event, SubscribeMessage } from '../../../common';
+import {
+	Event,
+	SubscribeMessage,
+	SubscribeSysMessage,
+	UnsubscribeMessage,
+	UnsubscribeSysMessage,
+} from '../../../common';
 
 const WS_HOST = import.meta.env.DEV
 	? `${window.location.protocol.replace('http', 'ws')}//${window.location.hostname}:8080`
@@ -9,7 +15,7 @@ type Options = {
 	connect?: boolean;
 	autoReconnect?: boolean;
 };
-export const createWebsocket = (onMsg: (msg: Event) => void, options?: Options) => {
+export const createWebSocket = (onMsg: (msg: Event) => void, options?: Options) => {
 	let ws: WebSocket | undefined;
 
 	const [state, setState] = createSignal<'CLOSED' | 'CLOSING' | 'CONNECTING' | 'OPEN' | 'NEW'>(
@@ -34,7 +40,7 @@ export const createWebsocket = (onMsg: (msg: Event) => void, options?: Options) 
 			try {
 				msg = JSON.parse(ev.data);
 			} catch (err) {
-				console.warn('Could not parse websocket message');
+				console.warn('Could not parse webSocket message');
 			}
 			if (msg) {
 				onMsg(msg);
@@ -44,21 +50,34 @@ export const createWebsocket = (onMsg: (msg: Event) => void, options?: Options) 
 	};
 
 	const subscribe = (msg: Omit<SubscribeMessage, 'type'>) => {
-		const unSubscribe = () =>
-			ws?.send(
-				JSON.stringify({
-					type: 'UNSUBSCRIBE',
-					matchId: msg.matchId,
-				})
-			);
-		const subMsg: SubscribeMessage = {
+		const m: SubscribeMessage = {
 			...msg,
 			type: 'SUBSCRIBE',
 		};
-		ws?.send(JSON.stringify(subMsg));
-		return {
-			unSubscribe,
+		ws?.send(JSON.stringify(m));
+	};
+
+	const subscribeSys = (token: string) => {
+		const m: SubscribeSysMessage = {
+			type: 'SUBSCRIBE_SYS',
+			token: token,
 		};
+		ws?.send(JSON.stringify(m));
+	};
+
+	const unsubscribe = (matchId: string) => {
+		const m: UnsubscribeMessage = {
+			matchId: matchId,
+			type: 'UNSUBSCRIBE',
+		};
+		ws?.send(JSON.stringify(m));
+	};
+
+	const unsubscribeSys = () => {
+		const m: UnsubscribeSysMessage = {
+			type: 'UNSUBSCRIBE_SYS',
+		};
+		ws?.send(JSON.stringify(m));
 	};
 
 	const disconnect = () => {
@@ -79,6 +98,9 @@ export const createWebsocket = (onMsg: (msg: Event) => void, options?: Options) 
 	return {
 		state,
 		subscribe,
+		subscribeSys,
+		unsubscribe,
+		unsubscribeSys,
 		disconnect,
 		reconnect,
 		connect: reconnect,

@@ -15,6 +15,8 @@ import {
 import { LoginController } from './loginController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MatchesController } from './matchesController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { DebugController } from './debugController';
 import { expressAuthentication } from './auth';
 // @ts-ignore - no great way to install types from subpackage
 const promiseAny = require('promise.any');
@@ -606,6 +608,8 @@ const models: TsoaRoute.Models = {
 				{ dataType: 'enum', enums: ['MAP_END'] },
 				{ dataType: 'enum', enums: ['MATCH_END'] },
 				{ dataType: 'enum', enums: ['LOG'] },
+				{ dataType: 'enum', enums: ['MATCH_CREATE'] },
+				{ dataType: 'enum', enums: ['MATCH_UPDATE'] },
 			],
 			validators: {},
 		},
@@ -868,6 +872,46 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	MatchCreateEvent: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['MATCH_CREATE'], required: true },
+			match: { ref: 'IMatchResponse', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	MatchUpdateEvent: {
+		dataType: 'refObject',
+		properties: {
+			timestamp: { dataType: 'string', required: true },
+			matchId: { dataType: 'string', required: true },
+			matchPassthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			type: { dataType: 'enum', enums: ['MATCH_UPDATE'], required: true },
+			path: {
+				dataType: 'array',
+				array: {
+					dataType: 'union',
+					subSchemas: [{ dataType: 'string' }, { dataType: 'double' }],
+				},
+				required: true,
+			},
+			value: { dataType: 'any', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	Event: {
 		dataType: 'refAlias',
 		type: {
@@ -883,6 +927,8 @@ const models: TsoaRoute.Models = {
 				{ ref: 'LogEvent' },
 				{ ref: 'ElectionMapStep' },
 				{ ref: 'ElectionSideStep' },
+				{ ref: 'MatchCreateEvent' },
+				{ ref: 'MatchUpdateEvent' },
 			],
 			validators: {},
 		},
@@ -1399,6 +1445,34 @@ export function RegisterRoutes(app: express.Router) {
 				const controller = new MatchesController();
 
 				const promise = controller.receiveLog.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get(
+		'/api/debug/webSockets',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(DebugController),
+		...fetchMiddlewares<RequestHandler>(DebugController.prototype.getWebSocketClients),
+
+		function DebugController_getWebSocketClients(request: any, response: any, next: any) {
+			const args = {};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new DebugController();
+
+				const promise = controller.getWebSocketClients.apply(
+					controller,
+					validatedArgs as any
+				);
 				promiseHandler(controller, promise, response, undefined, next);
 			} catch (err) {
 				return next(err);
