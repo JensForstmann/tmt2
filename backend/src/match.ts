@@ -311,7 +311,7 @@ export const setTeamNames = async (match: Match) => {
 	const currentMatchMap = getCurrentMatchMap(match);
 	if (currentMatchMap) {
 		const team1 = getTeamByAB(match, currentMatchMap.startAsCtTeam);
-		const team2 = getOtherTeam(match, team1);
+		const team2 = getTeamByAB(match, getOtherTeamAB(currentMatchMap.startAsCtTeam));
 		await execRcon(match, `mp_teamname_1 "${escapeRconString(team1.name)}"`);
 		await execRcon(match, `mp_teamname_2 "${escapeRconString(team2.name)}"`);
 	} else {
@@ -551,7 +551,7 @@ const sayWrongTeamOrSide = async (
 	currentTeam: ITeam,
 	currentTeamAB: TTeamAB
 ) => {
-	const otherTeam = getOtherTeam(match, currentTeam);
+	const otherTeam = getTeamByAB(match, getOtherTeamAB(currentTeamAB));
 	await say(
 		match,
 		`PLAYER ${escapeRconString(player.name)} IS REGISTERED FOR ${escapeRconString(
@@ -564,11 +564,6 @@ const sayWrongTeamOrSide = async (
 			currentTeamAB === 'TEAM_A' ? 'b' : 'a'
 		}" TO CHANGE REGISTRATION`
 	);
-};
-
-export const getOtherTeam = (match: Match, team: ITeam) => {
-	if (match.data.teamA === team) return match.data.teamB;
-	return match.data.teamA;
 };
 
 const onTeamCommand = async (match: Match, player: IPlayer, firstParameter: string) => {

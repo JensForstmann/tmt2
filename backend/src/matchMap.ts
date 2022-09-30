@@ -129,10 +129,10 @@ export const onRoundEnd = async (
 	/** Contains the state without the new score (without the just finished round). */
 	const magic = getCurrentTeamSideAndRoundSwitch(matchMap);
 	const currentCtTeam = Match.getTeamByAB(match, magic.currentCtTeamAB);
-	const currentTTeam = Match.getOtherTeam(match, currentCtTeam);
+	const currentTTeam = Match.getTeamByAB(match, getOtherTeamAB(magic.currentCtTeamAB));
 	const winnerTeamAB = winningTeamSide === 'CT' ? magic.currentCtTeamAB : magic.currentTTeamAB;
 	const winnerTeam = Match.getTeamByAB(match, winnerTeamAB);
-	const loserTeam = Match.getOtherTeam(match, winnerTeam);
+	const loserTeam = Match.getTeamByAB(match, getOtherTeamAB(winnerTeamAB));
 	const winnerScore = winningTeamSide === 'CT' ? ctScore : tScore;
 	const loserScore = winningTeamSide === 'CT' ? tScore : ctScore;
 
