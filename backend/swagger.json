@@ -741,10 +741,6 @@
 						"type": "boolean",
 						"description": "If match is finished or if the match was stopped/deleted this is true."
 					},
-					"electionMap": {
-						"type": "string",
-						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
-					},
 					"serverPassword": {
 						"type": "string",
 						"description": "Server password, periodically fetched from game server"
@@ -779,7 +775,6 @@
 					"players",
 					"tmtSecret",
 					"isStopped",
-					"electionMap",
 					"serverPassword",
 					"createdAt"
 				],
@@ -886,10 +881,6 @@
 					"matchEndAction": {
 						"$ref": "#/components/schemas/TMatchEndAction",
 						"description": "defaults to NONE"
-					},
-					"electionMap": {
-						"type": "string",
-						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
 					},
 					"tmtLogAddress": {
 						"type": "string",
@@ -1036,10 +1027,6 @@
 						"type": "boolean",
 						"description": "If match is finished or if the match was stopped/deleted this is true."
 					},
-					"electionMap": {
-						"type": "string",
-						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
-					},
 					"serverPassword": {
 						"type": "string",
 						"description": "Server password, periodically fetched from game server"
@@ -1077,7 +1064,6 @@
 					"players",
 					"tmtSecret",
 					"isStopped",
-					"electionMap",
 					"serverPassword",
 					"createdAt",
 					"isLive"
@@ -1822,10 +1808,6 @@
 					"matchEndAction": {
 						"$ref": "#/components/schemas/TMatchEndAction",
 						"description": "defaults to NONE"
-					},
-					"electionMap": {
-						"type": "string",
-						"description": "this map will be loaded on match init (defaults to de_dust2 if not set)"
 					},
 					"tmtLogAddress": {
 						"type": "string",

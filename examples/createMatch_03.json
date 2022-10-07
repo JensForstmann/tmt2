@@ -1,6 +1,5 @@
 {
 	"passthrough": "<remote match id here>",
-	"electionMap": "de_vertigo",
 	"mapPool": [
 		"de_mirage",
 		"de_inferno",

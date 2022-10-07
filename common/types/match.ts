@@ -61,8 +61,6 @@ export interface IMatch {
 	tmtSecret: string;
 	/** If match is finished or if the match was stopped/deleted this is true. */
 	isStopped: boolean;
-	/** this map will be loaded on match init (defaults to de_dust2 if not set) */
-	electionMap: string;
 	/** Server password, periodically fetched from game server */
 	serverPassword: string;
 	/** if set will be used to register the target logaddress for the game server */
@@ -104,8 +102,6 @@ export interface IMatchCreateDto {
 	canClinch?: boolean;
 	/** defaults to NONE */
 	matchEndAction?: TMatchEndAction;
-	/** this map will be loaded on match init (defaults to de_dust2 if not set) */
-	electionMap?: string;
 	/** if set will be used to register the target logaddress for the game server */
 	tmtLogAddress?: string;
 }

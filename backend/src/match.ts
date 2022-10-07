@@ -84,7 +84,6 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		matchEndAction: dto.matchEndAction ?? 'NONE',
 		election: Election.create(dto.mapPool, dto.electionSteps),
 		isStopped: false,
-		electionMap: dto.electionMap ?? 'de_dust2',
 		tmtSecret: shortUuid(),
 		serverPassword: '',
 		tmtLogAddress: dto.tmtLogAddress,
@@ -149,7 +148,6 @@ export const onRconConnectionEnd = async (match: Match) => {
  */
 const init = async (match: Match) => {
 	match.log('init match...');
-	await execRcon(match, `changelevel ${match.data.electionMap}`);
 	await execManyRcon(match, match.data.rconCommands.init);
 	await execRcon(match, 'mp_warmuptime 600');
 	await execRcon(match, 'mp_warmup_pausetimer 1');
