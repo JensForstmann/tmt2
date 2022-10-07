@@ -163,7 +163,7 @@ export class MatchesController extends Controller {
 			this.setStatus(404);
 			return;
 		}
-		await MatchMap.update(match, matchMap, requestBody);
+		await MatchMap.update(match, matchMap, requestBody, mapNumber);
 	}
 
 	@Delete('{id}')

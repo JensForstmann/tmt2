@@ -162,6 +162,12 @@ export const onRoundEnd = async (
 
 export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, `MAP WILL BE CHANGED TO ${matchMap.name} IN 10 SECONDS`);
+	const response = await Match.execRcon(match, `maps ${matchMap.name}`);
+	if (!response.includes(` ${matchMap.name}.bsp`)) {
+		match.log(`Map ${matchMap.name} could not be found on the server`);
+		await Match.say(match, `Map ${matchMap.name} could not be found on the server`);
+		return;
+	}
 	match.data.state = 'MATCH_MAP';
 	matchMap.state = 'MAP_CHANGE';
 	await sleep(10000);
@@ -424,7 +430,12 @@ export const getWinner = (matchMap: IMatchMap) => {
 	return matchMap.score.teamA > matchMap.score.teamB ? 'TEAM_A' : 'TEAM_B';
 };
 
-export const update = async (match: Match.Match, matchMap: IMatchMap, dto: IMatchMapUpdateDto) => {
+export const update = async (
+	match: Match.Match,
+	matchMap: IMatchMap,
+	dto: IMatchMapUpdateDto,
+	mapNumber: number
+) => {
 	if (dto.state && matchMap.state !== dto.state) {
 		matchMap.state = dto.state;
 		if (matchMap.state === 'PAUSED') {
@@ -436,7 +447,7 @@ export const update = async (match: Match.Match, matchMap: IMatchMap, dto: IMatc
 
 	if (dto.name && matchMap.name !== dto.name) {
 		matchMap.name = dto.name;
-		if (Match.getCurrentMatchMap(match) === matchMap) {
+		if (match.data.currentMap === mapNumber) {
 			await loadMap(match, matchMap);
 		}
 	}

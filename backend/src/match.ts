@@ -149,9 +149,6 @@ export const onRconConnectionEnd = async (match: Match) => {
 const init = async (match: Match) => {
 	match.log('init match...');
 	await execManyRcon(match, match.data.rconCommands.init);
-	await execRcon(match, 'mp_warmuptime 600');
-	await execRcon(match, 'mp_warmup_pausetimer 1');
-	await execRcon(match, 'mp_autokick 0');
 	match.log('init match finished');
 };
 
@@ -164,10 +161,12 @@ const setup = async (match: Match) => {
 
 	match.log('Setup match...');
 
-	await execRcon(match, 'log on');
-
 	await setTeamNames(match);
 
+	await execRcon(match, 'log on');
+	await execRcon(match, 'mp_warmuptime 600');
+	await execRcon(match, 'mp_warmup_pausetimer 1');
+	await execRcon(match, 'mp_autokick 0');
 	await execRcon(match, `mp_backup_round_file "round_backup_${match.data.id}"`);
 	await execRcon(match, 'mp_backup_restore_load_autopause 1');
 	await execRcon(match, 'mp_backup_round_auto 1');
@@ -264,13 +263,15 @@ const sayPeriodicMessage = async (match: Match) => {
 		clearTimeout(match.periodicTimerId);
 	}
 
-	match.periodicTimerId = setTimeout(async () => {
-		try {
-			await sayPeriodicMessage(match);
-		} catch (err) {
-			match.log(`Error in sayPeriodicMessage: ${err}`);
-		}
-	}, Settings.PERIODIC_MESSAGE_FREQUENCY);
+	match.periodicTimerId = match.data.isStopped
+		? undefined
+		: setTimeout(async () => {
+				try {
+					await sayPeriodicMessage(match);
+				} catch (err) {
+					match.log(`Error in sayPeriodicMessage: ${err}`);
+				}
+		  }, Settings.PERIODIC_MESSAGE_FREQUENCY);
 
 	const sv_password = await getConfigVar(match, 'sv_password');
 	if (sv_password && sv_password !== match.data.serverPassword) {
@@ -778,9 +779,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		const nextMap = match.data.matchMaps[dto.currentMap];
 		if (nextMap) {
 			match.data.currentMap = dto.currentMap;
-			MatchMap.loadMap(match, nextMap).catch((err) => {
-				match.log(`error load map: ${err}`);
-			});
+			await MatchMap.loadMap(match, nextMap);
 		}
 	}
 
