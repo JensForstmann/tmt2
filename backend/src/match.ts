@@ -736,14 +736,11 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto.gameServer) {
-		const previous = match.data.gameServer;
-		try {
-			match.data.gameServer = dto.gameServer;
-			await connectToGameServer(match);
-		} catch (err) {
-			match.data.gameServer = previous;
-			throw err;
-		}
+		match.data.gameServer = dto.gameServer;
+		match.rconConnection?.end().catch((err) => {
+			match.log(`error end rcon connection ${err}`);
+		});
+		// onRconConnectionEnd will handle automatic reconnect to the (new) game server
 	}
 
 	if (dto.passthrough) {
