@@ -1,13 +1,5 @@
 {
-	"mapPool": [
-		"de_mirage",
-		"de_inferno",
-		"de_overpass",
-		"de_vertigo",
-		"de_nuke",
-		"de_ancient",
-		"de_dust2"
-	],
+	"mapPool": [],
 	"teamA": {
 		"name": "Alpha"
 	},
@@ -32,20 +24,26 @@
 		"rconPassword": "blob"
 	},
 	"rconCommands": {
-		"init": ["mp_autokick 0", "say init rcon loaded"],
+		"init": [
+			"mp_autokick 0",
+			"game_type 0",
+			"game_mode 1",
+			"sv_game_mode_flags 0",
+			"say > init rcon loaded <"
+		],
 		"knife": [
-			"exec tmt2test.cfg",
 			"mp_give_player_c4 0; mp_startmoney 0; mp_ct_default_secondary \"\"; mp_t_default_secondary \"\"",
-			"mp_roundtime 60; mp_roundtime_defuse 0; mp_roundtime_deployment 0; mp_roundtime_hostage 0",
 			"say > Special Knife Config Loaded <"
 		],
 		"match": [
 			"mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary \"weapon_hkp2000\"; mp_t_default_secondary \"weapon_glock\"",
-			"mp_roundtime 1.92; mp_roundtime_defuse 1.92; mp_roundtime_deployment 0; mp_roundtime_hostage 0",
-			"exec tmt2test.cfg"
+			"mp_freezetime 1",
+			"mp_round_restart_delay 1",
+			"mp_roundtime 0.5"
 		],
-		"end": ["say end rcon loaded"]
+		"end": ["say > end rcon loaded <"]
 	},
 	"canClinch": true,
-	"matchEndAction": "KICK_ALL"
+	"matchEndAction": "KICK_ALL",
+	"tmtLogAddress": "http://localhost:8080"
 }

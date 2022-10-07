@@ -59,24 +59,23 @@
 	},
 	"rconCommands": {
 		"init": [
-			"hostname \"5on5 Match: Alpha VS Bravo\"",
-			"exec esl5on5.cfg",
+			"mp_autokick 0",
+			"game_type 0",
+			"game_mode 1",
+			"sv_game_mode_flags 0",
 			"say > init rcon loaded <"
 		],
 		"knife": [
-			"exec esl5on5.cfg",
 			"mp_give_player_c4 0; mp_startmoney 0; mp_ct_default_secondary \"\"; mp_t_default_secondary \"\"",
-			"mp_roundtime 60; mp_roundtime_defuse 0; mp_roundtime_deployment 0; mp_roundtime_hostage 0",
 			"say > Special Knife Config Loaded <"
 		],
 		"match": [
 			"mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary \"weapon_hkp2000\"; mp_t_default_secondary \"weapon_glock\"",
-			"mp_roundtime 1.92; mp_roundtime_defuse 1.92; mp_roundtime_deployment 0; mp_roundtime_hostage 0",
-			"exec esl5on5.cfg",
 			"say > match config loaded <"
 		],
-		"end": ["hostname \"empty server\"", "say > end rcon loaded <"]
+		"end": ["say > end rcon loaded <"]
 	},
 	"canClinch": true,
-	"matchEndAction": "KICK_ALL"
+	"matchEndAction": "KICK_ALL",
+	"tmtLogAddress": "http://localhost:8080"
 }

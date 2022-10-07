@@ -25,6 +25,7 @@
 - Show who picked/banned map
 - Show who picked which side
 - Show who won knife round
+- Cheat sheet for rcon commands (pause, unpause, map change, restart round, buytime, freezetime, roundtime, round restart delay, hostname)
 
 ## Most needed actions during tournament
 

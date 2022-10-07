@@ -34,3 +34,28 @@ BO3, active duty map pool
 - team A map ban
 - team B map ban
 - remaining map, knife for side
+
+# Game mode settings
+
+See also [CS:GO Game Modes](https://developer.valvesoftware.com/wiki/CS:GO_Game_Modes).
+
+After changing the values, a new map must be loaded with `map` or `changelevel`
+
+### Normal Competitive
+
+    game_type 0
+    game_mode 1
+    sv_game_mode_flags 0
+
+
+### Short Competitive
+
+    game_type 0
+    game_mode 1
+    sv_game_mode_flags 32
+
+### Wingman
+
+    game_type 0
+    game_mode 2
+    sv_game_mode_flags 0
