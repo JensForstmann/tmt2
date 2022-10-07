@@ -11,17 +11,17 @@ export const PlayerListCard: Component<{
 			<h2 class="text-lg font-bold">{t('Players')}</h2>
 			<div class="flex basis-1/2 items-start justify-center space-x-5 text-left">
 				<div class="flex-1 text-right">
-					<h4>{props.match.teamA.name}</h4>
+					<h4 class="text-sm font-bold">{props.match.teamA.name}</h4>
 					{List(props.match.players.filter((p) => p.team === 'TEAM_A'))}
 				</div>
 				<div class="flex-1">
-					<h4>{props.match.teamB.name}</h4>
+					<h4 class="text-sm font-bold">{props.match.teamB.name}</h4>
 					{List(props.match.players.filter((p) => p.team === 'TEAM_B'))}
 				</div>
 			</div>
 			<div>
 				<div>
-					<h4>{t('Not Assigned')}</h4>
+					<h4 class="text-sm font-bold">{t('Not Assigned')}</h4>
 					{List(props.match.players.filter((p) => !p.team))}
 				</div>
 			</div>
