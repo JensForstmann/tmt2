@@ -75,7 +75,6 @@
 		],
 		"end": ["say > end rcon loaded <"]
 	},
-	"canClinch": true,
 	"matchEndAction": "KICK_ALL",
 	"tmtLogAddress": "http://localhost:8080"
 }
