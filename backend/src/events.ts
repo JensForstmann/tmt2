@@ -1,4 +1,3 @@
-import Events from 'axios';
 import {
 	BaseEvent,
 	ChatEvent,
@@ -39,7 +38,13 @@ const send = (match: Match.Match, data: Event, isSystemEvent?: boolean) => {
 	// WebHook
 	const url = match.data.webhookUrl;
 	if (url?.startsWith('http') && Settings.WEBHOOK_EVENTS.includes(data.type)) {
-		Events.post(url, data).catch((err) => {
+		fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(data),
+		}).catch((err) => {
 			match.log(`sending webhook ${data.type} to ${url} failed: ${err}`);
 		});
 	}

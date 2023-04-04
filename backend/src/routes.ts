@@ -20,8 +20,7 @@ import { DebugController } from './debugController';
 import { expressAuthentication } from './auth';
 // @ts-ignore - no great way to install types from subpackage
 const promiseAny = require('promise.any');
-import type { RequestHandler } from 'express';
-import * as express from 'express';
+import type { RequestHandler, Router } from 'express';
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
@@ -1016,7 +1015,7 @@ const validationService = new ValidationService(models);
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
-export function RegisterRoutes(app: express.Router) {
+export function RegisterRoutes(app: Router) {
 	// ###########################################################################################################
 	//  NOTE: If you do not see routes for all of your controllers in this file, then you might not have informed tsoa of where to look
 	//      Please look into the "controllerPathGlobs" config option described in the readme: https://github.com/lukeautry/tsoa
@@ -1528,7 +1527,7 @@ export function RegisterRoutes(app: express.Router) {
 			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 			try {
-				request['user'] = await promiseAny(secMethodOrPromises);
+				request['user'] = await promiseAny.call(Promise, secMethodOrPromises);
 				next();
 			} catch (err) {
 				// Show most recent error as response
@@ -1585,6 +1584,7 @@ export function RegisterRoutes(app: express.Router) {
 			data.readable &&
 			typeof data._read === 'function'
 		) {
+			response.status(statusCode || 200);
 			data.pipe(response);
 		} else if (data !== null && data !== undefined) {
 			response.status(statusCode || 200).json(data);
@@ -1614,6 +1614,15 @@ export function RegisterRoutes(app: express.Router) {
 					return validationService.ValidateParam(
 						args[key],
 						request.query[name],
+						name,
+						fieldErrors,
+						undefined,
+						{ noImplicitAdditionalProperties: 'silently-remove-extras' }
+					);
+				case 'queries':
+					return validationService.ValidateParam(
+						args[key],
+						request.query,
 						name,
 						fieldErrors,
 						undefined,
