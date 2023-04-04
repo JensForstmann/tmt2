@@ -230,6 +230,7 @@ const startKnifeRound = async (match: Match.Match, matchMap: IMatchMap) => {
 	matchMap.knifeWinner = undefined;
 	MatchService.scheduleSave(match);
 	await Match.execManyRcon(match, match.data.rconCommands.knife);
+	await Match.execRcon(match, 'mp_unpause_match');
 	await Match.execRcon(match, 'mp_restartgame 3');
 	await sleep(4000);
 	await Match.say(match, 'KNIFE FOR SIDE');
