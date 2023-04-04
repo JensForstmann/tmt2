@@ -85,22 +85,22 @@ export const MatchPage: Component = () => {
 		<Show when={data.match} fallback={<Loader />}>
 			{(match) => (
 				<div class="mt-5 mb-16 space-y-5">
-					<Show when={!match.isLive}>
-						<NotLiveCard match={match} />
+					<Show when={!match().isLive}>
+						<NotLiveCard match={match()} />
 					</Show>
-					<MatchCard match={match} />
-					<For each={match.matchMaps}>
-						{(map, i) => <MatchMapCard match={match} map={map} mapIndex={i()} />}
+					<MatchCard match={match()} />
+					<For each={match().matchMaps}>
+						{(map, i) => <MatchMapCard match={match()} map={map} mapIndex={i()} />}
 					</For>
-					<GameServerCard match={match} />
-					<PlayerListCard match={match} />
+					<GameServerCard match={match()} />
+					<PlayerListCard match={match()} />
 					<Show when={data.chatEvents}>
 						<Chat messages={data.chatEvents!} sendMessage={sendChatMessage} />
 					</Show>
 					<Show when={data.logEvents}>
 						<LogViewer logs={data.logEvents!} />
 					</Show>
-					<Rcon match={match} />
+					<Rcon match={match()} />
 				</div>
 			)}
 		</Show>

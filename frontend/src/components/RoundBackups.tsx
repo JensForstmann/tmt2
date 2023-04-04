@@ -34,7 +34,7 @@ export const RoundBackups: Component<{
 			<Match when={roundBackups()}>
 				{(roundBackups) => (
 					<ul>
-						<For each={roundBackups.latestFiles}>
+						<For each={roundBackups().latestFiles}>
 							{(file) => (
 								<li
 									class="break-words"

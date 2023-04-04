@@ -94,7 +94,7 @@ export const MatchesPage: Component = () => {
 					<span class="ml-1">{t('live matches')}</span>
 				</label>
 			</div>
-			<Show when={data.matches}>{(matches) => <MatchList matches={matches} />}</Show>
+			<Show when={data.matches}>{(matches) => <MatchList matches={matches()} />}</Show>
 		</>
 	);
 };
