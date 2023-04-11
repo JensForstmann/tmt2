@@ -88,6 +88,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		serverPassword: '',
 		tmtLogAddress: dto.tmtLogAddress,
 		createdAt: Date.now(),
+		webhookUrl: dto.webhookUrl ?? null,
 	};
 	const match = await createFromData(data);
 	await init(match);
@@ -747,7 +748,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		match.data.passthrough = dto.passthrough;
 	}
 
-	if (dto.webhookUrl) {
+	if (dto.webhookUrl !== undefined) {
 		match.data.webhookUrl = dto.webhookUrl;
 	}
 

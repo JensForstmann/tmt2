@@ -672,6 +672,7 @@
 					},
 					"webhookUrl": {
 						"type": "string",
+						"nullable": true,
 						"description": "if set various events will be posted to this url"
 					},
 					"rconCommands": {
@@ -768,6 +769,7 @@
 					"parseIncomingLogs",
 					"matchMaps",
 					"currentMap",
+					"webhookUrl",
 					"rconCommands",
 					"canClinch",
 					"matchEndAction",
@@ -839,6 +841,7 @@
 					},
 					"webhookUrl": {
 						"type": "string",
+						"nullable": true,
 						"description": "if set various events will be posted to this url"
 					},
 					"rconCommands": {
@@ -958,6 +961,7 @@
 					},
 					"webhookUrl": {
 						"type": "string",
+						"nullable": true,
 						"description": "if set various events will be posted to this url"
 					},
 					"rconCommands": {
@@ -1057,6 +1061,7 @@
 					"parseIncomingLogs",
 					"matchMaps",
 					"currentMap",
+					"webhookUrl",
 					"rconCommands",
 					"canClinch",
 					"matchEndAction",
@@ -1766,6 +1771,7 @@
 					},
 					"webhookUrl": {
 						"type": "string",
+						"nullable": true,
 						"description": "if set various events will be posted to this url"
 					},
 					"rconCommands": {

@@ -40,7 +40,7 @@ export interface IMatch {
 	/** Index of the matchMaps array indicating the current map. */
 	currentMap: number;
 	/** if set various events will be posted to this url */
-	webhookUrl?: string;
+	webhookUrl: string | null;
 	rconCommands: {
 		/** executed exactly once on match init */
 		init: string[];
@@ -87,7 +87,7 @@ export interface IMatchCreateDto {
 	electionSteps: Array<IElectionStepAdd | IElectionStepSkip>;
 	gameServer: IGameServer;
 	/** if set various events will be posted to this url */
-	webhookUrl?: string;
+	webhookUrl?: string | null;
 	rconCommands?: {
 		/** executed exactly once on match init */
 		init?: string[];
