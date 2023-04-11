@@ -161,7 +161,7 @@ export const onRoundEnd = async (
 };
 
 export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
-	await Match.say(match, `MAP WILL BE CHANGED TO ${matchMap.name} IN 10 SECONDS`);
+	await Match.say(match, `MAP WILL BE CHANGED TO ${matchMap.name} IN 15 SECONDS`);
 	const response = await Match.execRcon(match, `maps ${matchMap.name}`);
 	if (!response.includes(` ${matchMap.name}.bsp`)) {
 		match.log(`Map ${matchMap.name} could not be found on the server`);
@@ -170,7 +170,7 @@ export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
 	}
 	match.data.state = 'MATCH_MAP';
 	matchMap.state = 'MAP_CHANGE';
-	await sleep(10000);
+	await sleep(15000);
 
 	await Match.setTeamNames(match);
 	await Match.execRcon(match, `changelevel ${matchMap.name}`);
