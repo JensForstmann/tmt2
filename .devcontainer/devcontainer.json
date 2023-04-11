@@ -4,5 +4,6 @@
 	"name": "Dev Docker",
 	"build": {
 		"dockerfile": "dev.Dockerfile"
-	}
+	},
+	"appPort": ["8080:8080"]
 }
