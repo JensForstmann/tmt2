@@ -1,7 +1,7 @@
 {
 	"verbose": true,
-	"exec": "ts-node src/index.ts",
-	"watch": ["src"],
+	"exec": "tsoa spec-and-routes && ts-node -T src/index.ts",
+	"watch": ["src", "../common"],
 	"ext": "ts",
 	"ignore": ["src/routes.ts"]
 }
