@@ -1,3 +1,4 @@
+import { useNavigate } from '@solidjs/router';
 import { Component, createSignal, Show } from 'solid-js';
 import {
 	getMapDraws,
@@ -18,6 +19,7 @@ import { TextInput } from './TextInput';
 export const MatchCard: Component<{
 	match: IMatchResponse;
 }> = (props) => {
+	const navigate = useNavigate();
 	const [showShareModal, setShowShareModal] = createSignal(false);
 	const fetcher = createFetcher(props.match.tmtSecret);
 	const patchMatch = (dto: IMatchUpdateDto) =>
@@ -51,6 +53,10 @@ export const MatchCard: Component<{
 								[t('setup'), setup],
 								[t('change state'), changeState],
 								[t('share match with token'), () => setShowShareModal(true)],
+								[
+									t('edit match'),
+									() => navigate(`/matches/${props.match.id}/edit`),
+								],
 						  ]
 						: [[t('revive'), mustConfirm(revive)]]
 				}

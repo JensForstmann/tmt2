@@ -1,11 +1,12 @@
 import { Link, LinkProps, Route, Routes, useLocation } from '@solidjs/router';
-import { Component, Match, onMount, Switch } from 'solid-js';
+import { Component, Match, Switch, onMount } from 'solid-js';
 import { SvgComputer, SvgDarkMode, SvgFlagDE, SvgFlagUS, SvgLightMode } from './assets/Icons';
 import logo from './assets/logo.svg';
 import { CreatePage } from './pages/create';
 import { LoginPage } from './pages/login';
 import { LogoutPage } from './pages/logout';
 import { MatchPage } from './pages/match';
+import { MatchEditPage } from './pages/matchEdit';
 import { MatchesPage } from './pages/matches';
 import { NotFoundPage } from './pages/notFound';
 import { isLoggedIn } from './utils/fetcher';
@@ -100,6 +101,7 @@ export const App: Component = () => {
 				<Routes>
 					<Route path="/matches" element={<MatchesPage />} />
 					<Route path="/matches/:id" element={<MatchPage />} />
+					<Route path="/matches/:id/edit" element={<MatchEditPage />} />
 					<Route path="/login" element={<LoginPage />} />
 					<Route path="/logout" element={<LogoutPage />} />
 					<Route path={['/', '/create']} element={<CreatePage />} />

@@ -25,6 +25,7 @@ import { Rcon } from './rcon-client';
 import { Settings } from './settings';
 import * as Storage from './storage';
 import * as Team from './team';
+import { ValidateError, FieldErrors } from '@tsoa/runtime';
 
 export const STORAGE_LOGS_PREFIX = 'logs_';
 export const STORAGE_LOGS_SUFFIX = '.jsonl';
@@ -766,7 +767,14 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	if (dto.tmtLogAddress) {
 		const addr = checkAndNormalizeLogAddress(dto.tmtLogAddress);
 		if (!addr) {
-			throw 'invalid tmtLogAddress';
+			throw new ValidateError(
+				{
+					tmtLogAddress: {
+						message: 'invalid url',
+					},
+				},
+				'invalid tmtLogAddress'
+			);
 		}
 		match.data.tmtLogAddress = addr;
 		await execRcon(match, 'logaddress_delall_http');
@@ -778,6 +786,15 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		if (nextMap) {
 			match.data.currentMap = dto.currentMap;
 			await MatchMap.loadMap(match, nextMap);
+		} else {
+			throw new ValidateError(
+				{
+					currentMap: {
+						message: 'invalid number',
+					},
+				},
+				'invalid currentMap'
+			);
 		}
 	}
 

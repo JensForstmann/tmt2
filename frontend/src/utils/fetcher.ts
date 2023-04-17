@@ -67,6 +67,8 @@ export const createFetcher = (token?: string) => {
 			const encodedPath = encodeURIComponent(pathname + search + hash);
 			window.location.assign(`/login?path=${encodedPath}`);
 			return undefined;
+		} else if (response.status >= 400) {
+			throw await response.text();
 		} else if (response.headers.get('Content-Type')?.startsWith('application/json')) {
 			return response.json();
 		} else {
