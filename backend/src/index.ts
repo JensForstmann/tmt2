@@ -4,6 +4,7 @@ import path from 'path';
 import http from 'http';
 import * as Auth from './auth';
 import * as MatchService from './matchService';
+import * as ManagedGameServers from './managedGameServers';
 import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
 import * as WebSocket from './webSocket';
@@ -95,6 +96,7 @@ const main = async () => {
 	await Storage.setup();
 	await Auth.setup();
 	await WebSocket.setup(httpServer);
+	await ManagedGameServers.setup();
 
 	httpServer.listen(PORT, async () => {
 		console.info(`App listening on port ${PORT}`);

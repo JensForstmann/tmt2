@@ -1943,6 +1943,87 @@
 				},
 				"type": "object",
 				"additionalProperties": false
+			},
+			"IManagedGameServer": {
+				"properties": {
+					"ip": {
+						"type": "string"
+					},
+					"port": {
+						"type": "number",
+						"format": "double"
+					},
+					"rconPassword": {
+						"type": "string"
+					},
+					"canBeUsed": {
+						"type": "boolean"
+					},
+					"usedBy": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"ip",
+					"port",
+					"rconPassword",
+					"canBeUsed",
+					"usedBy"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IManagedGameServerCreateDto": {
+				"properties": {
+					"ip": {
+						"type": "string"
+					},
+					"port": {
+						"type": "number",
+						"format": "double"
+					},
+					"rconPassword": {
+						"type": "string"
+					},
+					"canBeUsed": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"ip",
+					"port",
+					"rconPassword"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IManagedGameServerUpdateDto": {
+				"properties": {
+					"ip": {
+						"type": "string"
+					},
+					"port": {
+						"type": "number",
+						"format": "double"
+					},
+					"rconPassword": {
+						"type": "string"
+					},
+					"canBeUsed": {
+						"type": "boolean"
+					},
+					"usedBy": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"ip",
+					"port"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {
@@ -2499,6 +2580,128 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/gameservers": {
+			"get": {
+				"operationId": "GetGameServers",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IManagedGameServer"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateGameServer",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IManagedGameServer"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IManagedGameServerCreateDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/gameservers/{ip}/{port}": {
+			"patch": {
+				"operationId": "UpdateGameServer",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IManagedGameServer"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IManagedGameServerUpdateDto"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteGameServer",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "ip",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "port",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
 		"/api/debug/webSockets": {

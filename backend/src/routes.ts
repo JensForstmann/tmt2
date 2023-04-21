@@ -16,6 +16,8 @@ import { LoginController } from './loginController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MatchesController } from './matchesController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { GameServersController } from './gameServersController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { DebugController } from './debugController';
 import { expressAuthentication } from './auth';
 // @ts-ignore - no great way to install types from subpackage
@@ -1024,6 +1026,48 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IManagedGameServer: {
+		dataType: 'refObject',
+		properties: {
+			ip: { dataType: 'string', required: true },
+			port: { dataType: 'double', required: true },
+			rconPassword: { dataType: 'string', required: true },
+			canBeUsed: { dataType: 'boolean', required: true },
+			usedBy: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IManagedGameServerCreateDto: {
+		dataType: 'refObject',
+		properties: {
+			ip: { dataType: 'string', required: true },
+			port: { dataType: 'double', required: true },
+			rconPassword: { dataType: 'string', required: true },
+			canBeUsed: { dataType: 'boolean' },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IManagedGameServerUpdateDto: {
+		dataType: 'refObject',
+		properties: {
+			ip: { dataType: 'string', required: true },
+			port: { dataType: 'double', required: true },
+			rconPassword: { dataType: 'string' },
+			canBeUsed: { dataType: 'boolean' },
+			usedBy: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+			},
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
 const validationService = new ValidationService(models);
 
@@ -1454,6 +1498,123 @@ export function RegisterRoutes(app: Router) {
 				const controller = new MatchesController();
 
 				const promise = controller.receiveLog.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get(
+		'/api/gameservers',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(GameServersController),
+		...fetchMiddlewares<RequestHandler>(GameServersController.prototype.getGameServers),
+
+		function GameServersController_getGameServers(request: any, response: any, next: any) {
+			const args = {};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new GameServersController();
+
+				const promise = controller.getGameServers.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.post(
+		'/api/gameservers',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(GameServersController),
+		...fetchMiddlewares<RequestHandler>(GameServersController.prototype.createGameServer),
+
+		function GameServersController_createGameServer(request: any, response: any, next: any) {
+			const args = {
+				requestBody: {
+					in: 'body',
+					name: 'requestBody',
+					required: true,
+					ref: 'IManagedGameServerCreateDto',
+				},
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new GameServersController();
+
+				const promise = controller.createGameServer.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.patch(
+		'/api/gameservers/:ip/:port',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(GameServersController),
+		...fetchMiddlewares<RequestHandler>(GameServersController.prototype.updateGameServer),
+
+		function GameServersController_updateGameServer(request: any, response: any, next: any) {
+			const args = {
+				requestBody: {
+					in: 'body',
+					name: 'requestBody',
+					required: true,
+					ref: 'IManagedGameServerUpdateDto',
+				},
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new GameServersController();
+
+				const promise = controller.updateGameServer.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.delete(
+		'/api/gameservers/:ip/:port',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(GameServersController),
+		...fetchMiddlewares<RequestHandler>(GameServersController.prototype.deleteGameServer),
+
+		function GameServersController_deleteGameServer(request: any, response: any, next: any) {
+			const args = {
+				ip: { in: 'path', name: 'ip', required: true, dataType: 'string' },
+				port: { in: 'path', name: 'port', required: true, dataType: 'double' },
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new GameServersController();
+
+				const promise = controller.deleteGameServer.apply(controller, validatedArgs as any);
 				promiseHandler(controller, promise, response, undefined, next);
 			} catch (err) {
 				return next(err);

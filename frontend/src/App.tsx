@@ -12,6 +12,7 @@ import { NotFoundPage } from './pages/notFound';
 import { isLoggedIn } from './utils/fetcher';
 import { currentLocale, cycleLocale, t } from './utils/locale';
 import { currentTheme, cycleDarkMode, updateDarkClasses } from './utils/theme';
+import { GameServersPage } from './pages/gameServers';
 
 const NavLink = (props: LinkProps) => {
 	const l = useLocation();
@@ -52,6 +53,7 @@ const NavBar: Component = () => {
 			<div class="grow"></div>
 			<NavLink href="/create">{t('Create')}</NavLink>
 			<NavLink href="/matches">{t('Matches')}</NavLink>
+			<NavLink href="/gameservers">{t('Game Servers')}</NavLink>
 			<Switch>
 				<Match when={isLoggedIn() === undefined}>...</Match>
 				<Match when={isLoggedIn() === false}>
@@ -102,6 +104,7 @@ export const App: Component = () => {
 					<Route path="/matches" element={<MatchesPage />} />
 					<Route path="/matches/:id" element={<MatchPage />} />
 					<Route path="/matches/:id/edit" element={<MatchEditPage />} />
+					<Route path="/gameservers" element={<GameServersPage />} />
 					<Route path="/login" element={<LoginPage />} />
 					<Route path="/logout" element={<LogoutPage />} />
 					<Route path={['/', '/create']} element={<CreatePage />} />
