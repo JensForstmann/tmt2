@@ -16,25 +16,19 @@ import { GameServersPage } from './pages/gameServers';
 
 const NavLink = (props: LinkProps) => {
 	const l = useLocation();
-	if (l.pathname === props.href) {
-		return (
-			<Link
-				{...props}
-				class="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white"
-			>
-				{props.children}
-			</Link>
-		);
-	} else {
-		return (
-			<Link
-				{...props}
-				class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-			>
-				{props.children}
-			</Link>
-		);
-	}
+
+	return (
+		<Link
+			{...props}
+			class={
+				l.pathname === props.href
+					? 'rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white'
+					: 'rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white'
+			}
+		>
+			{props.children}
+		</Link>
+	);
 };
 
 const NavBar: Component = () => {
