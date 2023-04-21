@@ -380,6 +380,9 @@
 					},
 					"rconPassword": {
 						"type": "string"
+					},
+					"hideRconPassword": {
+						"type": "boolean"
 					}
 				},
 				"required": [
@@ -837,7 +840,12 @@
 						"type": "array"
 					},
 					"gameServer": {
-						"$ref": "#/components/schemas/IGameServer"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/IGameServer"
+							}
+						],
+						"nullable": true
 					},
 					"webhookUrl": {
 						"type": "string",
@@ -1767,7 +1775,12 @@
 						"type": "array"
 					},
 					"gameServer": {
-						"$ref": "#/components/schemas/IGameServer"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/IGameServer"
+							}
+						],
+						"nullable": true
 					},
 					"webhookUrl": {
 						"type": "string",
@@ -1956,6 +1969,9 @@
 					"rconPassword": {
 						"type": "string"
 					},
+					"hideRconPassword": {
+						"type": "boolean"
+					},
 					"canBeUsed": {
 						"type": "boolean"
 					},
@@ -1985,6 +2001,9 @@
 					},
 					"rconPassword": {
 						"type": "string"
+					},
+					"hideRconPassword": {
+						"type": "boolean"
 					},
 					"canBeUsed": {
 						"type": "boolean"

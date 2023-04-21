@@ -22,6 +22,7 @@ export const CreatePage: Component = () => {
 	const [maps, setMaps] = createSignal(DEFAULT_MAPS.join('\n'));
 	const [teamAName, setTeamAName] = createSignal('');
 	const [teamBName, setTeamBName] = createSignal('');
+	const [useOwnGameServer, setUseOwnGameServer] = createSignal(true);
 	const [ip, setIp] = createSignal('');
 	const [port, setPort] = createSignal(27015);
 	const [rconPassword, setRconPassword] = createSignal('');
@@ -57,11 +58,13 @@ export const CreatePage: Component = () => {
 				name: teamBName().trim(),
 			},
 			electionSteps: getElectionSteps(),
-			gameServer: {
-				ip: ip(),
-				port: port(),
-				rconPassword: rconPassword(),
-			},
+			gameServer: useOwnGameServer()
+				? {
+						ip: ip(),
+						port: port(),
+						rconPassword: rconPassword(),
+				  }
+				: null,
 			tmtLogAddress: window.location.protocol + '//' + window.location.host,
 		};
 	};
@@ -126,19 +129,32 @@ export const CreatePage: Component = () => {
 			<h4>{t('name team b')}</h4>
 			<TextInput value={teamBName()} onInput={(e) => setTeamBName(e.currentTarget.value)} />
 
+			<h4>{t('use own game server')}</h4>
+			<input
+				type="checkbox"
+				checked={useOwnGameServer()}
+				onInput={(e) => setUseOwnGameServer(e.currentTarget.checked)}
+			/>
+
 			<h4>{t('game server ip')}</h4>
-			<TextInput value={ip()} onInput={(e) => setIp(e.currentTarget.value)} />
+			<TextInput
+				value={ip()}
+				disabled={!useOwnGameServer()}
+				onInput={(e) => setIp(e.currentTarget.value)}
+			/>
 
 			<h4>{t('game server port')}</h4>
 			<TextInput
 				type="number"
 				value={port()}
+				disabled={!useOwnGameServer()}
 				onInput={(e) => setPort(parseInt(e.currentTarget.value))}
 			/>
 
 			<h4>{t('game server rcon password')}</h4>
 			<TextInput
 				value={rconPassword()}
+				disabled={!useOwnGameServer()}
 				onInput={(e) => setRconPassword(e.currentTarget.value)}
 			/>
 

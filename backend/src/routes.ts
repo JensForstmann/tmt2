@@ -293,6 +293,7 @@ const models: TsoaRoute.Models = {
 			ip: { dataType: 'string', required: true },
 			port: { dataType: 'double', required: true },
 			rconPassword: { dataType: 'string', required: true },
+			hideRconPassword: { dataType: 'boolean' },
 		},
 		additionalProperties: false,
 	},
@@ -520,7 +521,11 @@ const models: TsoaRoute.Models = {
 				},
 				required: true,
 			},
-			gameServer: { ref: 'IGameServer', required: true },
+			gameServer: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'IGameServer' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			webhookUrl: {
 				dataType: 'union',
 				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
@@ -957,7 +962,10 @@ const models: TsoaRoute.Models = {
 					subSchemas: [{ ref: 'IElectionStepAdd' }, { ref: 'IElectionStepSkip' }],
 				},
 			},
-			gameServer: { ref: 'IGameServer' },
+			gameServer: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'IGameServer' }, { dataType: 'enum', enums: [null] }],
+			},
 			webhookUrl: {
 				dataType: 'union',
 				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
@@ -1032,6 +1040,7 @@ const models: TsoaRoute.Models = {
 			ip: { dataType: 'string', required: true },
 			port: { dataType: 'double', required: true },
 			rconPassword: { dataType: 'string', required: true },
+			hideRconPassword: { dataType: 'boolean' },
 			canBeUsed: { dataType: 'boolean', required: true },
 			usedBy: {
 				dataType: 'union',
@@ -1048,6 +1057,7 @@ const models: TsoaRoute.Models = {
 			ip: { dataType: 'string', required: true },
 			port: { dataType: 'double', required: true },
 			rconPassword: { dataType: 'string', required: true },
+			hideRconPassword: { dataType: 'boolean' },
 			canBeUsed: { dataType: 'boolean' },
 		},
 		additionalProperties: false,

@@ -48,3 +48,28 @@ export const remove = async (gameServer: IManagedGameServerUpdateDto) => {
 		await write();
 	}
 };
+
+export const getFree = async (matchId: string): Promise<IGameServer | undefined> => {
+	const free = getAll().find(
+		(managedGameServer) => managedGameServer.usedBy === null && managedGameServer.canBeUsed
+	);
+	if (free) {
+		free.usedBy = matchId;
+		await write();
+		return {
+			ip: free.ip,
+			port: free.port,
+			rconPassword: free.rconPassword,
+			hideRconPassword: true,
+		};
+	}
+	return;
+};
+
+export const free = async (gameServer: IManagedGameServerUpdateDto, matchId: string) => {
+	const managedGameServer = managedGameServers.get(key(gameServer));
+	if (managedGameServer?.usedBy === matchId) {
+		managedGameServer.usedBy = null;
+		await write();
+	}
+};

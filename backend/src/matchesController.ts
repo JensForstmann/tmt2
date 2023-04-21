@@ -59,7 +59,8 @@ export class MatchesController extends Controller {
 					(typeof m.passthrough === 'string' && passthrough.includes(m.passthrough))
 			)
 			.filter((m) => isStopped === undefined || m.isStopped === isStopped)
-			.filter((m) => isLive === undefined || m.isLive === isLive);
+			.filter((m) => isLive === undefined || m.isLive === isLive)
+			.map((m) => MatchService.hideRconPassword(m));
 	}
 
 	@Get('{id}')
@@ -70,7 +71,7 @@ export class MatchesController extends Controller {
 		const match = MatchService.get(id);
 		if (match) {
 			return {
-				...match.data,
+				...MatchService.hideRconPassword(match.data),
 				isLive: true,
 			};
 		}
@@ -78,7 +79,7 @@ export class MatchesController extends Controller {
 		const matchFromStorage = await MatchService.getFromStorage(id);
 		if (matchFromStorage) {
 			return {
-				...matchFromStorage,
+				...MatchService.hideRconPassword(matchFromStorage),
 				isLive: false,
 			};
 		}
@@ -190,6 +191,10 @@ export class MatchesController extends Controller {
 		if (!match) {
 			this.setStatus(404);
 			return;
+		}
+		if (match.data.gameServer.hideRconPassword) {
+			this.setStatus(400);
+			throw 'cannot execute rcon commands on this server';
 		}
 		return await Match.execManyRcon(match, requestBody);
 	}

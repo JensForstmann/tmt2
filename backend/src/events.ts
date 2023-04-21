@@ -24,6 +24,7 @@ import * as Match from './match';
 import { Settings } from './settings';
 import * as Storage from './storage';
 import * as WebSocket from './webSocket';
+import * as MatchService from './matchService';
 
 const STORAGE_EVENTS_PREFIX = 'events_';
 const STORAGE_EVENTS_SUFFIX = '.jsonl';
@@ -223,7 +224,7 @@ export const onMatchCreate = (match: Match.Match) => {
 	const data: MatchCreateEvent = {
 		...getBaseEvent(match, 'MATCH_CREATE'),
 		match: {
-			...match.data,
+			...MatchService.hideRconPassword(match.data),
 			isLive: true,
 		},
 	};

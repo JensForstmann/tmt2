@@ -19,7 +19,7 @@ export const ManagedGameServerList: Component<{
 						<th>{t('Rcon Password')}</th>
 						<th>{t('Can Be Used?')}</th>
 						<th>{t('Used By')}</th>
-						{props.delete && <th>{t('Delete')}</th>}
+						{props.delete && <th>{t('Actions')}</th>}
 					</tr>
 				</thead>
 				<tbody>
@@ -51,19 +51,39 @@ export const ManagedGameServerList: Component<{
 								</td>
 								<td>
 									{managedGameServer.usedBy && (
-										<a href={`/matches/${managedGameServer.usedBy}`}>
-											{managedGameServer.usedBy}
-										</a>
+										<>
+											<a href={`/matches/${managedGameServer.usedBy}`}>
+												{managedGameServer.usedBy}
+											</a>
+											{props.update && (
+												<>
+													{' '}
+													<span
+														onClick={() =>
+															props.update?.({
+																...managedGameServer,
+																usedBy: null,
+															})
+														}
+														class="cursor-pointer"
+													>
+														❌
+													</span>
+												</>
+											)}
+										</>
 									)}
 								</td>
 								{props.delete && (
 									<th>
-										<span
-											onClick={() => props.delete?.(managedGameServer)}
-											class="cursor-pointer"
-										>
-											❌
-										</span>
+										{props.delete && (
+											<span
+												onClick={() => props.delete?.(managedGameServer)}
+												class="cursor-pointer"
+											>
+												❌
+											</span>
+										)}
 									</th>
 								)}
 							</tr>

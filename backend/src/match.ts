@@ -1,3 +1,4 @@
+import { ValidateError } from '@tsoa/runtime';
 import { generate as shortUuid } from 'short-uuid';
 import { TMT_LOG_ADDRESS } from '.';
 import {
@@ -18,6 +19,7 @@ import { commandMapping, ECommand } from './commands';
 import * as Election from './election';
 import * as Events from './events';
 import * as GameServer from './gameServer';
+import * as ManagedGameServers from './managedGameServers';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
 import * as Player from './player';
@@ -25,7 +27,6 @@ import { Rcon } from './rcon-client';
 import { Settings } from './settings';
 import * as Storage from './storage';
 import * as Team from './team';
-import { ValidateError, FieldErrors } from '@tsoa/runtime';
 
 export const STORAGE_LOGS_PREFIX = 'logs_';
 export const STORAGE_LOGS_SUFFIX = '.jsonl';
@@ -63,8 +64,13 @@ export const createFromData = async (data: IMatch) => {
 };
 
 export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logSecret: string) => {
+	const gameServer = dto.gameServer ?? (await ManagedGameServers.getFree(id));
+	if (!gameServer) {
+		throw 'no free game server available';
+	}
 	const data: IMatch = {
 		...dto,
+		gameServer: gameServer,
 		id: id,
 		teamA: Team.createFromCreateDto(dto.teamA),
 		teamB: Team.createFromCreateDto(dto.teamB),
@@ -91,9 +97,15 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		createdAt: Date.now(),
 		webhookUrl: dto.webhookUrl ?? null,
 	};
-	const match = await createFromData(data);
-	await init(match);
-	return match;
+	try {
+		const match = await createFromData(data);
+		await init(match);
+		return match;
+	} catch (err) {
+		await ManagedGameServers.free(gameServer, id);
+		await ManagedGameServers.update({ ...gameServer, canBeUsed: false });
+		throw err;
+	}
 };
 
 const createLogger = (match: Match) => (msg: string) => {
@@ -700,6 +712,7 @@ export const stop = async (match: Match) => {
 	});
 	await say(match, `TMT IS OFFLINE`).catch(() => {});
 	await GameServer.disconnect(match);
+	await ManagedGameServers.free(match.data.gameServer, match.data.id);
 };
 
 export const onElectionFinished = async (match: Match) => {
@@ -738,6 +751,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto.gameServer) {
+		await ManagedGameServers.free(match.data.gameServer, match.data.id);
 		match.data.gameServer = dto.gameServer;
 		match.rconConnection?.end().catch((err) => {
 			match.log(`error end rcon connection ${err}`);

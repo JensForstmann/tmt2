@@ -1,5 +1,5 @@
 import { generate as shortUuid } from 'short-uuid';
-import { IMatch, IMatchCreateDto } from '../../common';
+import { IMatch, IMatchCreateDto, IMatchResponse } from '../../common';
 import * as Events from './events';
 import * as Match from './match';
 import * as Storage from './storage';
@@ -169,4 +169,14 @@ export const saveAll = async () => {
 
 export const isStartingMatch = (id: string) => {
 	return startingMatches.has(id);
+};
+
+export const hideRconPassword = <T extends IMatch | IMatchResponse>(match: T): T => {
+	return {
+		...match,
+		gameServer: {
+			...match.gameServer,
+			rconPassword: match.gameServer.hideRconPassword ? '' : match.gameServer.rconPassword,
+		},
+	};
 };

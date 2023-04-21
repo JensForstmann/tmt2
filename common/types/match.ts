@@ -87,7 +87,7 @@ export interface IMatchCreateDto {
 	teamA: ITeamCreateDto;
 	teamB: ITeamCreateDto;
 	electionSteps: Array<IElectionStepAdd | IElectionStepSkip>;
-	gameServer: IGameServer;
+	gameServer: IGameServer | null;
 	/** if set various events will be posted to this url */
 	webhookUrl?: string | null;
 	rconCommands?: {
