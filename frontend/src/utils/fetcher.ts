@@ -48,7 +48,7 @@ export const createFetcher = (token?: string) => {
 		body?: any,
 		init?: RequestInit
 	): Promise<T | undefined> => {
-		const tkn = token ?? getToken();
+		const tkn = getToken() ?? token;
 		const response = await fetch(`${API_HOST}${path}`, {
 			...init,
 			method: method,

@@ -192,7 +192,7 @@ export class MatchesController extends Controller {
 			this.setStatus(404);
 			return;
 		}
-		if (match.data.gameServer.hideRconPassword) {
+		if (match.data.gameServer.hideRconPassword && user.type === 'MATCH') {
 			this.setStatus(400);
 			throw 'cannot execute rcon commands on this server';
 		}
