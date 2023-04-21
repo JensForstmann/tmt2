@@ -2,6 +2,7 @@ import { ValidateError } from '@tsoa/runtime';
 import express, { ErrorRequestHandler } from 'express';
 import path from 'path';
 import http from 'http';
+import { existsSync } from 'fs';
 import * as Auth from './auth';
 import * as MatchService from './matchService';
 import * as ManagedGameServers from './managedGameServers';
@@ -21,6 +22,16 @@ export const TMT_LOG_ADDRESS: string | null = (() => {
 		throw 'invalid environment variable: TMT_LOG_ADDRESS';
 	}
 	return addr;
+})();
+
+const STATIC_PATH = (() => {
+	if (existsSync(path.join(__dirname, '../../frontend/dist'))) {
+		return path.join(__dirname, '../../frontend/dist');
+	}
+	if (existsSync(path.join(__dirname, '../../../../frontend/dist'))) {
+		return path.join(__dirname, '../../../../frontend/dist');
+	}
+	throw 'Could not determine static path';
 })();
 
 const PORT = process.env['TMT_PORT'] || 8080;
@@ -87,7 +98,6 @@ app.get('/api', (req, res) => {
 	res.sendFile('swagger.json', { root: '.' });
 });
 
-const STATIC_PATH = path.join(__dirname, '../../../../frontend/dist');
 app.get('*', express.static(STATIC_PATH));
 app.get('*', (req, res) => res.sendFile(path.join(STATIC_PATH, 'index.html')));
 
