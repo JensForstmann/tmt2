@@ -12,6 +12,8 @@ export type TMatchEndAction = typeof MatchEndActions[number];
 export const MatchStates = ['ELECTION', 'MATCH_MAP', 'FINISHED'] as const;
 export type TMatchSate = typeof MatchStates[number];
 
+export type TMatchMode = 'SINGLE' | 'LOOP';
+
 export interface IMatch {
 	/** tmt2 identifier for this match */
 	id: string;
@@ -69,6 +71,8 @@ export interface IMatch {
 	tmtLogAddress?: string;
 	/** Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC) */
 	createdAt: number;
+	/** Match mode (single: stops when match is finished, loop: starts again after match is finished) */
+	mode: TMatchMode;
 }
 
 export interface IMatchResponse extends IMatch {
@@ -106,6 +110,8 @@ export interface IMatchCreateDto {
 	matchEndAction?: TMatchEndAction;
 	/** if set will be used to register the target logaddress for the game server */
 	tmtLogAddress?: string;
+	/** Match mode (single: stops when match is finished, loop: starts again after match is finished) */
+	mode?: TMatchMode;
 }
 
 export interface IMatchUpdateDto extends Partial<IMatchCreateDto> {

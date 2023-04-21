@@ -1,4 +1,4 @@
-import { IGameServer } from '../../common';
+import { IGameServer, IPlayer } from '../../common';
 import * as Match from './match';
 import { Rcon } from './rcon-client';
 
@@ -31,17 +31,42 @@ export const exec = async (match: Match.Match, command: string, suppressError: b
 	}
 };
 
-export const kickAll = async (match: Match.Match) => {
-	const status = await exec(match, 'status');
+type IngamePlayer = {
+	userId: string;
+	name: string;
+	steamId: string;
+};
+
+export const getPlayers = async (match: Match.Match): Promise<IngamePlayer[]> => {
 	//# userid name uniqueid connected ping loss state rate adr
 	//#  2 1 "PlayerName" STEAM_1:0:7426845 02:50 25 0 active 196608 172.24.16.1:27005
-	const userIds = status
+	const status = await exec(match, 'status');
+	const playerLines = status
 		.trim()
 		.split('\n')
 		.filter((line) => line.trim()[0] === '#')
 		.filter((line, lineNumber) => lineNumber > 0) // remove header line
-		.map((line) => line.substring(1).trim()) // remove # and trim line
-		.map((line) => line.split(' ')[0]); // extract first part (the user id)
+		.map((line) => line.substring(1).trim()); // remove # and trim line
+
+	const players = playerLines
+		.map((line) => {
+			const matcher = line.match(/^(\d+) (\d+) "(.*)" (STEAM_\S*)/);
+			return matcher
+				? {
+						userId: matcher[1],
+						name: matcher[3],
+						steamId: matcher[4],
+				  }
+				: null;
+		})
+		.filter((player): player is IngamePlayer => player !== null);
+
+	return players;
+};
+
+export const kickAll = async (match: Match.Match) => {
+	const players = await getPlayers(match);
+	const userIds = players.map((player) => player.userId);
 	for (let i = 0; i < userIds.length; i++) {
 		await exec(match, `kickid ${userIds[i]}`);
 	}

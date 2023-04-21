@@ -1,0 +1,38 @@
+{
+	"mapPool": [],
+	"teamA": {
+		"name": ""
+	},
+	"teamB": {
+		"name": ""
+	},
+	"electionSteps": [
+		{
+			"map": {
+				"mode": "FIXED",
+				"fixed": "de_dust2"
+			},
+			"side": {
+				"mode": "FIXED",
+				"fixed": "TEAM_A_T"
+			}
+		}
+	],
+	"gameServer": {
+		"ip": "localhost",
+		"port": 27016,
+		"rconPassword": "blob"
+	},
+	"rconCommands": {
+		"init": [
+			"mp_autokick 0",
+			"game_type 0",
+			"game_mode 1",
+			"sv_game_mode_flags 0",
+			"say > init rcon loaded <"
+		],
+		"end": ["mp_match_end_restart 1", "say > end rcon loaded <"]
+	},
+	"tmtLogAddress": "http://localhost:8080",
+	"mode": "LOOP"
+}

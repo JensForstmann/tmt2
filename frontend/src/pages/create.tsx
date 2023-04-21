@@ -1,6 +1,13 @@
 import { useNavigate } from '@solidjs/router';
 import { Component, createEffect, createSignal, Show } from 'solid-js';
-import { getOtherTeamAB, IElectionStep, IMatch, IMatchCreateDto, TTeamAB } from '../../../common';
+import {
+	getOtherTeamAB,
+	IElectionStep,
+	IMatch,
+	IMatchCreateDto,
+	TMatchMode,
+	TTeamAB,
+} from '../../../common';
 import { TextArea } from '../components/TextArea';
 import { TextInput } from '../components/TextInput';
 import { createFetcher } from '../utils/fetcher';
@@ -26,7 +33,8 @@ export const CreatePage: Component = () => {
 	const [ip, setIp] = createSignal('');
 	const [port, setPort] = createSignal(27015);
 	const [rconPassword, setRconPassword] = createSignal('');
-	const [mode, setMode] = createSignal('bo1');
+	const [electionPreset, setElectionPreset] = createSignal('bo1');
+	const [mode, setMode] = createSignal<TMatchMode>('SINGLE');
 	const [json, setJson] = createSignal('');
 
 	const fetcher = createFetcher();
@@ -66,6 +74,7 @@ export const CreatePage: Component = () => {
 				  }
 				: null,
 			tmtLogAddress: window.location.protocol + '//' + window.location.host,
+			mode: mode(),
 		};
 	};
 
@@ -75,11 +84,11 @@ export const CreatePage: Component = () => {
 		let currentTeam: TTeamAB = 'TEAM_A';
 		let mapCount = 0;
 
-		if (mode() === 'bo1') {
+		if (electionPreset() === 'bo1') {
 			mapCount = 1;
 		}
 
-		if (mode() === 'bo3') {
+		if (electionPreset() === 'bo3') {
 			mapCount = 3;
 		}
 
@@ -159,16 +168,33 @@ export const CreatePage: Component = () => {
 			/>
 
 			<h4>{t('Map Election')}</h4>
-			<select onInput={(e) => setMode(e.currentTarget.value)} value={mode()}>
+			<select
+				onInput={(e) => setElectionPreset(e.currentTarget.value)}
+				value={electionPreset()}
+			>
 				<option value="bo1">{t('best of 1')}</option>
 				<option value="bo3">{t('best of 3')}</option>
 			</select>
 			<p>
-				<Show when={mode() === 'bo1'}>
+				<Show when={electionPreset() === 'bo1'}>
 					{t('alternate map bans, last map will be played, knife for side')}
 				</Show>
-				<Show when={mode() === 'bo3'}>
+				<Show when={electionPreset() === 'bo3'}>
 					{t('alternate map bans, last three maps will be played, knife for side')}
+				</Show>
+			</p>
+
+			<h4>{t('Mode')}</h4>
+			<select onInput={(e) => setMode(e.currentTarget.value as TMatchMode)} value={mode()}>
+				<option value="SINGLE">{t('single')}</option>
+				<option value="LOOP">{t('loop')}</option>
+			</select>
+			<p>
+				<Show when={mode() === 'SINGLE'}>
+					{t('Normal mode: stops when match is finished')}
+				</Show>
+				<Show when={mode() === 'LOOP'}>
+					{t('Loop mode: starts again after match is finished')}
 				</Show>
 			</p>
 

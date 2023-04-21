@@ -96,6 +96,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		tmtLogAddress: dto.tmtLogAddress,
 		createdAt: Date.now(),
 		webhookUrl: dto.webhookUrl ?? null,
+		mode: dto.mode ?? 'SINGLE',
 	};
 	try {
 		const match = await createFromData(data);
@@ -438,6 +439,15 @@ const onPlayerLogLine = async (
 	teamString: string,
 	remainingLine: string
 ) => {
+	//04/21/2023 - 22:36:15: "Yenz<55><STEAM_1:0:8520813><TERRORIST>" disconnected (reason "Disconnect")
+	const disconnectMatch = remainingLine.match(/^disconnected/);
+	if (disconnectMatch) {
+		const players = await GameServer.getPlayers(match);
+		if (players.length === 0 && match.data.mode === 'LOOP') {
+			await restartElection(match);
+		}
+	}
+
 	//say "Hello World"
 	const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
 	if (!sayMatch) {
@@ -696,8 +706,13 @@ const onMatchEnd = async (match: Match) => {
 				await execRcon(match, 'quit');
 				break;
 		}
+
+		if (match.data.mode === 'LOOP') {
+			await restartElection(match);
+		} else {
+			await MatchService.remove(match.data.id); // this will call Match.stop()
+		}
 	}
-	await MatchService.remove(match.data.id); // this will call Match.stop()
 };
 
 export const stop = async (match: Match) => {
@@ -723,6 +738,14 @@ export const onElectionFinished = async (match: Match) => {
 	if (currentMatchMap) {
 		await MatchMap.loadMap(match, currentMatchMap);
 	}
+};
+
+const restartElection = async (match: Match) => {
+	match.data.state = 'ELECTION';
+	match.data.election = Election.create(match.data.mapPool, match.data.electionSteps);
+	match.data.matchMaps = [];
+	match.data.currentMap = 0;
+	await Election.auto(match);
 };
 
 export const update = async (match: Match, dto: IMatchUpdateDto) => {
@@ -840,11 +863,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto._restartElection) {
-		match.data.state = 'ELECTION';
-		match.data.election = Election.create(match.data.mapPool, match.data.electionSteps);
-		match.data.matchMaps = [];
-		match.data.currentMap = 0;
-		await Election.auto(match);
+		await restartElection(match);
 	}
 
 	if (dto._init) {

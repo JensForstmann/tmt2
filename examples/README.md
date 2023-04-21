@@ -35,6 +35,10 @@ BO3, active duty map pool
 - team B map ban
 - remaining map, knife for side
 
+### createMatch_05.json
+
+quick tmt2 for testing (loop mode)
+
 # Game mode settings
 
 See also [CS:GO Game Modes](https://developer.valvesoftware.com/wiki/CS:GO_Game_Modes).

@@ -614,6 +614,13 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"TMatchMode": {
+				"type": "string",
+				"enum": [
+					"SINGLE",
+					"LOOP"
+				]
+			},
 			"IMatch": {
 				"properties": {
 					"id": {
@@ -757,6 +764,10 @@
 						"type": "number",
 						"format": "double",
 						"description": "Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC)"
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TMatchMode",
+						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
 					}
 				},
 				"required": [
@@ -781,7 +792,8 @@
 					"tmtSecret",
 					"isStopped",
 					"serverPassword",
-					"createdAt"
+					"createdAt",
+					"mode"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -896,6 +908,10 @@
 					"tmtLogAddress": {
 						"type": "string",
 						"description": "if set will be used to register the target logaddress for the game server"
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TMatchMode",
+						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
 					}
 				},
 				"required": [
@@ -1052,6 +1068,10 @@
 						"format": "double",
 						"description": "Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC)"
 					},
+					"mode": {
+						"$ref": "#/components/schemas/TMatchMode",
+						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
+					},
 					"isLive": {
 						"type": "boolean"
 					}
@@ -1079,6 +1099,7 @@
 					"isStopped",
 					"serverPassword",
 					"createdAt",
+					"mode",
 					"isLive"
 				],
 				"type": "object",
@@ -1831,6 +1852,10 @@
 					"tmtLogAddress": {
 						"type": "string",
 						"description": "if set will be used to register the target logaddress for the game server"
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TMatchMode",
+						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
 					},
 					"state": {
 						"$ref": "#/components/schemas/TMatchSate"

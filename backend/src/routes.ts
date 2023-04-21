@@ -436,6 +436,18 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	TMatchMode: {
+		dataType: 'refAlias',
+		type: {
+			dataType: 'union',
+			subSchemas: [
+				{ dataType: 'enum', enums: ['SINGLE'] },
+				{ dataType: 'enum', enums: ['LOOP'] },
+			],
+			validators: {},
+		},
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	IMatch: {
 		dataType: 'refObject',
 		properties: {
@@ -492,6 +504,7 @@ const models: TsoaRoute.Models = {
 			serverPassword: { dataType: 'string', required: true },
 			tmtLogAddress: { dataType: 'string' },
 			createdAt: { dataType: 'double', required: true },
+			mode: { ref: 'TMatchMode', required: true },
 		},
 		additionalProperties: false,
 	},
@@ -542,6 +555,7 @@ const models: TsoaRoute.Models = {
 			canClinch: { dataType: 'boolean' },
 			matchEndAction: { ref: 'TMatchEndAction' },
 			tmtLogAddress: { dataType: 'string' },
+			mode: { ref: 'TMatchMode' },
 		},
 		additionalProperties: false,
 	},
@@ -602,6 +616,7 @@ const models: TsoaRoute.Models = {
 			serverPassword: { dataType: 'string', required: true },
 			tmtLogAddress: { dataType: 'string' },
 			createdAt: { dataType: 'double', required: true },
+			mode: { ref: 'TMatchMode', required: true },
 			isLive: { dataType: 'boolean', required: true },
 		},
 		additionalProperties: false,
@@ -982,6 +997,7 @@ const models: TsoaRoute.Models = {
 			canClinch: { dataType: 'boolean' },
 			matchEndAction: { ref: 'TMatchEndAction' },
 			tmtLogAddress: { dataType: 'string' },
+			mode: { ref: 'TMatchMode' },
 			state: { ref: 'TMatchSate' },
 			logSecret: { dataType: 'string' },
 			currentMap: { dataType: 'double' },
