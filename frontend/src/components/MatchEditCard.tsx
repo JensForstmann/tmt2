@@ -1,4 +1,4 @@
-import { Component, For, JSX, Show } from 'solid-js';
+import { Component, For, JSX, Show, createSignal } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import {
 	IMatchResponse,
@@ -18,6 +18,9 @@ export const MatchEditCard: Component<{
 	onUpdate: (dt: IMatchUpdateDto) => void;
 }> = (props) => {
 	const [store, setStore] = createStore<IMatchUpdateDto>(JSON.parse(JSON.stringify(props.match)));
+	const [electionSteps, setElectionSteps] = createSignal(
+		JSON.stringify(props.match.electionSteps, null, 4)
+	);
 
 	const getChangedValueFromStore = <K extends keyof IMatchUpdateDto>(
 		key: K
@@ -44,6 +47,14 @@ export const MatchEditCard: Component<{
 			}
 			return undefined;
 		}
+		if (key === 'electionSteps') {
+			const pre = JSON.stringify(props.match.electionSteps);
+			const post = JSON.stringify(JSON.parse(electionSteps()));
+			if (pre !== post) {
+				return JSON.parse(electionSteps());
+			}
+			return undefined;
+		}
 		return store[key] === (props.match as any)[key] ? undefined : store[key];
 	};
 
@@ -58,6 +69,7 @@ export const MatchEditCard: Component<{
 			mapPool: getChangedValueFromStore('mapPool'),
 			tmtLogAddress: getChangedValueFromStore('tmtLogAddress'),
 			canClinch: getChangedValueFromStore('canClinch'),
+			electionSteps: getChangedValueFromStore('electionSteps'),
 		};
 		Object.keys(dto).forEach((key) => {
 			if ((dto as any)[key] === undefined) {
@@ -71,14 +83,14 @@ export const MatchEditCard: Component<{
 		<Card>
 			<h2 class="text-lg font-bold">{t('Edit Match')}</h2>
 			<form
-				class="table"
+				class="table w-full"
 				onSubmit={(e) => {
 					e.preventDefault();
 					const dto = getMatchUpdateDto();
 					props.onUpdate(dto);
 				}}
 			>
-				<table>
+				<table class="w-full">
 					<thead>
 						<tr>
 							<th></th>
@@ -194,6 +206,7 @@ export const MatchEditCard: Component<{
 								onInput={(e) =>
 									setStore('mapPool', e.currentTarget.value.split('\n'))
 								}
+								rows={8}
 							/>
 						</Row>
 						<Row
@@ -213,6 +226,25 @@ export const MatchEditCard: Component<{
 								type="checkbox"
 								checked={store.canClinch}
 								onInput={(e) => setStore('canClinch', e.currentTarget.checked)}
+							/>
+						</Row>
+						<Row
+							label={t('Election Steps')}
+							changed={(() => {
+								try {
+									return (
+										JSON.stringify(props.match.electionSteps) !==
+										JSON.stringify(JSON.parse(electionSteps()))
+									);
+								} catch (err) {
+									return true;
+								}
+							})()}
+						>
+							<TextArea
+								value={electionSteps()}
+								onInput={(e) => setElectionSteps(e.currentTarget.value)}
+								rows={20}
 							/>
 						</Row>
 					</tbody>
@@ -239,9 +271,9 @@ const Row: Component<{
 }> = (props) => {
 	return (
 		<tr>
-			<td>{props.label}</td>
-			<td>{props.children}</td>
-			<td>
+			<td class="px-1 text-right">{props.label}</td>
+			<td class="px-1 text-left">{props.children}</td>
+			<td class="px-1">
 				<Show when={props.changed}>{t('Changed')}</Show>
 			</td>
 		</tr>
