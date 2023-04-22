@@ -120,7 +120,7 @@ const createOnDataChangeHandler = (match: Match) => (path: Array<string | number
 	Events.onMatchUpdate(match, path, value);
 };
 
-export const getLogsTail = async (matchId: string, numberOfLines = 100): Promise<string[]> => {
+export const getLogsTail = async (matchId: string, numberOfLines = 1000): Promise<string[]> => {
 	return await Storage.readLines(
 		STORAGE_LOGS_PREFIX + matchId + STORAGE_LOGS_SUFFIX,
 		[],

@@ -51,7 +51,7 @@ const send = (match: Match.Match, data: Event, isSystemEvent?: boolean) => {
 	}
 };
 
-export const getEventsTail = async (matchId: string, numberOfLines = 100): Promise<Event[]> => {
+export const getEventsTail = async (matchId: string, numberOfLines = 1000): Promise<Event[]> => {
 	return await Storage.readLines(
 		STORAGE_EVENTS_PREFIX + matchId + STORAGE_EVENTS_SUFFIX,
 		[],
