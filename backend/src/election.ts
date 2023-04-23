@@ -5,6 +5,7 @@ import {
 	IElectionStep,
 	IElectionStepAdd,
 	IElectionStepSkip,
+	IPlayer,
 	isElectionStepAdd,
 	isElectionStepSkip,
 	TTeamAB,
@@ -228,6 +229,7 @@ export const onCommand = async (
 	match: Match.Match,
 	command: ECommand,
 	teamAB: TTeamAB,
+	player: IPlayer,
 	parameters: string[]
 ) => {
 	if (
@@ -239,22 +241,22 @@ export const onCommand = async (
 		if (currentElectionStep) {
 			switch (command) {
 				case ECommand.AGREE:
-					await agreeCommand(match, currentElectionStep, teamAB, map);
+					await agreeCommand(match, currentElectionStep, teamAB, player, map);
 					break;
 				case ECommand.BAN:
-					await banCommand(match, currentElectionStep, teamAB, map);
+					await banCommand(match, currentElectionStep, teamAB, player, map);
 					break;
 				case ECommand.PICK:
-					await pickCommand(match, currentElectionStep, teamAB, map);
+					await pickCommand(match, currentElectionStep, teamAB, player, map);
 					break;
 				case ECommand.CT:
-					await ctCommand(match, currentElectionStep, teamAB);
+					await ctCommand(match, currentElectionStep, teamAB, player);
 					break;
 				case ECommand.T:
-					await tCommand(match, currentElectionStep, teamAB);
+					await tCommand(match, currentElectionStep, teamAB, player);
 					break;
 				case ECommand.RESTART:
-					await restartCommand(match, currentElectionStep, teamAB);
+					await restartCommand(match, currentElectionStep, teamAB, player);
 					break;
 				case ECommand.HELP:
 					await sayAvailableCommands(match, currentElectionStep);
@@ -304,12 +306,14 @@ const agreeCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
 	teamAB: TTeamAB,
+	player: IPlayer,
 	map: string
 ) => {
 	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'AGREE') {
 		const matchMap = match.data.election.remainingMaps.findIndex((mapName) => mapName === map);
 		if (matchMap > -1) {
 			match.data.election.state = 'IN_PROGRESS';
+			const team = Match.getTeamByAB(match, teamAB);
 			if (teamAB === 'TEAM_A') {
 				match.data.election.currentAgree.teamA = map;
 			} else {
@@ -324,26 +328,18 @@ const agreeCommand = async (
 				match.data.election.currentAgree.teamA = null;
 				match.data.election.currentAgree.teamB = null;
 				match.data.election.remainingMaps.splice(matchMap, 1);
-				Events.onElectionMapStep(
-					match,
-					'AGREE',
-					match.data.election.currentStepMap!,
-					Match.getTeamByAB(match, teamAB)
-				);
+				Events.onElectionMapStep(match, 'AGREE', match.data.election.currentStepMap!, team);
+				match.log(`${teamAB} (${team.name} - ${player.name}) accepts map ${map}`);
 				await next(match);
 			} else {
-				await Match.say(
-					match,
-					`MAP ${map} SUGGESTED BY ${escapeRconString(
-						Match.getTeamByAB(match, teamAB).name
-					)}`
-				);
+				await Match.say(match, `MAP ${map} SUGGESTED BY ${escapeRconString(team.name)}`);
 				await Match.say(
 					match,
 					`AGREE WITH ${Settings.COMMAND_PREFIXES[0]}${getCommands(
 						ECommand.AGREE
 					)[0]?.toLowerCase()}`
 				);
+				match.log(`${teamAB} (${team.name} - ${player.name}) suggests map ${map}`);
 			}
 			MatchService.scheduleSave(match);
 		} else {
@@ -357,6 +353,7 @@ const banCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
 	teamAB: TTeamAB,
+	player: IPlayer,
 	map: string
 ) => {
 	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'BAN') {
@@ -367,13 +364,17 @@ const banCommand = async (
 			if (matchMap > -1) {
 				ensureTeamXY(match, currentElectionStep.map.who, teamAB);
 				match.data.election.state = 'IN_PROGRESS';
+				const team = Match.getTeamByAB(match, teamAB);
 				Events.onElectionMapStep(
 					match,
 					'BAN',
 					match.data.election.remainingMaps[matchMap]!,
-					Match.getTeamByAB(match, teamAB)
+					team
 				);
 				await Match.say(match, `MAP ${match.data.election.remainingMaps[matchMap]} BANNED`);
+				match.log(
+					`${teamAB} (${team.name} - ${player.name}) bans map ${match.data.election.remainingMaps[matchMap]}`
+				);
 				match.data.election.remainingMaps.splice(matchMap, 1);
 				MatchService.scheduleSave(match);
 				await next(match);
@@ -392,6 +393,7 @@ const pickCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
 	teamAB: TTeamAB,
+	player: IPlayer,
 	map: string
 ) => {
 	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'PICK') {
@@ -402,18 +404,17 @@ const pickCommand = async (
 			if (matchMap > -1) {
 				ensureTeamXY(match, currentElectionStep.map.who, teamAB);
 				match.data.election.state = 'IN_PROGRESS';
-				Events.onElectionMapStep(
-					match,
-					'PICK',
-					match.data.election.currentStepMap!,
-					Match.getTeamByAB(match, teamAB)
-				);
-				match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
+				const team = Match.getTeamByAB(match, teamAB);
+				match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap]!;
+				Events.onElectionMapStep(match, 'PICK', match.data.election.currentStepMap, team);
 				match.data.election.remainingMaps.splice(matchMap, 1);
 				MatchService.scheduleSave(match);
 				await Match.say(
 					match,
 					`${match.data.matchMaps.length + 1}. MAP: ${match.data.election.currentStepMap}`
+				);
+				match.log(
+					`${teamAB} (${team.name} - ${player.name}) picks map ${match.data.election.currentStepMap}`
 				);
 				await next(match);
 				await sayWhatIsUp(match);
@@ -430,7 +431,8 @@ const pickCommand = async (
 const tCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
-	teamAB: TTeamAB
+	teamAB: TTeamAB,
+	player: IPlayer
 ) => {
 	const currentStepMap = match.data.election.currentStepMap ?? '';
 	if (
@@ -441,11 +443,12 @@ const tCommand = async (
 		if (isValidTeam(match, currentElectionStep.side.who, teamAB)) {
 			ensureTeamXY(match, currentElectionStep.side.who, teamAB);
 			match.data.election.state = 'IN_PROGRESS';
+			const team = Match.getTeamByAB(match, teamAB);
 			Events.onElectionSideStep(match, 'PICK', {
-				pickerTeam: Match.getTeamByAB(match, teamAB),
+				pickerTeam: team,
 				pickerSide: 'T',
 				ctTeam: Match.getTeamByAB(match, getOtherTeamAB(teamAB)),
-				tTeam: Match.getTeamByAB(match, teamAB),
+				tTeam: team,
 			});
 			match.data.matchMaps.push(
 				MatchMap.create(currentStepMap, false, getOtherTeamAB(teamAB))
@@ -455,8 +458,9 @@ const tCommand = async (
 				match,
 				`${match.data.matchMaps.length}. MAP: ${
 					match.data.election.currentStepMap
-				} (T-SIDE: ${escapeRconString(Match.getTeamByAB(match, teamAB).name)})`
+				} (T-SIDE: ${escapeRconString(team.name)})`
 			);
+			match.log(`${teamAB} (${team.name} - ${player.name}) picks t side`);
 			await next(match);
 			await sayWhatIsUp(match);
 		} else {
@@ -468,7 +472,8 @@ const tCommand = async (
 const ctCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
-	teamAB: TTeamAB
+	teamAB: TTeamAB,
+	player: IPlayer
 ) => {
 	const currentStepMap = match.data.election.currentStepMap ?? '';
 	if (
@@ -479,10 +484,11 @@ const ctCommand = async (
 		if (isValidTeam(match, currentElectionStep.side.who, teamAB)) {
 			ensureTeamXY(match, currentElectionStep.side.who, teamAB);
 			match.data.election.state = 'IN_PROGRESS';
+			const team = Match.getTeamByAB(match, teamAB);
 			Events.onElectionSideStep(match, 'PICK', {
-				pickerTeam: Match.getTeamByAB(match, teamAB),
+				pickerTeam: team,
 				pickerSide: 'CT',
-				ctTeam: Match.getTeamByAB(match, teamAB),
+				ctTeam: team,
 				tTeam: Match.getTeamByAB(match, getOtherTeamAB(teamAB)),
 			});
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, teamAB));
@@ -491,8 +497,9 @@ const ctCommand = async (
 				match,
 				`${match.data.matchMaps.length}. MAP: ${
 					match.data.election.currentStepMap
-				} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, teamAB).name)})`
+				} (CT-SIDE: ${escapeRconString(team.name)})`
 			);
+			match.log(`${teamAB} (${team.name} - ${player.name}) picks ct side`);
 			await next(match);
 			await sayWhatIsUp(match);
 		} else {
@@ -504,7 +511,8 @@ const ctCommand = async (
 const restartCommand = async (
 	match: Match.Match,
 	currentElectionStep: IElectionStep,
-	teamAB: TTeamAB
+	teamAB: TTeamAB,
+	player: IPlayer
 ) => {
 	if (teamAB === 'TEAM_A') {
 		match.data.election.currentRestart.teamA = true;
@@ -512,11 +520,15 @@ const restartCommand = async (
 		match.data.election.currentRestart.teamB = true;
 	}
 
+	const team = Match.getTeamByAB(match, teamAB);
+	match.log(`${teamAB} (${team.name} - ${player.name}) wants to restart the election process`);
+
 	if (match.data.election.currentRestart.teamA && match.data.election.currentRestart.teamB) {
 		match.data.election.currentRestart.teamA = false;
 		match.data.election.currentRestart.teamB = false;
 
 		try {
+			match.log('restart election process');
 			match.data.election = create(match.data.mapPool, match.data.electionSteps);
 			match.data.matchMaps = [];
 		} catch (err) {
@@ -526,10 +538,9 @@ const restartCommand = async (
 	} else {
 		await Match.say(
 			match,
-			`${escapeRconString(
-				Match.getTeamByAB(match, teamAB).name
-			)} WANTS TO RESTART THE ELECTION PROCESS`
+			`${escapeRconString(team.name)} WANTS TO RESTART THE ELECTION PROCESS`
 		);
+
 		await Match.say(
 			match,
 			`TYPE ${Settings.COMMAND_PREFIXES[0]}${getCommands(

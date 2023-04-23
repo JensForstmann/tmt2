@@ -543,7 +543,7 @@ const onCommand = async (
 	}
 
 	if (match.data.state === 'ELECTION') {
-		await Election.onCommand(match, command, teamAB, parameters);
+		await Election.onCommand(match, command, teamAB, player, parameters);
 	}
 
 	if (currentMatchMap) {
@@ -591,22 +591,14 @@ const sayWrongTeamOrSide = async (
 
 const onTeamCommand = async (match: Match, player: IPlayer, firstParameter: string) => {
 	firstParameter = firstParameter.toUpperCase();
-	if (firstParameter === 'A') {
-		player.team = 'TEAM_A';
+	if (firstParameter === 'A' || firstParameter === 'B') {
+		player.team = firstParameter === 'A' ? 'TEAM_A' : 'TEAM_B';
+		const team = getTeamByAB(match, player.team);
 		say(
 			match,
-			`PLAYER ${escapeRconString(player.name)} JOINED TEAM ${escapeRconString(
-				match.data.teamA.name
-			)}`
+			`PLAYER ${escapeRconString(player.name)} JOINED TEAM ${escapeRconString(team.name)}`
 		);
-	} else if (firstParameter === 'B') {
-		player.team = 'TEAM_B';
-		say(
-			match,
-			`PLAYER ${escapeRconString(player.name)} JOINED TEAM ${escapeRconString(
-				match.data.teamB.name
-			)}`
-		);
+		match.log(`player ${player.name} joined team ${player.team} (${team.name})`);
 	} else {
 		const playerTeam = player.team;
 		if (playerTeam) {
@@ -625,19 +617,20 @@ const onTeamCommand = async (match: Match, player: IPlayer, firstParameter: stri
 const onMapEnd = async (match: Match) => {
 	const currentMatchMap = getCurrentMatchMap(match);
 	if (currentMatchMap) {
+		const mapNumber = match.data.currentMap + 1;
 		await MatchMap.onMapEnd(match, currentMatchMap);
 
 		const winnerTeamAB = MatchMap.getWinner(currentMatchMap);
 		if (!winnerTeamAB) {
-			await say(match, `${match.data.currentMap + 1}. MAP FINISHED (DRAW)`);
+			await say(match, `${mapNumber}. MAP FINISHED (DRAW)`);
+			match.log(`${mapNumber}. map finished (draw)`);
 		} else {
 			const winnerTeam = getTeamByAB(match, winnerTeamAB);
 			await say(
 				match,
-				`${match.data.currentMap + 1}. MAP FINISHED (WINNER: ${escapeRconString(
-					winnerTeam.name
-				)})`
+				`${mapNumber}. MAP FINISHED (WINNER: ${escapeRconString(winnerTeam.name)})`
 			);
+			match.log(`${mapNumber}. map finished (winner: ${winnerTeam.name})`);
 		}
 	}
 
@@ -731,6 +724,7 @@ export const stop = async (match: Match) => {
 };
 
 export const onElectionFinished = async (match: Match) => {
+	match.log('election finished');
 	Events.onElectionEnd(match);
 	match.data.state = 'MATCH_MAP';
 	MatchService.scheduleSave(match);
@@ -741,6 +735,7 @@ export const onElectionFinished = async (match: Match) => {
 };
 
 const restartElection = async (match: Match) => {
+	match.log('restart election');
 	match.data.state = 'ELECTION';
 	match.data.election = Election.create(match.data.mapPool, match.data.electionSteps);
 	match.data.matchMaps = [];
