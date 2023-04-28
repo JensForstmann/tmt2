@@ -439,6 +439,13 @@ const onPlayerLogLine = async (
 	teamString: string,
 	remainingLine: string
 ) => {
+	const steamId64 = Player.getSteamID64(steamId);
+	let player = match.data.players.find((p) => p.steamId64 === steamId64);
+	if (!player) {
+		player = Player.create(steamId, name);
+		match.data.players.push(player);
+	}
+
 	//04/21/2023 - 22:36:15: "Yenz<55><STEAM_1:0:8520813><TERRORIST>" disconnected (reason "Disconnect")
 	const disconnectMatch = remainingLine.match(/^disconnected/);
 	if (disconnectMatch) {
@@ -450,23 +457,15 @@ const onPlayerLogLine = async (
 
 	//say "Hello World"
 	const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
-	if (!sayMatch) {
-		return;
-	}
-	const isTeamChat = sayMatch[1] === '_team';
-	const message = sayMatch[2]!;
-
-	if (steamId === 'BOT') {
-	} else if (steamId === 'Console') {
-		await onConsoleSay(match, message);
-	} else {
-		const steamId64 = Player.getSteamID64(steamId);
-		let player = match.data.players.find((p) => p.steamId64 === steamId64);
-		if (!player) {
-			player = Player.create(steamId, name);
-			match.data.players.push(player);
+	if (sayMatch) {
+		const isTeamChat = sayMatch[1] === '_team';
+		const message = sayMatch[2]!;
+		if (steamId === 'BOT') {
+		} else if (steamId === 'Console') {
+			await onConsoleSay(match, message);
+		} else {
+			await onPlayerSay(match, player, message, isTeamChat, teamString);
 		}
-		await onPlayerSay(match, player, message, isTeamChat, teamString);
 	}
 };
 
