@@ -15,7 +15,7 @@ import {
 	TTeamAB,
 } from '../../common';
 import { addChangeListener } from './changeListener';
-import { commandMapping, ECommand } from './commands';
+import { getInternalCommandByUserCommand, TCommand } from './commands';
 import * as Election from './election';
 import * as Events from './events';
 import * as GameServer from './gameServer';
@@ -486,7 +486,7 @@ const onPlayerSay = async (
 		const parts = message.split(' ').filter((str) => str.length > 0);
 		const commandString = parts.shift()?.toLowerCase();
 		if (commandString) {
-			const command = commandMapping.get(commandString);
+			const command = getInternalCommandByUserCommand(commandString);
 			if (command) {
 				await onCommand(match, command, player, parts, teamString);
 			} else {
@@ -505,19 +505,19 @@ const onConsoleSay = async (match: Match, message: string) => {
 
 const onCommand = async (
 	match: Match,
-	command: ECommand,
+	command: TCommand,
 	player: IPlayer,
 	parameters: string[],
 	teamString: string
 ) => {
-	if (command === ECommand.TEAM) {
+	if (command === 'TEAM') {
 		await onTeamCommand(match, player, parameters[0] || '');
 	}
 
 	const teamAB = player.team;
 
 	if (!teamAB) {
-		if (command !== ECommand.TEAM) {
+		if (command !== 'TEAM') {
 			await sayNotAssigned(match, player);
 		}
 		return;
@@ -538,7 +538,7 @@ const onCommand = async (
 		await sayWrongTeamOrSide(match, player, teamString, playerTeam, teamAB);
 	}
 
-	if (command === ECommand.TEAM) {
+	if (command === 'TEAM') {
 		return;
 	}
 

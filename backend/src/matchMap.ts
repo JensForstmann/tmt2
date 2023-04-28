@@ -10,7 +10,7 @@ import {
 	TTeamAB,
 	TTeamSides,
 } from '../../common';
-import { ECommand, getCommands } from './commands';
+import { TCommand, getUserCommandsByInternalCommand } from './commands';
 import * as Events from './events';
 import * as Match from './match';
 import * as MatchService from './matchService';
@@ -81,30 +81,30 @@ export const sayPeriodicMessage = async (match: Match.Match, matchMap: IMatchMap
 	await sayAvailableCommands(match, matchMap);
 };
 
-const getAvailableCommandsEnums = (state: TMatchMapSate): ECommand[] => {
+const getAvailableCommandsEnums = (state: TMatchMapSate): TCommand[] => {
 	switch (state) {
 		case 'AFTER_KNIFE':
-			return [ECommand.RESTART, ECommand.CT, ECommand.T, ECommand.STAY, ECommand.SWITCH];
+			return ['RESTART', 'CT', 'T', 'STAY', 'SWITCH'];
 		case 'FINISHED':
 			return [];
 		case 'IN_PROGRESS':
-			return [ECommand.PAUSE];
+			return ['PAUSE'];
 		case 'KNIFE':
-			return [ECommand.RESTART];
+			return ['RESTART'];
 		case 'MAP_CHANGE':
 			return [];
 		case 'PAUSED':
-			return [ECommand.READY, ECommand.UNREADY];
+			return ['READY', 'UNREADY'];
 		case 'PENDING':
 			return [];
 		case 'WARMUP':
-			return [ECommand.READY, ECommand.UNREADY];
+			return ['READY', 'UNREADY'];
 	}
 };
 
 const getAvailableCommands = (state: TMatchMapSate): string[] => {
 	return getAvailableCommandsEnums(state).reduce(
-		(pv: string[], cv: ECommand) => [...pv, ...getCommands(cv)],
+		(pv: string[], cv: TCommand) => [...pv, ...getUserCommandsByInternalCommand(cv)],
 		[]
 	);
 };
@@ -267,7 +267,7 @@ const restartKnifeCommand = async (
 	} else {
 		await Match.say(match, `${escapeRconString(team.name)} WANTS TO RESTART THE KNIFE ROUND`);
 		match.log(`${teamAB} (${team.name} - ${player.name}) wants to restart the knife round`);
-		await Match.say(match, `AGREE WITH ${getCommands(ECommand.RESTART)}`);
+		await Match.say(match, `AGREE WITH ${getUserCommandsByInternalCommand('RESTART')}`);
 	}
 
 	MatchService.scheduleSave(match);
@@ -400,37 +400,37 @@ const tCommand = async (
 export const onCommand = async (
 	match: Match.Match,
 	matchMap: IMatchMap,
-	command: ECommand,
+	command: TCommand,
 	teamAB: TTeamAB,
 	player: IPlayer
 ) => {
-	if (command === ECommand.HELP) {
+	if (command === 'HELP') {
 		await sayAvailableCommands(match, matchMap);
 	} else if (!getAvailableCommandsEnums(matchMap.state).includes(command)) {
 		await Match.say(match, `COMMAND CURRENTLY NO AVAILABLE`);
 		await sayAvailableCommands(match, matchMap);
 	} else if (matchMap.state === 'KNIFE') {
 		switch (command) {
-			case ECommand.RESTART:
+			case 'RESTART':
 				await restartKnifeCommand(match, matchMap, teamAB, player);
 				break;
 		}
 	} else if (matchMap.state === 'AFTER_KNIFE') {
 		if (matchMap.knifeWinner === teamAB) {
 			switch (command) {
-				case ECommand.STAY:
+				case 'STAY':
 					await stayCommand(match, matchMap, teamAB, player);
 					break;
-				case ECommand.SWITCH:
+				case 'SWITCH':
 					await switchCommand(match, matchMap, teamAB, player);
 					break;
-				case ECommand.CT:
+				case 'CT':
 					await ctCommand(match, matchMap, teamAB, player);
 					break;
-				case ECommand.T:
+				case 'T':
 					await tCommand(match, matchMap, teamAB, player);
 					break;
-				case ECommand.RESTART:
+				case 'RESTART':
 					await restartKnifeCommand(match, matchMap, teamAB, player);
 					break;
 			}
@@ -439,22 +439,22 @@ export const onCommand = async (
 		}
 	} else if (matchMap.state === 'WARMUP') {
 		switch (command) {
-			case ECommand.READY:
+			case 'READY':
 				await readyCommand(match, matchMap, teamAB, player);
 				break;
-			case ECommand.UNREADY:
+			case 'UNREADY':
 				await unreadyCommand(match, matchMap, teamAB, player);
 				break;
 		}
 	} else if (matchMap.state === 'IN_PROGRESS') {
 		switch (command) {
-			case ECommand.PAUSE:
+			case 'PAUSE':
 				await pauseCommand(match, matchMap, teamAB, player);
 				break;
 		}
 	} else if (matchMap.state === 'PAUSED') {
 		switch (command) {
-			case ECommand.READY:
+			case 'READY':
 				await readyCommand(match, matchMap, teamAB, player);
 				break;
 		}

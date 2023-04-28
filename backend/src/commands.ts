@@ -1,46 +1,50 @@
-export enum ECommand {
-	BAN = 'BAN',
-	PICK = 'PICK',
-	AGREE = 'AGREE',
-	CT = 'CT',
-	T = 'T',
-	READY = 'READY',
-	UNREADY = 'UNREADY',
-	PAUSE = 'PAUSE',
-	HELP = 'HELP',
-	STAY = 'STAY',
-	SWITCH = 'SWITCH',
-	TEAM = 'TEAM',
-	RESTART = 'RESTART', // knife/election
-}
+const Commands = [
+	'BAN',
+	'PICK',
+	'AGREE',
+	'CT',
+	'T',
+	'READY',
+	'UNREADY',
+	'PAUSE',
+	'HELP',
+	'STAY',
+	'SWITCH',
+	'TEAM',
+	'RESTART',
+] as const;
+export type TCommand = typeof Commands[number];
 
-export const commandMapping = new Map<string, ECommand>();
+const commandMapping = new Map<string, TCommand>();
+commandMapping.set('ban', 'BAN');
+commandMapping.set('pick', 'PICK');
+commandMapping.set('agree', 'AGREE');
+commandMapping.set('map', 'AGREE');
+commandMapping.set('ct', 'CT');
+commandMapping.set('t', 'T');
+commandMapping.set('ready', 'READY');
+commandMapping.set('rdy', 'READY');
+commandMapping.set('unpause', 'READY');
+commandMapping.set('unready', 'UNREADY');
+commandMapping.set('unrdy', 'UNREADY');
+commandMapping.set('pause', 'PAUSE');
+commandMapping.set('help', 'HELP');
+commandMapping.set('stay', 'STAY');
+commandMapping.set('switch', 'SWITCH');
+commandMapping.set('swap', 'SWITCH');
+commandMapping.set('team', 'TEAM');
+commandMapping.set('restart', 'RESTART');
 
-commandMapping.set('ban', ECommand.BAN);
-commandMapping.set('pick', ECommand.PICK);
-commandMapping.set('agree', ECommand.AGREE);
-commandMapping.set('map', ECommand.AGREE);
-commandMapping.set('ct', ECommand.CT);
-commandMapping.set('t', ECommand.T);
-commandMapping.set('ready', ECommand.READY);
-commandMapping.set('rdy', ECommand.READY);
-commandMapping.set('unpause', ECommand.READY);
-commandMapping.set('unready', ECommand.UNREADY);
-commandMapping.set('unrdy', ECommand.UNREADY);
-commandMapping.set('pause', ECommand.PAUSE);
-commandMapping.set('help', ECommand.HELP);
-commandMapping.set('stay', ECommand.STAY);
-commandMapping.set('switch', ECommand.SWITCH);
-commandMapping.set('swap', ECommand.SWITCH);
-commandMapping.set('team', ECommand.TEAM);
-commandMapping.set('restart', ECommand.RESTART);
+export const getInternalCommandByUserCommand = (userCommand: string) => {
+	return commandMapping.get(userCommand);
+};
 
-export function getCommands(internal: ECommand) {
-	const commands: string[] = [];
-	commandMapping.forEach((int, command) => {
-		if (int === internal) {
-			commands.push(command);
+export const getUserCommandsByInternalCommand = (internalCommand: TCommand) => {
+	const userCommands: string[] = [];
+	commandMapping.forEach((intC, userC) => {
+		if (intC === internalCommand) {
+			userCommands.push(userC);
 		}
 	});
-	return commands;
-}
+	return userCommands;
+};
