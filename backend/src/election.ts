@@ -5,14 +5,14 @@ import {
 	IElectionStep,
 	IElectionStepAdd,
 	IElectionStepSkip,
-	IPlayer,
 	isElectionStepAdd,
 	isElectionStepSkip,
 	TTeamAB,
 	TWho,
 } from '../../common';
+import * as commands from './commands';
+import { getUserCommandsByInternalCommand } from './commands';
 import * as Events from './events';
-import { TCommand, getUserCommandsByInternalCommand } from './commands';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
@@ -146,9 +146,9 @@ const sayWhatIsUp = async (match: Match.Match) => {
 		if (currentElectionStep.map.mode === 'AGREE') {
 			await Match.say(
 				match,
-				`BOTH TEAMS MUST ${Settings.COMMAND_PREFIXES[0]}${getUserCommandsByInternalCommand(
-					'AGREE'
-				)} ON THE SAME MAP`
+				`BOTH TEAMS MUST ${Settings.COMMAND_PREFIXES[0]}${
+					getUserCommandsByInternalCommand('AGREE')[0]
+				} ON THE SAME MAP`
 			);
 			if (match.data.election.currentAgree.teamA)
 				await Match.say(
@@ -172,14 +172,14 @@ const sayWhatIsUp = async (match: Match.Match) => {
 					match,
 					`TEAM ${escapeRconString(Match.getTeamByAB(match, validTeam).name)} MUST ${
 						Settings.COMMAND_PREFIXES[0]
-					}${getUserCommandsByInternalCommand('BAN')} A MAP`
+					}${getUserCommandsByInternalCommand('BAN')[0]} A MAP`
 				);
 			if (!validTeam)
 				await Match.say(
 					match,
-					`BOTH TEAMS CAN START TO ${
-						Settings.COMMAND_PREFIXES[0]
-					}${getUserCommandsByInternalCommand('BAN')} A MAP`
+					`BOTH TEAMS CAN START TO ${Settings.COMMAND_PREFIXES[0]}${
+						getUserCommandsByInternalCommand('BAN')[0]
+					} A MAP`
 				);
 			await sayAvailableMaps(match);
 		} else if (currentElectionStep.map.mode === 'PICK') {
@@ -189,14 +189,14 @@ const sayWhatIsUp = async (match: Match.Match) => {
 					match,
 					`TEAM ${escapeRconString(Match.getTeamByAB(match, validTeam).name)} MUST ${
 						Settings.COMMAND_PREFIXES[0]
-					}${getUserCommandsByInternalCommand('PICK')} A MAP`
+					}${getUserCommandsByInternalCommand('PICK')[0]} A MAP`
 				);
 			if (!validTeam)
 				await Match.say(
 					match,
-					`BOTH TEAMS CAN START TO ${
-						Settings.COMMAND_PREFIXES[0]
-					}${getUserCommandsByInternalCommand('PICK')} A MAP`
+					`BOTH TEAMS CAN START TO ${Settings.COMMAND_PREFIXES[0]}${
+						getUserCommandsByInternalCommand('PICK')[0]
+					} A MAP`
 				);
 			await sayAvailableMaps(match);
 		}
@@ -231,46 +231,43 @@ const sayAvailableMaps = async (match: Match.Match) => {
 	await Match.say(match, `AVAILABLE MAPS: ${match.data.election.remainingMaps.join(', ')}`);
 };
 
-export const onCommand = async (
-	match: Match.Match,
-	command: TCommand,
-	teamAB: TTeamAB,
-	player: IPlayer,
-	parameters: string[]
-) => {
+export const registerCommandHandlers = () => {
+	commands.registerHandler('AGREE', onAgreeCommand);
+	commands.registerHandler('BAN', onBanCommand);
+	commands.registerHandler('PICK', onPickCommand);
+	commands.registerHandler('CT', onCtCommand);
+	commands.registerHandler('T', onTCommand);
+	commands.registerHandler('RESTART', onRestartCommand);
+	commands.registerHandler('HELP', onHelpCommand);
+};
+
+const enrichEvent = async (e: commands.CommandEvent) => {
+	const currentElectionStep = getCurrentElectionStep(e.match);
 	if (
-		match.data.state === 'ELECTION' &&
-		(match.data.election.state === 'IN_PROGRESS' || match.data.election.state === 'NOT_STARTED')
+		!currentElectionStep ||
+		e.match.data.state !== 'ELECTION' ||
+		e.match.data.election.state === 'FINISHED'
 	) {
-		const map = (parameters[0] || '').toLowerCase();
-		const currentElectionStep = getCurrentElectionStep(match);
-		if (currentElectionStep) {
-			switch (command) {
-				case 'AGREE':
-					await agreeCommand(match, currentElectionStep, teamAB, player, map);
-					break;
-				case 'BAN':
-					await banCommand(match, currentElectionStep, teamAB, player, map);
-					break;
-				case 'PICK':
-					await pickCommand(match, currentElectionStep, teamAB, player, map);
-					break;
-				case 'CT':
-					await ctCommand(match, currentElectionStep, teamAB, player);
-					break;
-				case 'T':
-					await tCommand(match, currentElectionStep, teamAB, player);
-					break;
-				case 'RESTART':
-					await restartCommand(match, currentElectionStep, teamAB, player);
-					break;
-				case 'HELP':
-					await sayAvailableCommands(match, currentElectionStep);
-					await sayWhatIsUp(match);
-					break;
-			}
-		}
+		return;
 	}
+	if (!e.player.team) {
+		await Match.sayNotAssigned(e.match, e.player);
+		return;
+	}
+	return {
+		...e,
+		currentElectionStep: currentElectionStep,
+		teamAB: e.player.team,
+	};
+};
+
+const onHelpCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	await sayAvailableCommands(e.match, enrichedEvent.currentElectionStep);
+	await sayWhatIsUp(e.match);
 };
 
 const ensureTeamXY = (match: Match.Match, who: TWho, teamAB: TTeamAB) => {
@@ -308,13 +305,13 @@ const isValidTeam = (match: Match.Match, who: TWho, teamAB: TTeamAB) => {
 	return validTeam === teamAB || validTeam === undefined;
 };
 
-const agreeCommand = async (
-	match: Match.Match,
-	currentElectionStep: IElectionStep,
-	teamAB: TTeamAB,
-	player: IPlayer,
-	map: string
-) => {
+const onAgreeCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	const { match, parameters, player, teamAB, currentElectionStep } = enrichedEvent;
+	const map = (parameters[0] || '').toLowerCase();
 	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'AGREE') {
 		const matchMap = match.data.election.remainingMaps.findIndex((mapName) => mapName === map);
 		if (matchMap > -1) {
@@ -341,9 +338,9 @@ const agreeCommand = async (
 				await Match.say(match, `MAP ${map} SUGGESTED BY ${escapeRconString(team.name)}`);
 				await Match.say(
 					match,
-					`AGREE WITH ${Settings.COMMAND_PREFIXES[0]}${getUserCommandsByInternalCommand(
-						'AGREE'
-					)[0]?.toLowerCase()}`
+					`AGREE WITH ${Settings.COMMAND_PREFIXES[0]}${
+						getUserCommandsByInternalCommand('AGREE')[0]
+					}`
 				);
 				match.log(`${teamAB} (${team.name} - ${player.name}) suggests map ${map}`);
 			}
@@ -355,13 +352,13 @@ const agreeCommand = async (
 	}
 };
 
-const banCommand = async (
-	match: Match.Match,
-	currentElectionStep: IElectionStep,
-	teamAB: TTeamAB,
-	player: IPlayer,
-	map: string
-) => {
+const onBanCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	const { match, parameters, player, teamAB, currentElectionStep } = enrichedEvent;
+	const map = (parameters[0] || '').toLowerCase();
 	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'BAN') {
 		if (isValidTeam(match, currentElectionStep.map.who, teamAB)) {
 			const matchMap = match.data.election.remainingMaps.findIndex(
@@ -395,13 +392,13 @@ const banCommand = async (
 	}
 };
 
-const pickCommand = async (
-	match: Match.Match,
-	currentElectionStep: IElectionStep,
-	teamAB: TTeamAB,
-	player: IPlayer,
-	map: string
-) => {
+const onPickCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	const { match, parameters, player, teamAB, currentElectionStep } = enrichedEvent;
+	const map = (parameters[0] || '').toLowerCase();
 	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'PICK') {
 		if (isValidTeam(match, currentElectionStep.map.who, teamAB)) {
 			const matchMap = match.data.election.remainingMaps.findIndex(
@@ -434,12 +431,12 @@ const pickCommand = async (
 	}
 };
 
-const tCommand = async (
-	match: Match.Match,
-	currentElectionStep: IElectionStep,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
+const onTCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	const { match, player, teamAB, currentElectionStep } = enrichedEvent;
 	const currentStepMap = match.data.election.currentStepMap ?? '';
 	if (
 		match.data.election.currentSubStep === 'SIDE' &&
@@ -475,12 +472,12 @@ const tCommand = async (
 	}
 };
 
-const ctCommand = async (
-	match: Match.Match,
-	currentElectionStep: IElectionStep,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
+const onCtCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	const { match, player, teamAB, currentElectionStep } = enrichedEvent;
 	const currentStepMap = match.data.election.currentStepMap ?? '';
 	if (
 		match.data.election.currentSubStep === 'SIDE' &&
@@ -514,12 +511,12 @@ const ctCommand = async (
 	}
 };
 
-const restartCommand = async (
-	match: Match.Match,
-	currentElectionStep: IElectionStep,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
+const onRestartCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	const { match, player, teamAB } = enrichedEvent;
 	if (teamAB === 'TEAM_A') {
 		match.data.election.currentRestart.teamA = true;
 	} else {
@@ -549,9 +546,9 @@ const restartCommand = async (
 
 		await Match.say(
 			match,
-			`TYPE ${Settings.COMMAND_PREFIXES[0]}${getUserCommandsByInternalCommand(
-				'RESTART'
-			)[0]?.toLowerCase()} TO CONFIRM AND RESTART`
+			`TYPE ${Settings.COMMAND_PREFIXES[0]}${
+				getUserCommandsByInternalCommand('RESTART')[0]
+			} TO CONFIRM AND RESTART`
 		);
 	}
 	MatchService.scheduleSave(match);

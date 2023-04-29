@@ -4,13 +4,12 @@ import {
 	getOtherTeamAB,
 	IMatchMap,
 	IMatchMapUpdateDto,
-	IPlayer,
 	sleep,
 	TMatchMapSate,
 	TTeamAB,
 	TTeamSides,
 } from '../../common';
-import { TCommand, getUserCommandsByInternalCommand } from './commands';
+import * as commands from './commands';
 import * as Events from './events';
 import * as Match from './match';
 import * as MatchService from './matchService';
@@ -81,7 +80,7 @@ export const sayPeriodicMessage = async (match: Match.Match, matchMap: IMatchMap
 	await sayAvailableCommands(match, matchMap);
 };
 
-const getAvailableCommandsEnums = (state: TMatchMapSate): TCommand[] => {
+const getAvailableCommandsEnums = (state: TMatchMapSate): commands.TCommand[] => {
 	switch (state) {
 		case 'AFTER_KNIFE':
 			return ['RESTART', 'CT', 'T', 'STAY', 'SWITCH'];
@@ -104,7 +103,10 @@ const getAvailableCommandsEnums = (state: TMatchMapSate): TCommand[] => {
 
 const getAvailableCommands = (state: TMatchMapSate): string[] => {
 	return getAvailableCommandsEnums(state).reduce(
-		(pv: string[], cv: TCommand) => [...pv, ...getUserCommandsByInternalCommand(cv)],
+		(pv: string[], cv: commands.TCommand) => [
+			...pv,
+			...commands.getUserCommandsByInternalCommand(cv),
+		],
 		[]
 	);
 };
@@ -245,12 +247,26 @@ const startKnifeRound = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, 'KNIFE FOR SIDE');
 };
 
-const restartKnifeCommand = async (
-	match: Match.Match,
-	matchMap: IMatchMap,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
+const onHelpCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	await sayAvailableCommands(e.match, enrichedEvent.matchMap);
+};
+
+const onRestartCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	if (
+		enrichedEvent.matchMap.state !== 'KNIFE' &&
+		enrichedEvent.matchMap.state !== 'AFTER_KNIFE'
+	) {
+		return;
+	}
+	const { match, matchMap, teamAB, player } = enrichedEvent;
 	if (teamAB === 'TEAM_A') {
 		matchMap.knifeRestart.teamA = true;
 	} else {
@@ -267,19 +283,26 @@ const restartKnifeCommand = async (
 	} else {
 		await Match.say(match, `${escapeRconString(team.name)} WANTS TO RESTART THE KNIFE ROUND`);
 		match.log(`${teamAB} (${team.name} - ${player.name}) wants to restart the knife round`);
-		await Match.say(match, `AGREE WITH ${getUserCommandsByInternalCommand('RESTART')}`);
+		await Match.say(
+			match,
+			`AGREE WITH ${commands.getUserCommandsByInternalCommand('RESTART')[0]}`
+		);
 	}
 
 	MatchService.scheduleSave(match);
 };
 
-const readyCommand = async (
-	match: Match.Match,
-	matchMap: IMatchMap,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
+const onReadyCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	if (enrichedEvent.matchMap.state !== 'WARMUP' && enrichedEvent.matchMap.state !== 'PAUSED') {
+		return;
+	}
+	const { match, teamAB, matchMap, player } = enrichedEvent;
 	const team = Match.getTeamByAB(match, teamAB);
+
 	if (teamAB === 'TEAM_A') {
 		matchMap.readyTeams.teamA = true;
 	} else {
@@ -311,12 +334,15 @@ const readyCommand = async (
 	MatchService.scheduleSave(match);
 };
 
-const unreadyCommand = async (
-	match: Match.Match,
-	matchMap: IMatchMap,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
+const onUnreadyCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	if (enrichedEvent.matchMap.state !== 'WARMUP' && enrichedEvent.matchMap.state !== 'PAUSED') {
+		return;
+	}
+	const { match, teamAB, matchMap, player } = enrichedEvent;
 	const team = Match.getTeamByAB(match, teamAB);
 	await Match.say(match, `${escapeRconString(team.name)} IS NOT READY`);
 	match.log(`${teamAB} (${team.name} - ${player.name}) is not ready`);
@@ -328,15 +354,20 @@ const unreadyCommand = async (
 	MatchService.scheduleSave(match);
 };
 
-const pauseCommand = async (
-	match: Match.Match,
-	matchMap: IMatchMap,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
-	const team = Match.getTeamByAB(match, teamAB);
-	await Match.say(match, `${escapeRconString(team.name)} PAUSED THE MAP`);
-	match.log(`${teamAB} (${team.name} - ${player.name}) paused the match`);
+const onPauseCommand: commands.CommandHandler = async (e) => {
+	const matchMap = Match.getCurrentMatchMap(e.match);
+	if (!matchMap || e.match.data.state !== 'MATCH_MAP' || matchMap.state !== 'IN_PROGRESS') {
+		return;
+	}
+	const { match, player } = e;
+	if (player.team) {
+		const team = Match.getTeamByAB(match, player.team);
+		await Match.say(match, `${escapeRconString(team.name)} PAUSED THE MAP`);
+		match.log(`${player.team} (${team.name} - ${player.name}) paused the match`);
+	} else {
+		await Match.say(match, `${escapeRconString(player.name)} PAUSED THE MAP`);
+		match.log(`${player.name} paused the match`);
+	}
 	matchMap.readyTeams.teamA = false;
 	matchMap.readyTeams.teamB = false;
 	matchMap.state = 'PAUSED';
@@ -344,24 +375,38 @@ const pauseCommand = async (
 	await Match.execRcon(match, 'mp_pause_match');
 };
 
-const stayCommand = async (
-	match: Match.Match,
-	matchMap: IMatchMap,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
+const onStayCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	const { match, teamAB, matchMap, player } = enrichedEvent;
+	if (matchMap.state !== 'AFTER_KNIFE') {
+		return;
+	}
+	if (matchMap.knifeWinner !== teamAB) {
+		await sayOnlyKnifeWinner(e.match);
+		return;
+	}
 	const team = Match.getTeamByAB(match, teamAB);
 	await Match.say(match, `${escapeRconString(team.name)} WANTS TO STAY`);
 	match.log(`${teamAB} (${team.name} - ${player.name}) wants to stay`);
 	await startMatch(match, matchMap);
 };
 
-const switchCommand = async (
-	match: Match.Match,
-	matchMap: IMatchMap,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
+const onSwitchCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	const { match, teamAB, matchMap, player } = enrichedEvent;
+	if (matchMap.state !== 'AFTER_KNIFE') {
+		return;
+	}
+	if (matchMap.knifeWinner !== teamAB) {
+		await sayOnlyKnifeWinner(e.match);
+		return;
+	}
 	const team = Match.getTeamByAB(match, teamAB);
 	await Match.say(match, `${escapeRconString(team.name)} WANTS TO SWITCH SIDES`);
 	match.log(`${teamAB} (${team.name} - ${player.name}) wants to switch sides`);
@@ -371,94 +416,76 @@ const switchCommand = async (
 	await startMatch(match, matchMap);
 };
 
-const ctCommand = async (
-	match: Match.Match,
-	matchMap: IMatchMap,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
+const onCtCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	const { teamAB, matchMap } = enrichedEvent;
+	if (matchMap.state !== 'AFTER_KNIFE') {
+		return;
+	}
+	if (matchMap.knifeWinner !== teamAB) {
+		await sayOnlyKnifeWinner(e.match);
+		return;
+	}
 	if (matchMap.startAsCtTeam === teamAB) {
-		await stayCommand(match, matchMap, teamAB, player);
+		await onStayCommand(e);
 	} else {
-		await switchCommand(match, matchMap, teamAB, player);
+		await onSwitchCommand(e);
 	}
 };
 
-const tCommand = async (
-	match: Match.Match,
-	matchMap: IMatchMap,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
+const onTCommand: commands.CommandHandler = async (e) => {
+	const enrichedEvent = await enrichEvent(e);
+	if (!enrichedEvent) {
+		return;
+	}
+	const { teamAB, matchMap } = enrichedEvent;
+	if (matchMap.state !== 'AFTER_KNIFE') {
+		return;
+	}
+	if (matchMap.knifeWinner !== teamAB) {
+		await sayOnlyKnifeWinner(e.match);
+		return;
+	}
 	if (matchMap.startAsCtTeam === teamAB) {
-		await switchCommand(match, matchMap, teamAB, player);
+		await onSwitchCommand(e);
 	} else {
-		await stayCommand(match, matchMap, teamAB, player);
+		await onStayCommand(e);
 	}
 };
 
-export const onCommand = async (
-	match: Match.Match,
-	matchMap: IMatchMap,
-	command: TCommand,
-	teamAB: TTeamAB,
-	player: IPlayer
-) => {
-	if (command === 'HELP') {
-		await sayAvailableCommands(match, matchMap);
-	} else if (!getAvailableCommandsEnums(matchMap.state).includes(command)) {
-		await Match.say(match, `COMMAND CURRENTLY NO AVAILABLE`);
-		await sayAvailableCommands(match, matchMap);
-	} else if (matchMap.state === 'KNIFE') {
-		switch (command) {
-			case 'RESTART':
-				await restartKnifeCommand(match, matchMap, teamAB, player);
-				break;
-		}
-	} else if (matchMap.state === 'AFTER_KNIFE') {
-		if (matchMap.knifeWinner === teamAB) {
-			switch (command) {
-				case 'STAY':
-					await stayCommand(match, matchMap, teamAB, player);
-					break;
-				case 'SWITCH':
-					await switchCommand(match, matchMap, teamAB, player);
-					break;
-				case 'CT':
-					await ctCommand(match, matchMap, teamAB, player);
-					break;
-				case 'T':
-					await tCommand(match, matchMap, teamAB, player);
-					break;
-				case 'RESTART':
-					await restartKnifeCommand(match, matchMap, teamAB, player);
-					break;
-			}
-		} else {
-			await Match.say(match, `ONLY THE WINNER OF THE KNIFE ROUND CAN CHOOSE THE SIDE!`);
-		}
-	} else if (matchMap.state === 'WARMUP') {
-		switch (command) {
-			case 'READY':
-				await readyCommand(match, matchMap, teamAB, player);
-				break;
-			case 'UNREADY':
-				await unreadyCommand(match, matchMap, teamAB, player);
-				break;
-		}
-	} else if (matchMap.state === 'IN_PROGRESS') {
-		switch (command) {
-			case 'PAUSE':
-				await pauseCommand(match, matchMap, teamAB, player);
-				break;
-		}
-	} else if (matchMap.state === 'PAUSED') {
-		switch (command) {
-			case 'READY':
-				await readyCommand(match, matchMap, teamAB, player);
-				break;
-		}
+export const registerCommandHandlers = () => {
+	commands.registerHandler('HELP', onHelpCommand);
+	commands.registerHandler('RESTART', onRestartCommand);
+	commands.registerHandler('STAY', onStayCommand);
+	commands.registerHandler('SWITCH', onSwitchCommand);
+	commands.registerHandler('CT', onCtCommand);
+	commands.registerHandler('T', onTCommand);
+	commands.registerHandler('READY', onReadyCommand);
+	commands.registerHandler('UNREADY', onUnreadyCommand);
+	commands.registerHandler('PAUSE', onPauseCommand);
+};
+
+const enrichEvent = async (e: commands.CommandEvent) => {
+	const currentMatchMap = Match.getCurrentMatchMap(e.match);
+	if (!currentMatchMap || e.match.data.state !== 'MATCH_MAP') {
+		return;
 	}
+	if (!e.player.team) {
+		await Match.sayNotAssigned(e.match, e.player);
+		return;
+	}
+	return {
+		...e,
+		matchMap: currentMatchMap,
+		teamAB: e.player.team,
+	};
+};
+
+const sayOnlyKnifeWinner = async (match: Match.Match) => {
+	await Match.say(match, 'ONLY THE WINNER OF THE KNIFE ROUND CAN CHOOSE THE SIDE!');
 };
 
 /**

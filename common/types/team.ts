@@ -11,3 +11,5 @@ export interface ITeamCreateDto {
 	/** defaults to 0 (no advantage) */
 	advantage?: number;
 }
+
+export type TTeamString = 'Unassigned' | 'CT' | 'TERRORIST' | '';

@@ -273,7 +273,6 @@
 				"type": "string",
 				"enum": [
 					"NOT_STARTED",
-					"RESTARTED",
 					"IN_PROGRESS",
 					"FINISHED"
 				]

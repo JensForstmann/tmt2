@@ -217,7 +217,6 @@ const models: TsoaRoute.Models = {
 			dataType: 'union',
 			subSchemas: [
 				{ dataType: 'enum', enums: ['NOT_STARTED'] },
-				{ dataType: 'enum', enums: ['RESTARTED'] },
 				{ dataType: 'enum', enums: ['IN_PROGRESS'] },
 				{ dataType: 'enum', enums: ['FINISHED'] },
 			],

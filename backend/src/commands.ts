@@ -1,3 +1,6 @@
+import { IPlayer, TTeamString } from '../../common';
+import { Match } from './match';
+
 const Commands = [
 	'BAN',
 	'PICK',
@@ -12,6 +15,7 @@ const Commands = [
 	'SWITCH',
 	'TEAM',
 	'RESTART',
+	'*',
 ] as const;
 export type TCommand = typeof Commands[number];
 
@@ -47,4 +51,30 @@ export const getUserCommandsByInternalCommand = (internalCommand: TCommand) => {
 		}
 	});
 	return userCommands;
+};
+
+export type CommandEvent = {
+	match: Match;
+	player: IPlayer;
+	command: TCommand;
+	parameters: string[];
+	teamString: TTeamString;
+};
+
+export type CommandHandler = (e: CommandEvent) => Promise<void>;
+
+const commandHandlers = new Map<TCommand, CommandHandler[]>();
+
+export const registerHandler = (command: TCommand, handler: CommandHandler) => {
+	const handlers = commandHandlers.get(command);
+	if (!handlers) {
+		commandHandlers.set(command, [handler]);
+	} else {
+		handlers.push(handler);
+	}
+};
+
+export const onCommand = async (e: CommandEvent) => {
+	const handlers = commandHandlers.get(e.command) ?? [];
+	await Promise.all(handlers.map((h) => h(e)));
 };

@@ -1,15 +1,18 @@
 import { ValidateError } from '@tsoa/runtime';
 import express, { ErrorRequestHandler } from 'express';
-import path from 'path';
-import http from 'http';
 import { existsSync } from 'fs';
+import http from 'http';
+import path from 'path';
 import * as Auth from './auth';
-import * as MatchService from './matchService';
+import * as Election from './election';
 import * as ManagedGameServers from './managedGameServers';
+import * as Match from './match';
+import { checkAndNormalizeLogAddress } from './match';
+import * as MatchMap from './matchMap';
+import * as MatchService from './matchService';
 import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
 import * as WebSocket from './webSocket';
-import { checkAndNormalizeLogAddress } from './match';
 
 export const TMT_LOG_ADDRESS: string | null = (() => {
 	if (!process.env['TMT_LOG_ADDRESS']) {
@@ -107,6 +110,9 @@ const main = async () => {
 	await Auth.setup();
 	await WebSocket.setup(httpServer);
 	await ManagedGameServers.setup();
+	Match.registerCommandHandlers();
+	MatchMap.registerCommandHandlers();
+	Election.registerCommandHandlers();
 
 	httpServer.listen(PORT, async () => {
 		console.info(`App listening on port ${PORT}`);

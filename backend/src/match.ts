@@ -13,9 +13,10 @@ import {
 	ITeam,
 	sleep,
 	TTeamAB,
+	TTeamString,
 } from '../../common';
 import { addChangeListener } from './changeListener';
-import { getInternalCommandByUserCommand, TCommand } from './commands';
+import * as commands from './commands';
 import * as Election from './election';
 import * as Events from './events';
 import * as GameServer from './gameServer';
@@ -28,8 +29,8 @@ import { Settings } from './settings';
 import * as Storage from './storage';
 import * as Team from './team';
 
-export const STORAGE_LOGS_PREFIX = 'logs_';
-export const STORAGE_LOGS_SUFFIX = '.jsonl';
+const STORAGE_LOGS_PREFIX = 'logs_';
+const STORAGE_LOGS_SUFFIX = '.jsonl';
 
 export interface Match {
 	data: IMatch;
@@ -128,7 +129,7 @@ export const getLogsTail = async (matchId: string, numberOfLines = 1000): Promis
 	);
 };
 
-export const connectToGameServer = async (match: Match): Promise<void> => {
+const connectToGameServer = async (match: Match): Promise<void> => {
 	const addr = `${match.data.gameServer.ip}:${match.data.gameServer.port}`;
 	match.log(`connect rcon ${addr}`);
 	const gameServer = await GameServer.create(match.data.gameServer, match.log);
@@ -141,7 +142,7 @@ export const connectToGameServer = async (match: Match): Promise<void> => {
 	await registerLogAddress(match);
 };
 
-export const onRconConnectionEnd = async (match: Match) => {
+const onRconConnectionEnd = async (match: Match) => {
 	const addr = `${match.rconConnection?.config.host}:${match.rconConnection?.config.port}`;
 	match.log(`rcon connection lost: ${addr}`);
 	while (true) {
@@ -388,46 +389,76 @@ export const onLog = async (match: Match, body: string) => {
 
 const onLogLine = async (match: Match, line: string) => {
 	if (!line) return;
+	try {
+		//09/14/2020 - 15:11:58.307 - "PlayerName<2><STEAM_1:0:7426845><TERRORIST>" say "Hello World"
+		// console.debug('line:', line);
+		const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
 
-	//09/14/2020 - 15:11:58.307 - "PlayerName<2><STEAM_1:0:7426845><TERRORIST>" say "Hello World"
-	// console.debug('line:', line);
-	const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
-
-	const playerPattern = /"(.*)<(\d+)><(.*)><(|Unassigned|CT|TERRORIST|Console)>" (.*)$/;
-	const playerMatch = line.match(new RegExp(dateTimePattern.source + playerPattern.source));
-	if (playerMatch) {
-		const name = playerMatch[1]!;
-		const ingamePlayerId = playerMatch[2]!;
-		const steamId = playerMatch[3]!;
-		const teamString = playerMatch[4]!;
-		const remainingLine = playerMatch[5]!;
-		await onPlayerLogLine(match, name, ingamePlayerId, steamId, teamString, remainingLine);
-	}
-
-	const mapEndPattern = /Game Over: competitive (.*) score (\d+):(\d+) after (\d+) min$/;
-	const mapEndMatch = line.match(new RegExp(dateTimePattern.source + mapEndPattern.source));
-	if (mapEndMatch) {
-		await onMapEnd(match);
-	}
-
-	const roundEndPattern =
-		/Team "(CT|TERRORIST)" triggered "([a-zA-Z_]+)" \(CT "(\d+)"\) \(T "(\d+)"\)/;
-	const roundEndMatch = line.match(new RegExp(dateTimePattern.source + roundEndPattern.source));
-	if (roundEndMatch) {
-		const winningTeam = roundEndMatch[1]!;
-		const winningReason = roundEndMatch[2]!;
-		const ctScore = parseInt(roundEndMatch[3]!);
-		const tScore = parseInt(roundEndMatch[4]!);
-		const currentMatchMap = getCurrentMatchMap(match);
-		if (currentMatchMap) {
-			await MatchMap.onRoundEnd(
-				match,
-				currentMatchMap,
-				ctScore,
-				tScore,
-				winningTeam === 'CT' ? 'CT' : 'T'
-			);
+		const consolePattern = /"Console<0><Console><Console>" (.*)$/;
+		const consoleMatch = line.match(new RegExp(dateTimePattern.source + consolePattern.source));
+		if (consoleMatch) {
+			const remainingLine = consoleMatch[1]!;
+			await onConsoleLogLine(match, remainingLine);
+			return;
 		}
+
+		const botPattern = /"(.*?)<(\d+)><BOT><(CT|TERRORIST)>" (.*)$/;
+		const botMatch = line.match(new RegExp(dateTimePattern.source + botPattern.source));
+		if (botMatch) {
+			const name = botMatch[1]!;
+			const teamString = botMatch[2] as TTeamString;
+			const remainingLine = botMatch[3]!;
+			return;
+		}
+
+		const playerPattern = /"(.*?)<(\d+)><(.*?)><(|Unassigned|CT|TERRORIST)>" (.*)$/;
+		const playerMatch = line.match(new RegExp(dateTimePattern.source + playerPattern.source));
+		if (playerMatch) {
+			const name = playerMatch[1]!;
+			const ingamePlayerId = playerMatch[2]!;
+			const steamId = playerMatch[3]!;
+			const teamString = playerMatch[4] as TTeamString;
+			const remainingLine = playerMatch[5]!;
+			await onPlayerLogLine(match, name, ingamePlayerId, steamId, teamString, remainingLine);
+		}
+
+		const mapEndPattern = /Game Over: competitive (.*) score (\d+):(\d+) after (\d+) min$/;
+		const mapEndMatch = line.match(new RegExp(dateTimePattern.source + mapEndPattern.source));
+		if (mapEndMatch) {
+			await onMapEnd(match);
+		}
+
+		const roundEndPattern =
+			/Team "(CT|TERRORIST)" triggered "([a-zA-Z_]+)" \(CT "(\d+)"\) \(T "(\d+)"\)/;
+		const roundEndMatch = line.match(
+			new RegExp(dateTimePattern.source + roundEndPattern.source)
+		);
+		if (roundEndMatch) {
+			const winningTeam = roundEndMatch[1]!;
+			const winningReason = roundEndMatch[2]!;
+			const ctScore = parseInt(roundEndMatch[3]!);
+			const tScore = parseInt(roundEndMatch[4]!);
+			const currentMatchMap = getCurrentMatchMap(match);
+			if (currentMatchMap) {
+				await MatchMap.onRoundEnd(
+					match,
+					currentMatchMap,
+					ctScore,
+					tScore,
+					winningTeam === 'CT' ? 'CT' : 'T'
+				);
+			}
+		}
+	} catch (err) {
+		match.log('error in onLogLine' + err);
+	}
+};
+
+const onConsoleLogLine = async (match: Match, remainingLine: string) => {
+	const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
+	if (sayMatch) {
+		const message = sayMatch[2]!;
+		await onConsoleSay(match, message);
 	}
 };
 
@@ -436,14 +467,17 @@ const onPlayerLogLine = async (
 	name: string,
 	ingamePlayerId: string,
 	steamId: string,
-	teamString: string,
+	teamString: TTeamString,
 	remainingLine: string
 ) => {
-	const steamId64 = Player.getSteamID64(steamId);
-	let player = match.data.players.find((p) => p.steamId64 === steamId64);
-	if (!player) {
-		player = Player.create(steamId, name);
-		match.data.players.push(player);
+	let player: IPlayer | undefined = undefined;
+	if (steamId !== 'BOT' && steamId !== 'Console') {
+		const steamId64 = Player.getSteamID64(steamId);
+		player = match.data.players.find((p) => p.steamId64 === steamId64);
+		if (!player) {
+			player = Player.create(steamId, name);
+			match.data.players.push(player);
+		}
 	}
 
 	//04/21/2023 - 22:36:15: "Yenz<55><STEAM_1:0:8520813><TERRORIST>" disconnected (reason "Disconnect")
@@ -457,15 +491,10 @@ const onPlayerLogLine = async (
 
 	//say "Hello World"
 	const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
-	if (sayMatch) {
+	if (sayMatch && player) {
 		const isTeamChat = sayMatch[1] === '_team';
 		const message = sayMatch[2]!;
-		if (steamId === 'BOT') {
-		} else if (steamId === 'Console') {
-			await onConsoleSay(match, message);
-		} else {
-			await onPlayerSay(match, player, message, isTeamChat, teamString);
-		}
+		await onPlayerSay(match, player, message, isTeamChat, teamString);
 	}
 };
 
@@ -474,7 +503,7 @@ const onPlayerSay = async (
 	player: IPlayer,
 	message: string,
 	isTeamChat: boolean,
-	teamString: string
+	teamString: TTeamString
 ) => {
 	message = message.trim();
 
@@ -485,9 +514,22 @@ const onPlayerSay = async (
 		const parts = message.split(' ').filter((str) => str.length > 0);
 		const commandString = parts.shift()?.toLowerCase();
 		if (commandString) {
-			const command = getInternalCommandByUserCommand(commandString);
+			const command = commands.getInternalCommandByUserCommand(commandString);
 			if (command) {
-				await onCommand(match, command, player, parts, teamString);
+				await commands.onCommand({
+					command: command,
+					match: match,
+					parameters: parts,
+					player: player,
+					teamString: teamString,
+				});
+				await commands.onCommand({
+					command: '*',
+					match: match,
+					parameters: parts,
+					player: player,
+					teamString: teamString,
+				});
 			} else {
 				await say(match, `COMMAND UNKNOWN`);
 			}
@@ -502,55 +544,29 @@ const onConsoleSay = async (match: Match, message: string) => {
 	}
 };
 
-const onCommand = async (
-	match: Match,
-	command: TCommand,
-	player: IPlayer,
-	parameters: string[],
-	teamString: string
-) => {
-	if (command === 'TEAM') {
-		await onTeamCommand(match, player, parameters[0] || '');
-	}
+export const registerCommandHandlers = () => {
+	commands.registerHandler('TEAM', onTeamCommand);
+	commands.registerHandler('*', onEveryCommand);
+};
 
-	const teamAB = player.team;
-
-	if (!teamAB) {
-		if (command !== 'TEAM') {
-			await sayNotAssigned(match, player);
-		}
+const onEveryCommand: commands.CommandHandler = async (e) => {
+	if (!e.player.team) {
 		return;
 	}
-
-	const playerTeam = getTeamByAB(match, teamAB);
-	const currentMatchMap = getCurrentMatchMap(match);
-
+	const currentMatchMap = getCurrentMatchMap(e.match);
 	const currentCtTeamAB = currentMatchMap
 		? getCurrentTeamSideAndRoundSwitch(currentMatchMap).currentCtTeamAB
 		: 'TEAM_A';
 	const currentTTeamAB = getOtherTeamAB(currentCtTeamAB);
-
 	if (
-		(teamString === 'TERRORIST' && player.team !== currentTTeamAB) ||
-		(teamString === 'CT' && player.team !== currentCtTeamAB)
+		(e.teamString === 'TERRORIST' && e.player.team !== currentTTeamAB) ||
+		(e.teamString === 'CT' && e.player.team !== currentCtTeamAB)
 	) {
-		await sayWrongTeamOrSide(match, player, teamString, playerTeam, teamAB);
-	}
-
-	if (command === 'TEAM') {
-		return;
-	}
-
-	if (match.data.state === 'ELECTION') {
-		await Election.onCommand(match, command, teamAB, player, parameters);
-	}
-
-	if (currentMatchMap) {
-		await MatchMap.onCommand(match, currentMatchMap, command, teamAB, player);
+		await sayWrongTeamOrSide(e.match, e.player, e.teamString, e.player.team);
 	}
 };
 
-const sayNotAssigned = async (match: Match, player: IPlayer) => {
+export const sayNotAssigned = async (match: Match, player: IPlayer) => {
 	await say(match, `PLAYER ${escapeRconString(player.name)} NOT ASSIGNED!`);
 	await say(
 		match,
@@ -570,9 +586,9 @@ const sayWrongTeamOrSide = async (
 	match: Match,
 	player: IPlayer,
 	currentSite: 'CT' | 'TERRORIST',
-	currentTeam: ITeam,
 	currentTeamAB: TTeamAB
 ) => {
+	const currentTeam = getTeamByAB(match, currentTeamAB);
 	const otherTeam = getTeamByAB(match, getOtherTeamAB(currentTeamAB));
 	await say(
 		match,
@@ -588,8 +604,8 @@ const sayWrongTeamOrSide = async (
 	);
 };
 
-const onTeamCommand = async (match: Match, player: IPlayer, firstParameter: string) => {
-	firstParameter = firstParameter.toUpperCase();
+const onTeamCommand: commands.CommandHandler = async ({ match, player, parameters }) => {
+	const firstParameter = parameters[0]?.toUpperCase();
 	if (firstParameter === 'A' || firstParameter === 'B') {
 		player.team = firstParameter === 'A' ? 'TEAM_A' : 'TEAM_B';
 		const team = getTeamByAB(match, player.team);
@@ -660,7 +676,7 @@ const isMatchEnd = (match: Match) => {
 	return match.data.matchMaps.reduce((pv, cv) => pv && cv.state === 'FINISHED', true);
 };
 
-export const getTeamWins = (match: Match, teamAB: TTeamAB) => {
+const getTeamWins = (match: Match, teamAB: TTeamAB) => {
 	if (teamAB === 'TEAM_A') {
 		return (
 			match.data.teamA.advantage +

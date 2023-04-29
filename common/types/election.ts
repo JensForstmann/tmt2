@@ -1,11 +1,6 @@
 import { TTeamAB } from './matchMap';
 
-export type TElectionState =
-	| 'NOT_STARTED'
-	/** Election process was restarted but is not (again) in progress yet */
-	| 'RESTARTED'
-	| 'IN_PROGRESS'
-	| 'FINISHED';
+export type TElectionState = 'NOT_STARTED' | 'IN_PROGRESS' | 'FINISHED';
 
 export type TStep = 'MAP' | 'SIDE';
 
