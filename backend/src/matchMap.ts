@@ -168,7 +168,7 @@ export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, `MAP WILL BE CHANGED TO ${matchMap.name} IN 15 SECONDS`);
 	match.log(`change map to ${matchMap.name} (in 15 seconds)`);
 	const response = await Match.execRcon(match, `maps ${matchMap.name}`);
-	if (!response.includes(` ${matchMap.name}.bsp`)) {
+	if (!response.includes(matchMap.name)) {
 		match.log(`Map ${matchMap.name} could not be found on the server`);
 		await Match.say(match, `Map ${matchMap.name} could not be found on the server`);
 		return;
