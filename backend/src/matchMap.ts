@@ -168,7 +168,10 @@ export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, `MAP WILL BE CHANGED TO ${matchMap.name} IN 15 SECONDS`);
 	match.log(`change map to ${matchMap.name} (in 15 seconds)`);
 	const response = await Match.execRcon(match, `maps ${matchMap.name}`);
-	const maps = response.trim().split("\n").map((map) => map.trim());
+	const maps = response
+		.trim()
+		.split('\n')
+		.map((map) => map.trim());
 	if (!maps.includes(matchMap.name)) {
 		match.log(`Map ${matchMap.name} could not be found on the server`);
 		await Match.say(match, `Map ${matchMap.name} could not be found on the server`);
@@ -216,7 +219,7 @@ const startMatch = async (match: Match.Match, matchMap: IMatchMap) => {
 };
 
 const refreshOvertimeAndMaxRoundsSettings = async (match: Match.Match, matchMap: IMatchMap) => {
-	matchMap.overTimeEnabled = (await Match.getConfigVar(match, 'mp_overtime_enable')) === "true";
+	matchMap.overTimeEnabled = (await Match.getConfigVar(match, 'mp_overtime_enable')) === 'true';
 	matchMap.overTimeMaxRounds = parseInt(await Match.getConfigVar(match, 'mp_overtime_maxrounds'));
 	matchMap.maxRounds = parseInt(await Match.getConfigVar(match, 'mp_maxrounds'));
 	MatchService.scheduleSave(match);

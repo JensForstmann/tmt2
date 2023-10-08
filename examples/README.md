@@ -41,7 +41,7 @@ quick tmt2 for testing (loop mode)
 
 # Game mode settings
 
-See also [CS:GO Game Modes](https://developer.valvesoftware.com/wiki/CS:GO_Game_Modes).
+See also [Game Modes](https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive/Game_Modes) on Valve's wiki.
 
 After changing the values, a new map must be loaded with `map` or `changelevel`
 

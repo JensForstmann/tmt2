@@ -214,7 +214,7 @@ export class MatchesController extends Controller {
 			// drop logs for matches in startup phase
 			this.setStatus(200);
 		} else {
-			// 410 tells the cs go server to stop send logs
+			// 410 tells the cs2 server to stop send logs
 			console.info(`return 410 to game server (match id: ${id})`);
 			this.setStatus(410);
 		}

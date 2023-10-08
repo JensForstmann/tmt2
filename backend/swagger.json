@@ -661,11 +661,11 @@
 					},
 					"logSecret": {
 						"type": "string",
-						"description": "log secret that is given as part of the url to the cs go server it will send the logs to"
+						"description": "log secret that is given as part of the url to the cs2 server it will send the logs to"
 					},
 					"parseIncomingLogs": {
 						"type": "boolean",
-						"description": "Indicates if incoming logs from the cs go server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
+						"description": "Indicates if incoming logs from the cs2 server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
 					},
 					"matchMaps": {
 						"items": {
@@ -964,11 +964,11 @@
 					},
 					"logSecret": {
 						"type": "string",
-						"description": "log secret that is given as part of the url to the cs go server it will send the logs to"
+						"description": "log secret that is given as part of the url to the cs2 server it will send the logs to"
 					},
 					"parseIncomingLogs": {
 						"type": "boolean",
-						"description": "Indicates if incoming logs from the cs go server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
+						"description": "Indicates if incoming logs from the cs2 server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
 					},
 					"matchMaps": {
 						"items": {

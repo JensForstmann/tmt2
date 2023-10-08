@@ -1,7 +1,7 @@
 {
 	"name": "tmt2",
 	"version": "2.0.0",
-	"description": "TMT is a tool that tracks/watches/observes a Counter-Strike: Global Offensive match.",
+	"description": "TMT is a tool that tracks/watches/observes a Counter-Strike 2 match.",
 	"repository": "github:JensForstmann/tmt2",
 	"author": "Jens Forstmann",
 	"license": "MIT",

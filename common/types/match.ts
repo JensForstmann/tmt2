@@ -32,10 +32,10 @@ export interface IMatch {
 	/** election state data */
 	election: IElection;
 	gameServer: IGameServer;
-	/** log secret that is given as part of the url to the cs go server it will send the logs to */
+	/** log secret that is given as part of the url to the cs2 server it will send the logs to */
 	logSecret: string;
 	/**
-	 * Indicates if incoming logs from the cs go server are parsed (otherwise they will be dropped without any action).
+	 * Indicates if incoming logs from the cs2 server are parsed (otherwise they will be dropped without any action).
 	 * Will be set to true if match is loaded from storage (after a short delay).
 	 */
 	parseIncomingLogs: boolean;

@@ -1,6 +1,6 @@
 # TMT2 - Tournament Match Tracker 2
 
-TMT is a tool that tracks/watches/observes a Counter-Strike: Global Offensive match.
+TMT is a tool that tracks/watches/observes a Counter-Strike 2 match.
 
 It will keep track of matches and can interact with 3rd party applications like tournament systems,
 websites or others via a REST API and webhooks to send real time notifications.
