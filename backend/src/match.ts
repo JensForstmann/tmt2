@@ -266,7 +266,7 @@ export const say = async (match: Match, message: string) => {
 
 export const getConfigVar = async (match: Match, configVar: string): Promise<string> => {
 	const response = await execRcon(match, configVar);
-	const configVarPattern = new RegExp(`^"${configVar}" = "(.*?)"`);
+	const configVarPattern = new RegExp(`^${configVar} = (.*)`);
 	const configVarMatch = response.match(configVarPattern);
 	if (configVarMatch) {
 		return configVarMatch[1]!;
