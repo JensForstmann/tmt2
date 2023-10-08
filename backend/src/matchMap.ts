@@ -215,7 +215,7 @@ const startMatch = async (match: Match.Match, matchMap: IMatchMap) => {
 };
 
 const refreshOvertimeAndMaxRoundsSettings = async (match: Match.Match, matchMap: IMatchMap) => {
-	matchMap.overTimeEnabled = !!(await Match.getConfigVar(match, 'mp_overtime_enable'));
+	matchMap.overTimeEnabled = (await Match.getConfigVar(match, 'mp_overtime_enable')) === "true";
 	matchMap.overTimeMaxRounds = parseInt(await Match.getConfigVar(match, 'mp_overtime_maxrounds'));
 	matchMap.maxRounds = parseInt(await Match.getConfigVar(match, 'mp_maxrounds'));
 	MatchService.scheduleSave(match);
