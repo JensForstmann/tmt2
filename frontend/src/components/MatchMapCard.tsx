@@ -30,7 +30,7 @@ export const MatchMapCard: Component<{
 			currentMap: props.mapIndex,
 		});
 	const changeMapName = () => {
-		const response = prompt(t('enter map name'), 'de_dust2');
+		const response = prompt(t('enter map name'), 'de_anubis');
 		if (response) {
 			patchMatchMap({
 				name: response,

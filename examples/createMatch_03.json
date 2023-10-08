@@ -1,13 +1,13 @@
 {
 	"passthrough": "<remote match id here>",
 	"mapPool": [
-		"de_mirage",
-		"de_inferno",
-		"de_overpass",
-		"de_vertigo",
-		"de_nuke",
 		"de_ancient",
-		"de_dust2"
+		"de_anubis",
+		"de_inferno",
+		"de_mirage",
+		"de_nuke",
+		"de_overpass",
+		"de_vertigo"
 	],
 	"teamA": {
 		"name": "Alpha",

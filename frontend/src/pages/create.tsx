@@ -15,7 +15,7 @@ import { t } from '../utils/locale';
 
 const DEFAULT_MAPS = [
 	'de_ancient',
-	'de_dust2',
+	'de_anubis',
 	'de_inferno',
 	'de_mirage',
 	'de_nuke',
