@@ -104,8 +104,10 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		await init(match);
 		return match;
 	} catch (err) {
-		await ManagedGameServers.free(gameServer, id);
-		await ManagedGameServers.update({ ...gameServer, canBeUsed: false });
+		if (!dto.gameServer) {
+			await ManagedGameServers.free(gameServer, id);
+			await ManagedGameServers.update({ ...gameServer, canBeUsed: false });
+		}
 		throw err;
 	}
 };
