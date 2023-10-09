@@ -34,28 +34,47 @@ export const exec = async (match: Match.Match, command: string, suppressError: b
 type IngamePlayer = {
 	userId: string;
 	name: string;
-	steamId: string;
 };
 
 export const getPlayers = async (match: Match.Match): Promise<IngamePlayer[]> => {
-	//# userid name uniqueid connected ping loss state rate adr
-	//#  2 1 "PlayerName" STEAM_1:0:7426845 02:50 25 0 active 196608 172.24.16.1:27005
+	/* Example output from "rcon status":
+	...
+	...
+	...
+	---------players--------
+	id     time ping loss      state   rate adr name
+	65535 [NoChan]    0    0 challenging      0unknown ''
+	65535 [NoChan]    0    0 challenging      0unknown ''
+	2    00:40    0    0     active 786432 127.0.0.1:65498 'Yenz'
+	65535 [NoChan]    0    0 challenging      0unknown ''
+	65535 [NoChan]    0    0 challenging      0unknown ''
+	14      BOT    0    0     active      0 'Aspirant'
+	15      BOT    0    0     active      0 'Rex'
+	65535 [NoChan]    0    0 challenging      0unknown ''
+	24      BOT    0    0     active      0 'Cavalry'
+	65535 [NoChan]    0    0 challenging      0unknown ''
+	#end
+	*/
 	const status = await exec(match, 'status');
-	const playerLines = status
-		.trim()
-		.split('\n')
-		.filter((line) => line.trim()[0] === '#')
-		.filter((line, lineNumber) => lineNumber > 0) // remove header line
-		.map((line) => line.substring(1).trim()); // remove # and trim line
+	const playerLines =
+		status
+			.trim()
+			.split('---------players--------')[1]
+			?.trim()
+			.split('\n')
+			.filter((line, lineNumber) => lineNumber > 0) // remove header line
+			.filter((line) => !line.startsWith('65535')) // remove these lines: 65535 [NoChan]    0    0 challenging      0unknown ''
+			.map((line) => line.trim()) ?? [];
 
+	// playerLines example:
+	// 2    00:40    0    0     active 786432 127.0.0.1:65498 'Yenz'
 	const players = playerLines
 		.map((line) => {
-			const matcher = line.match(/^(\d+) (\d+) "(.*)" (STEAM_\S*)/);
+			const matcher = line.match(/^(\d+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+'(\S+)'$/);
 			return matcher
 				? {
 						userId: matcher[1],
-						name: matcher[3],
-						steamId: matcher[4],
+						name: matcher[2],
 				  }
 				: null;
 		})
@@ -66,9 +85,11 @@ export const getPlayers = async (match: Match.Match): Promise<IngamePlayer[]> =>
 
 export const kickAll = async (match: Match.Match) => {
 	const players = await getPlayers(match);
-	const userIds = players.map((player) => player.userId);
-	for (let i = 0; i < userIds.length; i++) {
-		await exec(match, `kickid ${userIds[i]}`);
+	for (let i = 0; i < players.length; i++) {
+		const userId = players[i]?.userId!;
+		const name = players[i]?.name!;
+		match.log(`kickid ${userId} (${name})`);
+		await exec(match, `kickid ${userId}`);
 	}
 };
 
