@@ -262,9 +262,7 @@ export const execManyRcon = async (match: Match, commands: string[]) => {
 };
 
 export const say = async (match: Match, message: string) => {
-	message = escapeRconSayString(
-		GameServer.colors.green + Settings.SAY_PREFIX + GameServer.colors.white + message
-	);
+	message = escapeRconSayString(Settings.SAY_PREFIX + message);
 	await execRcon(match, `say ${message}`);
 };
 
@@ -399,7 +397,7 @@ const onLogLine = async (match: Match, line: string) => {
 		// console.debug('line:', line);
 		const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
 
-		const consolePattern = /"Console<0><Console><Console>" (.*)$/;
+		const consolePattern = /"Console<0>" (.*)$/;
 		const consoleMatch = line.match(new RegExp(dateTimePattern.source + consolePattern.source));
 		if (consoleMatch) {
 			const remainingLine = consoleMatch[1]!;
