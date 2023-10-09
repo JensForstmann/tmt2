@@ -262,7 +262,9 @@ export const execManyRcon = async (match: Match, commands: string[]) => {
 };
 
 export const say = async (match: Match, message: string) => {
-	message = escapeRconSayString(Settings.SAY_PREFIX + message);
+	message = escapeRconSayString(
+		GameServer.colors.green + Settings.SAY_PREFIX + GameServer.colors.white + message
+	);
 	await execRcon(match, `say ${message}`);
 };
 

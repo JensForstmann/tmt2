@@ -1,6 +1,19 @@
-import { IGameServer, IPlayer } from '../../common';
+import { IGameServer } from '../../common';
 import * as Match from './match';
 import { Rcon } from './rcon-client';
+
+export const colors = {
+	white: '\u0001', // #FFFFFF
+	red: '\u0002', // #FF0000
+	purple: '\u0003', // #BB82F0
+	green: '\u0004', // #41FF41
+	lightGreen: '\u0005', // #C0FF91
+	lime: '\u0006', // #A3FF48
+	lightRed: '\u0007', // #FF4141
+	grey: '\u0008', // #C6CBD0
+	lightOrange: '\u0009', // #EDE47B
+	orange: '\u0010', // #E4AF3A
+};
 
 export const create = async (dto: IGameServer, log: (msg: string) => void): Promise<Rcon> => {
 	const rcon = new Rcon({
