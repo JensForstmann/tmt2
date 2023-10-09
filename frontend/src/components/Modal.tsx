@@ -1,12 +1,14 @@
-import { Component, JSX } from 'solid-js';
+import { Component, ComponentProps, JSX, splitProps } from 'solid-js';
 import { t } from '../utils/locale';
 
-export const Modal: Component<{
-	children: JSX.Element;
-	ref?: HTMLDialogElement;
-}> = (props) => {
+export const Modal: Component<
+	ComponentProps<'dialog'> & {
+		children: JSX.Element;
+	}
+> = (props) => {
+	const [local, others] = splitProps(props, ['children']);
 	return (
-		<dialog class="modal" ref={props.ref}>
+		<dialog class="modal" {...others}>
 			<div class="modal-box">
 				<button
 					class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
@@ -16,7 +18,7 @@ export const Modal: Component<{
 				>
 					✕
 				</button>
-				{props.children}
+				{local.children}
 			</div>
 			<form method="dialog" class="modal-backdrop">
 				<button>{t('close')}</button>

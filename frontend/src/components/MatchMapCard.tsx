@@ -1,4 +1,4 @@
-import { Component } from 'solid-js';
+import { Component, createSignal } from 'solid-js';
 import {
 	IMatchMap,
 	IMatchMapUpdateDto,
@@ -50,6 +50,21 @@ export const MatchMapCard: Component<{
 			_switchTeamInternals: true,
 		});
 	};
+	const [roundBackupFiles, setRoundBackupFiles] = createSignal<string[]>();
+	const loadRoundBackupFiles = async () => {
+		const resp = await fetcher<{ latestFiles: string[]; total: number }>(
+			'GET',
+			`/api/matches/${props.match.id}/server/round_backups?count=15`
+		);
+		if (resp) {
+			setRoundBackupFiles(resp.latestFiles);
+		}
+	};
+	const openRoundBackup = () => {
+		loadRoundBackupFiles();
+		modalRef?.showModal();
+	};
+
 	let modalRef: HTMLDialogElement | undefined;
 
 	const teamA = () => {
@@ -78,7 +93,7 @@ export const MatchMapCard: Component<{
 					[t('change map name'), changeMapName],
 					[t('change map state'), changeMapState],
 					props.match.currentMap === props.mapIndex
-						? [t('load round backup'), () => modalRef?.showModal()]
+						? [t('load round backup'), openRoundBackup]
 						: [t('switch to this map'), mustConfirm(loadThisMap)],
 					[t('switch team internals'), switchTeamInternals],
 				]}
@@ -100,10 +115,14 @@ export const MatchMapCard: Component<{
 			<p>
 				<span>{t(props.map.state)}</span>
 			</p>
-			<Modal ref={modalRef}>
+			<Modal ref={modalRef} onClose={() => setRoundBackupFiles(undefined)}>
 				<h4>{t('Load Round Backup')}</h4>
 				<div class="text-left">
-					<RoundBackups match={props.match} onClose={() => modalRef?.close()} />
+					<RoundBackups
+						match={props.match}
+						onClose={() => modalRef?.close()}
+						roundBackupFiles={roundBackupFiles()}
+					/>
 				</div>
 			</Modal>
 		</Card>
