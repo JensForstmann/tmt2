@@ -158,6 +158,7 @@ export const onRoundEnd = async (
 		match.log(`${winnerTeamAB} (${winnerTeam.name}) scored (CT ${ctScore}:${tScore} T)`);
 		Events.onRoundEnd(match, matchMap, winnerTeam);
 		if (magic.isSideSwitchNextRound) {
+			match.log('switching sides');
 			await Match.say(match, 'SWITCHING SIDES');
 		}
 		return;

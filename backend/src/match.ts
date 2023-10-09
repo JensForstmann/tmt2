@@ -742,7 +742,17 @@ export const stop = async (match: Match) => {
 };
 
 export const onElectionFinished = async (match: Match) => {
-	match.log('election finished');
+	const result = match.data.matchMaps
+		.map((matchMap) => {
+			const side = matchMap.knifeForSide
+				? '(Knife)'
+				: `(CT: ${getTeamByAB(match, matchMap.startAsCtTeam).name}, T: ${
+						getTeamByAB(match, getOtherTeamAB(matchMap.startAsCtTeam)).name
+				  })`;
+			return `${matchMap.name} ${side}`;
+		})
+		.join(', ');
+	match.log(`election finished, result: ${result}`);
 	Events.onElectionEnd(match);
 	match.data.state = 'MATCH_MAP';
 	MatchService.scheduleSave(match);
