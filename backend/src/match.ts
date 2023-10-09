@@ -354,6 +354,7 @@ export const getRoundBackups = async (match: Match, count: number = 5) => {
 
 export const loadRoundBackup = async (match: Match, file: string) => {
 	await execRcon(match, 'mp_backup_restore_load_autopause 1');
+	await execRcon(match, 'mp_pause_match'); // mp_backup_restore_load_autopause doesn't work currently in CS2
 	const response = await execRcon(match, `mp_backup_restore_load_file "${file}"`);
 	if (response.includes('Failed to load file:')) {
 		match.log(`Error loading round backup: ${response}`);
