@@ -48,15 +48,15 @@ export const CardMenu: Component<{
 			<div
 				class={`${
 					showMenu() ? 'max-h-full' : 'max-h-0'
-				} absolute right-9 top-0 overflow-hidden rounded-br-lg rounded-bl-lg bg-teal-50 text-left shadow-sm shadow-teal-100 transition-all
-				hover:cursor-pointer dark:bg-teal-900 dark:shadow-teal-700`}
+				} absolute right-9 top-0 overflow-hidden rounded-br-lg rounded-bl-lg text-left shadow-sm transition-all
+				hover:cursor-pointer`}
 			>
 				<ul>
 					<For each={props.entries}>
 						{(entry) =>
 							entry && (
 								<li
-									class="pl-2 pr-2 text-sm first:pt-1 last:pb-1 hover:bg-teal-100 dark:hover:bg-teal-700"
+									class="bg-base-100 hover:bg-base-200 pl-2 pr-2 text-sm first:pt-1 last:pb-1"
 									onClick={() => {
 										closeMenu();
 										entry[1]();

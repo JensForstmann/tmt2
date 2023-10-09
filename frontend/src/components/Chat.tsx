@@ -11,9 +11,10 @@ export const Chat: Component<{
 	sendMessage: (msg: string) => void;
 }> = (props) => {
 	return (
-		<Card>
+		<Card class="text-center">
 			<h2 class="text-lg font-bold">{t('Chat')}</h2>
 			<ScrollArea scroll>{props.messages.map(formatChatEvent)}</ScrollArea>
+			<div class="h-4"></div>
 			<TextInput
 				type="text"
 				onKeyDown={onEnter((e) => {

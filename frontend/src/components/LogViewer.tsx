@@ -8,7 +8,7 @@ export const LogViewer: Component<{
 	logs: LogEvent[];
 }> = (props) => {
 	return (
-		<Card>
+		<Card class="text-center">
 			<h2 class="text-lg font-bold">{t('Logs')}</h2>
 			<ScrollArea scroll>{props.logs.map(formatLogEvent)}</ScrollArea>
 		</Card>

@@ -2,10 +2,11 @@ import { Component, JSX } from 'solid-js';
 
 export const Card: Component<{
 	children: JSX.Element;
+	class?: string;
 }> = (props) => {
 	return (
-		<div class="relative overflow-x-auto rounded-lg bg-zinc-200 p-5 text-center shadow shadow-zinc-400 transition-all hover:shadow-lg dark:bg-zinc-700 dark:shadow-zinc-900">
-			{props.children}
+		<div class="bg-base-300 relative overflow-x-auto rounded-lg p-5 shadow transition-all hover:shadow-lg">
+			<div class={props.class}>{props.children}</div>
 		</div>
 	);
 };

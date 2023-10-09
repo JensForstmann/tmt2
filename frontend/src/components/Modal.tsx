@@ -1,24 +1,26 @@
-import { Component, JSX, Show } from 'solid-js';
+import { Component, JSX } from 'solid-js';
+import { t } from '../utils/locale';
 
 export const Modal: Component<{
 	children: JSX.Element;
-	show: boolean;
-	onBackdropClick?: () => void;
+	ref?: HTMLDialogElement;
 }> = (props) => {
 	return (
-		<Show when={props.show}>
-			<div
-				class={`fixed inset-0 z-30 flex items-center justify-center bg-zinc-500/50`}
-				style="margin: 0; padding: 0;"
-				onClick={props.onBackdropClick}
-			>
-				<div
-					class="relative mx-auto w-full max-w-2xl space-y-5 rounded-lg bg-zinc-100 p-5 transition-all dark:bg-zinc-800"
-					onClick={(e) => e.stopPropagation()}
+		<dialog class="modal" ref={props.ref}>
+			<div class="modal-box">
+				<button
+					class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+					onClick={(e) =>
+						(e.target.parentElement?.parentElement as HTMLDialogElement)?.close()
+					}
 				>
-					{props.children}
-				</div>
+					✕
+				</button>
+				{props.children}
 			</div>
-		</Show>
+			<form method="dialog" class="modal-backdrop">
+				<button>{t('close')}</button>
+			</form>
+		</dialog>
 	);
 };

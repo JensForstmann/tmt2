@@ -1,5 +1,7 @@
 import type { Component, ComponentProps } from 'solid-js';
 
+// icons from: https://fonts.google.com/icons?icon.set=Material+Icons --> download as svg
+
 export const SvgLightMode: Component<ComponentProps<'svg'>> = (props) => (
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
@@ -115,6 +117,7 @@ export const SvgOpenInNew: Component<ComponentProps<'svg'>> = (props) => (
 		<path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
 	</svg>
 );
+
 export const SvgNavigateNext: Component<ComponentProps<'svg'>> = (props) => (
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
@@ -126,5 +129,47 @@ export const SvgNavigateNext: Component<ComponentProps<'svg'>> = (props) => (
 	>
 		<path d="M0 0h24v24H0z" fill="none" />
 		<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+	</svg>
+);
+
+export const SvgCheck: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<path d="M0 0h24v24H0V0z" fill="none" />
+		<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+	</svg>
+);
+
+export const SvgClear: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<path d="M0 0h24v24H0V0z" fill="none" />
+		<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+	</svg>
+);
+
+export const SvgDelete: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<path d="M0 0h24v24H0V0z" fill="none" />
+		<path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z" />
 	</svg>
 );

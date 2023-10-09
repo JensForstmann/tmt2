@@ -3,6 +3,7 @@ import { Component, createSignal } from 'solid-js';
 import { TextInput } from '../components/TextInput';
 import { getToken, login } from '../utils/fetcher';
 import { t } from '../utils/locale';
+import { Card } from '../components/Card';
 
 export const LoginPage: Component = () => {
 	const [searchParams] = useSearchParams();
@@ -19,8 +20,9 @@ export const LoginPage: Component = () => {
 	};
 
 	return (
-		<>
+		<Card>
 			<TextInput
+				label={t('Password/Token')}
 				type="password"
 				value={token()}
 				onInput={(e) => setToken(e.currentTarget.value)}
@@ -30,8 +32,12 @@ export const LoginPage: Component = () => {
 					}
 				}}
 			/>
-			<button onClick={() => submit()}>{t('Login')}</button>
-			<p>{msg()}</p>
-		</>
+			<div class="pt-4 text-center">
+				<button onClick={() => submit()} class="btn btn-primary">
+					{t('Login')}
+				</button>
+			</div>
+			<p class="text-error">{msg()}</p>
+		</Card>
 	);
 };

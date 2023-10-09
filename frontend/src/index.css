@@ -149,12 +149,3 @@ a:hover {
 	left: 16%;
 	transform: rotateZ(-50deg);
 }
-
-.dark {
-	color-scheme: dark;
-}
-
-.tmt-table td,
-.tmt-table th {
-	padding: 0.5rem;
-}

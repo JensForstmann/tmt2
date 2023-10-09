@@ -1,20 +1,19 @@
 import { Component, ComponentProps, Show, splitProps } from 'solid-js';
 
-export const TextInput: Component<
+export const ToggleInput: Component<
 	ComponentProps<'input'> & {
 		label?: string;
-		containerClass?: string;
 	}
 > = (props) => {
-	const [local, others] = splitProps(props, ['label', 'class', 'containerClass']);
+	const [local, others] = splitProps(props, ['label', 'class']);
 	return (
-		<div class={(local.containerClass ?? '') + ' form-control'}>
+		<div class="form-control">
 			<Show when={local.label !== undefined}>
 				<label class="label">
 					<span class="label-text">{local.label}</span>
 				</label>
 			</Show>
-			<input class={(local.class ?? '') + ' input w-full'} type="text" {...others} />
+			<input type="checkbox" class={(local.class ?? '') + ' toggle'} {...others} />
 		</div>
 	);
 };

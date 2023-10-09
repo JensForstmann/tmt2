@@ -16,14 +16,11 @@ export const GameServerCard: Component<{
 	const command = () =>
 		(props.match.serverPassword ? `password "${props.match.serverPassword}"; ` : '') +
 		`connect ${ipPort()}`;
-	const [showGameServerModal, setShowGameServerModal] = createSignal(false);
+	let modalRef: HTMLDialogElement | undefined;
 
 	return (
-		<Card>
-			<CardMenu
-				show
-				entries={[[t('change game server'), () => setShowGameServerModal(true)]]}
-			/>
+		<Card class="text-center">
+			<CardMenu show entries={[[t('change game server'), () => modalRef?.showModal()]]} />
 			<h2 class="text-lg font-bold">{t('Game Server')}</h2>
 			<p>
 				<a href={steamUrl()}>
@@ -38,14 +35,8 @@ export const GameServerCard: Component<{
 					<SvgCopyAll />
 				</button>
 			</p>
-			<Modal
-				show={showGameServerModal()}
-				onBackdropClick={() => setShowGameServerModal(false)}
-			>
-				<GameServerChangeForm
-					match={props.match}
-					onClose={() => setShowGameServerModal(false)}
-				/>
+			<Modal ref={modalRef}>
+				<GameServerChangeForm match={props.match} onClose={() => modalRef?.close()} />
 			</Modal>
 		</Card>
 	);
@@ -61,39 +52,44 @@ const GameServerChangeForm: Component<{
 
 	const fetcher = createFetcher(props.match.tmtSecret);
 	const changeGameServer = async () => {
-		const success = await fetcher<boolean>('PATCH', `/api/matches/${props.match.id}`, {
+		await fetcher('PATCH', `/api/matches/${props.match.id}`, {
 			gameServer: {
 				ip: ip(),
 				port: port(),
 				rconPassword: rconPassword(),
 			},
 		} as IMatchUpdateDto);
-		if (success) {
-			props.onClose();
-		}
+		props.onClose();
 	};
 
 	return (
 		<>
 			<div class="text-left">
-				{t('ip')}
-				<TextInput value={ip()} onChange={(e) => setIp(e.currentTarget.value)} />
-				{t('port')}
 				<TextInput
+					label={t('IP Address')}
+					value={ip()}
+					onChange={(e) => setIp(e.currentTarget.value)}
+					class="bg-base-300"
+				/>
+				<TextInput
+					label={t('Port')}
 					type="number"
 					value={port()}
 					onChange={(e) => setPort(parseInt(e.currentTarget.value))}
+					class="bg-base-300"
 				/>
-				{t('rcon password')}
 				<TextInput
+					label={t('Rcon Password')}
 					value={rconPassword()}
 					onChange={(e) => setRconPassword(e.currentTarget.value)}
+					class="bg-base-300"
 				/>
 			</div>
-			<button class="mr-4" onClick={changeGameServer}>
+			<div class="h-4" />
+			<button class="btn btn-primary mr-4" onClick={changeGameServer}>
 				{t('save')}
 			</button>
-			<button class="ml-4" onClick={props.onClose}>
+			<button class="btn ml-4" onClick={props.onClose}>
 				{t('cancel')}
 			</button>
 		</>

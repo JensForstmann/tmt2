@@ -1,5 +1,4 @@
 import { Component, Show, createEffect, createSignal } from 'solid-js';
-import { createFetcher } from '../utils/fetcher';
 import { createStore } from 'solid-js/store';
 import {
 	IManagedGameServer,
@@ -8,7 +7,10 @@ import {
 } from '../../../common';
 import { ManagedGameServerList } from '../components/ManagedGameServerList';
 import { TextInput } from '../components/TextInput';
+import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
+import { Card } from '../components/Card';
+import { ToggleInput } from '../components/ToggleInput';
 
 export const GameServersPage: Component = () => {
 	const fetcher = createFetcher();
@@ -66,47 +68,51 @@ export const GameServersPage: Component = () => {
 	};
 
 	return (
-		<>
-			<Show when={data.managedGameServers}>
-				{(managedGameServers) => (
-					<>
-						<div class="pt-14">
-							<ManagedGameServerList
-								managedGameServers={managedGameServers()}
-								update={update}
-								delete={remove}
-							/>
-						</div>
+		<Show when={data.managedGameServers}>
+			{(managedGameServers) => (
+				<>
+					<ManagedGameServerList
+						managedGameServers={managedGameServers()}
+						update={update}
+						delete={remove}
+					/>
 
-						<h4>{t('game server ip')}</h4>
-						<TextInput value={ip()} onInput={(e) => setIp(e.currentTarget.value)} />
+					<div class="h-8" />
 
-						<h4>{t('game server port')}</h4>
+					<Card>
 						<TextInput
+							label={t('Game Server IP')}
+							value={ip()}
+							onInput={(e) => setIp(e.currentTarget.value)}
+						/>
+
+						<TextInput
+							label={t('Game Server Port')}
 							type="number"
 							value={port()}
 							onInput={(e) => setPort(parseInt(e.currentTarget.value))}
 						/>
 
-						<h4>{t('game server rcon password')}</h4>
 						<TextInput
+							label={t('Game Server Rcon Password')}
 							value={rconPassword()}
 							onInput={(e) => setRconPassword(e.currentTarget.value)}
 						/>
-						<h4>{t('can be used')}</h4>
-						<input
-							type="checkbox"
+
+						<ToggleInput
+							label={t('Can be used?')}
 							checked={canBeUsed()}
 							onchange={(e) => setCanBeUsed(e.currentTarget.checked)}
 						/>
-						<div class="text-center">
-							<button onClick={() => createGameServer()}>
-								{t('add game server')}
+
+						<div class="pt-4 text-center">
+							<button class="btn btn-primary" onClick={() => createGameServer()}>
+								{t('Add Game Server')}
 							</button>
 						</div>
-					</>
-				)}
-			</Show>
-		</>
+					</Card>
+				</>
+			)}
+		</Show>
 	);
 };

@@ -2,6 +2,7 @@ import { useSearchParams } from '@solidjs/router';
 import { Component, createEffect, onCleanup, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { Event, IMatchResponse } from '../../../common';
+import { Card } from '../components/Card';
 import { MatchList } from '../components/MatchList';
 import { createFetcher, getToken } from '../utils/fetcher';
 import { t } from '../utils/locale';
@@ -78,11 +79,13 @@ export const MatchesPage: Component = () => {
 	onCleanup(() => disconnect());
 
 	return (
-		<>
-			<div class="mx-auto p-4 text-center">
-				<label>
+		<Card>
+			<div class="form-control mx-auto w-fit text-center">
+				<label class="label cursor-pointer">
+					<span class="label-text pr-4">{t('offline matches')}</span>
 					<input
 						type="checkbox"
+						class="toggle"
 						checked={searchParams.isLive !== 'false'}
 						onchange={(e) =>
 							setSearchParams(
@@ -91,10 +94,10 @@ export const MatchesPage: Component = () => {
 							)
 						}
 					/>
-					<span class="ml-1">{t('live matches')}</span>
+					<span class="label-text pl-4">{t('live matches')}</span>
 				</label>
 			</div>
 			<Show when={data.matches}>{(matches) => <MatchList matches={matches()} />}</Show>
-		</>
+		</Card>
 	);
 };

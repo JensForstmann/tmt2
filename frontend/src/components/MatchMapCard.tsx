@@ -1,11 +1,11 @@
-import { Component, createSignal } from 'solid-js';
+import { Component } from 'solid-js';
 import {
-	getCurrentTeamSideAndRoundSwitch,
 	IMatchMap,
 	IMatchMapUpdateDto,
 	IMatchResponse,
 	IMatchUpdateDto,
 	TMatchMapSate,
+	getCurrentTeamSideAndRoundSwitch,
 } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
@@ -50,8 +50,7 @@ export const MatchMapCard: Component<{
 			_switchTeamInternals: true,
 		});
 	};
-
-	const [showRoundBackupsModal, setShowRoundBackupsModal] = createSignal(false);
+	let modalRef: HTMLDialogElement | undefined;
 
 	const teamA = () => {
 		if (props.match.currentMap !== props.mapIndex || props.map.state === 'FINISHED') {
@@ -72,14 +71,14 @@ export const MatchMapCard: Component<{
 		}
 	};
 	return (
-		<Card>
+		<Card class="text-center">
 			<CardMenu
 				show={props.match.isLive}
 				entries={[
 					[t('change map name'), changeMapName],
 					[t('change map state'), changeMapState],
 					props.match.currentMap === props.mapIndex
-						? [t('load round backup'), () => setShowRoundBackupsModal(true)]
+						? [t('load round backup'), () => modalRef?.showModal()]
 						: [t('switch to this map'), mustConfirm(loadThisMap)],
 					[t('switch team internals'), switchTeamInternals],
 				]}
@@ -101,17 +100,11 @@ export const MatchMapCard: Component<{
 			<p>
 				<span>{t(props.map.state)}</span>
 			</p>
-			<Modal
-				show={showRoundBackupsModal()}
-				onBackdropClick={() => setShowRoundBackupsModal(false)}
-			>
+			<Modal ref={modalRef}>
+				<h4>{t('Load Round Backup')}</h4>
 				<div class="text-left">
-					<RoundBackups
-						match={props.match}
-						onClose={() => setShowRoundBackupsModal(false)}
-					/>
+					<RoundBackups match={props.match} onClose={() => modalRef?.close()} />
 				</div>
-				<button onClick={() => setShowRoundBackupsModal(false)}>{t('close')}</button>
 			</Modal>
 		</Card>
 	);

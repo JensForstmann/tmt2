@@ -12,6 +12,9 @@ import { TextArea } from '../components/TextArea';
 import { TextInput } from '../components/TextInput';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
+import { Card } from '../components/Card';
+import { SelectInput } from '../components/SelectInput';
+import { ToggleInput } from '../components/ToggleInput';
 
 const DEFAULT_MAPS = [
 	'de_ancient',
@@ -128,87 +131,99 @@ export const CreatePage: Component = () => {
 	};
 
 	return (
-		<div class="mb-20">
-			<h4>{t('map pool')}</h4>
-			<TextArea rows="8" value={maps()} onInput={(e) => setMaps(e.currentTarget.value)} />
+		<Card>
+			<TextArea
+				label={t('Map Pool')}
+				value={maps()}
+				onInput={(e) => setMaps(e.currentTarget.value)}
+				rows="8"
+			/>
 
-			<h4>{t('name team a')}</h4>
-			<TextInput value={teamAName()} onInput={(e) => setTeamAName(e.currentTarget.value)} />
+			<TextInput
+				label={t('Name Team A')}
+				value={teamAName()}
+				onInput={(e) => setTeamAName(e.currentTarget.value)}
+			/>
 
-			<h4>{t('name team b')}</h4>
-			<TextInput value={teamBName()} onInput={(e) => setTeamBName(e.currentTarget.value)} />
+			<TextInput
+				label={t('Name Team B')}
+				value={teamBName()}
+				onInput={(e) => setTeamBName(e.currentTarget.value)}
+			/>
 
-			<h4>{t('use own game server')}</h4>
-			<input
-				type="checkbox"
+			<ToggleInput
+				label={t('Use Own Game Server')}
 				checked={useOwnGameServer()}
 				onInput={(e) => setUseOwnGameServer(e.currentTarget.checked)}
 			/>
 
-			<h4>{t('game server ip')}</h4>
 			<TextInput
+				label={t('Game Server IP Address')}
 				value={ip()}
 				disabled={!useOwnGameServer()}
 				onInput={(e) => setIp(e.currentTarget.value)}
 			/>
 
-			<h4>{t('game server port')}</h4>
 			<TextInput
+				label={t('Game Server Port')}
 				type="number"
 				value={port()}
 				disabled={!useOwnGameServer()}
 				onInput={(e) => setPort(parseInt(e.currentTarget.value))}
 			/>
 
-			<h4>{t('game server rcon password')}</h4>
 			<TextInput
+				label={t('Game Server Rcon Password')}
 				value={rconPassword()}
 				disabled={!useOwnGameServer()}
 				onInput={(e) => setRconPassword(e.currentTarget.value)}
 			/>
 
-			<h4>{t('Map Election')}</h4>
-			<select
+			<SelectInput
+				label={t('Map Election')}
+				labelBottomLeft={
+					electionPreset() === 'bo1'
+						? t('Alternate map bans, last map will be played, knife for side.')
+						: electionPreset() === 'bo3'
+						? t('Alternate map bans, last three maps will be played, knife for side.')
+						: false
+				}
 				onInput={(e) => setElectionPreset(e.currentTarget.value)}
 				value={electionPreset()}
 			>
-				<option value="bo1">{t('best of 1')}</option>
-				<option value="bo3">{t('best of 3')}</option>
-			</select>
-			<p>
-				<Show when={electionPreset() === 'bo1'}>
-					{t('alternate map bans, last map will be played, knife for side')}
-				</Show>
-				<Show when={electionPreset() === 'bo3'}>
-					{t('alternate map bans, last three maps will be played, knife for side')}
-				</Show>
-			</p>
+				<option value="bo1">{t('Best of 1')}</option>
+				<option value="bo3">{t('Best of 3')}</option>
+			</SelectInput>
 
-			<h4>{t('Mode')}</h4>
-			<select onInput={(e) => setMode(e.currentTarget.value as TMatchMode)} value={mode()}>
-				<option value="SINGLE">{t('single')}</option>
-				<option value="LOOP">{t('loop')}</option>
-			</select>
-			<p>
-				<Show when={mode() === 'SINGLE'}>
-					{t('Normal mode: stops when match is finished')}
-				</Show>
-				<Show when={mode() === 'LOOP'}>
-					{t('Loop mode: starts again after match is finished')}
-				</Show>
-			</p>
+			<SelectInput
+				label={t('Mode')}
+				labelBottomLeft={
+					mode() === 'SINGLE'
+						? t('Single mode: stops when match is finished')
+						: mode() === 'LOOP'
+						? t('Loop mode: starts again after match is finished')
+						: false
+				}
+				onInput={(e) => setMode(e.currentTarget.value as TMatchMode)}
+				value={mode()}
+			>
+				<option value="SINGLE">{t('Single')}</option>
+				<option value="LOOP">{t('Loop')}</option>
+			</SelectInput>
 
-			<h4>{t('Expert/Dev Mode')}</h4>
 			<TextArea
+				label={t('Expert/Dev Mode')}
 				rows="25"
 				value={json()}
 				onInput={(e) => setJson(e.currentTarget.value)}
 				class="font-mono"
 			/>
 
-			<div class="text-center">
-				<button onClick={() => createMatch()}>{t('create match')}</button>
+			<div class="pt-4 text-center">
+				<button class="btn btn-primary" onClick={() => createMatch()}>
+					{t('Create Match')}
+				</button>
 			</div>
-		</div>
+		</Card>
 	);
 };

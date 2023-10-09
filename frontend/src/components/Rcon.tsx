@@ -45,9 +45,10 @@ export const Rcon: Component<{
 	};
 
 	return (
-		<Card>
+		<Card class="text-center">
 			<h2 class="text-lg font-bold">{t('Rcon')}</h2>
 			<ScrollArea scroll>{output()}</ScrollArea>
+			<div class="h-4"></div>
 			<TextInput
 				type="text"
 				onKeyDown={onEnter(

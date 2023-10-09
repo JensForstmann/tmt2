@@ -7,7 +7,7 @@ export const PlayerListCard: Component<{
 	match: IMatchResponse;
 }> = (props) => {
 	return (
-		<Card>
+		<Card class="text-center">
 			<h2 class="text-lg font-bold">{t('Players')}</h2>
 			<div class="flex basis-1/2 items-start justify-center space-x-5 text-left">
 				<div class="flex-1 text-right">

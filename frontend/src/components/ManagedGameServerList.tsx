@@ -2,6 +2,7 @@ import { Component, For } from 'solid-js';
 import { IManagedGameServer, IManagedGameServerUpdateDto } from '../../../common';
 import { t } from '../utils/locale';
 import { Card } from './Card';
+import { SvgCheck, SvgClear, SvgDelete } from '../assets/Icons';
 
 export const ManagedGameServerList: Component<{
 	managedGameServers: IManagedGameServer[];
@@ -10,7 +11,7 @@ export const ManagedGameServerList: Component<{
 }> = (props) => {
 	return (
 		<Card>
-			<table class="tmt-table w-full">
+			<table class="table-zebra table">
 				<thead>
 					<tr>
 						<th>{t('#')}</th>
@@ -25,51 +26,42 @@ export const ManagedGameServerList: Component<{
 				<tbody>
 					<For each={props.managedGameServers}>
 						{(managedGameServer, i) => (
-							<tr
-								class={
-									i() % 2 === 0
-										? 'bg-transparent/5 dark:bg-transparent/10'
-										: 'bg-transparent/10 dark:bg-transparent/20'
-								}
-							>
+							<tr>
 								<td>{i() + 1}</td>
 								<td>{managedGameServer.ip}</td>
 								<td>{managedGameServer.port}</td>
 								<td>{managedGameServer.rconPassword}</td>
 								<td>
-									<span
+									<button
+										class="btn btn-circle btn-outline"
 										onClick={() =>
 											props.update?.({
 												...managedGameServer,
 												canBeUsed: !managedGameServer.canBeUsed,
 											})
 										}
-										class={props.update ? 'cursor-pointer' : ''}
 									>
-										{managedGameServer.canBeUsed ? '✅' : '➖'}
-									</span>
+										{managedGameServer.canBeUsed ? <SvgCheck /> : <SvgClear />}
+									</button>
 								</td>
 								<td>
 									{managedGameServer.usedBy && (
 										<>
 											<a href={`/matches/${managedGameServer.usedBy}`}>
 												{managedGameServer.usedBy}
-											</a>
+											</a>{' '}
 											{props.update && (
-												<>
-													{' '}
-													<span
-														onClick={() =>
-															props.update?.({
-																...managedGameServer,
-																usedBy: null,
-															})
-														}
-														class="cursor-pointer"
-													>
-														❌
-													</span>
-												</>
+												<button
+													class="btn btn-circle btn-outline"
+													onClick={() =>
+														props.update?.({
+															...managedGameServer,
+															usedBy: null,
+														})
+													}
+												>
+													<SvgClear />
+												</button>
 											)}
 										</>
 									)}
@@ -77,12 +69,12 @@ export const ManagedGameServerList: Component<{
 								{props.delete && (
 									<th>
 										{props.delete && (
-											<span
+											<button
+												class="btn btn-circle btn-outline"
 												onClick={() => props.delete?.(managedGameServer)}
-												class="cursor-pointer"
 											>
-												❌
-											</span>
+												<SvgDelete />
+											</button>
 										)}
 									</th>
 								)}

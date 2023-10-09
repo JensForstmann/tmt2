@@ -10,14 +10,16 @@ export const NotLiveCard: Component<{
 	const fetcher = createFetcher(props.match.tmtSecret);
 	const revive = () => fetcher('PATCH', `/api/matches/${props.match.id}/revive`);
 	return (
-		<Card>
+		<Card class="text-center">
 			<h2 class="text-lg font-bold">{t('Match is not live')}</h2>
 			<p>
 				{t('This match is not live (currently not tracked).')}
 				<br />
 				{t('To start tracking again, give it a revive:')}
 			</p>
-			<button onClick={revive}>{t('revive')}</button>
+			<button class="btn" onClick={revive}>
+				{t('revive')}
+			</button>
 		</Card>
 	);
 };

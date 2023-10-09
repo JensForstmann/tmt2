@@ -2,9 +2,9 @@ import { createSignal } from 'solid-js';
 
 export const updateDarkClasses = () => {
 	if (currentMode() === 'dark') {
-		document.documentElement.classList.add('dark');
+		document.documentElement.dataset.theme = 'dark';
 	} else {
-		document.documentElement.classList.remove('dark');
+		document.documentElement.dataset.theme = 'light';
 	}
 };
 

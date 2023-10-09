@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router';
-import { Component, createSignal, Show } from 'solid-js';
+import { Component, Show } from 'solid-js';
 import {
 	getMapDraws,
 	getMapScore,
@@ -20,7 +20,6 @@ export const MatchCard: Component<{
 	match: IMatchResponse;
 }> = (props) => {
 	const navigate = useNavigate();
-	const [showShareModal, setShowShareModal] = createSignal(false);
 	const fetcher = createFetcher(props.match.tmtSecret);
 	const patchMatch = (dto: IMatchUpdateDto) =>
 		fetcher('PATCH', `/api/matches/${props.match.id}`, dto);
@@ -39,9 +38,10 @@ export const MatchCard: Component<{
 	};
 	const l = window.location;
 	const shareLink = l.protocol + '//' + l.host + l.pathname + '?secret=' + props.match.tmtSecret;
+	let modalRef: HTMLDialogElement | undefined;
 
 	return (
-		<Card>
+		<Card class="text-center">
 			<CardMenu
 				show
 				entries={
@@ -52,7 +52,7 @@ export const MatchCard: Component<{
 								[t('init'), init],
 								[t('setup'), setup],
 								[t('change state'), changeState],
-								[t('share match with token'), () => setShowShareModal(true)],
+								[t('share match with token'), () => modalRef?.showModal()],
 								[
 									t('edit match'),
 									() => navigate(`/matches/${props.match.id}/edit`),
@@ -78,20 +78,23 @@ export const MatchCard: Component<{
 				</span>
 			</Show>
 			<p>{t(props.match.state)}</p>
-			<Modal show={showShareModal()} onBackdropClick={() => setShowShareModal(false)}>
+			<Modal ref={modalRef}>
 				<div class="space-y-6">
 					<p>{t('Copy & share the link below.')}</p>
 					<div class="flex">
-						<TextInput value={shareLink} />
+						<TextInput
+							value={shareLink}
+							class="bg-base-300 w-full"
+							containerClass="w-full"
+						/>
 						<button
-							class="ml-4"
+							class="btn ml-4"
 							onClick={() => navigator.clipboard.writeText(shareLink)}
 						>
 							<SvgCopyAll />
 						</button>
 					</div>
 					<p>{t('Warning: The link gives full admin access to (only) this match.')}</p>
-					<button onClick={() => setShowShareModal(false)}>{t('close')}</button>
 				</div>
 			</Modal>
 		</Card>
