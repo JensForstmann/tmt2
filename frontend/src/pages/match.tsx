@@ -44,7 +44,6 @@ export const MatchPage: Component = () => {
 	});
 
 	const onWsMsg = (msg: Event) => {
-		console.log('onWsMsg', msg.type, msg);
 		if (msg.type === 'CHAT') {
 			setData('chatEvents', (existing) => [...(existing ?? []), msg]);
 		} else if (msg.type === 'LOG') {
@@ -84,7 +83,7 @@ export const MatchPage: Component = () => {
 	return (
 		<Show when={data.match} fallback={<Loader />}>
 			{(match) => (
-				<div class="mt-5 mb-16 space-y-5">
+				<div class="space-y-5">
 					<Show when={!match().isLive}>
 						<NotLiveCard match={match()} />
 					</Show>

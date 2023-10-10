@@ -6,7 +6,7 @@ import { t } from '../utils/locale';
 import { Card } from './Card';
 import { CardMenu } from './CardMenu';
 import { Modal } from './Modal';
-import { TextInput } from './TextInput';
+import { TextInput } from './Inputs';
 
 export const GameServerCard: Component<{
 	match: IMatchResponse;

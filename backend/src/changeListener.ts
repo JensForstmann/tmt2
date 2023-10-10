@@ -22,7 +22,7 @@ export const addChangeListener = <T extends object>(
 			},
 			set: (target: any, key: any, value: any) => {
 				if (typeof key === 'string' || typeof key === 'number') {
-					// console.log(`set key ${[...path, key]} to ${JSON.stringify(value)}`);
+					// console.info(`set key ${[...path, key]} to ${JSON.stringify(value)}`);
 					target[key] = value;
 					onChange([...path, key], value);
 					return true;

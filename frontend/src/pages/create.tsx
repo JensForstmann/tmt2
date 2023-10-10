@@ -8,13 +8,10 @@ import {
 	TMatchMode,
 	TTeamAB,
 } from '../../../common';
-import { TextArea } from '../components/TextArea';
-import { TextInput } from '../components/TextInput';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { Card } from '../components/Card';
-import { SelectInput } from '../components/SelectInput';
-import { ToggleInput } from '../components/ToggleInput';
+import { SelectInput, TextArea, TextInput, ToggleInput } from '../components/Inputs';
 
 const DEFAULT_MAPS = [
 	'de_ancient',
@@ -189,7 +186,6 @@ export const CreatePage: Component = () => {
 						: false
 				}
 				onInput={(e) => setElectionPreset(e.currentTarget.value)}
-				value={electionPreset()}
 			>
 				<option value="bo1">{t('Best of 1')}</option>
 				<option value="bo3">{t('Best of 3')}</option>
@@ -205,7 +201,6 @@ export const CreatePage: Component = () => {
 						: false
 				}
 				onInput={(e) => setMode(e.currentTarget.value as TMatchMode)}
-				value={mode()}
 			>
 				<option value="SINGLE">{t('Single')}</option>
 				<option value="LOOP">{t('Loop')}</option>

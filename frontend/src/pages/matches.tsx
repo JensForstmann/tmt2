@@ -24,7 +24,6 @@ export const MatchesPage: Component = () => {
 	});
 
 	const onWsMsg = (msg: Event) => {
-		console.log('onWsMsg', msg.type, msg);
 		if (msg.type === 'MATCH_UPDATE') {
 			const mapIndex = data.matches?.findIndex((match) => match.id === msg.matchId);
 			if (mapIndex !== undefined && mapIndex >= 0) {
@@ -56,14 +55,14 @@ export const MatchesPage: Component = () => {
 			// unsubscribe
 			subs.forEach((matchId) => {
 				if (!data.matches?.find((match) => match.id === matchId)) {
-					console.log(`unsub from ${matchId}`);
+					console.info(`unsub from ${matchId}`);
 					unsubscribe(matchId);
 				}
 			});
 			// subscribe
 			data.matches?.forEach((match) => {
 				if (!subs.includes(match.id)) {
-					console.log(`sub to ${match.id}`);
+					console.info(`sub to ${match.id}`);
 					subscribe({
 						matchId: match.id,
 						token: match.tmtSecret,

@@ -14,7 +14,7 @@ import { mustConfirm } from '../utils/mustConfirm';
 import { Card } from './Card';
 import { CardMenu } from './CardMenu';
 import { Modal } from './Modal';
-import { TextInput } from './TextInput';
+import { TextInput } from './Inputs';
 
 export const MatchCard: Component<{
 	match: IMatchResponse;

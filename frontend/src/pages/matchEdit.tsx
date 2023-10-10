@@ -1,7 +1,8 @@
-import { useNavigate, useParams, useSearchParams } from '@solidjs/router';
+import { Link, useNavigate, useParams, useSearchParams } from '@solidjs/router';
 import { Component, Show, createSignal, onMount } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { IMatchResponse } from '../../../common';
+import { SvgNavigateBefore } from '../assets/Icons';
 import { Loader } from '../components/Loader';
 import { MatchEditCard } from '../components/MatchEditCard';
 import { NotLiveCard } from '../components/NotLiveCard';
@@ -26,10 +27,14 @@ export const MatchEditPage: Component = () => {
 
 	return (
 		<>
-			<a href={`/matches/${params.id}`}>{t('back to match')}</a>
+			<Link href={`/matches/${params.id}`} class="btn">
+				<SvgNavigateBefore class="inline-block" />
+				{t('Back to the Match')}
+			</Link>
+			<div class="h-4"></div>
 			<Show when={data.match} fallback={<Loader />}>
 				{(match) => (
-					<div class="mt-5 mb-16 space-y-5">
+					<div class="space-y-5">
 						<Show when={!match().isLive}>
 							<NotLiveCard match={match()} />
 						</Show>

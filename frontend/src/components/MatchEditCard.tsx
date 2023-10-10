@@ -1,4 +1,4 @@
-import { Component, For, JSX, Show, createSignal } from 'solid-js';
+import { Component, For, createSignal } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import {
 	IMatchResponse,
@@ -10,8 +10,7 @@ import {
 } from '../../../common';
 import { t } from '../utils/locale';
 import { Card } from './Card';
-import { TextArea } from './TextArea';
-import { TextInput } from './TextInput';
+import { SelectInput, TextArea, TextInput, ToggleInput } from './Inputs';
 
 export const MatchEditCard: Component<{
 	match: IMatchResponse;
@@ -81,201 +80,140 @@ export const MatchEditCard: Component<{
 
 	return (
 		<Card>
-			<h2 class="text-lg font-bold">{t('Edit Match')}</h2>
+			<h2 class="text-center text-lg font-bold">{t('Edit Match')}</h2>
 			<form
-				class="table w-full"
 				onSubmit={(e) => {
 					e.preventDefault();
 					const dto = getMatchUpdateDto();
 					props.onUpdate(dto);
 				}}
 			>
-				<table class="w-full">
-					<thead>
-						<tr>
-							<th></th>
-							<th></th>
-							<th>{t('changed?')}</th>
-						</tr>
-					</thead>
-					<tbody>
-						<Row label={t('Match State')} changed={store.state !== props.match.state}>
-							<select
-								value={store.state}
-								onInput={(e) =>
-									setStore('state', e.currentTarget.value as TMatchSate)
-								}
-							>
-								<For each={MatchStates}>
-									{(state) => <option value={state}>{t(state)}</option>}
-								</For>
-							</select>
-						</Row>
-						<Row
-							label={t('Match End Action')}
-							changed={store.matchEndAction !== props.match.matchEndAction}
-						>
-							<select
-								value={store.matchEndAction}
-								onInput={(e) =>
-									setStore(
-										'matchEndAction',
-										e.currentTarget.value as TMatchEndAction
-									)
-								}
-							>
-								<For each={MatchEndActions}>
-									{(state) => <option value={state}>{t(state)}</option>}
-								</For>
-							</select>
-						</Row>
-						<Row
-							label={t('Webhook URL')}
-							changed={store.webhookUrl !== props.match.webhookUrl}
-						>
-							<TextInput
-								value={store.webhookUrl ?? ''}
-								onInput={(e) =>
-									setStore('webhookUrl', e.currentTarget.value || null)
-								}
-							/>
-						</Row>
-						<Row
-							label={t('Team A Name')}
-							changed={store.teamA?.name !== props.match.teamA.name}
-						>
-							<TextInput
-								value={store.teamA?.name}
-								onInput={(e) => setStore('teamA', 'name', e.currentTarget.value)}
-							/>
-						</Row>
-						<Row
-							label={t('Team A Advantage')}
-							changed={store.teamA?.advantage !== props.match.teamA.advantage}
-						>
-							<TextInput
-								value={store.teamA?.advantage}
-								type="number"
-								min="0"
-								onInput={(e) =>
-									setStore('teamA', 'advantage', parseInt(e.currentTarget.value))
-								}
-							/>
-						</Row>
-						<Row
-							label={t('Team B Name')}
-							changed={store.teamB?.name !== props.match.teamB.name}
-						>
-							<TextInput
-								value={store.teamB?.name}
-								onInput={(e) => setStore('teamB', 'name', e.currentTarget.value)}
-							/>
-						</Row>
-						<Row
-							label={t('Team B Advantage')}
-							changed={store.teamB?.advantage !== props.match.teamB.advantage}
-						>
-							<TextInput
-								value={store.teamB?.advantage}
-								type="number"
-								min="0"
-								onInput={(e) =>
-									setStore('teamB', 'advantage', parseInt(e.currentTarget.value))
-								}
-							/>
-						</Row>
-						<Row
-							label={t('Current Map')}
-							changed={store.currentMap !== props.match.currentMap}
-						>
-							<TextInput
-								value={store.currentMap}
-								type="number"
-								min="0"
-								onInput={(e) =>
-									setStore('currentMap', parseInt(e.currentTarget.value))
-								}
-							/>
-						</Row>
-						<Row
-							label={t('Map Pool')}
-							changed={store.mapPool?.join('\n') !== props.match.mapPool.join('\n')}
-						>
-							<TextArea
-								value={store.mapPool?.join('\n')}
-								onInput={(e) =>
-									setStore('mapPool', e.currentTarget.value.split('\n'))
-								}
-								rows={8}
-							/>
-						</Row>
-						<Row
-							label={t('TMT Log Address')}
-							changed={store.tmtLogAddress !== props.match.tmtLogAddress}
-						>
-							<TextInput
-								value={store.tmtLogAddress}
-								onInput={(e) => setStore('tmtLogAddress', e.currentTarget.value)}
-							/>
-						</Row>
-						<Row
-							label={t('Can Clinch')}
-							changed={store.canClinch !== props.match.canClinch}
-						>
-							<input
-								type="checkbox"
-								checked={store.canClinch}
-								onInput={(e) => setStore('canClinch', e.currentTarget.checked)}
-							/>
-						</Row>
-						<Row
-							label={t('Election Steps')}
-							changed={(() => {
-								try {
-									return (
-										JSON.stringify(props.match.electionSteps) !==
-										JSON.stringify(JSON.parse(electionSteps()))
-									);
-								} catch (err) {
-									return true;
-								}
-							})()}
-						>
-							<TextArea
-								value={electionSteps()}
-								onInput={(e) => setElectionSteps(e.currentTarget.value)}
-								rows={20}
-							/>
-						</Row>
-					</tbody>
-				</table>
-				<input
-					type="reset"
-					onClick={(e) => {
-						e.preventDefault();
-						setStore(props.match);
-					}}
-					value={t('Undo')}
+				<SelectInput
+					label={t('Match State')}
+					labelTopRight={store.state !== props.match.state ? t('Changed') : ''}
+					onInput={(e) => setStore('state', e.currentTarget.value as TMatchSate)}
+				>
+					<For each={MatchStates}>
+						{(state) => (
+							<option value={state} selected={store.state === state}>
+								{t(state)}
+							</option>
+						)}
+					</For>
+				</SelectInput>
+				<SelectInput
+					label={t('Match End Action')}
+					labelTopRight={
+						store.matchEndAction !== props.match.matchEndAction ? t('Changed') : ''
+					}
+					onInput={(e) =>
+						setStore('matchEndAction', e.currentTarget.value as TMatchEndAction)
+					}
+				>
+					<For each={MatchEndActions}>
+						{(state) => (
+							<option value={state} selected={store.matchEndAction === state}>
+								{t(state)}
+							</option>
+						)}
+					</For>
+				</SelectInput>
+				<TextInput
+					label={t('Webhook URL')}
+					labelTopRight={store.webhookUrl !== props.match.webhookUrl ? t('Changed') : ''}
+					value={store.webhookUrl ?? ''}
+					onInput={(e) => setStore('webhookUrl', e.currentTarget.value || null)}
 				/>
-				<br />
-				<input type="submit" value={t('Save')} />
+				<TextInput
+					label={t('Webhook URL')}
+					labelTopRight={store.teamA?.name !== props.match.teamA.name ? t('Changed') : ''}
+					value={store.teamA?.name}
+					onInput={(e) => setStore('teamA', 'name', e.currentTarget.value)}
+				/>
+				<TextInput
+					label={t('Team A Advantage')}
+					labelTopRight={
+						store.teamA?.advantage !== props.match.teamA.advantage ? t('Changed') : ''
+					}
+					value={store.teamA?.advantage}
+					type="number"
+					min="0"
+					onInput={(e) => setStore('teamA', 'advantage', parseInt(e.currentTarget.value))}
+				/>
+				<TextInput
+					label={t('Team B Name')}
+					labelTopRight={store.teamB?.name !== props.match.teamB.name ? t('Changed') : ''}
+					value={store.teamB?.name}
+					onInput={(e) => setStore('teamB', 'name', e.currentTarget.value)}
+				/>
+				<TextInput
+					label={t('Team B Advantage')}
+					labelTopRight={
+						store.teamB?.advantage !== props.match.teamB.advantage ? t('Changed') : ''
+					}
+					value={store.teamB?.advantage}
+					type="number"
+					min="0"
+					onInput={(e) => setStore('teamB', 'advantage', parseInt(e.currentTarget.value))}
+				/>
+				<TextInput
+					label={t('Current Map')}
+					labelTopRight={store.currentMap !== props.match.currentMap ? t('Changed') : ''}
+					value={store.currentMap}
+					type="number"
+					min="0"
+					onInput={(e) => setStore('currentMap', parseInt(e.currentTarget.value))}
+				/>
+				<TextArea
+					label={t('Map Pool')}
+					labelTopRight={
+						store.mapPool?.join('\n') !== props.match.mapPool.join('\n')
+							? t('Changed')
+							: ''
+					}
+					value={store.mapPool?.join('\n')}
+					onInput={(e) => setStore('mapPool', e.currentTarget.value.split('\n'))}
+					rows={8}
+				/>
+				<TextInput
+					label={t('TMT Log Address')}
+					labelTopRight={
+						store.tmtLogAddress !== props.match.tmtLogAddress ? t('Changed') : ''
+					}
+					value={store.tmtLogAddress}
+					onInput={(e) => setStore('tmtLogAddress', e.currentTarget.value)}
+				/>
+				<ToggleInput
+					label={t('Can Clinch')}
+					labelTopRight={store.canClinch !== props.match.canClinch ? t('Changed') : ''}
+					type="checkbox"
+					checked={store.canClinch}
+					onInput={(e) => setStore('canClinch', e.currentTarget.checked)}
+				/>
+				<TextArea
+					label={t('Election Steps')}
+					labelTopRight={
+						(() => {
+							try {
+								return (
+									JSON.stringify(props.match.electionSteps) !==
+									JSON.stringify(JSON.parse(electionSteps()))
+								);
+							} catch (err) {
+								return true;
+							}
+						})()
+							? t('Changed')
+							: ''
+					}
+					value={electionSteps()}
+					onInput={(e) => setElectionSteps(e.currentTarget.value)}
+					rows={20}
+				/>
+				<div class="space-x-4 pt-4 text-center">
+					<input class="btn btn-primary" type="submit" value={t('Save')} />
+				</div>
 			</form>
 		</Card>
-	);
-};
-
-const Row: Component<{
-	label: string;
-	children: JSX.Element;
-	changed: boolean;
-}> = (props) => {
-	return (
-		<tr>
-			<td class="px-1 text-right">{props.label}</td>
-			<td class="px-1 text-left">{props.children}</td>
-			<td class="px-1">
-				<Show when={props.changed}>{t('Changed')}</Show>
-			</td>
-		</tr>
 	);
 };

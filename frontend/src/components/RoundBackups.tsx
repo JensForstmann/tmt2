@@ -4,7 +4,7 @@ import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { mustConfirm } from '../utils/mustConfirm';
 import { Loader } from './Loader';
-import { SelectInput } from './SelectInput';
+import { SelectInput } from './Inputs';
 
 export const RoundBackups: Component<{
 	match: IMatchResponse;
@@ -26,10 +26,7 @@ export const RoundBackups: Component<{
 
 	return (
 		<Show when={props.roundBackupFiles} fallback={<Loader />}>
-			<SelectInput
-				value={selectedFile()}
-				onInput={(e) => setSelectedFile(e.currentTarget.value)}
-			>
+			<SelectInput onInput={(e) => setSelectedFile(e.currentTarget.value)}>
 				<option value="">{t('Select Round Backup File...')}</option>
 				<For each={props.roundBackupFiles}>
 					{(file) => (

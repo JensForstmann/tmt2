@@ -6,11 +6,10 @@ import {
 	IManagedGameServerUpdateDto,
 } from '../../../common';
 import { ManagedGameServerList } from '../components/ManagedGameServerList';
-import { TextInput } from '../components/TextInput';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { Card } from '../components/Card';
-import { ToggleInput } from '../components/ToggleInput';
+import { TextInput, ToggleInput } from '../components/Inputs';
 
 export const GameServersPage: Component = () => {
 	const fetcher = createFetcher();

@@ -4,7 +4,7 @@ import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
 import { Card } from './Card';
 import { ScrollArea } from './ScrollArea';
-import { TextInput } from './TextInput';
+import { TextInput } from './Inputs';
 
 export const Chat: Component<{
 	messages: ChatEvent[];

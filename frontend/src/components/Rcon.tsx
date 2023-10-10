@@ -5,7 +5,7 @@ import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
 import { Card } from './Card';
 import { ScrollArea } from './ScrollArea';
-import { TextInput } from './TextInput';
+import { TextInput } from './Inputs';
 
 const formatRconResponse = (response: string): string[] => {
 	return response.trim().split('\n');
