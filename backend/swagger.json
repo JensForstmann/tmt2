@@ -1531,11 +1531,11 @@
 				"type": "string",
 				"enum": [
 					"FIXED",
-					"BAN",
 					"PICK",
-					"RANDOM_BAN",
 					"RANDOM_PICK",
-					"AGREE"
+					"AGREE",
+					"BAN",
+					"RANDOM_BAN"
 				]
 			},
 			"ElectionMapStep": {
@@ -1582,10 +1582,10 @@
 			"TSideMode": {
 				"type": "string",
 				"enum": [
+					"KNIFE",
 					"FIXED",
 					"PICK",
-					"RANDOM",
-					"KNIFE"
+					"RANDOM"
 				]
 			},
 			"TTeamSides": {

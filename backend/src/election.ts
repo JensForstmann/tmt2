@@ -25,9 +25,7 @@ export const create = (
 	mapPool: string[],
 	steps: Array<IElectionStepAdd | IElectionStepSkip>
 ): IElection => {
-	if (!isValidConfiguration(mapPool, steps)) {
-		throw 'Combination of map pool and election steps is invalid (too few maps in map pool for these election steps).';
-	}
+	checkValidConfiguration(mapPool, steps);
 	return {
 		state: 'NOT_STARTED',
 		currentStep: 0,
@@ -47,10 +45,13 @@ export const create = (
 	};
 };
 
-const isValidConfiguration = (
+/**
+ * @throws if configuration is invalid
+ */
+const checkValidConfiguration = (
 	mapPool: string[],
 	steps: Array<IElectionStepAdd | IElectionStepSkip>
-): boolean => {
+) => {
 	const stepsWhichRemovesAMapFromMapPool = steps.filter((step): boolean => {
 		switch (step.map.mode) {
 			case 'PICK':
@@ -63,8 +64,14 @@ const isValidConfiguration = (
 				return false;
 		}
 	});
+	if (stepsWhichRemovesAMapFromMapPool.length > mapPool.length) {
+		throw 'Combination of map pool and election steps is invalid (too few maps in map pool for these election steps).';
+	}
 
-	return stepsWhichRemovesAMapFromMapPool.length <= mapPool.length;
+	const addingSteps = steps.filter((step) => isElectionStepAdd(step));
+	if (addingSteps.length === 0) {
+		throw 'Election steps are invalid (no step available which results in a map).';
+	}
 };
 
 const getAvailableCommands = (match: Match.Match, currentElectionStep: IElectionStep): string[] => {

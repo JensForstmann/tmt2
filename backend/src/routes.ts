@@ -826,11 +826,11 @@ const models: TsoaRoute.Models = {
 			dataType: 'union',
 			subSchemas: [
 				{ dataType: 'enum', enums: ['FIXED'] },
-				{ dataType: 'enum', enums: ['BAN'] },
 				{ dataType: 'enum', enums: ['PICK'] },
-				{ dataType: 'enum', enums: ['RANDOM_BAN'] },
 				{ dataType: 'enum', enums: ['RANDOM_PICK'] },
 				{ dataType: 'enum', enums: ['AGREE'] },
+				{ dataType: 'enum', enums: ['BAN'] },
+				{ dataType: 'enum', enums: ['RANDOM_BAN'] },
 			],
 			validators: {},
 		},
@@ -859,10 +859,10 @@ const models: TsoaRoute.Models = {
 		type: {
 			dataType: 'union',
 			subSchemas: [
+				{ dataType: 'enum', enums: ['KNIFE'] },
 				{ dataType: 'enum', enums: ['FIXED'] },
 				{ dataType: 'enum', enums: ['PICK'] },
 				{ dataType: 'enum', enums: ['RANDOM'] },
-				{ dataType: 'enum', enums: ['KNIFE'] },
 			],
 			validators: {},
 		},
