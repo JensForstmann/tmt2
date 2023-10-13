@@ -710,6 +710,10 @@ const onTeamCommand: commands.CommandHandler = async ({ match, player, parameter
 };
 
 const onMapEnd = async (match: Match) => {
+	if (match.data.state !== 'MATCH_MAP') {
+		return;
+	}
+
 	const currentMatchMap = getCurrentMatchMap(match);
 	if (currentMatchMap) {
 		const mapNumber = match.data.currentMap + 1;
@@ -727,19 +731,19 @@ const onMapEnd = async (match: Match) => {
 			);
 			match.log(`${mapNumber}. map finished (winner: ${winnerTeam.name})`);
 		}
-	}
 
-	if (isMatchEnd(match)) {
-		match.log(`onMapEnd -> isMatchEnd -> onMatchEnd`);
-		await onMatchEnd(match);
-	} else {
-		match.data.currentMap++;
-		const nextMap = getCurrentMatchMap(match);
-		if (nextMap) {
-			match.log(`onMapEnd -> loadNextMap`);
-			await MatchMap.loadMap(match, nextMap);
-		} else {
+		if (isMatchEnd(match)) {
+			match.log(`onMapEnd -> isMatchEnd -> onMatchEnd`);
 			await onMatchEnd(match);
+		} else {
+			match.data.currentMap++;
+			const nextMap = getCurrentMatchMap(match);
+			if (nextMap) {
+				match.log(`onMapEnd -> loadNextMap`);
+				await MatchMap.loadMap(match, nextMap);
+			} else {
+				await onMatchEnd(match);
+			}
 		}
 	}
 };
