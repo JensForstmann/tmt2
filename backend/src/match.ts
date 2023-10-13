@@ -430,7 +430,9 @@ const onLogLine = async (match: Match, line: string) => {
 			return;
 		}
 
-		const mapEndPattern = /Game Over: competitive (.*) score (\d+):(\d+) after (\d+) min$/;
+		// Game Over: competitive  de_overpass score 13:0 after 3 min
+		// Game Over: scrimcomp2v2  de_overpass score 9:0 after 3 min
+		const mapEndPattern = /Game Over: .*? score (\d+):(\d+)/;
 		const mapEndMatch = line.match(new RegExp(dateTimePattern.source + mapEndPattern.source));
 		if (mapEndMatch) {
 			await onMapEnd(match);
