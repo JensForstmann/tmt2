@@ -416,13 +416,15 @@ const onLogLine = async (match: Match, line: string) => {
 
 		// "Mae<9><BOT><CT>" [622 2164 -97] killed "Nickname<0><[U:1:12345678]><TERRORIST>" [1287 2165 1] with "hkp2000"
 		// "Nickname<0><[U:1:12345678]><TERRORIST>" say "Hello there"
-		const playerPattern = /"(.*?)<(\d+)><(.*?)><(|Unassigned|CT|TERRORIST|Spectator)>" (.*)$/;
+		// "Nickname<0><[U:1:12345678]>" switched from team <CT> to <TERRORIST>
+		const playerPattern =
+			/"(.*?)<(\d+)><(.*?)>(?:<(|Unassigned|CT|TERRORIST|Spectator)>)?" (.*)$/;
 		const playerMatch = line.match(new RegExp(dateTimePattern.source + playerPattern.source));
 		if (playerMatch) {
 			const name = playerMatch[1]!;
 			const ingamePlayerId = playerMatch[2]!;
 			const steamId = playerMatch[3]!;
-			const teamString = playerMatch[4] as TTeamString;
+			const teamString = (playerMatch[4] ?? '') as TTeamString; // playerMatch[4] may be undefined
 			const remainingLine = playerMatch[5]!;
 			await onPlayerLogLine(match, name, ingamePlayerId, steamId, teamString, remainingLine);
 			return;
@@ -470,6 +472,14 @@ const onConsoleLogLine = async (match: Match, remainingLine: string) => {
 	}
 };
 
+const updatePlayerSide = (match: Match, player: IPlayer, teamString: TTeamString) => {
+	const side = Player.getSideFromTeamString(teamString);
+	if (player.side !== side) {
+		player.side = side;
+		MatchService.save(match);
+	}
+};
+
 const onPlayerLogLine = async (
 	match: Match,
 	name: string,
@@ -487,28 +497,42 @@ const onPlayerLogLine = async (
 			match.data.players.push(player);
 			MatchService.save(match);
 		}
-		const side = Player.getSideFromTeamString(teamString);
-		if (player.side !== side) {
-			player.side = side;
-			MatchService.save(match);
-		}
+		updatePlayerSide(match, player, teamString);
 	}
 
-	//04/21/2023 - 22:36:15: "Nickname<0><[U:1:12345678]><TERRORIST>" disconnected (reason "Disconnect")
+	if (!player) {
+		// Console or BOT
+		return;
+	}
+
+	//disconnected (reason "Disconnect")
 	const disconnectMatch = remainingLine.match(/^disconnected/);
 	if (disconnectMatch) {
 		const players = await GameServer.getPlayers(match);
 		if (players.length === 0 && match.data.mode === 'LOOP') {
 			await restartElection(match);
 		}
+		return;
 	}
 
 	//say "Hello World"
 	const sayMatch = remainingLine.match(/^say(_team)? "(.*)"$/);
-	if (sayMatch && player) {
+	if (sayMatch) {
 		const isTeamChat = sayMatch[1] === '_team';
 		const message = sayMatch[2]!;
 		await onPlayerSay(match, player, message, isTeamChat, teamString);
+		return;
+	}
+
+	//switched from team <CT> to <TERRORIST>
+	const switchTeamMatch = remainingLine.match(
+		/^switched from team <(|Unassigned|CT|TERRORIST|Spectator)> to <(|Unassigned|CT|TERRORIST|Spectator)>/
+	);
+	if (switchTeamMatch) {
+		const fromTeam = switchTeamMatch[1] as TTeamString;
+		const toTeam = switchTeamMatch[2] as TTeamString;
+		console.log('switchTeamMatch', fromTeam, toTeam);
+		updatePlayerSide(match, player, toTeam);
 	}
 };
 
