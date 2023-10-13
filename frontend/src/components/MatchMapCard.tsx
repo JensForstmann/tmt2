@@ -5,6 +5,8 @@ import {
 	IMatchResponse,
 	IMatchUpdateDto,
 	TMatchMapSate,
+	TTeamAB,
+	TTeamSides,
 	getCurrentTeamSideAndRoundSwitch,
 } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
@@ -67,24 +69,15 @@ export const MatchMapCard: Component<{
 
 	let modalRef: HTMLDialogElement | undefined;
 
-	const teamA = () => {
+	const teamSide = (team: TTeamAB): false | TTeamSides => {
 		if (props.match.currentMap !== props.mapIndex || props.map.state === 'FINISHED') {
-			return '';
+			return false;
 		}
-		return getCurrentTeamSideAndRoundSwitch(props.map).currentCtTeamAB === 'TEAM_A'
-			? '(CT)'
-			: '(T)';
+		return getCurrentTeamSideAndRoundSwitch(props.map).currentCtTeamAB === team ? 'CT' : 'T';
 	};
-	const teamB = () => {
-		switch (teamA()) {
-			case '(CT)':
-				return '(T)';
-			case '(T)':
-				return '(CT)';
-			default:
-				return '';
-		}
-	};
+	const teamASide = teamSide('TEAM_A');
+	const teamBSide = teamSide('TEAM_B');
+
 	return (
 		<Card class="text-center">
 			<CardMenu
@@ -101,7 +94,8 @@ export const MatchMapCard: Component<{
 			<h3 class="text-base font-light">{props.map.name}</h3>
 			<p class="flex basis-1/3 items-center justify-center space-x-5">
 				<span class="flex-1 text-right">
-					{teamA()} {props.match.teamA.name}
+					{teamASide && <div class="badge badge-neutral">{teamASide}</div>}{' '}
+					{props.match.teamA.name}
 				</span>
 				<span class="text-center text-2xl">
 					{props.map.score.teamA}
@@ -109,7 +103,8 @@ export const MatchMapCard: Component<{
 					{props.map.score.teamB}
 				</span>
 				<span class="flex-1 text-left">
-					{props.match.teamB.name} {teamB()}
+					{props.match.teamB.name}{' '}
+					{teamBSide && <div class="badge badge-neutral">{teamBSide}</div>}
 				</span>
 			</p>
 			<p>

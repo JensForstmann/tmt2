@@ -39,7 +39,8 @@ const List = (players: IPlayer[]) => {
 						target="_blank"
 					>
 						{player.name}
-					</a>
+					</a>{' '}
+					{player.side && <div class="badge badge-neutral">{player.side}</div>}
 					<br />
 				</>
 			)}
