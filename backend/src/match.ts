@@ -472,9 +472,16 @@ const onConsoleLogLine = async (match: Match, remainingLine: string) => {
 	}
 };
 
-const updatePlayerSide = (match: Match, player: IPlayer, teamString: TTeamString) => {
-	const side = Player.getSideFromTeamString(teamString);
+const updatePlayerSide = (match: Match, player: IPlayer, toTeam: TTeamString, log = false) => {
+	const side = Player.getSideFromTeamString(toTeam);
 	if (player.side !== side) {
+		if (log) {
+			match.log(
+				`Player ${player.steamId64} (${player.name}) changed side from '${
+					player.side ?? ''
+				}' to '${side ?? ''}'`
+			);
+		}
 		player.side = side;
 		MatchService.save(match);
 	}
@@ -494,16 +501,38 @@ const onPlayerLogLine = async (
 		player = match.data.players.find((p) => p.steamId64 === steamId64);
 		if (!player) {
 			player = Player.create(steamId, name);
+			match.log(`Player ${player.steamId64} (${name}) created`);
 			match.data.players.push(player);
 			MatchService.save(match);
 		}
-		updatePlayerSide(match, player, teamString);
+		if (player.name !== name) {
+			match.log(`Player ${player.steamId64} (${player.name}) renamed to: ${name}`);
+			player.name = name;
+			MatchService.save(match);
+		}
 	}
 
 	if (!player) {
 		// Console or BOT
 		return;
 	}
+
+	//switched from team <CT> to <TERRORIST>
+	const switchTeamMatch = remainingLine.match(
+		/^switched from team <(|Unassigned|CT|TERRORIST|Spectator)> to <(|Unassigned|CT|TERRORIST|Spectator)>/
+	);
+	if (switchTeamMatch) {
+		const fromTeam = switchTeamMatch[1] as TTeamString;
+		const toTeam = switchTeamMatch[2] as TTeamString;
+		match.log(
+			`Player ${player.steamId64} (${player.name}) changed side from '${fromTeam}' to '${toTeam}'`
+		);
+		updatePlayerSide(match, player, toTeam);
+		teamString = toTeam;
+		return;
+	}
+
+	updatePlayerSide(match, player, teamString, true); // update player side in case no "switched from team" log line was received
 
 	//disconnected (reason "Disconnect")
 	const disconnectMatch = remainingLine.match(/^disconnected/);
@@ -522,17 +551,6 @@ const onPlayerLogLine = async (
 		const message = sayMatch[2]!;
 		await onPlayerSay(match, player, message, isTeamChat, teamString);
 		return;
-	}
-
-	//switched from team <CT> to <TERRORIST>
-	const switchTeamMatch = remainingLine.match(
-		/^switched from team <(|Unassigned|CT|TERRORIST|Spectator)> to <(|Unassigned|CT|TERRORIST|Spectator)>/
-	);
-	if (switchTeamMatch) {
-		const fromTeam = switchTeamMatch[1] as TTeamString;
-		const toTeam = switchTeamMatch[2] as TTeamString;
-		console.log('switchTeamMatch', fromTeam, toTeam);
-		updatePlayerSide(match, player, toTeam);
 	}
 };
 
