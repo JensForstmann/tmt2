@@ -391,9 +391,12 @@ export const onLog = async (match: Match, body: string) => {
 };
 
 const onLogLine = async (match: Match, line: string) => {
-	if (!line) return;
+	if (!line) {
+		return;
+	}
+
 	try {
-		//09/14/2020 - 15:11:58.307 - "PlayerName<2><STEAM_1:0:7426845><TERRORIST>" say "Hello World"
+		//09/14/2020 - 15:11:58.307 - "PlayerName<2><[U:1:12345678]><TERRORIST>" say "Hello World"
 		// console.debug('line:', line);
 		const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
 
@@ -405,16 +408,15 @@ const onLogLine = async (match: Match, line: string) => {
 			return;
 		}
 
-		const botPattern = /"(.*?)<(\d+)><BOT><(CT|TERRORIST)>" (.*)$/;
-		const botMatch = line.match(new RegExp(dateTimePattern.source + botPattern.source));
-		if (botMatch) {
-			const name = botMatch[1]!;
-			const teamString = botMatch[2] as TTeamString;
-			const remainingLine = botMatch[3]!;
+		const rconPattern = /rcon from "(.*?)": (.*)$/;
+		const rconMatch = line.match(new RegExp(dateTimePattern.source + rconPattern.source));
+		if (rconMatch) {
 			return;
 		}
 
-		const playerPattern = /"(.*?)<(\d+)><(.*?)><(|Unassigned|CT|TERRORIST)>" (.*)$/;
+		// "Mae<9><BOT><CT>" [622 2164 -97] killed "Nickname<0><[U:1:12345678]><TERRORIST>" [1287 2165 1] with "hkp2000"
+		// "Nickname<0><[U:1:12345678]><TERRORIST>" say "Hello there"
+		const playerPattern = /"(.*?)<(\d+)><(.*?)><(|Unassigned|CT|TERRORIST|Spectator)>" (.*)$/;
 		const playerMatch = line.match(new RegExp(dateTimePattern.source + playerPattern.source));
 		if (playerMatch) {
 			const name = playerMatch[1]!;
@@ -423,12 +425,14 @@ const onLogLine = async (match: Match, line: string) => {
 			const teamString = playerMatch[4] as TTeamString;
 			const remainingLine = playerMatch[5]!;
 			await onPlayerLogLine(match, name, ingamePlayerId, steamId, teamString, remainingLine);
+			return;
 		}
 
 		const mapEndPattern = /Game Over: competitive (.*) score (\d+):(\d+) after (\d+) min$/;
 		const mapEndMatch = line.match(new RegExp(dateTimePattern.source + mapEndPattern.source));
 		if (mapEndMatch) {
 			await onMapEnd(match);
+			return;
 		}
 
 		const roundEndPattern =
@@ -451,6 +455,7 @@ const onLogLine = async (match: Match, line: string) => {
 					winningTeam === 'CT' ? 'CT' : 'T'
 				);
 			}
+			return;
 		}
 	} catch (err) {
 		match.log('error in onLogLine' + err);
@@ -480,10 +485,16 @@ const onPlayerLogLine = async (
 		if (!player) {
 			player = Player.create(steamId, name);
 			match.data.players.push(player);
+			MatchService.save(match);
+		}
+		const side = Player.getSideFromTeamString(teamString);
+		if (player.side !== side) {
+			player.side = side;
+			MatchService.save(match);
 		}
 	}
 
-	//04/21/2023 - 22:36:15: "Yenz<55><STEAM_1:0:8520813><TERRORIST>" disconnected (reason "Disconnect")
+	//04/21/2023 - 22:36:15: "Nickname<0><[U:1:12345678]><TERRORIST>" disconnected (reason "Disconnect")
 	const disconnectMatch = remainingLine.match(/^disconnected/);
 	if (disconnectMatch) {
 		const players = await GameServer.getPlayers(match);
@@ -510,7 +521,7 @@ const onPlayerSay = async (
 ) => {
 	message = message.trim();
 
-	Events.onPlayerSay(match, player, message, isTeamChat);
+	Events.onPlayerSay(match, player, message, isTeamChat, teamString);
 
 	if (Settings.COMMAND_PREFIXES.includes(message[0]!)) {
 		message = message.substring(1);

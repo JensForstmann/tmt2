@@ -594,6 +594,13 @@
 					}
 				]
 			},
+			"TTeamSides": {
+				"type": "string",
+				"enum": [
+					"CT",
+					"T"
+				]
+			},
 			"IPlayer": {
 				"properties": {
 					"steamId64": {
@@ -604,6 +611,14 @@
 					},
 					"team": {
 						"$ref": "#/components/schemas/TTeamAB"
+					},
+					"side": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TTeamSides"
+							}
+						],
+						"nullable": true
 					}
 				},
 				"required": [
@@ -1162,6 +1177,9 @@
 					},
 					"isTeamChat": {
 						"type": "boolean"
+					},
+					"teamString": {
+						"type": "string"
 					}
 				},
 				"required": [
@@ -1586,13 +1604,6 @@
 					"FIXED",
 					"PICK",
 					"RANDOM"
-				]
-			},
-			"TTeamSides": {
-				"type": "string",
-				"enum": [
-					"CT",
-					"T"
 				]
 			},
 			"ElectionSideStep": {

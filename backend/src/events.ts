@@ -19,6 +19,7 @@ import {
 	RoundEndEvent,
 	TMapMode,
 	TSideMode,
+	TTeamString,
 } from '../../common';
 import * as Match from './match';
 import { Settings } from './settings';
@@ -135,7 +136,8 @@ export const onPlayerSay = (
 	match: Match.Match,
 	player: IPlayer,
 	message: string,
-	isTeamChat: boolean
+	isTeamChat: boolean,
+	teamString: TTeamString
 ) => {
 	const data: ChatEvent = {
 		...getBaseEvent(match, 'CHAT'),
@@ -143,6 +145,7 @@ export const onPlayerSay = (
 		playerTeam: player.team ? Match.getTeamByAB(match, player.team) : null,
 		message: message,
 		isTeamChat: isTeamChat,
+		teamString: teamString,
 	};
 	send(match, data);
 };

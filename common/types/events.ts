@@ -34,6 +34,7 @@ export interface ChatEvent extends BaseEvent {
 	playerTeam: ITeam | null;
 	message: string;
 	isTeamChat: boolean;
+	teamString?: string;
 }
 
 export interface ElectionEndEvent extends BaseEvent {

@@ -12,4 +12,4 @@ export interface ITeamCreateDto {
 	advantage?: number;
 }
 
-export type TTeamString = 'Unassigned' | 'CT' | 'TERRORIST' | '';
+export type TTeamString = 'Unassigned' | 'CT' | 'TERRORIST' | '' | 'Spectator';

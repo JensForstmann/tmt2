@@ -425,12 +425,28 @@ const models: TsoaRoute.Models = {
 		},
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	TTeamSides: {
+		dataType: 'refAlias',
+		type: {
+			dataType: 'union',
+			subSchemas: [
+				{ dataType: 'enum', enums: ['CT'] },
+				{ dataType: 'enum', enums: ['T'] },
+			],
+			validators: {},
+		},
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	IPlayer: {
 		dataType: 'refObject',
 		properties: {
 			steamId64: { dataType: 'string', required: true },
 			name: { dataType: 'string', required: true },
 			team: { ref: 'TTeamAB' },
+			side: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TTeamSides' }, { dataType: 'enum', enums: [null] }],
+			},
 		},
 		additionalProperties: false,
 	},
@@ -666,6 +682,7 @@ const models: TsoaRoute.Models = {
 			},
 			message: { dataType: 'string', required: true },
 			isTeamChat: { dataType: 'boolean', required: true },
+			teamString: { dataType: 'string' },
 		},
 		additionalProperties: false,
 	},
@@ -863,18 +880,6 @@ const models: TsoaRoute.Models = {
 				{ dataType: 'enum', enums: ['FIXED'] },
 				{ dataType: 'enum', enums: ['PICK'] },
 				{ dataType: 'enum', enums: ['RANDOM'] },
-			],
-			validators: {},
-		},
-	},
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	TTeamSides: {
-		dataType: 'refAlias',
-		type: {
-			dataType: 'union',
-			subSchemas: [
-				{ dataType: 'enum', enums: ['CT'] },
-				{ dataType: 'enum', enums: ['T'] },
 			],
 			validators: {},
 		},

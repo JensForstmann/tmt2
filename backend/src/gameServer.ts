@@ -58,7 +58,7 @@ export const getPlayers = async (match: Match.Match): Promise<IngamePlayer[]> =>
 	id     time ping loss      state   rate adr name
 	65535 [NoChan]    0    0 challenging      0unknown ''
 	65535 [NoChan]    0    0 challenging      0unknown ''
-	2    00:40    0    0     active 786432 127.0.0.1:65498 'Yenz'
+	2    00:40    0    0     active 786432 127.0.0.1:65498 'Nickname'
 	65535 [NoChan]    0    0 challenging      0unknown ''
 	65535 [NoChan]    0    0 challenging      0unknown ''
 	14      BOT    0    0     active      0 'Aspirant'
@@ -80,7 +80,7 @@ export const getPlayers = async (match: Match.Match): Promise<IngamePlayer[]> =>
 			.map((line) => line.trim()) ?? [];
 
 	// playerLines example:
-	// 2    00:40    0    0     active 786432 127.0.0.1:65498 'Yenz'
+	// 2    00:40    0    0     active 786432 127.0.0.1:65498 'Nickname'
 	const players = playerLines
 		.map((line) => {
 			const matcher = line.match(/^(\d+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+'(\S+)'$/);
