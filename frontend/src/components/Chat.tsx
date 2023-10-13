@@ -34,11 +34,14 @@ const formatChatEvent = (e: ChatEvent) => {
 	const d = new Date(e.timestamp);
 	const teamChat = e.isTeamChat ? '(TEAM)' : '(ALL)';
 	const teamName = e.playerTeam ? ` [${e.playerTeam.name}]` : '';
+	const teamSide = e.player?.side ?? e.teamString;
 	const playerName = e.player?.name ?? 'Console';
 	return (
 		<>
 			<span title={d.toLocaleString()}>{d.toLocaleTimeString()}</span>
-			{`: ${teamChat}${teamName} ${playerName}: ${e.message}`}
+			{`: ${teamChat}${teamName} `}
+			{teamSide && <div class="badge badge-neutral">{teamSide}</div>}
+			{` ${playerName}: ${e.message}`}
 		</>
 	);
 };
