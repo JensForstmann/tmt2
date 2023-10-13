@@ -472,14 +472,24 @@ const onConsoleLogLine = async (match: Match, remainingLine: string) => {
 	}
 };
 
-const updatePlayerSide = (match: Match, player: IPlayer, toTeam: TTeamString, log = false) => {
+const updatePlayerSide = (
+	match: Match,
+	player: IPlayer,
+	toTeam: TTeamString,
+	log = false,
+	force = false
+) => {
+	if (toTeam === '' && !force) {
+		// some log lines does not contain the correct team string although player is assigned
+		return;
+	}
 	const side = Player.getSideFromTeamString(toTeam);
 	if (player.side !== side) {
 		if (log) {
 			match.log(
 				`Player ${player.steamId64} (${player.name}) changed side from '${
 					player.side ?? ''
-				}' to '${side ?? ''}'`
+				}' to '${side ?? ''}' (based on event other than "switch team"`
 			);
 		}
 		player.side = side;
@@ -527,19 +537,31 @@ const onPlayerLogLine = async (
 		match.log(
 			`Player ${player.steamId64} (${player.name}) changed side from '${fromTeam}' to '${toTeam}'`
 		);
-		updatePlayerSide(match, player, toTeam);
+		updatePlayerSide(match, player, toTeam, false, true);
 		teamString = toTeam;
 		return;
 	}
 
 	updatePlayerSide(match, player, teamString, true); // update player side in case no "switched from team" log line was received
 
+	//connected, address "127.0.0.1:56202"
+	const connectMatch = remainingLine.match(/^connected/);
+	if (connectMatch) {
+		match.log(`Player ${player.steamId64} (${player.name}) connected`);
+		return;
+	}
+
 	//disconnected (reason "Disconnect")
 	const disconnectMatch = remainingLine.match(/^disconnected/);
 	if (disconnectMatch) {
-		const players = await GameServer.getPlayers(match);
-		if (players.length === 0 && match.data.mode === 'LOOP') {
-			await restartElection(match);
+		match.log(`Player ${player.steamId64} (${player.name}) disconnected`);
+		// player.side = null;
+		// MatchService.save(match);
+		if (match.data.mode === 'LOOP') {
+			const players = await GameServer.getPlayers(match);
+			if (players.length === 0) {
+				await restartElection(match);
+			}
 		}
 		return;
 	}
