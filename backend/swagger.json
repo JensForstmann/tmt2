@@ -2781,6 +2781,66 @@
 				],
 				"parameters": []
 			}
+		},
+		"/api/debug": {
+			"get": {
+				"operationId": "GetInfos",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"webSockets": {
+											"items": {},
+											"type": "array"
+										},
+										"tmtSayPrefix": {
+											"type": "string"
+										},
+										"tmtLogAddress": {
+											"type": "string"
+										},
+										"tmtPort": {
+											"anyOf": [
+												{
+													"type": "string"
+												},
+												{
+													"type": "number",
+													"format": "double"
+												}
+											]
+										},
+										"tmtStorageFolder": {
+											"type": "string"
+										},
+										"tmtVersion": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"webSockets",
+										"tmtSayPrefix",
+										"tmtLogAddress",
+										"tmtPort",
+										"tmtStorageFolder",
+										"tmtVersion"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": []
+			}
 		}
 	},
 	"servers": [

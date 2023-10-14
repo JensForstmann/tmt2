@@ -31,6 +31,7 @@ import * as Team from './team';
 
 const STORAGE_LOGS_PREFIX = 'logs_';
 const STORAGE_LOGS_SUFFIX = '.jsonl';
+const SAY_PREFIX = GameServer.colors.green + Settings.SAY_PREFIX + GameServer.colors.white;
 
 export interface Match {
 	data: IMatch;
@@ -262,7 +263,7 @@ export const execManyRcon = async (match: Match, commands: string[]) => {
 };
 
 export const say = async (match: Match, message: string) => {
-	message = escapeRconSayString(Settings.SAY_PREFIX + message);
+	message = escapeRconSayString(SAY_PREFIX + message);
 	await execRcon(match, `say ${message}`);
 };
 
@@ -619,7 +620,7 @@ const onPlayerSay = async (
 
 const onConsoleSay = async (match: Match, message: string) => {
 	message = message.trim();
-	if (!message.startsWith(Settings.SAY_PREFIX)) {
+	if (!message.startsWith(SAY_PREFIX)) {
 		Events.onConsoleSay(match, message);
 	}
 };

@@ -37,7 +37,8 @@ const STATIC_PATH = (() => {
 	throw 'Could not determine static path';
 })();
 
-const PORT = process.env['TMT_PORT'] || 8080;
+export const PORT = process.env['TMT_PORT'] || 8080;
+export const VERSION = process.env['COMMIT_SHA'] || null;
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -105,7 +106,7 @@ app.get('*', express.static(STATIC_PATH));
 app.get('*', (req, res) => res.sendFile(path.join(STATIC_PATH, 'index.html')));
 
 const main = async () => {
-	console.info(`Start TMT (${process.env['COMMIT_SHA'] || 'no COMMIT_SHA set'})`);
+	console.info(`Start TMT (version ${VERSION ? VERSION : 'unknown'})`);
 	await Storage.setup();
 	await Auth.setup();
 	await WebSocket.setup(httpServer);
