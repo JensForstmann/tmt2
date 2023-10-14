@@ -119,16 +119,51 @@ export const MatchEditCard: Component<{
 					</For>
 				</SelectInput>
 				<TextInput
+					label={t('Match Passthrough')}
+					labelTopRight={
+						store.passthrough !== props.match.passthrough ? t('Changed') : ''
+					}
+					value={store.passthrough ?? ''}
+					onInput={(e) =>
+						setStore(
+							'passthrough',
+							e.currentTarget.value ||
+								(props.match.passthrough === undefined
+									? undefined
+									: e.currentTarget.value)
+						)
+					}
+				/>
+				<TextInput
 					label={t('Webhook URL')}
 					labelTopRight={store.webhookUrl !== props.match.webhookUrl ? t('Changed') : ''}
 					value={store.webhookUrl ?? ''}
 					onInput={(e) => setStore('webhookUrl', e.currentTarget.value || null)}
 				/>
 				<TextInput
-					label={t('Webhook URL')}
+					label={t('Team A Name')}
 					labelTopRight={store.teamA?.name !== props.match.teamA.name ? t('Changed') : ''}
 					value={store.teamA?.name}
 					onInput={(e) => setStore('teamA', 'name', e.currentTarget.value)}
+				/>
+				<TextInput
+					label={t('Team A Passthrough')}
+					labelTopRight={
+						store.teamA?.passthrough !== props.match.teamA.passthrough
+							? t('Changed')
+							: ''
+					}
+					value={store.teamA?.passthrough ?? ''}
+					onInput={(e) =>
+						setStore(
+							'teamA',
+							'passthrough',
+							e.currentTarget.value ||
+								(props.match.teamA.passthrough === undefined
+									? undefined
+									: e.currentTarget.value)
+						)
+					}
 				/>
 				<TextInput
 					label={t('Team A Advantage')}
@@ -145,6 +180,25 @@ export const MatchEditCard: Component<{
 					labelTopRight={store.teamB?.name !== props.match.teamB.name ? t('Changed') : ''}
 					value={store.teamB?.name}
 					onInput={(e) => setStore('teamB', 'name', e.currentTarget.value)}
+				/>
+				<TextInput
+					label={t('Team B Passthrough')}
+					labelTopRight={
+						store.teamB?.passthrough !== props.match.teamB.passthrough
+							? t('Changed')
+							: ''
+					}
+					value={store.teamB?.passthrough ?? ''}
+					onInput={(e) =>
+						setStore(
+							'teamB',
+							'passthrough',
+							e.currentTarget.value ||
+								(props.match.teamB.passthrough === undefined
+									? undefined
+									: e.currentTarget.value)
+						)
+					}
 				/>
 				<TextInput
 					label={t('Team B Advantage')}
