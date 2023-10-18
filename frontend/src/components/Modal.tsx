@@ -6,10 +6,10 @@ export const Modal: Component<
 		children: JSX.Element;
 	}
 > = (props) => {
-	const [local, others] = splitProps(props, ['children']);
+	const [local, others] = splitProps(props, ['children', 'class']);
 	return (
 		<dialog class="modal" {...others}>
-			<div class="modal-box">
+			<div class={(local.class ?? '') + ' modal-box'}>
 				<button
 					class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
 					onClick={(e) =>

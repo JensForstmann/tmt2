@@ -44,9 +44,11 @@ export const TextInput: Component<
 				</label>
 			</Show>
 			<input class={(local.class ?? '') + ' input w-full'} type="text" {...others} />
-			<label class="label">
-				<span class="label-text-alt">{local.labelBottomLeft}</span>
-			</label>
+			<Show when={local.labelBottomLeft !== undefined}>
+				<label class="label">
+					<span class="label-text-alt">{local.labelBottomLeft}</span>
+				</label>
+			</Show>
 		</div>
 	);
 };
@@ -60,7 +62,7 @@ export const TextArea: Component<
 	const [local, others] = splitProps(props, ['label', 'class', 'labelTopRight']);
 	return (
 		<div class="form-control">
-			<Show when={local.label !== undefined}>
+			<Show when={local.label !== undefined || local.labelTopRight !== undefined}>
 				<label class="label">
 					<span class="label-text">{local.label}</span>
 					<span class="label-text-alt">{local.labelTopRight}</span>
@@ -88,7 +90,7 @@ export const SelectInput: Component<
 	]);
 	return (
 		<div class="form-control">
-			<Show when={local.label !== undefined}>
+			<Show when={local.label !== undefined || local.labelTopRight !== undefined}>
 				<label class="label">
 					<span class="label-text">{local.label}</span>
 					<span class="label-text-alt">{local.labelTopRight}</span>
@@ -97,9 +99,11 @@ export const SelectInput: Component<
 			<select class="select w-full" {...others}>
 				{local.children}
 			</select>
-			<label class="label">
-				<span class="label-text-alt">{local.labelBottomLeft}</span>
-			</label>
+			<Show when={local.labelBottomLeft !== undefined}>
+				<label class="label">
+					<span class="label-text-alt">{local.labelBottomLeft}</span>
+				</label>
+			</Show>
 		</div>
 	);
 };
