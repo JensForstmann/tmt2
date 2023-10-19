@@ -2078,6 +2078,42 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"IPreset": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"data": {
+						"$ref": "#/components/schemas/IMatchCreateDto"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"data",
+					"id"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IPresetCreateDto": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"data": {
+						"$ref": "#/components/schemas/IMatchCreateDto"
+					}
+				},
+				"required": [
+					"name",
+					"data"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {
@@ -2753,6 +2789,108 @@
 						"schema": {
 							"format": "double",
 							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/presets": {
+			"get": {
+				"operationId": "GetPresets",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IPreset"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreatePreset",
+				"responses": {
+					"201": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IPreset"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IPresetCreateDto"
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"operationId": "UpdatePreset",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IPreset"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/presets/{id}": {
+			"delete": {
+				"operationId": "DeletePreset",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
 						}
 					}
 				]

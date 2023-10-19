@@ -40,7 +40,7 @@ export const logout = () => {
 	useNavigate()('/');
 };
 
-type HttpMethods = 'GET' | 'PATCH' | 'POST' | 'DELETE';
+type HttpMethods = 'GET' | 'PATCH' | 'POST' | 'DELETE' | 'PUT';
 export const createFetcher = (token?: string) => {
 	return async <T>(
 		method: HttpMethods,

@@ -18,6 +18,8 @@ import { MatchesController } from './matchesController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { GameServersController } from './gameServersController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { PresetsController } from './presetsController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { DebugController } from './debugController';
 import { expressAuthentication } from './auth';
 // @ts-ignore - no great way to install types from subpackage
@@ -1098,6 +1100,25 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IPreset: {
+		dataType: 'refObject',
+		properties: {
+			name: { dataType: 'string', required: true },
+			data: { ref: 'IMatchCreateDto', required: true },
+			id: { dataType: 'string', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IPresetCreateDto: {
+		dataType: 'refObject',
+		properties: {
+			name: { dataType: 'string', required: true },
+			data: { ref: 'IMatchCreateDto', required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
 const validationService = new ValidationService(models);
 
@@ -1645,6 +1666,121 @@ export function RegisterRoutes(app: Router) {
 				const controller = new GameServersController();
 
 				const promise = controller.deleteGameServer.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get(
+		'/api/presets',
+		...fetchMiddlewares<RequestHandler>(PresetsController),
+		...fetchMiddlewares<RequestHandler>(PresetsController.prototype.getPresets),
+
+		function PresetsController_getPresets(request: any, response: any, next: any) {
+			const args = {
+				undefined: { in: 'request', required: true, dataType: 'object' },
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new PresetsController();
+
+				const promise = controller.getPresets.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.post(
+		'/api/presets',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(PresetsController),
+		...fetchMiddlewares<RequestHandler>(PresetsController.prototype.createPreset),
+
+		function PresetsController_createPreset(request: any, response: any, next: any) {
+			const args = {
+				requestBody: {
+					in: 'body',
+					name: 'requestBody',
+					required: true,
+					ref: 'IPresetCreateDto',
+				},
+				undefined: { in: 'request', required: true, dataType: 'object' },
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new PresetsController();
+
+				const promise = controller.createPreset.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, 201, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.put(
+		'/api/presets',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(PresetsController),
+		...fetchMiddlewares<RequestHandler>(PresetsController.prototype.updatePreset),
+
+		function PresetsController_updatePreset(request: any, response: any, next: any) {
+			const args = {
+				requestBody: { in: 'body', name: 'requestBody', required: true, ref: 'IPreset' },
+				undefined: { in: 'request', required: true, dataType: 'object' },
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new PresetsController();
+
+				const promise = controller.updatePreset.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.delete(
+		'/api/presets/:id',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(PresetsController),
+		...fetchMiddlewares<RequestHandler>(PresetsController.prototype.deletePreset),
+
+		function PresetsController_deletePreset(request: any, response: any, next: any) {
+			const args = {
+				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
+				undefined: { in: 'request', required: true, dataType: 'object' },
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new PresetsController();
+
+				const promise = controller.deletePreset.apply(controller, validatedArgs as any);
 				promiseHandler(controller, promise, response, undefined, next);
 			} catch (err) {
 				return next(err);

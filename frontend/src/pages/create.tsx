@@ -9,14 +9,21 @@ import {
 	TMatchMode,
 	TTeamAB,
 } from '../../../common';
-import { createFetcher } from '../utils/fetcher';
+import { createFetcher, isLoggedIn } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { Card } from '../components/Card';
 import { SelectInput, TextArea, TextInput, ToggleInput } from '../components/Inputs';
 import { AddElectionStep, getElectionStepString } from '../components/ElectionStep';
 import { Modal } from '../components/Modal';
 import { createStore } from 'solid-js/store';
-import { SvgAdd, SvgDelete, SvgKeyboardArrowDown, SvgKeyboardArrowUp } from '../assets/Icons';
+import {
+	SvgAdd,
+	SvgDelete,
+	SvgKeyboardArrowDown,
+	SvgKeyboardArrowUp,
+	SvgSave,
+} from '../assets/Icons';
+import { IPreset, IPresetCreateDto } from '../../../common/types/preset';
 
 const DEFAULT_MAPS = [
 	'de_ancient',
@@ -79,6 +86,68 @@ const minifyMapPool = (maps: string) => {
 export const CreatePage: Component = () => {
 	const navigate = useNavigate();
 	const fetcher = createFetcher();
+	const [presets, setPresets] = createSignal<IPreset[]>([]);
+	const [presetName, setPresetName] = createSignal('');
+	const [selectedPresetId, setSelectedPresetId] = createSignal('');
+
+	createEffect(() => {
+		refreshPresets();
+	});
+
+	const refreshPresets = () => {
+		fetcher<IPreset[]>('GET', `/api/presets`).then((presets) => {
+			if (presets) {
+				setPresets(presets);
+			}
+		});
+	};
+
+	const addPreset = () => {
+		if (!presetName()) {
+			return;
+		}
+		const presetCreateDto: IPresetCreateDto = {
+			name: presetName(),
+			data: matchCreateDto,
+		};
+		fetcher<IPreset>('POST', `/api/presets`, presetCreateDto).then((preset) => {
+			if (preset) {
+				setPresets((presets) => [...presets, preset]);
+				setSelectedPresetId(preset.id);
+				setPresetName(preset.name);
+			}
+		});
+	};
+
+	const updatePreset = () => {
+		if (!selectedPresetId() || !presetName()) {
+			return;
+		}
+		const updatePresetDto: IPreset = {
+			id: selectedPresetId(),
+			name: presetName(),
+			data: matchCreateDto,
+		};
+		fetcher('PUT', `/api/presets`, updatePresetDto).then(() => {
+			setPresets((presets) =>
+				presets.map((preset) =>
+					preset.id === updatePresetDto.id ? updatePresetDto : preset
+				)
+			);
+		});
+	};
+
+	const deletePreset = () => {
+		const presetIdToDelete = selectedPresetId();
+		if (!presetIdToDelete) {
+			return;
+		}
+		fetcher('DELETE', `/api/presets/${presetIdToDelete}`).then(() => {
+			setPresets((presets) => presets.filter((preset) => preset.id !== presetIdToDelete));
+			setSelectedPresetId('');
+			setPresetName('');
+		});
+	};
 
 	let addElectionStepIndex = 0;
 	let electionStepModalRef: HTMLDialogElement | undefined;
@@ -98,14 +167,16 @@ export const CreatePage: Component = () => {
 		mapPool: DEFAULT_MAPS,
 		electionSteps: getElectionStepsFromPreset('BO1', DEFAULT_MAPS),
 		rconCommands: {
+			// TODO
 			init: [],
 			knife: [],
 			match: [],
 			end: [],
 		},
-		matchEndAction: 'NONE',
+		matchEndAction: 'NONE', // TODO
 		mode: 'SINGLE',
 		tmtLogAddress: window.location.protocol + '//' + window.location.host,
+		canClinch: true, // TODO,
 	});
 
 	const createMatch = async () => {
@@ -135,8 +206,73 @@ export const CreatePage: Component = () => {
 		}
 	});
 
+	const setMatchDataFromPreset = (presetId: string) => {
+		const preset = getPresetById(presetId);
+		if (preset) {
+			setMatchCreateDto(preset.data);
+		}
+	};
+
+	const getPresetById = (presetId: string) => {
+		return presets().find((preset) => preset.id === presetId);
+	};
+
 	return (
 		<Card>
+			<Show when={isLoggedIn()}>
+				<div class="flex items-end space-x-2">
+					<div class="flex-grow">
+						<SelectInput
+							label={t('Select Preset')}
+							value={selectedPresetId()}
+							onInput={(e) => {
+								setSelectedPresetId(e.currentTarget.value);
+								setPresetName(getPresetById(e.currentTarget.value)?.name ?? '');
+								setMatchDataFromPreset(e.currentTarget.value);
+							}}
+							disabled={presets().length === 0}
+						>
+							<option value=""></option>
+							<For each={presets()}>
+								{(preset) => <option value={preset.id}>{preset.name}</option>}
+							</For>
+						</SelectInput>
+					</div>
+					<button
+						class="btn"
+						onClick={() => deletePreset()}
+						disabled={selectedPresetId() === ''}
+					>
+						<SvgDelete />
+						{t('Delete preset')}
+					</button>
+				</div>
+				<div class="flex items-end space-x-2">
+					<div class="flex-grow">
+						<TextInput
+							label={t('Preset Name')}
+							value={presetName()}
+							onInput={(e) => setPresetName(e.currentTarget.value)}
+						/>
+					</div>
+					<button
+						class="btn"
+						onClick={() => addPreset()}
+						disabled={presetName().trim() === ''}
+					>
+						<SvgAdd />
+						{t('Add new preset')}
+					</button>
+					<button
+						class="btn"
+						onClick={() => updatePreset()}
+						disabled={presetName().trim() === '' || selectedPresetId() === ''}
+					>
+						<SvgSave />
+						{t('Update preset')}
+					</button>
+				</div>
+			</Show>
 			<div class="prose pt-4">
 				<h2>{t('Teams')}</h2>
 			</div>
