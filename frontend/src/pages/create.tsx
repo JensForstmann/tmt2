@@ -224,7 +224,7 @@ export const CreatePage: Component = () => {
 	const setMatchDataFromPreset = (presetId: string) => {
 		const preset = getPresetById(presetId);
 		if (preset) {
-			setMatchCreateDto(preset.data);
+			setMatchCreateDto(JSON.parse(JSON.stringify(preset.data)));
 		}
 	};
 
@@ -249,7 +249,14 @@ export const CreatePage: Component = () => {
 						>
 							<option value=""></option>
 							<For each={presets()}>
-								{(preset) => <option value={preset.id}>{preset.name}</option>}
+								{(preset) => (
+									<option
+										value={preset.id}
+										selected={selectedPresetId() === preset.id}
+									>
+										{preset.name}
+									</option>
+								)}
 							</For>
 						</SelectInput>
 					</div>

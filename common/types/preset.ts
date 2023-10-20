@@ -8,3 +8,5 @@ export interface IPresetCreateDto {
 export interface IPreset extends IPresetCreateDto {
 	id: string;
 }
+
+export interface IPresetUpdateDto extends IPreset {}

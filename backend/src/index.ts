@@ -6,6 +6,7 @@ import path from 'path';
 import * as Auth from './auth';
 import * as Election from './election';
 import * as ManagedGameServers from './managedGameServers';
+import * as Presets from './presets';
 import * as Match from './match';
 import { checkAndNormalizeLogAddress } from './match';
 import * as MatchMap from './matchMap';
@@ -111,6 +112,7 @@ const main = async () => {
 	await Auth.setup();
 	await WebSocket.setup(httpServer);
 	await ManagedGameServers.setup();
+	await Presets.setup();
 	Match.registerCommandHandlers();
 	MatchMap.registerCommandHandlers();
 	Election.registerCommandHandlers();

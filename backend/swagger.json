@@ -2816,7 +2816,11 @@
 						}
 					}
 				},
-				"security": [],
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
 				"parameters": []
 			},
 			"post": {
