@@ -20,11 +20,11 @@
 	},
 	"devDependencies": {
 		"@tsoa/cli": "^5.1.1",
-		"@types/debug": "^4.1.9",
-		"@types/express": "^4.17.18",
-		"@types/node": "^20.8.3",
-		"@types/steamid": "^2.0.1",
-		"@types/ws": "^8.5.6",
+		"@types/debug": "^4.1.10",
+		"@types/express": "^4.17.20",
+		"@types/node": "^20.8.7",
+		"@types/steamid": "^2.0.2",
+		"@types/ws": "^8.5.8",
 		"nodemon": "^3.0.1",
 		"ts-node": "^10.9.1",
 		"typescript": "^5.2.2"
