@@ -9,7 +9,7 @@ export const ToggleInput: Component<
 	const [local, others] = splitProps(props, ['label', 'class', 'labelTopRight']);
 	return (
 		<div class="form-control">
-			<Show when={local.label !== undefined}>
+			<Show when={local.label || local.labelTopRight}>
 				<label class="label">
 					<span class="label-text">{local.label}</span>
 					<span class="label-text-alt">{local.labelTopRight}</span>
@@ -37,14 +37,14 @@ export const TextInput: Component<
 	]);
 	return (
 		<div class={(local.containerClass ?? '') + ' form-control'}>
-			<Show when={local.label !== undefined}>
+			<Show when={local.label || local.labelTopRight}>
 				<label class="label">
 					<span class="label-text">{local.label}</span>
 					<span class="label-text-alt">{local.labelTopRight}</span>
 				</label>
 			</Show>
 			<input class={(local.class ?? '') + ' input w-full'} type="text" {...others} />
-			<Show when={local.labelBottomLeft !== undefined}>
+			<Show when={local.labelBottomLeft}>
 				<label class="label">
 					<span class="label-text-alt">{local.labelBottomLeft}</span>
 				</label>
@@ -62,7 +62,7 @@ export const TextArea: Component<
 	const [local, others] = splitProps(props, ['label', 'class', 'labelTopRight']);
 	return (
 		<div class="form-control">
-			<Show when={local.label !== undefined || local.labelTopRight !== undefined}>
+			<Show when={local.label || local.labelTopRight}>
 				<label class="label">
 					<span class="label-text">{local.label}</span>
 					<span class="label-text-alt">{local.labelTopRight}</span>
@@ -99,7 +99,7 @@ export const SelectInput: Component<
 			<select class="select w-full" {...others}>
 				{local.children}
 			</select>
-			<Show when={local.labelBottomLeft !== undefined}>
+			<Show when={local.labelBottomLeft}>
 				<label class="label">
 					<span class="label-text-alt">{local.labelBottomLeft}</span>
 				</label>

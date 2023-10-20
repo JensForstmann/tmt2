@@ -48,9 +48,20 @@ const loadMatchFromStorage = async (matchData: IMatch) => {
 	}
 };
 
-export const create = async (dto: IMatchCreateDto) => {
+export const create = async (dto: IMatchCreateDto, isLoggedIn: boolean) => {
 	const id = shortUuid();
 	try {
+		if (
+			isLoggedIn === false &&
+			[
+				...(dto.rconCommands?.init ?? []),
+				...(dto.rconCommands?.knife ?? []),
+				...(dto.rconCommands?.match ?? []),
+				...(dto.rconCommands?.end ?? []),
+			].find((cmd) => cmd.toLowerCase().includes('password'))
+		) {
+			throw 'not allowed to set passwords (text "password" found in rcon commands)';
+		}
 		const logSecret = shortUuid();
 		startingMatches.add(id);
 		const match = await Match.createFromCreateDto(dto, id, logSecret);

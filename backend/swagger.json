@@ -2166,7 +2166,11 @@
 						}
 					}
 				},
-				"security": [],
+				"security": [
+					{
+						"bearer_token_optional": []
+					}
+				],
 				"parameters": [],
 				"requestBody": {
 					"required": true,

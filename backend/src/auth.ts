@@ -10,6 +10,12 @@ export interface IAuthResponse {
 	comment?: string;
 }
 
+export type IAuthResponseOptional =
+	| IAuthResponse
+	| {
+			type: 'UNAUTHORIZED';
+	  };
+
 interface ITokenContent {
 	comment?: string;
 }
@@ -79,13 +85,19 @@ export const expressAuthentication = async (
 	req: Request,
 	securityName: string,
 	scopes?: string[]
-): Promise<IAuthResponse> => {
-	if (securityName === 'bearer_token') {
+): Promise<IAuthResponse | IAuthResponseOptional> => {
+	if (securityName === 'bearer_token' || securityName === 'bearer_token_optional') {
 		const bearerToken = req.get('Authorization');
 		const result = await isAuthorized(bearerToken, req.params['id']);
 		if (result) {
 			return Promise.resolve(result);
 		}
+	}
+
+	if (securityName === 'bearer_token_optional') {
+		return Promise.resolve({
+			type: 'UNAUTHORIZED',
+		});
 	}
 
 	return Promise.reject({});

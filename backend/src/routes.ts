@@ -1156,6 +1156,7 @@ export function RegisterRoutes(app: Router) {
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.post(
 		'/api/matches',
+		authenticateMiddleware([{ bearer_token_optional: [] }]),
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.createMatch),
 
@@ -1167,6 +1168,7 @@ export function RegisterRoutes(app: Router) {
 					required: true,
 					ref: 'IMatchCreateDto',
 				},
+				undefined: { in: 'request', required: true, dataType: 'object' },
 			};
 
 			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

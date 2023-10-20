@@ -1,21 +1,17 @@
 import autoAnimate from '@formkit/auto-animate';
 import { useNavigate } from '@solidjs/router';
-import { Component, createEffect, createSignal, For, Index, onMount, Show } from 'solid-js';
+import { Component, createEffect, createSignal, For, onMount, Show } from 'solid-js';
+import { createStore } from 'solid-js/store';
 import {
 	getOtherTeamAB,
 	IElectionStep,
 	IMatch,
 	IMatchCreateDto,
+	TMatchEndAction,
 	TMatchMode,
 	TTeamAB,
 } from '../../../common';
-import { createFetcher, isLoggedIn } from '../utils/fetcher';
-import { t } from '../utils/locale';
-import { Card } from '../components/Card';
-import { SelectInput, TextArea, TextInput, ToggleInput } from '../components/Inputs';
-import { AddElectionStep, getElectionStepString } from '../components/ElectionStep';
-import { Modal } from '../components/Modal';
-import { createStore } from 'solid-js/store';
+import { IPreset, IPresetCreateDto } from '../../../common/types/preset';
 import {
 	SvgAdd,
 	SvgDelete,
@@ -23,7 +19,12 @@ import {
 	SvgKeyboardArrowUp,
 	SvgSave,
 } from '../assets/Icons';
-import { IPreset, IPresetCreateDto } from '../../../common/types/preset';
+import { Card } from '../components/Card';
+import { AddElectionStep, getElectionStepString } from '../components/ElectionStep';
+import { SelectInput, TextArea, TextInput, ToggleInput } from '../components/Inputs';
+import { Modal } from '../components/Modal';
+import { createFetcher, isLoggedIn } from '../utils/fetcher';
+import { t } from '../utils/locale';
 
 const DEFAULT_MAPS = [
 	'de_ancient',
@@ -34,6 +35,21 @@ const DEFAULT_MAPS = [
 	'de_overpass',
 	'de_vertigo',
 ];
+
+const DEFAULT_RCON_INIT = [
+	'game_type 0; game_mode 1; sv_game_mode_flags 0; sv_skirmish_id 0',
+	'say > RCON INIT LOADED <',
+];
+const DEFAULT_RCON_KNIFE = [
+	'mp_give_player_c4 0; mp_startmoney 0; mp_ct_default_secondary ""; mp_t_default_secondary ""',
+	'say > SPECIAL KNIFE CONFIG LOADED <',
+];
+const DEFAULT_RCON_MATCH = [
+	'mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary "weapon_hkp2000"; mp_t_default_secondary "weapon_glock"',
+	'mp_overtime_enable 1',
+	'say > MATCH CONFIG LOADED <',
+];
+const DEFAULT_RCON_END = ['say > MATCH END RCON LOADED <'];
 
 const getElectionStepsFromPreset = (preset: 'BO1' | 'BO3', mapPool: string[]): IElectionStep[] => {
 	const electionSteps: IElectionStep[] = [];
@@ -167,16 +183,15 @@ export const CreatePage: Component = () => {
 		mapPool: DEFAULT_MAPS,
 		electionSteps: getElectionStepsFromPreset('BO1', DEFAULT_MAPS),
 		rconCommands: {
-			// TODO
-			init: [],
-			knife: [],
-			match: [],
-			end: [],
+			init: DEFAULT_RCON_INIT,
+			knife: DEFAULT_RCON_KNIFE,
+			match: DEFAULT_RCON_MATCH,
+			end: DEFAULT_RCON_END,
 		},
-		matchEndAction: 'NONE', // TODO
+		matchEndAction: 'NONE',
 		mode: 'SINGLE',
 		tmtLogAddress: window.location.protocol + '//' + window.location.host,
-		canClinch: true, // TODO,
+		canClinch: true,
 	});
 
 	const createMatch = async () => {
@@ -475,22 +490,70 @@ export const CreatePage: Component = () => {
 			</Modal>
 
 			<div class="prose pt-4">
+				<h2>{t('Rcon Commands')}</h2>
+			</div>
+			<TextArea
+				label={t('Init')}
+				labelTopRight={t('Executed only once: when the match is created')}
+				rows="4"
+				value={DEFAULT_RCON_INIT.join('\n')}
+				onInput={(e) =>
+					setMatchCreateDto('rconCommands', 'init', e.currentTarget.value.split('\n'))
+				}
+				class="font-mono"
+			/>
+			<TextArea
+				label={t('Knife')}
+				labelTopRight={t('Executed at the start of a knife round')}
+				rows="4"
+				value={DEFAULT_RCON_KNIFE.join('\n')}
+				onInput={(e) =>
+					setMatchCreateDto('rconCommands', 'knife', e.currentTarget.value.split('\n'))
+				}
+				class="font-mono"
+			/>
+			<TextArea
+				label={t('Match')}
+				labelTopRight={t('Executed at the start of each match map')}
+				rows="4"
+				value={DEFAULT_RCON_MATCH.join('\n')}
+				onInput={(e) =>
+					setMatchCreateDto('rconCommands', 'match', e.currentTarget.value.split('\n'))
+				}
+				class="font-mono"
+			/>
+			<TextArea
+				label={t('End')}
+				labelTopRight={t('Executed only once: after the end of the last map')}
+				rows="4"
+				value={DEFAULT_RCON_END.join('\n')}
+				onInput={(e) =>
+					setMatchCreateDto('rconCommands', 'end', e.currentTarget.value.split('\n'))
+				}
+				class="font-mono"
+			/>
+
+			<div class="prose pt-4">
 				<h2>{t('Advanced Settings')}</h2>
 			</div>
-
 			<SelectInput
 				label={t('Mode')}
-				labelBottomLeft={
-					matchCreateDto.mode === 'SINGLE'
-						? t('Single mode: stops when match is finished')
-						: matchCreateDto.mode === 'LOOP'
-						? t('Loop mode: starts again after match is finished')
-						: false
-				}
 				onInput={(e) => setMatchCreateDto('mode', e.currentTarget.value as TMatchMode)}
 			>
-				<option value="SINGLE">{t('Single')}</option>
-				<option value="LOOP">{t('Loop')}</option>
+				<option value="SINGLE">{t('Single match (stops when match is finished)')}</option>
+				<option value="LOOP">
+					{t('Loop mode (starts again after match is finished)')}
+				</option>
+			</SelectInput>
+			<SelectInput
+				label={t('Match End Action')}
+				onInput={(e) =>
+					setMatchCreateDto('matchEndAction', e.currentTarget.value as TMatchEndAction)
+				}
+			>
+				<option value="NONE">{t('None')}</option>
+				<option value="KICK_ALL">{t('Kick all players after match end')}</option>
+				<option value="QUIT_SERVER">{t('Quit server via Rcon after match end')}</option>
 			</SelectInput>
 
 			<TextArea

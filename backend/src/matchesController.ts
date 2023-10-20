@@ -20,7 +20,7 @@ import {
 	IMatchResponse,
 	IMatchUpdateDto,
 } from '../../common';
-import { IAuthResponse } from './auth';
+import { IAuthResponse, IAuthResponseOptional } from './auth';
 import * as Events from './events';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
@@ -31,9 +31,12 @@ import * as MatchService from './matchService';
 export class MatchesController extends Controller {
 	@Post()
 	@SuccessResponse(201)
-	@NoSecurity()
-	async createMatch(@Body() requestBody: IMatchCreateDto): Promise<IMatch> {
-		const match = await MatchService.create(requestBody);
+	@Security('bearer_token_optional')
+	async createMatch(
+		@Body() requestBody: IMatchCreateDto,
+		@Request() { user }: { user: IAuthResponseOptional }
+	): Promise<IMatch> {
+		const match = await MatchService.create(requestBody, user.type === 'GLOBAL');
 		this.setHeader('Location', `/api/matches/${match.data.id}`);
 		this.setStatus(201);
 		return match.data;
