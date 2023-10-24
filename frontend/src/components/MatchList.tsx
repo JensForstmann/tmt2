@@ -1,5 +1,5 @@
 import { Link } from '@solidjs/router';
-import { Component, For, Show } from 'solid-js';
+import { Component, For, Show, createSignal } from 'solid-js';
 import { IMatchResponse, getTotalNumberOfMaps } from '../../../common';
 import { SvgNavigateNext } from '../assets/Icons';
 import { t } from '../utils/locale';
@@ -29,7 +29,7 @@ export const MatchList: Component<{ matches: IMatchResponse[] }> = (props) => {
 				</tr>
 			</thead>
 			<tbody>
-				<For each={props.matches}>
+				<For each={[...props.matches].sort((a, b) => b.createdAt - a.createdAt)}>
 					{(match, i) => (
 						<tr>
 							<td>{i() + 1}</td>
