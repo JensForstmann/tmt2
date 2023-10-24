@@ -1,4 +1,4 @@
-FROM node:18-alpine AS BACKEND_BUILD_IMAGE
+FROM node:20-alpine AS BACKEND_BUILD_IMAGE
 WORKDIR /app/backend
 COPY backend/package-lock.json .
 COPY backend/package.json .
@@ -10,7 +10,7 @@ COPY backend/tsoa.json .
 RUN npm run build
 RUN npm prune --production
 
-FROM node:18-alpine AS FRONTEND_BUILD_IMAGE
+FROM node:20-alpine AS FRONTEND_BUILD_IMAGE
 WORKDIR /app/frontend
 COPY frontend/package-lock.json .
 COPY frontend/package.json .
@@ -24,7 +24,7 @@ COPY frontend/tsconfig.json .
 COPY frontend/vite.config.ts .
 RUN npm run build
 
-FROM node:18-alpine
+FROM node:20-alpine
 COPY --from=BACKEND_BUILD_IMAGE /app/backend/package.json /app/backend/swagger.json /app/backend/
 COPY --from=BACKEND_BUILD_IMAGE /app/backend/dist /app/backend/dist
 COPY --from=BACKEND_BUILD_IMAGE /app/backend/node_modules /app/backend/node_modules
