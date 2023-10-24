@@ -295,6 +295,7 @@ export const CreatePage: Component = () => {
 					</button>
 				</div>
 			</Show>
+
 			<div class="prose pt-4">
 				<h2>{t('Teams')}</h2>
 			</div>
@@ -334,7 +335,7 @@ export const CreatePage: Component = () => {
 			</div>
 			<ToggleInput
 				label={t('Use Own Game Server')}
-				checked={false}
+				checked={matchCreateDto.gameServer !== null}
 				onInput={(e) =>
 					e.currentTarget.checked
 						? setMatchCreateDto('gameServer', {
@@ -374,7 +375,7 @@ export const CreatePage: Component = () => {
 				<h2>{t('Map Pool')}</h2>
 			</div>
 			<TextArea
-				value={DEFAULT_MAPS.join('\n')}
+				value={matchCreateDto.mapPool.join('\n')}
 				onInput={(e) => setMatchCreateDto('mapPool', minifyMapPool(e.currentTarget.value))}
 				rows="8"
 			/>
@@ -503,7 +504,7 @@ export const CreatePage: Component = () => {
 				label={t('Init')}
 				labelTopRight={t('Executed only once: when the match is created')}
 				rows="4"
-				value={DEFAULT_RCON_INIT.join('\n')}
+				value={matchCreateDto.rconCommands?.init?.join('\n') ?? ''}
 				onInput={(e) =>
 					setMatchCreateDto('rconCommands', 'init', e.currentTarget.value.split('\n'))
 				}
@@ -513,7 +514,7 @@ export const CreatePage: Component = () => {
 				label={t('Knife')}
 				labelTopRight={t('Executed at the start of a knife round')}
 				rows="4"
-				value={DEFAULT_RCON_KNIFE.join('\n')}
+				value={matchCreateDto.rconCommands?.knife?.join('\n') ?? ''}
 				onInput={(e) =>
 					setMatchCreateDto('rconCommands', 'knife', e.currentTarget.value.split('\n'))
 				}
@@ -523,7 +524,7 @@ export const CreatePage: Component = () => {
 				label={t('Match')}
 				labelTopRight={t('Executed at the start of each match map')}
 				rows="4"
-				value={DEFAULT_RCON_MATCH.join('\n')}
+				value={matchCreateDto.rconCommands?.match?.join('\n') ?? ''}
 				onInput={(e) =>
 					setMatchCreateDto('rconCommands', 'match', e.currentTarget.value.split('\n'))
 				}
@@ -533,7 +534,7 @@ export const CreatePage: Component = () => {
 				label={t('End')}
 				labelTopRight={t('Executed only once: after the end of the last map')}
 				rows="4"
-				value={DEFAULT_RCON_END.join('\n')}
+				value={matchCreateDto.rconCommands?.end?.join('\n') ?? ''}
 				onInput={(e) =>
 					setMatchCreateDto('rconCommands', 'end', e.currentTarget.value.split('\n'))
 				}
@@ -547,8 +548,10 @@ export const CreatePage: Component = () => {
 				label={t('Mode')}
 				onInput={(e) => setMatchCreateDto('mode', e.currentTarget.value as TMatchMode)}
 			>
-				<option value="SINGLE">{t('Single match (stops when match is finished)')}</option>
-				<option value="LOOP">
+				<option value="SINGLE" selected={matchCreateDto.mode === 'SINGLE'}>
+					{t('Single match (stops when match is finished)')}
+				</option>
+				<option value="LOOP" selected={matchCreateDto.mode === 'LOOP'}>
 					{t('Loop mode (starts again after match is finished)')}
 				</option>
 			</SelectInput>
@@ -558,9 +561,18 @@ export const CreatePage: Component = () => {
 					setMatchCreateDto('matchEndAction', e.currentTarget.value as TMatchEndAction)
 				}
 			>
-				<option value="NONE">{t('None')}</option>
-				<option value="KICK_ALL">{t('Kick all players after match end')}</option>
-				<option value="QUIT_SERVER">{t('Quit server via Rcon after match end')}</option>
+				<option value="NONE" selected={matchCreateDto.matchEndAction === 'NONE'}>
+					{t('None')}
+				</option>
+				<option value="KICK_ALL" selected={matchCreateDto.matchEndAction === 'KICK_ALL'}>
+					{t('Kick all players after match end')}
+				</option>
+				<option
+					value="QUIT_SERVER"
+					selected={matchCreateDto.matchEndAction === 'QUIT_SERVER'}
+				>
+					{t('Quit server via Rcon after match end')}
+				</option>
 			</SelectInput>
 
 			<TextArea
