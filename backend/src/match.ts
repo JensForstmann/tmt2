@@ -496,7 +496,7 @@ const updatePlayerSide = (
 			);
 		}
 		player.side = side;
-		MatchService.save(match);
+		MatchService.scheduleSave(match);
 	}
 };
 
@@ -516,18 +516,23 @@ const onPlayerLogLine = async (
 			player = Player.create(steamId, name);
 			match.log(`Player ${player.steamId64} (${name}) created`);
 			match.data.players.push(player);
-			MatchService.save(match);
+			MatchService.scheduleSave(match);
 		}
 		if (player.name !== name) {
 			match.log(`Player ${player.steamId64} (${player.name}) renamed to: ${name}`);
 			player.name = name;
-			MatchService.save(match);
+			MatchService.scheduleSave(match);
 		}
 	}
 
 	if (!player) {
 		// Console or BOT
 		return;
+	}
+
+	if (player.online !== true) {
+		player.online = true;
+		MatchService.scheduleSave(match);
 	}
 
 	//switched from team <CT> to <TERRORIST>
@@ -551,6 +556,8 @@ const onPlayerLogLine = async (
 	const connectMatch = remainingLine.match(/^connected/);
 	if (connectMatch) {
 		match.log(`Player ${player.steamId64} (${player.name}) connected`);
+		player.online = true;
+		MatchService.scheduleSave(match);
 		return;
 	}
 
@@ -558,8 +565,8 @@ const onPlayerLogLine = async (
 	const disconnectMatch = remainingLine.match(/^disconnected/);
 	if (disconnectMatch) {
 		match.log(`Player ${player.steamId64} (${player.name}) disconnected`);
-		// player.side = null;
-		// MatchService.save(match);
+		player.online = false;
+		MatchService.scheduleSave(match);
 		if (match.data.mode === 'LOOP') {
 			const players = await GameServer.getPlayers(match);
 			if (players.length === 0) {
@@ -689,6 +696,7 @@ const onTeamCommand: commands.CommandHandler = async ({ match, player, parameter
 	const firstParameter = parameters[0]?.toUpperCase();
 	if (firstParameter === 'A' || firstParameter === 'B') {
 		player.team = firstParameter === 'A' ? 'TEAM_A' : 'TEAM_B';
+		MatchService.scheduleSave(match);
 		const team = getTeamByAB(match, player.team);
 		say(
 			match,

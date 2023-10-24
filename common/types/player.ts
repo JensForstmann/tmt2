@@ -6,4 +6,5 @@ export interface IPlayer {
 	name: string;
 	team?: TTeamAB;
 	side?: TTeamSides | null;
+	online?: boolean;
 }

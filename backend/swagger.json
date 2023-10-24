@@ -619,6 +619,9 @@
 							}
 						],
 						"nullable": true
+					},
+					"online": {
+						"type": "boolean"
 					}
 				},
 				"required": [

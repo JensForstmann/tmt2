@@ -40,7 +40,12 @@ const List = (players: IPlayer[]) => {
 					>
 						{player.name}
 					</a>{' '}
-					{player.side && <div class="badge badge-neutral">{player.side}</div>}
+					{player.side && <div class="badge badge-neutral">{player.side}</div>}{' '}
+					{
+						<div class="badge badge-neutral">
+							{player.online ? t('Online') : t('Offline')}
+						</div>
+					}
 					<br />
 				</>
 			)}

@@ -449,6 +449,7 @@ const models: TsoaRoute.Models = {
 				dataType: 'union',
 				subSchemas: [{ ref: 'TTeamSides' }, { dataType: 'enum', enums: [null] }],
 			},
+			online: { dataType: 'boolean' },
 		},
 		additionalProperties: false,
 	},
