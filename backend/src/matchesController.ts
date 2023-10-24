@@ -211,7 +211,7 @@ export class MatchesController extends Controller {
 			// async, so game server does not have to wait for processing (it will resend data if it takes too long)
 			Match.onLog(match, requestBody.raw).catch((err) => {
 				// console.error(err);
-				match.log(`error in Match.onLog(): ${err}`);
+				match.log(`Error in Match.onLog(): ${err}`);
 			});
 		} else if (MatchService.isStartingMatch(id)) {
 			// drop logs for matches in startup phase

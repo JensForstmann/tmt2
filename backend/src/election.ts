@@ -538,7 +538,7 @@ const onRestartCommand: commands.CommandHandler = async (e) => {
 		match.data.election.currentRestart.teamB = false;
 
 		try {
-			match.log('restart election process');
+			match.log('Restart election process');
 			match.data.election = create(match.data.mapPool, match.data.electionSteps);
 			match.data.matchMaps = [];
 		} catch (err) {

@@ -158,7 +158,7 @@ export const onRoundEnd = async (
 		match.log(`${winnerTeamAB} (${winnerTeam.name}) scored (CT ${ctScore}:${tScore} T)`);
 		Events.onRoundEnd(match, matchMap, winnerTeam);
 		if (magic.isSideSwitchNextRound) {
-			match.log('switching sides');
+			match.log('Switching sides');
 			await Match.say(match, 'SWITCHING SIDES');
 		}
 		return;
@@ -167,7 +167,7 @@ export const onRoundEnd = async (
 
 export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, `MAP WILL BE CHANGED TO ${matchMap.name} IN 15 SECONDS`);
-	match.log(`change map to ${matchMap.name} (in 15 seconds)`);
+	match.log(`Change map to ${matchMap.name} (in 15 seconds)`);
 	const response = await Match.execRcon(match, `maps ${matchMap.name}`);
 	const maps = response
 		.trim()
@@ -201,7 +201,7 @@ const startMatch = async (match: Match.Match, matchMap: IMatchMap) => {
 	matchMap.state = 'IN_PROGRESS';
 	MatchService.scheduleSave(match);
 
-	match.log('start match');
+	match.log('Start match');
 
 	await Match.execManyRcon(match, match.data.rconCommands.match);
 	await Match.execRcon(match, 'mp_unpause_match');
@@ -237,7 +237,7 @@ export const onMapEnd = async (match: Match.Match, matchMap: IMatchMap) => {
 		MatchService.scheduleSave(match);
 		await Match.say(match, 'MAP FINISHED');
 		Events.onMapEnd(match, matchMap);
-		match.log('map finished');
+		match.log('Map finished');
 	}
 };
 
@@ -247,7 +247,7 @@ const startKnifeRound = async (match: Match.Match, matchMap: IMatchMap) => {
 	matchMap.knifeRestart.teamB = false;
 	matchMap.knifeWinner = undefined;
 	MatchService.scheduleSave(match);
-	match.log('start knife round');
+	match.log('Start knife round');
 	await Match.execManyRcon(match, match.data.rconCommands.knife);
 	await Match.execRcon(match, 'mp_unpause_match');
 	await Match.execRcon(match, 'mp_restartgame 3');
@@ -324,7 +324,7 @@ const onReadyCommand: commands.CommandHandler = async (e) => {
 
 	if (matchMap.readyTeams.teamA && matchMap.readyTeams.teamB) {
 		if (matchMap.state === 'WARMUP') {
-			match.log('end warmup');
+			match.log('End warmup');
 			await Match.execRcon(match, 'mp_warmup_end');
 			if (matchMap.knifeForSide) {
 				await startKnifeRound(match, matchMap);
@@ -332,7 +332,7 @@ const onReadyCommand: commands.CommandHandler = async (e) => {
 				await startMatch(match, matchMap);
 			}
 		} else if (matchMap.state === 'PAUSED') {
-			match.log('continue map');
+			match.log('Continue map');
 			matchMap.readyTeams.teamA = false;
 			matchMap.readyTeams.teamB = false;
 			await Match.execRcon(match, 'mp_unpause_match');

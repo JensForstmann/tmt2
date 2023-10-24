@@ -22,7 +22,7 @@ export const create = async (dto: IGameServer, log: (msg: string) => void): Prom
 		password: dto.rconPassword,
 	});
 
-	rcon.on('error', (err) => log(`rcon.on('error'): ${err}`));
+	rcon.on('error', (err) => log(`Rcon socket error: ${err}`));
 
 	await rcon.connect();
 	return rcon;
@@ -36,7 +36,7 @@ export const exec = async (match: Match.Match, command: string, suppressError: b
 		return await match.rconConnection.send(command);
 	} catch (err) {
 		if (suppressError) {
-			match.log(`rcon error with command ${command}: ${err} -> return ''`);
+			match.log(`Rcon error with command ${command}: ${err} -> return ''`);
 			return '';
 		} else {
 			throw err;
@@ -101,7 +101,7 @@ export const kickAll = async (match: Match.Match) => {
 	for (let i = 0; i < players.length; i++) {
 		const userId = players[i]?.userId!;
 		const name = players[i]?.name!;
-		match.log(`kickid ${userId} (${name})`);
+		match.log(`Kick player id ${userId} (${name})`);
 		await exec(match, `kickid ${userId}`);
 	}
 };

@@ -134,20 +134,20 @@ export const getLogsTail = async (matchId: string, numberOfLines = 1000): Promis
 
 const connectToGameServer = async (match: Match): Promise<void> => {
 	const addr = `${match.data.gameServer.ip}:${match.data.gameServer.port}`;
-	match.log(`connect rcon ${addr}`);
+	match.log(`Connect rcon ${addr}`);
 	const gameServer = await GameServer.create(match.data.gameServer, match.log);
 	gameServer.on('end', () => onRconConnectionEnd(match));
 	const previous = match.rconConnection;
 	match.rconConnection = gameServer;
 	previous?.end().catch(() => {});
-	match.log(`connect rcon successful ${addr}`);
+	match.log(`Connect rcon successful ${addr}`);
 	await setup(match);
 	await registerLogAddress(match);
 };
 
 const onRconConnectionEnd = async (match: Match) => {
 	const addr = `${match.rconConnection?.config.host}:${match.rconConnection?.config.port}`;
-	match.log(`rcon connection lost: ${addr}`);
+	match.log(`Rcon connection lost: ${addr}`);
 	while (true) {
 		try {
 			await sleep(10000);
@@ -157,7 +157,7 @@ const onRconConnectionEnd = async (match: Match) => {
 			await connectToGameServer(match);
 			return;
 		} catch (err) {
-			match.log(`reconnect rcon failed ${addr}: ${err}`);
+			match.log(`Reconnect rcon failed ${addr}: ${err}`);
 		}
 	}
 };
@@ -166,9 +166,9 @@ const onRconConnectionEnd = async (match: Match) => {
  * Executed only once per match (at creation).
  */
 const init = async (match: Match) => {
-	match.log('init match...');
+	match.log('Init match...');
 	await execManyRcon(match, match.data.rconCommands.init);
-	match.log('init match finished');
+	match.log('Init match finished');
 };
 
 /**
@@ -225,7 +225,7 @@ const registerLogAddress = async (match: Match) => {
 		.find((line) => line.startsWith(logAddress));
 	if (!existing) {
 		match.data.parseIncomingLogs = false;
-		match.log('register log address');
+		match.log('Register log address');
 		await execRcon(match, `logaddress_add_http "${logAddress}"`);
 
 		MatchService.scheduleSave(match);
@@ -235,7 +235,7 @@ const registerLogAddress = async (match: Match) => {
 	sleep(2000)
 		.then(async () => {
 			if (!match.data.parseIncomingLogs) {
-				match.log('enable parsing of incoming log');
+				match.log('Enable parsing of incoming log');
 				match.data.parseIncomingLogs = true;
 				MatchService.scheduleSave(match);
 				await say(match, 'ONLINE');
@@ -361,7 +361,7 @@ export const loadRoundBackup = async (match: Match, file: string) => {
 		match.log(`Error loading round backup: ${response}`);
 		return false;
 	} else {
-		match.log(`load round backup ${file}`);
+		match.log(`Load round backup ${file}`);
 		const currentMatchMap = getCurrentMatchMap(match);
 		if (currentMatchMap) {
 			currentMatchMap.state = 'PAUSED';
@@ -463,7 +463,7 @@ const onLogLine = async (match: Match, line: string) => {
 			return;
 		}
 	} catch (err) {
-		match.log('error in onLogLine' + err);
+		match.log('Error in onLogLine' + err);
 	}
 };
 
@@ -492,7 +492,7 @@ const updatePlayerSide = (
 			match.log(
 				`Player ${player.steamId64} (${player.name}) changed side from '${
 					player.side ?? ''
-				}' to '${side ?? ''}' (based on event other than "switch team"`
+				}' to '${side ?? ''}' (based on event other than "switch team")`
 			);
 		}
 		player.side = side;
@@ -694,7 +694,7 @@ const onTeamCommand: commands.CommandHandler = async ({ match, player, parameter
 			match,
 			`PLAYER ${escapeRconString(player.name)} JOINED TEAM ${escapeRconString(team.name)}`
 		);
-		match.log(`player ${player.name} joined team ${player.team} (${team.name})`);
+		match.log(`Player ${player.name} joined team ${player.team} (${team.name})`);
 	} else {
 		const playerTeam = player.team;
 		if (playerTeam) {
@@ -734,15 +734,15 @@ const onMapEnd = async (match: Match) => {
 		}
 
 		if (isMatchEnd(match)) {
-			match.log(`onMapEnd -> isMatchEnd -> onMatchEnd`);
+			match.log('Match finished');
 			await onMatchEnd(match);
 		} else {
 			match.data.currentMap++;
 			const nextMap = getCurrentMatchMap(match);
 			if (nextMap) {
-				match.log(`onMapEnd -> loadNextMap`);
 				await MatchMap.loadMap(match, nextMap);
 			} else {
+				match.log('No more maps to play, finish match');
 				await onMatchEnd(match);
 			}
 		}
@@ -809,14 +809,14 @@ const onMatchEnd = async (match: Match) => {
 };
 
 export const stop = async (match: Match) => {
-	match.log(`stop match`);
+	match.log(`Stop match`);
 	match.data.isStopped = true;
 	MatchService.scheduleSave(match);
 	if (match.periodicTimerId) {
 		clearTimeout(match.periodicTimerId);
 	}
 	await execManyRcon(match, match.data.rconCommands.end).catch((err) => {
-		match.log(`error executing match end rcon commands: ${err}`);
+		match.log(`Error executing match end rcon commands: ${err}`);
 	});
 	await say(match, `TMT IS OFFLINE`).catch(() => {});
 	await GameServer.disconnect(match);
@@ -834,7 +834,7 @@ export const onElectionFinished = async (match: Match) => {
 			return `${matchMap.name} ${side}`;
 		})
 		.join(', ');
-	match.log(`election finished, result: ${result}`);
+	match.log(`Election finished, result: ${result}`);
 	Events.onElectionEnd(match);
 	match.data.state = 'MATCH_MAP';
 	MatchService.scheduleSave(match);
@@ -845,7 +845,7 @@ export const onElectionFinished = async (match: Match) => {
 };
 
 const restartElection = async (match: Match) => {
-	match.log('restart election');
+	match.log('Restart election');
 	match.data.state = 'ELECTION';
 	match.data.election = Election.create(match.data.mapPool, match.data.electionSteps);
 	match.data.matchMaps = [];
@@ -882,7 +882,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		await ManagedGameServers.free(match.data.gameServer, match.data.id);
 		match.data.gameServer = dto.gameServer;
 		match.rconConnection?.end().catch((err) => {
-			match.log(`error end rcon connection ${err}`);
+			match.log(`Error end rcon connection ${err}`);
 		});
 		// onRconConnectionEnd will handle automatic reconnect to the (new) game server
 	}

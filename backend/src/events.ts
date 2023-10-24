@@ -47,7 +47,7 @@ const send = (match: Match.Match, data: Event, isSystemEvent?: boolean) => {
 			},
 			body: JSON.stringify(data),
 		}).catch((err) => {
-			match.log(`sending webhook ${data.type} to ${url} failed: ${err}`);
+			match.log(`Sending webhook ${data.type} to ${url} failed: ${err}`);
 		});
 	}
 };
