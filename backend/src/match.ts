@@ -167,7 +167,7 @@ const onRconConnectionEnd = async (match: Match) => {
  */
 const init = async (match: Match) => {
 	match.log('Init match...');
-	await execManyRcon(match, match.data.rconCommands.init);
+	await execRconCommands(match, 'init');
 	match.log('Init match finished');
 };
 
@@ -260,6 +260,11 @@ export const execManyRcon = async (match: Match, commands: string[]) => {
 		responses.push(await execRcon(match, commands[i]!));
 	}
 	return responses;
+};
+
+export const execRconCommands = async (match: Match, key: keyof IMatch['rconCommands']) => {
+	match.log(`Execute rcon commands (${key})`);
+	await execManyRcon(match, match.data.rconCommands[key]);
 };
 
 export const say = async (match: Match, message: string) => {
@@ -356,6 +361,7 @@ export const getRoundBackups = async (match: Match, count: number = 5) => {
 export const loadRoundBackup = async (match: Match, file: string) => {
 	await execRcon(match, 'mp_backup_restore_load_autopause 1');
 	await execRcon(match, 'mp_pause_match'); // mp_backup_restore_load_autopause doesn't work currently in CS2
+	await execRconCommands(match, 'match');
 	const response = await execRcon(match, `mp_backup_restore_load_file "${file}"`);
 	if (response.includes('Failed to load file:')) {
 		match.log(`Error loading round backup: ${response}`);
@@ -823,7 +829,7 @@ export const stop = async (match: Match) => {
 	if (match.periodicTimerId) {
 		clearTimeout(match.periodicTimerId);
 	}
-	await execManyRcon(match, match.data.rconCommands.end).catch((err) => {
+	await execRconCommands(match, 'end').catch((err) => {
 		match.log(`Error executing match end rcon commands: ${err}`);
 	});
 	await say(match, `TMT IS OFFLINE`).catch(() => {});
@@ -988,19 +994,19 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto._execRconCommandsInit) {
-		await execManyRcon(match, match.data.rconCommands.init);
+		await execRconCommands(match, 'init');
 	}
 
 	if (dto._execRconCommandsKnife) {
-		await execManyRcon(match, match.data.rconCommands.knife);
+		await execRconCommands(match, 'knife');
 	}
 
 	if (dto._execRconCommandsMatch) {
-		await execManyRcon(match, match.data.rconCommands.match);
+		await execRconCommands(match, 'match');
 	}
 
 	if (dto._execRconCommandsEnd) {
-		await execManyRcon(match, match.data.rconCommands.end);
+		await execRconCommands(match, 'end');
 	}
 
 	MatchService.scheduleSave(match);

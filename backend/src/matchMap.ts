@@ -52,6 +52,7 @@ export const sayPeriodicMessage = async (match: Match.Match, matchMap: IMatchMap
 
 	switch (matchMap.state) {
 		case 'IN_PROGRESS':
+			await refreshOvertimeAndMaxRoundsSettings(match, matchMap);
 			return;
 		case 'AFTER_KNIFE':
 			if (matchMap.knifeWinner) {
@@ -203,7 +204,7 @@ const startMatch = async (match: Match.Match, matchMap: IMatchMap) => {
 
 	match.log('Start match');
 
-	await Match.execManyRcon(match, match.data.rconCommands.match);
+	await Match.execRconCommands(match, 'match');
 	await Match.execRcon(match, 'mp_unpause_match');
 	await Match.execRcon(match, 'mp_restartgame 10');
 
@@ -220,15 +221,24 @@ const startMatch = async (match: Match.Match, matchMap: IMatchMap) => {
 };
 
 const refreshOvertimeAndMaxRoundsSettings = async (match: Match.Match, matchMap: IMatchMap) => {
-	matchMap.overTimeEnabled = (await Match.getConfigVar(match, 'mp_overtime_enable')) === 'true';
-	matchMap.overTimeMaxRounds = parseInt(await Match.getConfigVar(match, 'mp_overtime_maxrounds'));
-	matchMap.maxRounds = parseInt(await Match.getConfigVar(match, 'mp_maxrounds'));
-	match.log(
-		`OverTime:${matchMap.overTimeEnabled ? 'on' : 'off'} OverTimeMaxRounds:${
-			matchMap.overTimeMaxRounds
-		} MaxRounds:${matchMap.maxRounds}`
-	);
-	MatchService.scheduleSave(match);
+	const overTimeEnabled = (await Match.getConfigVar(match, 'mp_overtime_enable')) === 'true';
+	const overTimeMaxRounds = parseInt(await Match.getConfigVar(match, 'mp_overtime_maxrounds'));
+	const maxRounds = parseInt(await Match.getConfigVar(match, 'mp_maxrounds'));
+	if (
+		matchMap.overTimeEnabled !== overTimeEnabled ||
+		matchMap.overTimeMaxRounds !== overTimeMaxRounds ||
+		matchMap.maxRounds !== maxRounds
+	) {
+		matchMap.overTimeEnabled = overTimeEnabled;
+		matchMap.overTimeMaxRounds = overTimeMaxRounds;
+		matchMap.maxRounds = maxRounds;
+		match.log(
+			`OverTime:${matchMap.overTimeEnabled ? 'on' : 'off'} OverTimeMaxRounds:${
+				matchMap.overTimeMaxRounds
+			} MaxRounds:${matchMap.maxRounds}`
+		);
+		MatchService.scheduleSave(match);
+	}
 };
 
 export const onMapEnd = async (match: Match.Match, matchMap: IMatchMap) => {
@@ -248,7 +258,7 @@ const startKnifeRound = async (match: Match.Match, matchMap: IMatchMap) => {
 	matchMap.knifeWinner = undefined;
 	MatchService.scheduleSave(match);
 	match.log('Start knife round');
-	await Match.execManyRcon(match, match.data.rconCommands.knife);
+	await Match.execRconCommands(match, 'knife');
 	await Match.execRcon(match, 'mp_unpause_match');
 	await Match.execRcon(match, 'mp_restartgame 3');
 	await sleep(4000);
