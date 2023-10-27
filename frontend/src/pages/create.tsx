@@ -107,7 +107,9 @@ export const CreatePage: Component = () => {
 	const [selectedPresetId, setSelectedPresetId] = createSignal('');
 
 	createEffect(() => {
-		refreshPresets();
+		if (isLoggedIn()) {
+			refreshPresets();
+		}
 	});
 
 	const refreshPresets = () => {
