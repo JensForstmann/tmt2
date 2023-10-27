@@ -1,15 +1,37 @@
 import { useSearchParams } from '@solidjs/router';
-import { Component, createEffect, onCleanup, Show } from 'solid-js';
+import { Component, createEffect, For, onCleanup, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { Event, IMatchResponse } from '../../../common';
 import { Card } from '../components/Card';
-import { MatchList } from '../components/MatchList';
+import {
+	MatchList,
+	MatchTableColumnLabels,
+	MatchTableColumns,
+	TColumnsToShow,
+} from '../components/MatchList';
 import { createFetcher, getToken } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { createWebSocket } from '../utils/webSocket';
+import { SvgSettings } from '../assets/Icons';
+
+const defaultColumns: TColumnsToShow = {
+	TEAM_A: true,
+	TEAM_B: true,
+	AGE: true,
+	BEST_OF: true,
+	MATCH_STATE: true,
+	CURRENT_MAP: true,
+	MAP_STATE: true,
+	MAP_SCORE: true,
+	DETAILS: true,
+	GAME_SERVER: true,
+};
 
 export const MatchesPage: Component = () => {
-	const [searchParams, setSearchParams] = useSearchParams<{ isLive?: string }>();
+	const [searchParams, setSearchParams] = useSearchParams<{
+		isLive?: string;
+		columns?: string;
+	}>();
 	const fetcher = createFetcher();
 	const [data, setData] = createStore<{
 		matches?: IMatchResponse[];
@@ -22,6 +44,32 @@ export const MatchesPage: Component = () => {
 			}
 		);
 	});
+
+	const columnsToShow = (): TColumnsToShow => {
+		const fromStorage = localStorage.getItem('columns');
+		if (!searchParams.columns && !fromStorage) {
+			return { ...defaultColumns };
+		}
+		const src = searchParams.columns || fromStorage;
+		const parts = src?.toUpperCase().split(',');
+		const result: TColumnsToShow = {};
+		MatchTableColumns.forEach((mtc) => {
+			result[mtc] = parts?.includes(mtc);
+		});
+		return result;
+	};
+
+	const updateColumnsSearchParam = (columnsToShow: TColumnsToShow) => {
+		const columns: string[] = [' '];
+		MatchTableColumns.forEach((mtc) => {
+			if (columnsToShow[mtc]) {
+				columns.push(mtc);
+			}
+		});
+		const str = columns.join(',').toLowerCase();
+		localStorage.setItem('columns', str);
+		setSearchParams({ columns: str });
+	};
 
 	const onWsMsg = (msg: Event) => {
 		if (msg.type === 'MATCH_UPDATE') {
@@ -79,7 +127,7 @@ export const MatchesPage: Component = () => {
 
 	return (
 		<Card>
-			<div class="form-control mx-auto w-fit text-center">
+			<div class="flex w-fit w-full flex-row space-x-8">
 				<label class="label cursor-pointer">
 					<span class="label-text pr-4">{t('offline matches')}</span>
 					<input
@@ -95,8 +143,45 @@ export const MatchesPage: Component = () => {
 					/>
 					<span class="label-text pl-4">{t('live matches')}</span>
 				</label>
+
+				<div class="flex-grow"></div>
+
+				<div class="dropdown dropdown-end">
+					<label tabindex="0" class="btn btn-ghost m-1">
+						<SvgSettings />
+						{t('Column Settings')}
+					</label>
+					<div
+						tabindex="0"
+						class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+					>
+						<For each={MatchTableColumns}>
+							{(column) => (
+								<div>
+									<label class="label justify-normal cursor-pointer space-x-2">
+										<input
+											type="checkbox"
+											checked={columnsToShow()[column]}
+											onInput={(e) => {
+												const cts = columnsToShow();
+												cts[column] = e.currentTarget.checked;
+												updateColumnsSearchParam(cts);
+											}}
+											class="checkbox"
+										/>
+										<span class="label-text">
+											{MatchTableColumnLabels[column]}
+										</span>
+									</label>
+								</div>
+							)}
+						</For>
+					</div>
+				</div>
 			</div>
-			<Show when={data.matches}>{(matches) => <MatchList matches={matches()} />}</Show>
+			<Show when={data.matches}>
+				{(matches) => <MatchList matches={matches()} columnsToShow={columnsToShow()} />}
+			</Show>
 		</Card>
 	);
 };
