@@ -14,6 +14,9 @@ This project is a complete rewrite of the former [TMT](https://github.com/JensFo
   - [Security / Authentication](#security--authentication)
     - [global access tokens](#global-access-tokens)
     - [match specific access tokens](#match-specific-access-tokens)
+- [Development](#development)
+  - [Docker](#docker)
+  - [Directly with NodeJs](#directly-with-nodejs)
 
 ## Run with Docker
 
@@ -100,4 +103,52 @@ If the file does not exist at startup a new one with a single auto generated glo
 ### match specific access tokens
 
 Every match will have a `tmtSecret` property. This can be used in the same way as a global access token.
+
+
+
+---
+
+
+
+# Development
+
+After starting the dev processes you can reach the backend & frontend at:
+
+- Backend: http://localhost:8080
+- Frontend: http://localhost:5173
+
+## Docker
+
+> Note for windows user: It's recommended to have docker installed **directly within** WSL (not using Windows Docker from WSL) or to run a Linux VM.
+
+Init the dev environment:
+
+    ./dev-container-init.sh
+
+Start a docker container with port forwarding and hot reloading:
+
+    ./dev-container-start.sh
+
+
+
+## Directly with NodeJs
+
+Install dependencies:
+
+    npm install
+    cd backend
+    npm install
+    cd ../frontend
+    npm install
+
+Run backend with hot reloading:
+
+    cd backend
+    npm run dev
+
+Run frontend with hot realoding:
+
+    cd frontend
+    npm run dev
+
 
