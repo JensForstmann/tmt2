@@ -2,7 +2,7 @@ FROM node:20-alpine AS BACKEND_BUILD_IMAGE
 WORKDIR /app/backend
 COPY backend/package-lock.json .
 COPY backend/package.json .
-RUN npm install
+RUN npm ci
 COPY common ../common
 COPY backend/src src
 COPY backend/tsconfig.json .
@@ -14,7 +14,7 @@ FROM node:20-alpine AS FRONTEND_BUILD_IMAGE
 WORKDIR /app/frontend
 COPY frontend/package-lock.json .
 COPY frontend/package.json .
-RUN npm install
+RUN npm ci
 COPY common ../common
 COPY frontend/src src
 COPY frontend/index.html .
