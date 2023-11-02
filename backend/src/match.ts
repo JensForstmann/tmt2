@@ -1,6 +1,6 @@
 import { ValidateError } from '@tsoa/runtime';
 import { generate as shortUuid } from 'short-uuid';
-import { TMT_LOG_ADDRESS } from '.';
+import { TMT_LOG_ADDRESS, VERSION } from '.';
 import {
 	escapeRconSayString,
 	escapeRconString,
@@ -652,7 +652,12 @@ const onConsoleSay = async (match: Match, message: string) => {
 
 export const registerCommandHandlers = () => {
 	commands.registerHandler('TEAM', onTeamCommand);
+	commands.registerHandler('VERSION', onVersionCommand);
 	commands.registerHandler('*', onEveryCommand);
+};
+
+const onVersionCommand: commands.CommandHandler = async (e) => {
+	await say(e.match, `TMT version: ${VERSION ?? 'unknown'}`);
 };
 
 const onEveryCommand: commands.CommandHandler = async (e) => {

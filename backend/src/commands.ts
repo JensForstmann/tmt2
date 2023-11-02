@@ -15,6 +15,7 @@ const Commands = [
 	'SWITCH',
 	'TEAM',
 	'RESTART',
+	'VERSION',
 	'*',
 ] as const;
 export type TCommand = typeof Commands[number];
@@ -38,6 +39,7 @@ commandMapping.set('switch', 'SWITCH');
 commandMapping.set('swap', 'SWITCH');
 commandMapping.set('team', 'TEAM');
 commandMapping.set('restart', 'RESTART');
+commandMapping.set('version', 'VERSION');
 
 export const getInternalCommandByUserCommand = (userCommand: string) => {
 	return commandMapping.get(userCommand);
