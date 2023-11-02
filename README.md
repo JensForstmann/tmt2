@@ -1,3 +1,8 @@
+[![Docker Pulls](https://img.shields.io/docker/pulls/jensforstmann/tmt2)](https://hub.docker.com/r/jensforstmann/tmt2)
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/jensforstmann/tmt2/latest)](https://hub.docker.com/r/jensforstmann/tmt2)
+
+
+
 # TMT2 - Tournament Match Tracker 2
 
 TMT is a tool that tracks/watches/observes a Counter-Strike 2 match.
