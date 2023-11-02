@@ -431,6 +431,7 @@ const onSwitchCommand: commands.CommandHandler = async (e) => {
 	await Match.say(match, `${escapeRconString(team.name)} WANTS TO SWITCH SIDES`);
 	match.log(`${teamAB} (${team.name} - ${player.name}) wants to switch sides`);
 	await Match.execRcon(match, 'mp_swapteams');
+	match.warnAboutWrongTeam = false; // temporarily disable warning about wrong team, will be set to true again after match start
 	matchMap.startAsCtTeam = getOtherTeamAB(matchMap.startAsCtTeam);
 	MatchService.scheduleSave(match);
 	await startMatch(match, matchMap);

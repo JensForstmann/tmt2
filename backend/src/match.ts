@@ -39,6 +39,7 @@ export interface Match {
 	periodicTimerId?: NodeJS.Timeout;
 	logBuffer: string[];
 	log: (msg: string) => void;
+	warnAboutWrongTeam: boolean;
 }
 
 export const createFromData = async (data: IMatch) => {
@@ -46,6 +47,7 @@ export const createFromData = async (data: IMatch) => {
 		data: data,
 		logBuffer: [],
 		log: () => {},
+		warnAboutWrongTeam: true,
 	};
 	match.data = addChangeListener(data, createOnDataChangeHandler(match));
 	match.log = createLogger(match);
@@ -468,6 +470,16 @@ const onLogLine = async (match: Match, line: string) => {
 			}
 			return;
 		}
+
+		// World triggered "Match_Start" on "de_dust2"
+		const matchStartPattern = /World triggered "Match_Start" on .*/;
+		const matchStartMatch = line.match(
+			new RegExp(dateTimePattern.source + matchStartPattern.source)
+		);
+		if (matchStartMatch) {
+			match.warnAboutWrongTeam = true;
+			return;
+		}
 	} catch (err) {
 		match.log('Error in onLogLine' + err);
 	}
@@ -682,6 +694,9 @@ const sayWrongTeamOrSide = async (
 	currentSite: 'CT' | 'TERRORIST',
 	currentTeamAB: TTeamAB
 ) => {
+	if (!match.warnAboutWrongTeam) {
+		return;
+	}
 	const currentTeam = getTeamByAB(match, currentTeamAB);
 	const otherTeam = getTeamByAB(match, getOtherTeamAB(currentTeamAB));
 	await say(
