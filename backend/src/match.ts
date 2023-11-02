@@ -681,13 +681,13 @@ export const sayNotAssigned = async (match: Match, player: IPlayer) => {
 	await say(match, `PLAYER ${escapeRconString(player.name)} NOT ASSIGNED!`);
 	await say(
 		match,
-		`TYPE "${Settings.COMMAND_PREFIXES[0]}team a" TO JOIN ${escapeRconString(
+		`TYPE ${commands.formatFirstIngameCommand('TEAM', 'a')} TO JOIN ${escapeRconString(
 			match.data.teamA.name
 		)}`
 	);
 	await say(
 		match,
-		`TYPE "${Settings.COMMAND_PREFIXES[0]}team b" TO JOIN ${escapeRconString(
+		`TYPE ${commands.formatFirstIngameCommand('TEAM', 'b')} TO JOIN ${escapeRconString(
 			match.data.teamB.name
 		)}`
 	);
@@ -712,9 +712,10 @@ const sayWrongTeamOrSide = async (
 	);
 	await say(
 		match,
-		`CHECK SCOREBOARD AND CHANGE TEAM OR TYPE "${Settings.COMMAND_PREFIXES[0]}team ${
+		`CHECK SCOREBOARD AND CHANGE TEAM OR TYPE ${commands.formatFirstIngameCommand(
+			'TEAM',
 			currentTeamAB === 'TEAM_A' ? 'b' : 'a'
-		}" TO CHANGE REGISTRATION`
+		)} TO CHANGE REGISTRATION`
 	);
 };
 

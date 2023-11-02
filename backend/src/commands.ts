@@ -1,5 +1,7 @@
 import { IPlayer, TTeamString } from '../../common';
+import { colors } from './gameServer';
 import { Match } from './match';
+import { Settings } from './settings';
 
 const Commands = [
 	'BAN',
@@ -79,4 +81,22 @@ export const registerHandler = (command: TCommand, handler: CommandHandler) => {
 export const onCommand = async (e: CommandEvent) => {
 	const handlers = commandHandlers.get(e.command) ?? [];
 	await Promise.all(handlers.map((h) => h(e)));
+};
+
+export const formatIngameCommand = (command: string, parameters?: string) => {
+	return (
+		colors.lightOrange +
+		Settings.COMMAND_PREFIXES[0] +
+		command +
+		(parameters ? ' ' + parameters : '') +
+		colors.white
+	);
+};
+
+export const formatFirstIngameCommand = (command: TCommand, parameters?: string) => {
+	const firstUserCommand = getUserCommandsByInternalCommand(command)[0];
+	if (!firstUserCommand) {
+		return '';
+	}
+	return formatIngameCommand(firstUserCommand, parameters);
 };

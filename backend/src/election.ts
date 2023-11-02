@@ -11,8 +11,8 @@ import {
 	TWho,
 } from '../../common';
 import * as commands from './commands';
-import { getUserCommandsByInternalCommand } from './commands';
 import * as Events from './events';
+import { colors } from './gameServer';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
@@ -120,11 +120,11 @@ const getAvailableCommands = (match: Match.Match, currentElectionStep: IElection
 };
 
 const sayAvailableCommands = async (match: Match.Match, currentElectionStep: IElectionStep) => {
-	const commands = getAvailableCommands(match, currentElectionStep);
-	if (commands.length > 0) {
+	const cmds = getAvailableCommands(match, currentElectionStep);
+	if (cmds.length > 0) {
 		await Match.say(
 			match,
-			`COMMANDS: ${commands.map((c) => Settings.COMMAND_PREFIXES[0] + c).join(', ')}`
+			`COMMANDS: ${cmds.map((cmd) => commands.formatIngameCommand(cmd)).join(', ')}`
 		);
 	}
 };
@@ -161,9 +161,7 @@ const sayWhatIsUp = async (match: Match.Match) => {
 		if (currentElectionStep.map.mode === 'AGREE') {
 			await Match.say(
 				match,
-				`BOTH TEAMS MUST ${Settings.COMMAND_PREFIXES[0]}${
-					getUserCommandsByInternalCommand('AGREE')[0]
-				} ON THE SAME MAP`
+				`BOTH TEAMS MUST ${commands.formatFirstIngameCommand('AGREE')} ON THE SAME MAP`
 			);
 			if (match.data.election.currentAgree.teamA)
 				await Match.say(
@@ -185,16 +183,14 @@ const sayWhatIsUp = async (match: Match.Match) => {
 			if (validTeam)
 				await Match.say(
 					match,
-					`TEAM ${escapeRconString(Match.getTeamByAB(match, validTeam).name)} MUST ${
-						Settings.COMMAND_PREFIXES[0]
-					}${getUserCommandsByInternalCommand('BAN')[0]} A MAP`
+					`TEAM ${escapeRconString(
+						Match.getTeamByAB(match, validTeam).name
+					)} MUST ${commands.formatFirstIngameCommand('BAN')} A MAP`
 				);
 			if (!validTeam)
 				await Match.say(
 					match,
-					`BOTH TEAMS CAN START TO ${Settings.COMMAND_PREFIXES[0]}${
-						getUserCommandsByInternalCommand('BAN')[0]
-					} A MAP`
+					`BOTH TEAMS CAN START TO ${commands.formatFirstIngameCommand('BAN')} A MAP`
 				);
 			await sayAvailableMaps(match);
 		} else if (currentElectionStep.map.mode === 'PICK') {
@@ -202,16 +198,14 @@ const sayWhatIsUp = async (match: Match.Match) => {
 			if (validTeam)
 				await Match.say(
 					match,
-					`TEAM ${escapeRconString(Match.getTeamByAB(match, validTeam).name)} MUST ${
-						Settings.COMMAND_PREFIXES[0]
-					}${getUserCommandsByInternalCommand('PICK')[0]} A MAP`
+					`TEAM ${escapeRconString(
+						Match.getTeamByAB(match, validTeam).name
+					)} MUST ${commands.formatFirstIngameCommand('PICK')} A MAP`
 				);
 			if (!validTeam)
 				await Match.say(
 					match,
-					`BOTH TEAMS CAN START TO ${Settings.COMMAND_PREFIXES[0]}${
-						getUserCommandsByInternalCommand('PICK')[0]
-					} A MAP`
+					`BOTH TEAMS CAN START TO ${commands.formatFirstIngameCommand('PICK')} A MAP`
 				);
 			await sayAvailableMaps(match);
 		}
@@ -223,27 +217,32 @@ const sayWhatIsUp = async (match: Match.Match) => {
 					match,
 					`TEAM ${escapeRconString(
 						Match.getTeamByAB(match, validTeam).name
-					)} MUST CHOOSE A SIDE FOR MAP ${match.data.election.currentStepMap} (${
-						Settings.COMMAND_PREFIXES[0]
-					}${getUserCommandsByInternalCommand('CT')[0]}, ${Settings.COMMAND_PREFIXES[0]}${
-						getUserCommandsByInternalCommand('T')[0]
-					})`
+					)} MUST CHOOSE A SIDE FOR MAP ${
+						match.data.election.currentStepMap
+					} (${commands.formatFirstIngameCommand(
+						'CT'
+					)}, ${commands.formatFirstIngameCommand('T')})`
 				);
 			if (!validTeam)
 				await Match.say(
 					match,
 					`BOTH TEAMS CAN START TO CHOOSE A SIDE FOR MAP ${
 						match.data.election.currentStepMap
-					} (${Settings.COMMAND_PREFIXES[0]}${
-						getUserCommandsByInternalCommand('CT')[0]
-					}, ${Settings.COMMAND_PREFIXES[0]}${getUserCommandsByInternalCommand('T')[0]})`
+					} (${commands.formatFirstIngameCommand(
+						'CT'
+					)}, ${commands.formatFirstIngameCommand('T')})`
 				);
 		}
 	}
 };
 
 const sayAvailableMaps = async (match: Match.Match) => {
-	await Match.say(match, `AVAILABLE MAPS: ${match.data.election.remainingMaps.join(', ')}`);
+	await Match.say(
+		match,
+		`AVAILABLE MAPS: ${match.data.election.remainingMaps
+			.map((map) => colors.purple + map + colors.white)
+			.join(', ')}`
+	);
 };
 
 export const registerCommandHandlers = () => {
@@ -351,12 +350,7 @@ const onAgreeCommand: commands.CommandHandler = async (e) => {
 				await next(match);
 			} else {
 				await Match.say(match, `MAP ${map} SUGGESTED BY ${escapeRconString(team.name)}`);
-				await Match.say(
-					match,
-					`AGREE WITH ${Settings.COMMAND_PREFIXES[0]}${
-						getUserCommandsByInternalCommand('AGREE')[0]
-					}`
-				);
+				await Match.say(match, `AGREE WITH ${commands.formatFirstIngameCommand('AGREE')}`);
 				match.log(`${teamAB} (${team.name} - ${player.name}) suggests map ${map}`);
 			}
 			MatchService.scheduleSave(match);
@@ -550,6 +544,7 @@ const onRestartCommand: commands.CommandHandler = async (e) => {
 			match.data.election = create(match.data.mapPool, match.data.electionSteps);
 			match.data.matchMaps = [];
 			await Match.say(match, `ELECTION PROCESS RESTARTED`);
+			await sayWhatIsUp(match);
 		} catch (err) {
 			match.log(`Error restarting the election process: ${err}`);
 			await Match.say(match, `ERROR RESTARTING THE ELECTION`);
@@ -562,9 +557,7 @@ const onRestartCommand: commands.CommandHandler = async (e) => {
 
 		await Match.say(
 			match,
-			`TYPE ${Settings.COMMAND_PREFIXES[0]}${
-				getUserCommandsByInternalCommand('RESTART')[0]
-			} TO CONFIRM AND RESTART`
+			`TYPE ${commands.formatFirstIngameCommand('RESTART')} TO CONFIRM AND RESTART`
 		);
 	}
 	MatchService.scheduleSave(match);

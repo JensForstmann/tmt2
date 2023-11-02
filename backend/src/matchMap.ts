@@ -113,11 +113,11 @@ const getAvailableCommands = (state: TMatchMapSate): string[] => {
 };
 
 const sayAvailableCommands = async (match: Match.Match, matchMap: IMatchMap) => {
-	const commands = getAvailableCommands(matchMap.state);
-	if (commands.length > 0) {
+	const cmds = getAvailableCommands(matchMap.state);
+	if (cmds.length > 0) {
 		await Match.say(
 			match,
-			`COMMANDS: ${commands.map((c) => Settings.COMMAND_PREFIXES[0] + c).join(', ')}`
+			`COMMANDS: ${cmds.map((cmd) => commands.formatIngameCommand(cmd)).join(', ')}`
 		);
 	}
 };
@@ -303,10 +303,7 @@ const onRestartCommand: commands.CommandHandler = async (e) => {
 	} else {
 		await Match.say(match, `${escapeRconString(team.name)} WANTS TO RESTART THE KNIFE ROUND`);
 		match.log(`${teamAB} (${team.name} - ${player.name}) wants to restart the knife round`);
-		await Match.say(
-			match,
-			`AGREE WITH ${commands.getUserCommandsByInternalCommand('RESTART')[0]}`
-		);
+		await Match.say(match, `AGREE WITH ${commands.formatFirstIngameCommand('RESTART')}`);
 	}
 
 	MatchService.scheduleSave(match);
