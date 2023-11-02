@@ -74,41 +74,59 @@ const checkValidConfiguration = (
 	}
 };
 
-const getAvailableCommands = (match: Match.Match, currentElectionStep: IElectionStep): string[] => {
+const getAvailableCommandsEnums = (
+	match: Match.Match,
+	currentElectionStep: IElectionStep
+): commands.TCommand[] => {
 	if (match.data.election.state === 'FINISHED') {
 		return [];
 	}
 	if (match.data.election.currentSubStep === 'MAP') {
 		switch (currentElectionStep.map.mode) {
 			case 'AGREE':
-				return [
-					...getUserCommandsByInternalCommand('AGREE'),
-					...getUserCommandsByInternalCommand('PICK'),
-					...getUserCommandsByInternalCommand('RESTART'),
-				];
+				return ['AGREE', 'PICK', 'RESTART'];
 			case 'BAN':
-				return [
-					...getUserCommandsByInternalCommand('BAN'),
-					...getUserCommandsByInternalCommand('RESTART'),
-				];
+				return ['BAN', 'RESTART'];
 			case 'PICK':
-				return [
-					...getUserCommandsByInternalCommand('PICK'),
-					...getUserCommandsByInternalCommand('RESTART'),
-				];
+				return ['PICK', 'RESTART'];
+			case 'FIXED':
+			case 'RANDOM_BAN':
+			case 'RANDOM_PICK':
+				return [];
 		}
-	}
-	if (match.data.election.currentSubStep === 'SIDE' && isElectionStepAdd(currentElectionStep)) {
+	} else {
+		if (isElectionStepSkip(currentElectionStep)) {
+			return [];
+		}
 		switch (currentElectionStep.side.mode) {
 			case 'PICK':
-				return [
-					...getUserCommandsByInternalCommand('T'),
-					...getUserCommandsByInternalCommand('CT'),
-					...getUserCommandsByInternalCommand('RESTART'),
-				];
+				return ['T', 'CT', 'RESTART'];
+			case 'FIXED':
+			case 'KNIFE':
+			case 'RANDOM':
+				return [];
 		}
 	}
-	return [];
+};
+
+const getAvailableCommands = (match: Match.Match, currentElectionStep: IElectionStep): string[] => {
+	return getAvailableCommandsEnums(match, currentElectionStep).reduce(
+		(pv: string[], cv: commands.TCommand) => [
+			...pv,
+			...commands.getUserCommandsByInternalCommand(cv),
+		],
+		[]
+	);
+};
+
+const sayAvailableCommands = async (match: Match.Match, currentElectionStep: IElectionStep) => {
+	const commands = getAvailableCommands(match, currentElectionStep);
+	if (commands.length > 0) {
+		await Match.say(
+			match,
+			`COMMANDS: ${commands.map((c) => Settings.COMMAND_PREFIXES[0] + c).join(', ')}`
+		);
+	}
 };
 
 const getCurrentElectionStep = (match: Match.Match): IElectionStep | undefined => {
@@ -132,16 +150,6 @@ export const sayPeriodicMessage = async (match: Match.Match) => {
 			await sayAvailableCommands(match, currentElectionStep);
 			await sayWhatIsUp(match);
 		}
-	}
-};
-
-const sayAvailableCommands = async (match: Match.Match, currentElectionStep: IElectionStep) => {
-	const commands = getAvailableCommands(match, currentElectionStep);
-	if (commands.length > 0) {
-		await Match.say(
-			match,
-			`COMMANDS: ${commands.map((c) => Settings.COMMAND_PREFIXES[0] + c).join(', ')}`
-		);
 	}
 };
 
@@ -541,6 +549,7 @@ const onRestartCommand: commands.CommandHandler = async (e) => {
 			match.log('Restart election process');
 			match.data.election = create(match.data.mapPool, match.data.electionSteps);
 			match.data.matchMaps = [];
+			await Match.say(match, `ELECTION PROCESS RESTARTED`);
 		} catch (err) {
 			match.log(`Error restarting the election process: ${err}`);
 			await Match.say(match, `ERROR RESTARTING THE ELECTION`);
