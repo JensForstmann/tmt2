@@ -59,10 +59,12 @@ export const GameServersPage: Component = () => {
 			'DELETE',
 			`/api/gameservers/${managedGameServer.ip}/${managedGameServer.port}`
 		);
-		setData('managedGameServers', (exi) =>
-			exi?.filter(
-				(exi) => exi.ip !== managedGameServer.ip || exi.port !== managedGameServer.port
-			)
+		setData(
+			'managedGameServers',
+			(exi) =>
+				exi?.filter(
+					(exi) => exi.ip !== managedGameServer.ip || exi.port !== managedGameServer.port
+				)
 		);
 	};
 

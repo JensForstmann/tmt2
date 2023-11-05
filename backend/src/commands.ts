@@ -20,7 +20,7 @@ const Commands = [
 	'VERSION',
 	'*',
 ] as const;
-export type TCommand = typeof Commands[number];
+export type TCommand = (typeof Commands)[number];
 
 const commandMapping = new Map<string, TCommand>();
 commandMapping.set('ban', 'BAN');

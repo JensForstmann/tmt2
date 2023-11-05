@@ -7,10 +7,10 @@ import { IPlayer } from './player';
 import { ITeam, ITeamCreateDto } from './team';
 
 export const MatchEndActions = ['KICK_ALL', 'QUIT_SERVER', 'NONE'] as const;
-export type TMatchEndAction = typeof MatchEndActions[number];
+export type TMatchEndAction = (typeof MatchEndActions)[number];
 
 export const MatchStates = ['ELECTION', 'MATCH_MAP', 'FINISHED'] as const;
-export type TMatchSate = typeof MatchStates[number];
+export type TMatchSate = (typeof MatchStates)[number];
 
 export type TMatchMode = 'SINGLE' | 'LOOP';
 

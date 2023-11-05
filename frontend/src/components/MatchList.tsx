@@ -30,7 +30,7 @@ export const MatchTableColumnLabels: Record<TMatchTableColumns, string> = {
 	DETAILS: t('Details'),
 };
 
-export type TMatchTableColumns = typeof MatchTableColumns[number];
+export type TMatchTableColumns = (typeof MatchTableColumns)[number];
 
 export type TColumnsToShow = Partial<Record<TMatchTableColumns, boolean>>;
 
