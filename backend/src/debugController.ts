@@ -7,6 +7,9 @@ import { STORAGE_FOLDER } from './storage';
 @Route('/api/debug')
 @Security('bearer_token')
 export class DebugController extends Controller {
+	/**
+	 * Get all connected web socket clients.
+	 */
 	@Get('webSockets')
 	async getWebSocketClients() {
 		return WebSocket.getClients();

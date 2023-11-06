@@ -10,14 +10,20 @@ export const MatchEndActions = ['KICK_ALL', 'QUIT_SERVER', 'NONE'] as const;
 export type TMatchEndAction = (typeof MatchEndActions)[number];
 
 export const MatchStates = ['ELECTION', 'MATCH_MAP', 'FINISHED'] as const;
-export type TMatchSate = (typeof MatchStates)[number];
+/**
+ * Possible match states.
+ */
+export type TMatchState = (typeof MatchStates)[number];
 
+/**
+ * Possible match modes.
+ */
 export type TMatchMode = 'SINGLE' | 'LOOP';
 
 export interface IMatch {
 	/** tmt2 identifier for this match */
 	id: string;
-	state: TMatchSate;
+	state: TMatchState;
 	/** e.g. remote identifier, will be present in every response/webhook */
 	passthrough?: string;
 	/**
@@ -26,16 +32,29 @@ export interface IMatch {
 	 * If the map is fixed it will not be removed from the map pool.
 	 */
 	mapPool: string[];
+	/**
+	 * Team A for this match.
+	 * Team A will always be Team A in responses and webhooks.
+	 * No matter on which side (CT/T) it is currently.
+	 */
 	teamA: ITeam;
+	/**
+	 * Team B for this match.
+	 * Team B will always be Team B in responses and webhooks.
+	 * No matter on which side (CT/T) it is currently.
+	 */
 	teamB: ITeam;
+	/**
+	 * List of election steps to determine the played map(s).
+	 */
 	electionSteps: IElectionStep[];
-	/** election state data */
+	/** Data for the election process. */
 	election: IElection;
 	gameServer: IGameServer;
-	/** log secret that is given as part of the url to the cs2 server it will send the logs to */
+	/** Log secret that is given as part of the url to the CS2 server as a log receiver (logaddress_add_http). */
 	logSecret: string;
 	/**
-	 * Indicates if incoming logs from the cs2 server are parsed (otherwise they will be dropped without any action).
+	 * Indicates if incoming logs from the CS2 server are parsed (otherwise they will be dropped without any action).
 	 * Will be set to true if match is loaded from storage (after a short delay).
 	 */
 	parseIncomingLogs: boolean;
@@ -115,7 +134,7 @@ export interface IMatchCreateDto {
 }
 
 export interface IMatchUpdateDto extends Partial<IMatchCreateDto> {
-	state?: TMatchSate;
+	state?: TMatchState;
 	/** updates the server's log address automatically */
 	logSecret?: string;
 	currentMap?: number;

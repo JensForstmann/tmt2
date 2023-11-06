@@ -5,7 +5,7 @@ import {
 	getMapScore,
 	IMatchResponse,
 	IMatchUpdateDto,
-	TMatchSate,
+	TMatchState,
 } from '../../../common';
 import { SvgCopyAll } from '../assets/Icons';
 import { createFetcher } from '../utils/fetcher';
@@ -32,7 +32,7 @@ export const MatchCard: Component<{
 		const response = prompt(t('enter state'), 'MATCH_MAP');
 		if (response) {
 			patchMatch({
-				state: response as TMatchSate,
+				state: response as TMatchState,
 			});
 		}
 	};

@@ -6,25 +6,30 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"TMatchSate": {
+			"TMatchState": {
 				"type": "string",
 				"enum": [
 					"ELECTION",
 					"MATCH_MAP",
 					"FINISHED"
-				]
+				],
+				"description": "Possible match states."
 			},
 			"ITeam": {
+				"description": "Team.",
 				"properties": {
 					"passthrough": {
-						"type": "string"
+						"type": "string",
+						"description": "Passthrough data to identify team in other systems.\nWill be present in every response/webhook."
 					},
 					"name": {
-						"type": "string"
+						"type": "string",
+						"description": "Team name."
 					},
 					"advantage": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"description": "Advantage in map wins, useful for double elemination tournament finals."
 					}
 				},
 				"required": [
@@ -35,6 +40,7 @@
 				"additionalProperties": false
 			},
 			"IFixedMap": {
+				"description": "Play on a fixed map. Map will not be removed from the map pool.",
 				"properties": {
 					"mode": {
 						"type": "string",
@@ -44,7 +50,8 @@
 						"nullable": false
 					},
 					"fixed": {
-						"type": "string"
+						"type": "string",
+						"description": "The name of the map, e.g. de_anubis."
 					}
 				},
 				"required": [
@@ -64,6 +71,7 @@
 				]
 			},
 			"IPickMap": {
+				"description": "Pick a map from the map pool.",
 				"properties": {
 					"mode": {
 						"type": "string",
@@ -84,6 +92,7 @@
 				"additionalProperties": false
 			},
 			"IAgreeOrRandomMap": {
+				"description": "Either pick a random map from the map pool. Or let both teams agree on a map from the map pool.",
 				"properties": {
 					"mode": {
 						"type": "string",
@@ -113,6 +122,7 @@
 				]
 			},
 			"IFixedSide": {
+				"description": "Use fixed starting sides.",
 				"properties": {
 					"mode": {
 						"type": "string",
@@ -133,6 +143,7 @@
 				"additionalProperties": false
 			},
 			"IPickSide": {
+				"description": "Let one team choose its starting side.",
 				"properties": {
 					"mode": {
 						"type": "string",
@@ -153,6 +164,7 @@
 				"additionalProperties": false
 			},
 			"IRandomOrKnifeSide": {
+				"description": "Either randomly set starting sides. Or do a knife round befor the map starts and let the winner decide.",
 				"properties": {
 					"mode": {
 						"type": "string",
@@ -169,6 +181,7 @@
 				"additionalProperties": false
 			},
 			"IElectionStepAdd": {
+				"description": "Election steps which will result in a match map that will be played.",
 				"properties": {
 					"map": {
 						"anyOf": [
@@ -205,6 +218,7 @@
 				"additionalProperties": false
 			},
 			"IRandomMapBan": {
+				"description": "Randomly ban a map from the map pool.",
 				"properties": {
 					"mode": {
 						"type": "string",
@@ -221,6 +235,7 @@
 				"additionalProperties": false
 			},
 			"IBanMap": {
+				"description": "Ban a map from the map pool.",
 				"properties": {
 					"mode": {
 						"type": "string",
@@ -241,6 +256,7 @@
 				"additionalProperties": false
 			},
 			"IElectionStepSkip": {
+				"description": "Election steps which will remove a map from the map pool.",
 				"properties": {
 					"map": {
 						"anyOf": [
@@ -267,7 +283,8 @@
 					{
 						"$ref": "#/components/schemas/IElectionStepSkip"
 					}
-				]
+				],
+				"description": "Election step to either add map to the list of match maps. Or to remove a map from the map pool."
 			},
 			"TElectionState": {
 				"type": "string",
@@ -381,7 +398,8 @@
 						"type": "string"
 					},
 					"hideRconPassword": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "If plebs (client without an admin token) create a match the hideRconPassword attribute is set to true.\nThis will prevent executing rcon commands from the frontend by the (unauthorized) user."
 					}
 				},
 				"required": [
@@ -403,13 +421,14 @@
 					"IN_PROGRESS",
 					"PAUSED",
 					"FINISHED"
-				]
+				],
+				"description": "Possible match map states."
 			},
 			"IMatchMap": {
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "map name"
+						"description": "Map name, e.g. de_anubis."
 					},
 					"knifeForSide": {
 						"type": "boolean"
@@ -422,7 +441,8 @@
 						"$ref": "#/components/schemas/TMatchMapSate"
 					},
 					"knifeWinner": {
-						"$ref": "#/components/schemas/TTeamAB"
+						"$ref": "#/components/schemas/TTeamAB",
+						"description": "Winner of the knife round which is able to or already has picked a starting side."
 					},
 					"readyTeams": {
 						"properties": {
@@ -469,18 +489,22 @@
 							"teamB",
 							"teamA"
 						],
-						"type": "object"
+						"type": "object",
+						"description": "Current score of both teams."
 					},
 					"overTimeEnabled": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "If overtime is enabled (mp_overtime_enable)."
 					},
 					"overTimeMaxRounds": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"description": "Max rounds in overtime (mp_overtime_maxrounds)."
 					},
 					"maxRounds": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"description": "Max rounds (mp_maxrounds)."
 					}
 				},
 				"required": [
@@ -602,15 +626,19 @@
 				]
 			},
 			"IPlayer": {
+				"description": "Player.",
 				"properties": {
 					"steamId64": {
-						"type": "string"
+						"type": "string",
+						"description": "Steam ID 64"
 					},
 					"name": {
-						"type": "string"
+						"type": "string",
+						"description": "Name."
 					},
 					"team": {
-						"$ref": "#/components/schemas/TTeamAB"
+						"$ref": "#/components/schemas/TTeamAB",
+						"description": "Current team as they joined with `.team`."
 					},
 					"side": {
 						"allOf": [
@@ -618,10 +646,12 @@
 								"$ref": "#/components/schemas/TTeamSides"
 							}
 						],
-						"nullable": true
+						"nullable": true,
+						"description": "Current ingame side."
 					},
 					"online": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "Player currently on the game server (online)?"
 					}
 				},
 				"required": [
@@ -636,7 +666,8 @@
 				"enum": [
 					"SINGLE",
 					"LOOP"
-				]
+				],
+				"description": "Possible match modes."
 			},
 			"IMatch": {
 				"properties": {
@@ -645,7 +676,7 @@
 						"description": "tmt2 identifier for this match"
 					},
 					"state": {
-						"$ref": "#/components/schemas/TMatchSate"
+						"$ref": "#/components/schemas/TMatchState"
 					},
 					"passthrough": {
 						"type": "string",
@@ -659,31 +690,34 @@
 						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
 					},
 					"teamA": {
-						"$ref": "#/components/schemas/ITeam"
+						"$ref": "#/components/schemas/ITeam",
+						"description": "Team A for this match.\nTeam A will always be Team A in responses and webhooks.\nNo matter on which side (CT/T) it is currently."
 					},
 					"teamB": {
-						"$ref": "#/components/schemas/ITeam"
+						"$ref": "#/components/schemas/ITeam",
+						"description": "Team B for this match.\nTeam B will always be Team B in responses and webhooks.\nNo matter on which side (CT/T) it is currently."
 					},
 					"electionSteps": {
 						"items": {
 							"$ref": "#/components/schemas/IElectionStep"
 						},
-						"type": "array"
+						"type": "array",
+						"description": "List of election steps to determine the played map(s)."
 					},
 					"election": {
 						"$ref": "#/components/schemas/IElection",
-						"description": "election state data"
+						"description": "Data for the election process."
 					},
 					"gameServer": {
 						"$ref": "#/components/schemas/IGameServer"
 					},
 					"logSecret": {
 						"type": "string",
-						"description": "log secret that is given as part of the url to the cs2 server it will send the logs to"
+						"description": "Log secret that is given as part of the url to the CS2 server as a log receiver (logaddress_add_http)."
 					},
 					"parseIncomingLogs": {
 						"type": "boolean",
-						"description": "Indicates if incoming logs from the cs2 server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
+						"description": "Indicates if incoming logs from the CS2 server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
 					},
 					"matchMaps": {
 						"items": {
@@ -816,18 +850,19 @@
 				"additionalProperties": false
 			},
 			"ITeamCreateDto": {
+				"description": "Team (create structure).",
 				"properties": {
 					"name": {
 						"type": "string"
 					},
 					"passthrough": {
 						"type": "string",
-						"description": "e.g. remote identifier, will be present in every response/webhook"
+						"description": "Passthrough data to identify team in other systems.\nWill be present in every response/webhook."
 					},
 					"advantage": {
 						"type": "number",
 						"format": "double",
-						"description": "defaults to 0 (no advantage)"
+						"description": "Advantage in map wins, useful for double elemination tournament finals."
 					}
 				},
 				"required": [
@@ -948,7 +983,7 @@
 						"description": "tmt2 identifier for this match"
 					},
 					"state": {
-						"$ref": "#/components/schemas/TMatchSate"
+						"$ref": "#/components/schemas/TMatchState"
 					},
 					"passthrough": {
 						"type": "string",
@@ -962,31 +997,34 @@
 						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
 					},
 					"teamA": {
-						"$ref": "#/components/schemas/ITeam"
+						"$ref": "#/components/schemas/ITeam",
+						"description": "Team A for this match.\nTeam A will always be Team A in responses and webhooks.\nNo matter on which side (CT/T) it is currently."
 					},
 					"teamB": {
-						"$ref": "#/components/schemas/ITeam"
+						"$ref": "#/components/schemas/ITeam",
+						"description": "Team B for this match.\nTeam B will always be Team B in responses and webhooks.\nNo matter on which side (CT/T) it is currently."
 					},
 					"electionSteps": {
 						"items": {
 							"$ref": "#/components/schemas/IElectionStep"
 						},
-						"type": "array"
+						"type": "array",
+						"description": "List of election steps to determine the played map(s)."
 					},
 					"election": {
 						"$ref": "#/components/schemas/IElection",
-						"description": "election state data"
+						"description": "Data for the election process."
 					},
 					"gameServer": {
 						"$ref": "#/components/schemas/IGameServer"
 					},
 					"logSecret": {
 						"type": "string",
-						"description": "log secret that is given as part of the url to the cs2 server it will send the logs to"
+						"description": "Log secret that is given as part of the url to the CS2 server as a log receiver (logaddress_add_http)."
 					},
 					"parseIncomingLogs": {
 						"type": "boolean",
-						"description": "Indicates if incoming logs from the cs2 server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
+						"description": "Indicates if incoming logs from the CS2 server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
 					},
 					"matchMaps": {
 						"items": {
@@ -1557,7 +1595,8 @@
 					"AGREE",
 					"BAN",
 					"RANDOM_BAN"
-				]
+				],
+				"description": "Possible map modes for a election step."
 			},
 			"ElectionMapStep": {
 				"properties": {
@@ -1607,7 +1646,8 @@
 					"FIXED",
 					"PICK",
 					"RANDOM"
-				]
+				],
+				"description": "Possible side modes to determine the starting sides of each team."
 			},
 			"ElectionSideStep": {
 				"properties": {
@@ -1871,7 +1911,7 @@
 						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
 					},
 					"state": {
-						"$ref": "#/components/schemas/TMatchSate"
+						"$ref": "#/components/schemas/TMatchState"
 					},
 					"logSecret": {
 						"type": "string",
@@ -1907,10 +1947,11 @@
 				"additionalProperties": false
 			},
 			"IMatchMapUpdateDto": {
+				"description": "Structure to update a match map.",
 				"properties": {
 					"name": {
 						"type": "string",
-						"description": "map name"
+						"description": "Map name, e.g. de_anubis."
 					},
 					"knifeForSide": {
 						"type": "boolean"
@@ -1923,7 +1964,8 @@
 						"$ref": "#/components/schemas/TMatchMapSate"
 					},
 					"knifeWinner": {
-						"$ref": "#/components/schemas/TTeamAB"
+						"$ref": "#/components/schemas/TTeamAB",
+						"description": "Winner of the knife round which is able to or already has picked a starting side."
 					},
 					"readyTeams": {
 						"properties": {
@@ -1970,18 +2012,22 @@
 							"teamB",
 							"teamA"
 						],
-						"type": "object"
+						"type": "object",
+						"description": "Current score of both teams."
 					},
 					"overTimeEnabled": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "If overtime is enabled (mp_overtime_enable)."
 					},
 					"overTimeMaxRounds": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"description": "Max rounds in overtime (mp_overtime_maxrounds)."
 					},
 					"maxRounds": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"description": "Max rounds (mp_maxrounds)."
 					},
 					"_refreshOvertimeAndMaxRoundsSettings": {
 						"type": "boolean",
@@ -2008,14 +2054,17 @@
 						"type": "string"
 					},
 					"hideRconPassword": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "If plebs (client without an admin token) create a match the hideRconPassword attribute is set to true.\nThis will prevent executing rcon commands from the frontend by the (unauthorized) user."
 					},
 					"canBeUsed": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "Can the server be used for new matches?"
 					},
 					"usedBy": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"description": "Match id which is currently using this managed game server."
 					}
 				},
 				"required": [
@@ -2041,10 +2090,12 @@
 						"type": "string"
 					},
 					"hideRconPassword": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "If plebs (client without an admin token) create a match the hideRconPassword attribute is set to true.\nThis will prevent executing rcon commands from the frontend by the (unauthorized) user."
 					},
 					"canBeUsed": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "Can the server be used for new matches?"
 					}
 				},
 				"required": [
@@ -2068,11 +2119,13 @@
 						"type": "string"
 					},
 					"canBeUsed": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "Set if the server can be used for new matches."
 					},
 					"usedBy": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"description": "Set or delete the link to a match. If it's null and `canBeUsed` is true, the game server is available."
 					}
 				},
 				"required": [
@@ -2123,6 +2176,10 @@
 			"bearer_token": {
 				"type": "http",
 				"scheme": "bearer"
+			},
+			"bearer_token_optional": {
+				"type": "http",
+				"scheme": "bearer"
 			}
 		}
 	},
@@ -2146,6 +2203,7 @@
 						"description": "No content"
 					}
 				},
+				"description": "Dummy endpoint to check if given token is valid without executing anything.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2169,6 +2227,7 @@
 						}
 					}
 				},
+				"description": "Create and supervise a new match.",
 				"security": [
 					{
 						"bearer_token_optional": []
@@ -2203,6 +2262,7 @@
 						}
 					}
 				},
+				"description": "Get all matches.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2210,6 +2270,7 @@
 				],
 				"parameters": [
 					{
+						"description": "State filter",
 						"in": "query",
 						"name": "state",
 						"required": false,
@@ -2221,6 +2282,7 @@
 						}
 					},
 					{
+						"description": "Passthrough filter",
 						"in": "query",
 						"name": "passthrough",
 						"required": false,
@@ -2232,6 +2294,7 @@
 						}
 					},
 					{
+						"description": "Get only stopped or not stopped matches.",
 						"in": "query",
 						"name": "isStopped",
 						"required": false,
@@ -2240,6 +2303,7 @@
 						}
 					},
 					{
+						"description": "Filter for only live (currently active) matches, or the opposite.",
 						"in": "query",
 						"name": "isLive",
 						"required": false,
@@ -2270,6 +2334,7 @@
 						}
 					}
 				},
+				"description": "Get a specific match by id.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2293,6 +2358,7 @@
 						"description": "No content"
 					}
 				},
+				"description": "Update a specific match.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2326,6 +2392,7 @@
 						"description": "No content"
 					}
 				},
+				"description": "Stop supervising a specific match. TMT will no longer listen to the game server and will not execute any rcon commands.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2361,6 +2428,7 @@
 						}
 					}
 				},
+				"description": "Get the last 1000 log lines from a specific match.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2396,6 +2464,7 @@
 						}
 					}
 				},
+				"description": "Get the last 1000 events from a specific match.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2449,6 +2518,7 @@
 						}
 					}
 				},
+				"description": "Get the last known round backups for a specific match.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2464,6 +2534,7 @@
 						}
 					},
 					{
+						"description": "The max. number of round backups to be returned.",
 						"in": "query",
 						"name": "count",
 						"required": false,
@@ -2495,6 +2566,7 @@
 						}
 					}
 				},
+				"description": "Load a round backup file for a specific match.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2510,6 +2582,7 @@
 						}
 					},
 					{
+						"description": "Name of the round backup file.",
 						"in": "path",
 						"name": "file",
 						"required": true,
@@ -2528,6 +2601,7 @@
 						"description": "No content"
 					}
 				},
+				"description": "Update a specific match map. First map has the map number 0.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2572,6 +2646,7 @@
 						"description": "No content"
 					}
 				},
+				"description": "Revive a specific match. TMT will start supervising a (stopped) match again (listen to the game sever and execute rcon commands).",
 				"security": [
 					{
 						"bearer_token": []
@@ -2612,6 +2687,7 @@
 						}
 					}
 				},
+				"description": "Execute a rcon command on the game server.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2650,6 +2726,7 @@
 						"description": "No content"
 					}
 				},
+				"description": "Endpoint the game server sends its log file to. Not meant for direct use!",
 				"security": [],
 				"parameters": [
 					{
@@ -2697,6 +2774,7 @@
 						}
 					}
 				},
+				"description": "Get all managed game servers.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2718,6 +2796,7 @@
 						}
 					}
 				},
+				"description": "Add a new managed game server.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2751,12 +2830,31 @@
 						}
 					}
 				},
+				"description": "Change an existing managed game server.",
 				"security": [
 					{
 						"bearer_token": []
 					}
 				],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "ip",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "port",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -2775,6 +2873,7 @@
 						"description": "No content"
 					}
 				},
+				"description": "Delete an existing managed game server.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2819,6 +2918,7 @@
 						}
 					}
 				},
+				"description": "Get all configured presets.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2840,6 +2940,7 @@
 						}
 					}
 				},
+				"description": "Create a new preset.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2864,6 +2965,7 @@
 						"description": "No content"
 					}
 				},
+				"description": "Update an existing preset.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2890,6 +2992,7 @@
 						"description": "No content"
 					}
 				},
+				"description": "Delete an existing preset.",
 				"security": [
 					{
 						"bearer_token": []
@@ -2923,6 +3026,7 @@
 						}
 					}
 				},
+				"description": "Get all connected web socket clients.",
 				"security": [
 					{
 						"bearer_token": []
@@ -3015,6 +3119,7 @@
 						}
 					}
 				},
+				"description": "Get some internal config variables. Currently only the set TMT_LOG_ADDRESS.",
 				"security": [],
 				"parameters": []
 			}

@@ -9,11 +9,17 @@ import * as ManagedGameServers from './managedGameServers';
 @Route('/api/gameservers')
 @Security('bearer_token')
 export class GameServersController extends Controller {
+	/**
+	 * Get all managed game servers.
+	 */
 	@Get()
 	async getGameServers(): Promise<IManagedGameServer[]> {
 		return ManagedGameServers.getAll();
 	}
 
+	/**
+	 * Add a new managed game server.
+	 */
 	@Post()
 	async createGameServer(
 		@Body() requestBody: IManagedGameServerCreateDto
@@ -30,13 +36,21 @@ export class GameServersController extends Controller {
 		return managedGameServer;
 	}
 
+	/**
+	 * Change an existing managed game server.
+	 */
 	@Patch('{ip}/{port}')
 	async updateGameServer(
-		@Body() requestBody: IManagedGameServerUpdateDto
+		@Body() requestBody: IManagedGameServerUpdateDto,
+		ip: string,
+		port: number
 	): Promise<IManagedGameServer> {
 		return await ManagedGameServers.update(requestBody);
 	}
 
+	/**
+	 * Delete an existing managed game server.
+	 */
 	@Delete('{ip}/{port}')
 	async deleteGameServer(ip: string, port: number): Promise<void> {
 		await ManagedGameServers.remove({

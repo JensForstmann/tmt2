@@ -6,7 +6,7 @@ import {
 	MatchEndActions,
 	MatchStates,
 	TMatchEndAction,
-	TMatchSate,
+	TMatchState,
 } from '../../../common';
 import { t } from '../utils/locale';
 import { Card } from './Card';
@@ -91,7 +91,7 @@ export const MatchEditCard: Component<{
 				<SelectInput
 					label={t('Match State')}
 					labelTopRight={store.state !== props.match.state ? t('Changed') : ''}
-					onInput={(e) => setStore('state', e.currentTarget.value as TMatchSate)}
+					onInput={(e) => setStore('state', e.currentTarget.value as TMatchState)}
 				>
 					<For each={MatchStates}>
 						{(state) => (

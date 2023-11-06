@@ -9,6 +9,10 @@
 			"bearer_token": {
 				"type": "http",
 				"scheme": "bearer"
+			},
+			"bearer_token_optional": {
+				"type": "http",
+				"scheme": "bearer"
 			}
 		}
 	},

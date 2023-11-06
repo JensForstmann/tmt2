@@ -1,4 +1,4 @@
-import { TTeamAB } from './matchMap';
+import { TTeamAB } from './team';
 
 export type TElectionState = 'NOT_STARTED' | 'IN_PROGRESS' | 'FINISHED';
 

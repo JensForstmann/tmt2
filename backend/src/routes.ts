@@ -31,7 +31,7 @@ import type { RequestHandler, Router } from 'express';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
-	TMatchSate: {
+	TMatchState: {
 		dataType: 'refAlias',
 		type: {
 			dataType: 'union',
@@ -472,7 +472,7 @@ const models: TsoaRoute.Models = {
 		dataType: 'refObject',
 		properties: {
 			id: { dataType: 'string', required: true },
-			state: { ref: 'TMatchSate', required: true },
+			state: { ref: 'TMatchState', required: true },
 			passthrough: { dataType: 'string' },
 			mapPool: { dataType: 'array', array: { dataType: 'string' }, required: true },
 			teamA: { ref: 'ITeam', required: true },
@@ -584,7 +584,7 @@ const models: TsoaRoute.Models = {
 		dataType: 'refObject',
 		properties: {
 			id: { dataType: 'string', required: true },
-			state: { ref: 'TMatchSate', required: true },
+			state: { ref: 'TMatchState', required: true },
 			passthrough: { dataType: 'string' },
 			mapPool: { dataType: 'array', array: { dataType: 'string' }, required: true },
 			teamA: { ref: 'ITeam', required: true },
@@ -1007,7 +1007,7 @@ const models: TsoaRoute.Models = {
 			matchEndAction: { ref: 'TMatchEndAction' },
 			tmtLogAddress: { dataType: 'string' },
 			mode: { ref: 'TMatchMode' },
-			state: { ref: 'TMatchSate' },
+			state: { ref: 'TMatchState' },
 			logSecret: { dataType: 'string' },
 			currentMap: { dataType: 'double' },
 			_restartElection: { dataType: 'boolean' },
@@ -1632,6 +1632,8 @@ export function RegisterRoutes(app: Router) {
 					required: true,
 					ref: 'IManagedGameServerUpdateDto',
 				},
+				ip: { in: 'path', name: 'ip', required: true, dataType: 'string' },
+				port: { in: 'path', name: 'port', required: true, dataType: 'double' },
 			};
 
 			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

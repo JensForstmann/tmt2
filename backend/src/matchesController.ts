@@ -29,6 +29,9 @@ import * as MatchService from './matchService';
 @Route('/api/matches')
 @Security('bearer_token')
 export class MatchesController extends Controller {
+	/**
+	 * Create and supervise a new match.
+	 */
 	@Post()
 	@SuccessResponse(201)
 	@Security('bearer_token_optional')
@@ -42,6 +45,13 @@ export class MatchesController extends Controller {
 		return match.data;
 	}
 
+	/**
+	 * Get all matches.
+	 * @param state State filter
+	 * @param passthrough Passthrough filter
+	 * @param isStopped Get only stopped or not stopped matches.
+	 * @param isLive Filter for only live (currently active) matches, or the opposite.
+	 */
 	@Get()
 	async getAllMatches(
 		@Request() { user }: { user: IAuthResponse },
@@ -66,6 +76,9 @@ export class MatchesController extends Controller {
 			.map((m) => MatchService.hideRconPassword(m));
 	}
 
+	/**
+	 * Get a specific match by id.
+	 */
 	@Get('{id}')
 	async getMatch(
 		id: string,
@@ -91,16 +104,26 @@ export class MatchesController extends Controller {
 		return;
 	}
 
+	/**
+	 * Get the last 1000 log lines from a specific match.
+	 */
 	@Get('{id}/logs')
 	async getLogs(id: string, @Request() { user }: { user: IAuthResponse }): Promise<string[]> {
 		return await Match.getLogsTail(id);
 	}
 
+	/**
+	 * Get the last 1000 events from a specific match.
+	 */
 	@Get('{id}/events')
 	async getEvents(id: string, @Request() { user }: { user: IAuthResponse }): Promise<Event[]> {
 		return await Events.getEventsTail(id);
 	}
 
+	/**
+	 * Get the last known round backups for a specific match.
+	 * @param count The max. number of round backups to be returned.
+	 */
 	@Get('{id}/server/round_backups')
 	async getRoundBackups(
 		id: string,
@@ -116,6 +139,10 @@ export class MatchesController extends Controller {
 		}
 	}
 
+	/**
+	 * Load a round backup file for a specific match.
+	 * @param file Name of the round backup file.
+	 */
 	@Post('{id}/server/round_backups/{file}')
 	async loadRoundBackup(
 		id: string,
@@ -136,6 +163,9 @@ export class MatchesController extends Controller {
 		}
 	}
 
+	/**
+	 * Update a specific match.
+	 */
 	@Patch('{id}')
 	async updateMatch(
 		id: string,
@@ -150,6 +180,9 @@ export class MatchesController extends Controller {
 		}
 	}
 
+	/**
+	 * Update a specific match map. First map has the map number 0.
+	 */
 	@Patch('{id}/matchMap/{mapNumber}')
 	async updateMatchMap(
 		id: string,
@@ -170,6 +203,9 @@ export class MatchesController extends Controller {
 		await MatchMap.update(match, matchMap, requestBody, mapNumber);
 	}
 
+	/**
+	 * Stop supervising a specific match. TMT will no longer listen to the game server and will not execute any rcon commands.
+	 */
 	@Delete('{id}')
 	async deleteMatch(id: string, @Request() { user }: { user: IAuthResponse }): Promise<void> {
 		if (!(await MatchService.remove(id))) {
@@ -177,6 +213,9 @@ export class MatchesController extends Controller {
 		}
 	}
 
+	/**
+	 * Revive a specific match. TMT will start supervising a (stopped) match again (listen to the game sever and execute rcon commands).
+	 */
 	@Patch('{id}/revive')
 	async reviveMatch(id: string, @Request() { user }: { user: IAuthResponse }): Promise<void> {
 		if (!(await MatchService.revive(id))) {
@@ -184,6 +223,9 @@ export class MatchesController extends Controller {
 		}
 	}
 
+	/**
+	 * Execute a rcon command on the game server.
+	 */
 	@Post('{id}/server/rcon')
 	async rcon(
 		id: string,
@@ -202,6 +244,9 @@ export class MatchesController extends Controller {
 		return await Match.execManyRcon(match, requestBody);
 	}
 
+	/**
+	 * Endpoint the game server sends its log file to. Not meant for direct use!
+	 */
 	@NoSecurity()
 	@Post('{id}/server/log/{secret}')
 	receiveLog(id: string, secret: string, @Body() requestBody: any): void {
