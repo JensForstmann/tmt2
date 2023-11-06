@@ -588,7 +588,7 @@ const onPlayerLogLine = async (
 		if (match.data.mode === 'LOOP') {
 			const players = await GameServer.getPlayers(match);
 			if (players.length === 0) {
-				await restartElection(match);
+				await loopMatch(match);
 			}
 		}
 		return;
@@ -825,7 +825,20 @@ const onMatchEnd = async (match: Match) => {
 		const wonMapsTeamA = getTeamWins(match, 'TEAM_A');
 		const wonMapsTeamB = getTeamWins(match, 'TEAM_B');
 		Events.onMatchEnd(match, wonMapsTeamA, wonMapsTeamB);
+
+		// tell players what will happen next
+		const seconds = Math.round(Settings.MATCH_END_ACTION_DELAY / 1000);
+		switch (match.data.matchEndAction) {
+			case 'KICK_ALL':
+				say(match, `IN ${seconds} SECONDS ALL PLAYERS GET KICKED`);
+				break;
+			case 'QUIT_SERVER':
+				say(match, `IN ${seconds} SECONDS THE SERVER SHUTS DOWN`);
+				break;
+		}
+
 		await sleep(Settings.MATCH_END_ACTION_DELAY);
+
 		switch (match.data.matchEndAction) {
 			case 'KICK_ALL':
 				await GameServer.kickAll(match);
@@ -836,7 +849,7 @@ const onMatchEnd = async (match: Match) => {
 		}
 
 		if (match.data.mode === 'LOOP') {
-			await restartElection(match);
+			await loopMatch(match);
 		} else {
 			await MatchService.remove(match.data.id); // this will call Match.stop()
 		}
@@ -886,6 +899,20 @@ const restartElection = async (match: Match) => {
 	match.data.matchMaps = [];
 	match.data.currentMap = 0;
 	await Election.auto(match);
+};
+
+const loopMatch = async (match: Match) => {
+	match.log('Loop mode is set, restart match');
+	await restartElection(match);
+	sleep(1000)
+		.then(() => {
+			// delay, because there might still be events left
+			match.log('Clear player list');
+			match.data.players = [];
+		})
+		.catch(() => {
+			// shouldn't throw
+		});
 };
 
 export const update = async (match: Match, dto: IMatchUpdateDto) => {
