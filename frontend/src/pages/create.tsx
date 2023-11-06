@@ -192,7 +192,7 @@ export const CreatePage: Component = () => {
 		},
 		matchEndAction: 'NONE',
 		mode: 'SINGLE',
-		tmtLogAddress: window.location.protocol + '//' + window.location.host,
+		tmtLogAddress: undefined, // will be set in onMount()
 		canClinch: true,
 	});
 
@@ -217,10 +217,19 @@ export const CreatePage: Component = () => {
 		}
 	});
 
+	const setTmtLogAddress = async () => {
+		fetcher<{ tmtLogAddress: string | null }>('GET', `/api/config`).then((resp) => {
+			const tmtLogAddress =
+				resp?.tmtLogAddress ?? window.location.protocol + '//' + window.location.host;
+			setMatchCreateDto('tmtLogAddress', tmtLogAddress);
+		});
+	};
+
 	onMount(() => {
 		if (electionStepsRef) {
 			autoAnimate(electionStepsRef);
 		}
+		setTmtLogAddress();
 	});
 
 	const setMatchDataFromPreset = (presetId: string) => {
@@ -576,6 +585,18 @@ export const CreatePage: Component = () => {
 					{t('Quit server via Rcon after match end')}
 				</option>
 			</SelectInput>
+			<TextInput
+				label={t('TMT Log Address')}
+				labelTopRight={t('HTTP log receiver from the perspective of the game server')}
+				value={matchCreateDto.tmtLogAddress ?? ''}
+				onInput={(e) => setMatchCreateDto('tmtLogAddress', e.currentTarget.value)}
+			/>
+			<ToggleInput
+				label={t('Can Clinch')}
+				labelTopRight={t('Ends match series after a map if a winner is determined')}
+				checked={matchCreateDto.canClinch}
+				onInput={(e) => setMatchCreateDto('canClinch', e.currentTarget.checked)}
+			/>
 
 			<TextArea
 				label={t('Match Init Payload Data (JSON)')}
