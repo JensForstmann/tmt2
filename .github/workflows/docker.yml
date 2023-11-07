@@ -7,6 +7,20 @@ on:
     branches: [main]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: NPM
+        run: npm ci
+
+      - name: Check syntax (prettier)
+        run: npx prettier --check .
+
   build:
     runs-on: ubuntu-latest
     steps:
