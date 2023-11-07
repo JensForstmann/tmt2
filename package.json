@@ -6,7 +6,8 @@
 	"author": "Jens Forstmann",
 	"license": "MIT",
 	"scripts": {
-		"clean": "prettier --write .", "prettier-check": "prettier --check ."
+		"clean": "prettier --write .",
+		"prettier-check": "prettier --check ."
 	},
 	"devDependencies": {
 		"prettier": "^3.0.3",
