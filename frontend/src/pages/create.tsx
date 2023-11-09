@@ -200,7 +200,7 @@ export const CreatePage: Component = () => {
 		try {
 			const response = await fetcher<IMatch>('POST', '/api/matches', JSON.parse(json()));
 			if (response?.id) {
-				navigate(`/matches/${response.id}`);
+				navigate(`/matches/${response.id}?secret=${response.tmtSecret}`);
 			} else {
 				setErrorMessage(response + '');
 			}
