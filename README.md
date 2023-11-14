@@ -70,10 +70,10 @@ Data will be written within the container to `/app/backend/storage`. To keep the
 
 ```sh
 # docker volume
-docker run --name tmt2 -d -p 8080:8080 -v dockerVolumeName:/app/storage jensforstmann/tmt2
+docker run --name tmt2 -d -p 8080:8080 -v dockerVolumeName:/app/backend/storage jensforstmann/tmt2
 
 # local host directory
-docker run --name tmt2 -d -p 8080:8080 -v /home/tmt2/storage:/app/storage jensforstmann/tmt2
+docker run --name tmt2 -d -p 8080:8080 -v /home/tmt2/storage:/app/backend/storage jensforstmann/tmt2
 ```
 
 The matches which are neither finished nor stopped will be loaded on application start.
