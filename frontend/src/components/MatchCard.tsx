@@ -1,20 +1,15 @@
 import { useNavigate, useSearchParams } from '@solidjs/router';
 import { Component, Show } from 'solid-js';
-import {
-	getMapDraws,
-	getMapScore,
-	IMatchResponse,
-	IMatchUpdateDto,
-	TMatchState,
-} from '../../../common';
+import { IMatchResponse, IMatchUpdateDto, getMapDraws, getMapScore } from '../../../common';
 import { SvgCopyAll } from '../assets/Icons';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { mustConfirm } from '../utils/mustConfirm';
 import { Card } from './Card';
 import { CardMenu } from './CardMenu';
-import { Modal } from './Modal';
 import { TextInput } from './Inputs';
+import { Modal } from './Modal';
+import { copyToClipboard } from '../utils/copyToClipboard';
 
 export const MatchCard: Component<{
 	match: IMatchResponse;
@@ -29,14 +24,6 @@ export const MatchCard: Component<{
 	const init = () => patchMatch({ _init: true });
 	const setup = () => patchMatch({ _setup: true });
 	const revive = () => fetcher('PATCH', `/api/matches/${props.match.id}/revive`);
-	const changeState = () => {
-		const response = prompt(t('enter state'), 'MATCH_MAP');
-		if (response) {
-			patchMatch({
-				state: response as TMatchState,
-			});
-		}
-	};
 	const l = window.location;
 	const shareLink = l.protocol + '//' + l.host + l.pathname + '?secret=' + props.match.tmtSecret;
 	let modalRef: HTMLDialogElement | undefined;
@@ -52,7 +39,6 @@ export const MatchCard: Component<{
 								[t('restart election'), mustConfirm(restartElection)],
 								[t('init'), init],
 								[t('setup'), setup],
-								[t('change state'), changeState],
 								[t('share match with token'), () => modalRef?.showModal()],
 								[
 									t('edit match'),
@@ -94,10 +80,7 @@ export const MatchCard: Component<{
 							class="bg-base-300 w-full"
 							containerClass="w-full"
 						/>
-						<button
-							class="btn ml-4"
-							onClick={() => navigator.clipboard.writeText(shareLink)}
-						>
+						<button class="btn ml-4" onClick={() => copyToClipboard(shareLink)}>
 							<SvgCopyAll />
 						</button>
 					</div>
