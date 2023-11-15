@@ -1,9 +1,7 @@
+# TMT2 - Tournament Match Tracker 2
+
 [![Docker Pulls](https://img.shields.io/docker/pulls/jensforstmann/tmt2)](https://hub.docker.com/r/jensforstmann/tmt2)
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/jensforstmann/tmt2/latest)](https://hub.docker.com/r/jensforstmann/tmt2)
-
-
-
-# TMT2 - Tournament Match Tracker 2
 
 TMT is a tool that tracks/watches/observes a Counter-Strike 2 match.
 
@@ -12,7 +10,7 @@ websites or others via a REST API and webhooks to send real time notifications.
 
 **FEATURES**
 
-- Fully configure the tournament match beforhand (and edit it after it's created)
+- Fully configure the tournament match beforehand (and edit it after it's created)
 - Play how many maps you want in a series (BO1, BO2, BO3, BO*...)
 - Configure how to ban and pick maps & sides, even knife-for-side is supported
 - Automatic map changes & side switches
@@ -89,7 +87,7 @@ _Example screenshot: Create a new match from the web frontend (both dark and lig
 
 
 
-Even without an admin token you can create and manage matches (but only your own ones). If you want to know your admin token (a random one is generated at startup) either take a look at the `access_tokens.json` file or take a look at the first lines of the log outpout (`docker logs tmt2`).
+Even without an admin token you can create and manage matches (but only your own ones). If you want to know your admin token (a random one is generated at startup) either take a look at the `access_tokens.json` file or take a look at the first lines of the log output (`docker logs tmt2`).
 
 
 ### Ingame Chat Commands
@@ -102,7 +100,7 @@ While TMT watches a match the player ingame can use chat commands to communicate
   - `.pick` - pick a map to be played
   - `.agree` - agree on a map together with the opponent (alias `.map`)
   - `.ct`/`.t` - select CT/T as your starting side
-  - `.restart` - restart the eleciton process
+  - `.restart` - restart the election process
 - during and after the knife round (if one takes place)
   - `.restart` - restart the knife round
   - `.ct`/`.t` - select CT/T as your starting side
@@ -232,7 +230,7 @@ Run backend with hot reloading:
     cd backend
     npm run dev
 
-Run frontend with hot realoding:
+Run frontend with hot reloading:
 
     cd frontend
     npm run dev

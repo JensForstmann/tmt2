@@ -3,6 +3,7 @@
 		"autokick",
 		"autopause",
 		"changelevel",
+		"freezetime",
 		"Ingame",
 		"kickid",
 		"logaddress",
