@@ -3,6 +3,161 @@ import { IPreset, IPresetCreateDto, IPresetUpdateDto } from '../../common/types/
 import * as Storage from './storage';
 
 const FILE_NAME = 'presets.json';
+const DEFAULT_PRESETS: IPreset[] = [
+	{
+		id: 'rUqWHsdPuA1pCqEfseVpRn',
+		name: '5on5 Competitive',
+		data: {
+			teamA: {
+				name: 'Team A',
+				advantage: 0,
+			},
+			teamB: {
+				name: 'Team B',
+				advantage: 0,
+			},
+			gameServer: null,
+			mapPool: [
+				'de_ancient',
+				'de_anubis',
+				'de_inferno',
+				'de_mirage',
+				'de_nuke',
+				'de_overpass',
+				'de_vertigo',
+			],
+			electionSteps: [
+				{
+					map: {
+						mode: 'BAN',
+						who: 'TEAM_A',
+					},
+				},
+				{
+					map: {
+						mode: 'BAN',
+						who: 'TEAM_B',
+					},
+				},
+				{
+					map: {
+						mode: 'BAN',
+						who: 'TEAM_A',
+					},
+				},
+				{
+					map: {
+						mode: 'BAN',
+						who: 'TEAM_B',
+					},
+				},
+				{
+					map: {
+						mode: 'BAN',
+						who: 'TEAM_A',
+					},
+				},
+				{
+					map: {
+						mode: 'BAN',
+						who: 'TEAM_B',
+					},
+				},
+				{
+					map: {
+						mode: 'RANDOM_PICK',
+					},
+					side: {
+						mode: 'KNIFE',
+					},
+				},
+			],
+			rconCommands: {
+				init: [
+					'game_type 0; game_mode 1; sv_game_mode_flags 0; sv_skirmish_id 0',
+					'say > RCON INIT LOADED <',
+				],
+				knife: [
+					'mp_give_player_c4 0; mp_startmoney 0; mp_ct_default_secondary ""; mp_t_default_secondary ""',
+					'say > SPECIAL KNIFE CONFIG LOADED <',
+				],
+				match: [
+					'mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary "weapon_hkp2000"; mp_t_default_secondary "weapon_glock"',
+					'mp_overtime_enable 1',
+					'say > MATCH CONFIG LOADED <',
+				],
+				end: ['say > MATCH END RCON LOADED <'],
+			},
+			matchEndAction: 'NONE',
+			mode: 'SINGLE',
+			canClinch: true,
+		},
+	},
+	{
+		id: '5yNVDnvcFHzVRaMnpjLYMv',
+		name: '2on2 Wingman',
+		data: {
+			teamA: {
+				name: 'Team A',
+				advantage: 0,
+			},
+			teamB: {
+				name: 'Team B',
+				advantage: 0,
+			},
+			gameServer: null,
+			mapPool: ['de_inferno', 'de_nuke', 'de_overpass', 'de_vertigo'],
+			electionSteps: [
+				{
+					map: {
+						mode: 'BAN',
+						who: 'TEAM_A',
+					},
+				},
+				{
+					map: {
+						mode: 'BAN',
+						who: 'TEAM_B',
+					},
+				},
+				{
+					map: {
+						mode: 'BAN',
+						who: 'TEAM_A',
+					},
+				},
+				{
+					map: {
+						mode: 'RANDOM_PICK',
+					},
+					side: {
+						mode: 'PICK',
+						who: 'TEAM_B',
+					},
+				},
+			],
+			rconCommands: {
+				init: [
+					'game_type 0; game_mode 1; sv_game_mode_flags 0; sv_skirmish_id 0',
+					'say > RCON INIT LOADED <',
+				],
+				knife: [
+					'mp_give_player_c4 0; mp_startmoney 0; mp_ct_default_secondary ""; mp_t_default_secondary ""',
+					'say > SPECIAL KNIFE CONFIG LOADED <',
+				],
+				match: [
+					'mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary "weapon_hkp2000"; mp_t_default_secondary "weapon_glock"',
+					'mp_overtime_enable 1',
+					'say > MATCH CONFIG LOADED <',
+				],
+				end: ['say > MATCH END RCON LOADED <'],
+			},
+			matchEndAction: 'NONE',
+			mode: 'SINGLE',
+			canClinch: true,
+		},
+	},
+];
 const presets = new Map<string, IPreset>();
 
 const write = async () => {
@@ -10,7 +165,7 @@ const write = async () => {
 };
 
 export const setup = async () => {
-	const data = await Storage.read(FILE_NAME, [] as IPreset[]);
+	const data = await Storage.read(FILE_NAME, DEFAULT_PRESETS);
 	data.forEach((preset) => presets.set(preset.id, preset));
 };
 

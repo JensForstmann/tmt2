@@ -937,6 +937,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto.electionSteps) {
+		Election.checkValidConfiguration(match.data.mapPool, dto.electionSteps);
 		match.data.electionSteps = dto.electionSteps;
 	}
 

@@ -1,5 +1,6 @@
 import { useNavigate } from '@solidjs/router';
 import { createSignal } from 'solid-js';
+import { t } from './locale';
 
 const API_HOST = import.meta.env.DEV
 	? `${window.location.protocol}//${window.location.hostname}:8080`
@@ -67,6 +68,23 @@ export const createFetcher = (token?: string) => {
 			const encodedPath = encodeURIComponent(pathname + search + hash);
 			window.location.assign(`/login?path=${encodedPath}`);
 			return undefined;
+		} else if (
+			response.status >= 400 &&
+			response.headers.get('Content-Type')?.startsWith('application/json')
+		) {
+			const errRespObj = await response.json();
+			if (errRespObj.name === 'ValidateError' && errRespObj.fields) {
+				let errString = [] as string[];
+				Object.entries(errRespObj.fields as Record<string, { message: string }>).forEach(
+					([key, { message }]) => errString.push(key + ': ' + message)
+				);
+				console.log(errString);
+				throw errRespObj.fields.length === 1
+					? t('Error') + ': '
+					: t('Errors') + ': ' + errString.join(', ');
+			} else {
+				throw JSON.stringify(errRespObj);
+			}
 		} else if (response.status >= 400) {
 			throw await response.text();
 		} else if (response.headers.get('Content-Type')?.startsWith('application/json')) {

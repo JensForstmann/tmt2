@@ -1,4 +1,4 @@
-import { useNavigate } from '@solidjs/router';
+import { useNavigate, useSearchParams } from '@solidjs/router';
 import { Component, Show } from 'solid-js';
 import {
 	getMapDraws,
@@ -20,6 +20,7 @@ export const MatchCard: Component<{
 	match: IMatchResponse;
 }> = (props) => {
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
 	const fetcher = createFetcher(props.match.tmtSecret);
 	const patchMatch = (dto: IMatchUpdateDto) =>
 		fetcher('PATCH', `/api/matches/${props.match.id}`, dto);
@@ -55,7 +56,13 @@ export const MatchCard: Component<{
 								[t('share match with token'), () => modalRef?.showModal()],
 								[
 									t('edit match'),
-									() => navigate(`/matches/${props.match.id}/edit`),
+									() =>
+										navigate(
+											`/matches/${props.match.id}/edit` +
+												(searchParams.secret
+													? `?secret=${searchParams.secret}`
+													: '')
+										),
 								],
 						  ]
 						: [[t('revive'), mustConfirm(revive)]]

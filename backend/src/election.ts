@@ -48,7 +48,7 @@ export const create = (
 /**
  * @throws if configuration is invalid
  */
-const checkValidConfiguration = (
+export const checkValidConfiguration = (
 	mapPool: string[],
 	steps: Array<IElectionStepAdd | IElectionStepSkip>
 ) => {

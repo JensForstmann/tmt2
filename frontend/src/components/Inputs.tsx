@@ -96,7 +96,7 @@ export const SelectInput: Component<
 					<span class="label-text-alt">{local.labelTopRight}</span>
 				</label>
 			</Show>
-			<select class="select w-full" {...others}>
+			<select class={(local.class ?? '') + ' select w-full'} {...others}>
 				{local.children}
 			</select>
 			<Show when={local.labelBottomLeft}>
