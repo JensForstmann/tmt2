@@ -1,24 +1,17 @@
-import { Link, LinkProps, Route, Routes } from '@solidjs/router';
+import { A, AnchorProps, RouteSectionProps } from '@solidjs/router';
 import { Component, Match, Switch, onMount } from 'solid-js';
 import { SvgComputer, SvgDarkMode, SvgLightMode } from './assets/Icons';
 import logo from './assets/logo.svg';
-import { CreatePage } from './pages/create';
-import { GameServersPage } from './pages/gameServers';
-import { LoginPage } from './pages/login';
-import { LogoutPage } from './pages/logout';
-import { MatchPage } from './pages/match';
-import { MatchEditPage } from './pages/matchEdit';
-import { MatchesPage } from './pages/matches';
-import { NotFoundPage } from './pages/notFound';
+
 import { isLoggedIn } from './utils/fetcher';
 import { t } from './utils/locale';
 import { currentTheme, cycleDarkMode, updateDarkClasses } from './utils/theme';
 
-const NavLink = (props: LinkProps) => {
+const NavLink = (props: AnchorProps) => {
 	return (
-		<Link {...props} class="btn btn-ghost hover:no-underline">
+		<A {...props} class="btn btn-ghost hover:no-underline">
 			{props.children}
-		</Link>
+		</A>
 	);
 };
 
@@ -77,25 +70,14 @@ const NavBar: Component = () => {
 	);
 };
 
-export const App: Component = () => {
+export const App: Component<RouteSectionProps> = (props) => {
 	onMount(updateDarkClasses);
 	return (
 		<>
 			<header class="sticky top-0 z-10 pb-8">
 				<NavBar />
 			</header>
-			<main class="container mx-auto px-4">
-				<Routes>
-					<Route path="/matches" element={<MatchesPage />} />
-					<Route path="/matches/:id" element={<MatchPage />} />
-					<Route path="/matches/:id/edit" element={<MatchEditPage />} />
-					<Route path="/gameservers" element={<GameServersPage />} />
-					<Route path="/login" element={<LoginPage />} />
-					<Route path="/logout" element={<LogoutPage />} />
-					<Route path={['/', '/create']} element={<CreatePage />} />
-					<Route path="/*" element={<NotFoundPage />} />
-				</Routes>
-			</main>
+			<main class="container mx-auto px-4">{props.children}</main>
 			<footer class="pt-8"></footer>
 		</>
 	);

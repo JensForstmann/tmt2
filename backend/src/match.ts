@@ -2,18 +2,18 @@ import { ValidateError } from '@tsoa/runtime';
 import { generate as shortUuid } from 'short-uuid';
 import { TMT_LOG_ADDRESS, VERSION } from '.';
 import {
-	escapeRconSayString,
-	escapeRconString,
-	getCurrentTeamSideAndRoundSwitch,
-	getOtherTeamAB,
 	IMatch,
 	IMatchCreateDto,
 	IMatchUpdateDto,
 	IPlayer,
 	ITeam,
-	sleep,
 	TTeamAB,
 	TTeamString,
+	escapeRconSayString,
+	escapeRconString,
+	getCurrentTeamSideAndRoundSwitch,
+	getOtherTeamAB,
+	sleep,
 } from '../../common';
 import { addChangeListener } from './changeListener';
 import * as commands from './commands';
@@ -297,7 +297,7 @@ const sayPeriodicMessage = async (match: Match) => {
 				} catch (err) {
 					match.log(`Error in sayPeriodicMessage: ${err}`);
 				}
-		  }, Settings.PERIODIC_MESSAGE_FREQUENCY);
+			}, Settings.PERIODIC_MESSAGE_FREQUENCY);
 
 	const sv_password = await getConfigVar(match, 'sv_password');
 	if (sv_password && sv_password !== match.data.serverPassword) {
@@ -878,7 +878,7 @@ export const onElectionFinished = async (match: Match) => {
 				? '(Knife)'
 				: `(CT: ${getTeamByAB(match, matchMap.startAsCtTeam).name}, T: ${
 						getTeamByAB(match, getOtherTeamAB(matchMap.startAsCtTeam)).name
-				  })`;
+					})`;
 			return `${matchMap.name} ${side}`;
 		})
 		.join(', ');

@@ -2,6 +2,7 @@ import { useNavigate, useSearchParams } from '@solidjs/router';
 import { Component, Show } from 'solid-js';
 import { IMatchResponse, IMatchUpdateDto, getMapDraws, getMapScore } from '../../../common';
 import { SvgCopyAll } from '../assets/Icons';
+import { copyToClipboard } from '../utils/copyToClipboard';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { mustConfirm } from '../utils/mustConfirm';
@@ -9,7 +10,6 @@ import { Card } from './Card';
 import { CardMenu } from './CardMenu';
 import { TextInput } from './Inputs';
 import { Modal } from './Modal';
-import { copyToClipboard } from '../utils/copyToClipboard';
 
 export const MatchCard: Component<{
 	match: IMatchResponse;
@@ -50,7 +50,7 @@ export const MatchCard: Component<{
 													: '')
 										),
 								],
-						  ]
+							]
 						: [[t('revive'), mustConfirm(revive)]]
 				}
 			/>

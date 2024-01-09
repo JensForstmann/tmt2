@@ -88,7 +88,7 @@ export const getPlayers = async (match: Match.Match): Promise<IngamePlayer[]> =>
 				? {
 						userId: matcher[1],
 						name: matcher[2],
-				  }
+					}
 				: null;
 		})
 		.filter((player): player is IngamePlayer => player !== null);

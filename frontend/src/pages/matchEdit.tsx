@@ -1,11 +1,11 @@
-import { Link, useNavigate, useParams, useSearchParams } from '@solidjs/router';
-import { Component, Show, createSignal, onMount } from 'solid-js';
+import { A, useNavigate, useParams, useSearchParams } from '@solidjs/router';
+import { Component, Show, onMount } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { IMatchCreateDto, IMatchResponse, IMatchUpdateDto } from '../../../common';
 import { SvgNavigateBefore } from '../assets/Icons';
 import { Card } from '../components/Card';
-import { Loader } from '../components/Loader';
 import { CreateUpdateMatch } from '../components/CreateUpdateMatch';
+import { Loader } from '../components/Loader';
 import { NotLiveCard } from '../components/NotLiveCard';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
@@ -35,7 +35,7 @@ const getUpdateDto = (
 					knife: getUpdateDtoAttribute(match.rconCommands.knife, dto.rconCommands.knife),
 					match: getUpdateDtoAttribute(match.rconCommands.match, dto.rconCommands.match),
 					end: getUpdateDtoAttribute(match.rconCommands.end, dto.rconCommands.end),
-			  }
+				}
 			: undefined,
 		canClinch: getUpdateDtoAttribute(match.canClinch, dto.canClinch),
 		matchEndAction: getUpdateDtoAttribute(match.matchEndAction, dto.matchEndAction),
@@ -70,10 +70,10 @@ export const MatchEditPage: Component = () => {
 
 	return (
 		<>
-			<Link href={`/matches/${params.id}`} class="btn">
+			<A href={`/matches/${params.id}`} class="btn">
 				<SvgNavigateBefore class="inline-block" />
 				{t('Back to the Match')}
-			</Link>
+			</A>
 			<div class="h-4"></div>
 			<Show when={data.match} fallback={<Loader />}>
 				{(match) => (

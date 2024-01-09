@@ -22,10 +22,10 @@ import {
 	TTeamString,
 } from '../../common';
 import * as Match from './match';
+import * as MatchService from './matchService';
 import { Settings } from './settings';
 import * as Storage from './storage';
 import * as WebSocket from './webSocket';
-import * as MatchService from './matchService';
 
 const STORAGE_EVENTS_PREFIX = 'events_';
 const STORAGE_EVENTS_SUFFIX = '.jsonl';
@@ -170,8 +170,8 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 			wonMapsTeamA === wonMapsTeamB
 				? null
 				: wonMapsTeamA > wonMapsTeamB
-				? match.data.teamA
-				: match.data.teamB,
+					? match.data.teamA
+					: match.data.teamB,
 		mapResults: match.data.matchMaps
 			.filter((map) => map.state === 'FINISHED')
 			.map((matchMap) => ({
@@ -182,8 +182,8 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 					matchMap.score.teamA === matchMap.score.teamB
 						? null
 						: matchMap.score.teamA > matchMap.score.teamB
-						? match.data.teamA
-						: match.data.teamB,
+							? match.data.teamA
+							: match.data.teamB,
 			})),
 	};
 	send(match, data);
@@ -209,8 +209,8 @@ export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 			matchMap.score.teamA === matchMap.score.teamB
 				? null
 				: matchMap.score.teamA > matchMap.score.teamB
-				? match.data.teamA
-				: match.data.teamB,
+					? match.data.teamA
+					: match.data.teamB,
 	};
 	send(match, data);
 };

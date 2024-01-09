@@ -1,14 +1,29 @@
 /* @refresh reload */
+import { Route, Router } from '@solidjs/router';
 import { render } from 'solid-js/web';
-import { Router } from '@solidjs/router';
 import { App } from './App';
+import { CreatePage } from './pages/create';
+import { GameServersPage } from './pages/gameServers';
+import { LoginPage } from './pages/login';
+import { LogoutPage } from './pages/logout';
+import { MatchPage } from './pages/match';
+import { MatchEditPage } from './pages/matchEdit';
+import { MatchesPage } from './pages/matches';
+import { NotFoundPage } from './pages/notFound';
 
 import './index.css';
 
 render(
 	() => (
-		<Router>
-			<App />
+		<Router root={App}>
+			<Route path="/matches" component={MatchesPage} />
+			<Route path="/matches/:id" component={MatchPage} />
+			<Route path="/matches/:id/edit" component={MatchEditPage} />
+			<Route path="/gameservers" component={GameServersPage} />
+			<Route path="/login" component={LoginPage} />
+			<Route path="/logout" component={LogoutPage} />
+			<Route path={['/', '/create']} component={CreatePage} />
+			<Route path="/*" component={NotFoundPage} />
 		</Router>
 	),
 	document.getElementById('root') as HTMLElement

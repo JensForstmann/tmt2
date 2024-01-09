@@ -1,4 +1,4 @@
-import { Link } from '@solidjs/router';
+import { A } from '@solidjs/router';
 import { Component, For, Show } from 'solid-js';
 import { IMatchResponse, getTotalNumberOfMaps } from '../../../common';
 import { SvgNavigateNext } from '../assets/Icons';
@@ -99,12 +99,12 @@ export const MatchList: Component<{ matches: IMatchResponse[]; columnsToShow: TC
 							)}
 							{cts().DETAILS && (
 								<td>
-									<Link
+									<A
 										href={`/matches/${match.id}`}
 										class="btn btn-circle btn-outline"
 									>
 										<SvgNavigateNext class="inline-block" />
-									</Link>
+									</A>
 								</td>
 							)}
 						</tr>

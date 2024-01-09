@@ -18,14 +18,13 @@ import { MatchesController } from './matchesController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { GameServersController } from './gameServersController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { PresetsController } from './presetsController';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { DebugController } from './debugController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ConfigController } from './configController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { PresetsController } from './presetsController';
 import { expressAuthentication } from './auth';
 // @ts-ignore - no great way to install types from subpackage
-const promiseAny = require('promise.any');
 import type { RequestHandler, Router } from 'express';
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -986,14 +985,8 @@ const models: TsoaRoute.Models = {
 					subSchemas: [{ ref: 'IElectionStepAdd' }, { ref: 'IElectionStepSkip' }],
 				},
 			},
-			gameServer: {
-				dataType: 'union',
-				subSchemas: [{ ref: 'IGameServer' }, { dataType: 'enum', enums: [null] }],
-			},
-			webhookUrl: {
-				dataType: 'union',
-				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
-			},
+			gameServer: { ref: 'IGameServer' },
+			webhookUrl: { dataType: 'string' },
 			rconCommands: {
 				dataType: 'nestedObjectLiteral',
 				nestedProperties: {
@@ -1004,7 +997,14 @@ const models: TsoaRoute.Models = {
 				},
 			},
 			canClinch: { dataType: 'boolean' },
-			matchEndAction: { ref: 'TMatchEndAction' },
+			matchEndAction: {
+				dataType: 'union',
+				subSchemas: [
+					{ dataType: 'enum', enums: ['KICK_ALL'] },
+					{ dataType: 'enum', enums: ['QUIT_SERVER'] },
+					{ dataType: 'enum', enums: ['NONE'] },
+				],
+			},
 			tmtLogAddress: { dataType: 'string' },
 			mode: { ref: 'TMatchMode' },
 			state: { ref: 'TMatchState' },
@@ -1103,6 +1103,18 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IConfig: {
+		dataType: 'refObject',
+		properties: {
+			tmtLogAddress: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	IPreset: {
 		dataType: 'refObject',
 		properties: {
@@ -1118,18 +1130,6 @@ const models: TsoaRoute.Models = {
 		properties: {
 			name: { dataType: 'string', required: true },
 			data: { ref: 'IMatchCreateDto', required: true },
-		},
-		additionalProperties: false,
-	},
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	IConfig: {
-		dataType: 'refObject',
-		properties: {
-			tmtLogAddress: {
-				dataType: 'union',
-				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
-				required: true,
-			},
 		},
 		additionalProperties: false,
 	},
@@ -1693,6 +1693,83 @@ export function RegisterRoutes(app: Router) {
 	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.get(
+		'/api/debug/webSockets',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(DebugController),
+		...fetchMiddlewares<RequestHandler>(DebugController.prototype.getWebSocketClients),
+
+		function DebugController_getWebSocketClients(request: any, response: any, next: any) {
+			const args = {};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new DebugController();
+
+				const promise = controller.getWebSocketClients.apply(
+					controller,
+					validatedArgs as any
+				);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get(
+		'/api/debug',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(DebugController),
+		...fetchMiddlewares<RequestHandler>(DebugController.prototype.getInfos),
+
+		function DebugController_getInfos(request: any, response: any, next: any) {
+			const args = {};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new DebugController();
+
+				const promise = controller.getInfos.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get(
+		'/api/config',
+		...fetchMiddlewares<RequestHandler>(ConfigController),
+		...fetchMiddlewares<RequestHandler>(ConfigController.prototype.getConfig),
+
+		function ConfigController_getConfig(request: any, response: any, next: any) {
+			const args = {};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+
+				const controller = new ConfigController();
+
+				const promise = controller.getConfig.apply(controller, validatedArgs as any);
+				promiseHandler(controller, promise, response, undefined, next);
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get(
 		'/api/presets',
 		authenticateMiddleware([{ bearer_token: [] }]),
 		...fetchMiddlewares<RequestHandler>(PresetsController),
@@ -1808,83 +1885,6 @@ export function RegisterRoutes(app: Router) {
 		}
 	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	app.get(
-		'/api/debug/webSockets',
-		authenticateMiddleware([{ bearer_token: [] }]),
-		...fetchMiddlewares<RequestHandler>(DebugController),
-		...fetchMiddlewares<RequestHandler>(DebugController.prototype.getWebSocketClients),
-
-		function DebugController_getWebSocketClients(request: any, response: any, next: any) {
-			const args = {};
-
-			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-			let validatedArgs: any[] = [];
-			try {
-				validatedArgs = getValidatedArgs(args, request, response);
-
-				const controller = new DebugController();
-
-				const promise = controller.getWebSocketClients.apply(
-					controller,
-					validatedArgs as any
-				);
-				promiseHandler(controller, promise, response, undefined, next);
-			} catch (err) {
-				return next(err);
-			}
-		}
-	);
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	app.get(
-		'/api/debug',
-		authenticateMiddleware([{ bearer_token: [] }]),
-		...fetchMiddlewares<RequestHandler>(DebugController),
-		...fetchMiddlewares<RequestHandler>(DebugController.prototype.getInfos),
-
-		function DebugController_getInfos(request: any, response: any, next: any) {
-			const args = {};
-
-			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-			let validatedArgs: any[] = [];
-			try {
-				validatedArgs = getValidatedArgs(args, request, response);
-
-				const controller = new DebugController();
-
-				const promise = controller.getInfos.apply(controller, validatedArgs as any);
-				promiseHandler(controller, promise, response, undefined, next);
-			} catch (err) {
-				return next(err);
-			}
-		}
-	);
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	app.get(
-		'/api/config',
-		...fetchMiddlewares<RequestHandler>(ConfigController),
-		...fetchMiddlewares<RequestHandler>(ConfigController.prototype.getConfig),
-
-		function ConfigController_getConfig(request: any, response: any, next: any) {
-			const args = {};
-
-			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-			let validatedArgs: any[] = [];
-			try {
-				validatedArgs = getValidatedArgs(args, request, response);
-
-				const controller = new ConfigController();
-
-				const promise = controller.getConfig.apply(controller, validatedArgs as any);
-				promiseHandler(controller, promise, response, undefined, next);
-			} catch (err) {
-				return next(err);
-			}
-		}
-	);
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
@@ -1937,7 +1937,7 @@ export function RegisterRoutes(app: Router) {
 			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 			try {
-				request['user'] = await promiseAny.call(Promise, secMethodOrPromises);
+				request['user'] = await Promise.any(secMethodOrPromises);
 				next();
 			} catch (err) {
 				// Show most recent error as response

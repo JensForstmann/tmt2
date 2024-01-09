@@ -11,6 +11,7 @@ import {
 	TTeamAB,
 	getOtherTeamAB,
 } from '../../../common';
+import { IConfig } from '../../../common/types/config';
 import { IPreset, IPresetCreateDto } from '../../../common/types/preset';
 import {
 	SvgAdd,
@@ -27,7 +28,6 @@ import { t } from '../utils/locale';
 import { AddElectionStep, getElectionStepString } from './ElectionStep';
 import { SelectInput, TextArea, TextInput, ToggleInput } from './Inputs';
 import { Modal } from './Modal';
-import { IConfig } from '../../../common/types/config';
 
 const Presets: Component<{
 	onSelect: (preset: IPreset) => void;
@@ -322,7 +322,7 @@ export const CreateUpdateMatch: Component<
 									ip: '',
 									port: 27015,
 									rconPassword: '',
-							  })
+								})
 							: setDto('gameServer', null)
 					}
 				/>
