@@ -16,12 +16,14 @@ const Commands = [
 	'STAY',
 	'SWITCH',
 	'TEAM',
+	'TACTICAL',
 	'RESTART',
 	'VERSION',
 	'*',
 ] as const;
 export type TCommand = (typeof Commands)[number];
 
+// mapping from "ingame chat command" to "command enum"
 const commandMapping = new Map<string, TCommand>();
 commandMapping.set('ban', 'BAN');
 commandMapping.set('pick', 'PICK');
@@ -35,11 +37,13 @@ commandMapping.set('unpause', 'READY');
 commandMapping.set('unready', 'UNREADY');
 commandMapping.set('unrdy', 'UNREADY');
 commandMapping.set('pause', 'PAUSE');
+commandMapping.set('tech', 'PAUSE');
 commandMapping.set('help', 'HELP');
 commandMapping.set('stay', 'STAY');
 commandMapping.set('switch', 'SWITCH');
 commandMapping.set('swap', 'SWITCH');
 commandMapping.set('team', 'TEAM');
+commandMapping.set('tac', 'TACTICAL');
 commandMapping.set('restart', 'RESTART');
 commandMapping.set('version', 'VERSION');
 

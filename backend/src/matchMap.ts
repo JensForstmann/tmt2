@@ -88,7 +88,7 @@ const getAvailableCommandsEnums = (state: TMatchMapSate): commands.TCommand[] =>
 		case 'FINISHED':
 			return [];
 		case 'IN_PROGRESS':
-			return ['PAUSE'];
+			return ['PAUSE', 'TACTICAL'];
 		case 'KNIFE':
 			return ['RESTART'];
 		case 'MAP_CHANGE':
@@ -392,6 +392,37 @@ const onPauseCommand: commands.CommandHandler = async (e) => {
 	await Match.execRcon(match, 'mp_pause_match');
 };
 
+const onTacticalCommand: commands.CommandHandler = async (e) => {
+	const matchMap = Match.getCurrentMatchMap(e.match);
+	if (!matchMap || e.match.data.state !== 'MATCH_MAP' || matchMap.state !== 'IN_PROGRESS') {
+		return;
+	}
+	const { match, player } = e;
+	if (e.teamString !== 'CT' && e.teamString !== 'TERRORIST') {
+		await Match.say(
+			match,
+			`${escapeRconString(player.name)} NEEDS TO BE IN A TEAM TO TAKE A TACTICAL TIMEOUT`
+		);
+		match.log(`${player.name} needs to be in a team to take a tactical timeout`);
+		return;
+	}
+	const command = e.teamString === 'CT' ? 'timeout_ct_start' : 'timeout_terrorist_start';
+	const response = await Match.execRcon(match, command);
+	if (response.trim().indexOf('Match pause is enabled') === -1) {
+		// could not take tactical pause
+		// either one is already requested, or one is in progress or no timeouts are left
+		return;
+	}
+	if (player.team) {
+		const team = Match.getTeamByAB(match, player.team);
+		await Match.say(match, `${escapeRconString(team.name)} TOOK A TACTICAL TIMEOUT`);
+		match.log(`${player.team} (${team.name} - ${player.name}) took a tactical timeout`);
+	} else {
+		await Match.say(match, `${escapeRconString(player.name)} TOOK A TACTICAL TIMEOUT`);
+		match.log(`${player.name} took a tactical timeout`);
+	}
+};
+
 const onStayCommand: commands.CommandHandler = async (e) => {
 	const enrichedEvent = await enrichEvent(e);
 	if (!enrichedEvent) {
@@ -484,6 +515,7 @@ export const registerCommandHandlers = () => {
 	commands.registerHandler('READY', onReadyCommand);
 	commands.registerHandler('UNREADY', onUnreadyCommand);
 	commands.registerHandler('PAUSE', onPauseCommand);
+	commands.registerHandler('TACTICAL', onTacticalCommand);
 };
 
 const enrichEvent = async (e: commands.CommandEvent) => {
