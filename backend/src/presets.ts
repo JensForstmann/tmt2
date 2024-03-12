@@ -138,7 +138,7 @@ const DEFAULT_PRESETS: IPreset[] = [
 			],
 			rconCommands: {
 				init: [
-					'game_type 0; game_mode 1; sv_game_mode_flags 0; sv_skirmish_id 0',
+					'game_type 0; game_mode 2; sv_game_mode_flags 0; sv_skirmish_id 0',
 					'say > RCON INIT LOADED <',
 				],
 				knife: [
