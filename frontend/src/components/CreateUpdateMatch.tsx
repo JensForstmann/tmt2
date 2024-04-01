@@ -829,7 +829,9 @@ export const CreateUpdateMatch: Component<
 							setErrorMessage(t('JSON parse error: Invalid JSON'));
 							return;
 						}
-						dtoFromJson.mapPool = minifyMapPool(dtoFromJson.mapPool ?? []);
+						if (dtoFromJson.mapPool) {
+							dtoFromJson.mapPool = minifyMapPool(dtoFromJson.mapPool);
+						}
 						props.callback(dtoFromJson).catch((err) => setErrorMessage(err + ''));
 					}}
 				>
