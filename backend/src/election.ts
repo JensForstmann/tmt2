@@ -12,7 +12,7 @@ import {
 } from '../../common';
 import * as commands from './commands';
 import * as Events from './events';
-import { colors } from './gameServer';
+import { colors, formatMapName } from './gameServer';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
@@ -779,11 +779,4 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 		await next(match);
 		return;
 	}
-};
-
-const formatMapName = (mapName: string | undefined) => {
-	if (!mapName) {
-		return '';
-	}
-	return colors.grey + mapName + colors.white;
 };

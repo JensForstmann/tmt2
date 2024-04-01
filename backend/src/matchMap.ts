@@ -11,9 +11,9 @@ import {
 } from '../../common';
 import * as commands from './commands';
 import * as Events from './events';
+import { colors, formatMapName } from './gameServer';
 import * as Match from './match';
 import * as MatchService from './matchService';
-import { Settings } from './settings';
 
 export const create = (
 	map: string,
@@ -168,24 +168,29 @@ export const onRoundEnd = async (
 };
 
 export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
-	await Match.say(match, `MAP WILL BE CHANGED TO ${matchMap.name} IN 15 SECONDS`);
+	await Match.say(match, `MAP WILL BE CHANGED TO ${formatMapName(matchMap.name)} IN 15 SECONDS`);
 	match.log(`Change map to ${matchMap.name} (in 15 seconds)`);
-	const response = await Match.execRcon(match, `maps ${matchMap.name}`);
-	const maps = response
-		.trim()
-		.split('\n')
-		.map((map) => map.trim());
-	if (!maps.includes(matchMap.name)) {
-		match.log(`Map ${matchMap.name} could not be found on the server`);
-		await Match.say(match, `Map ${matchMap.name} could not be found on the server`);
-		return;
-	}
 	match.data.state = 'MATCH_MAP';
 	matchMap.state = 'MAP_CHANGE';
 	await sleep(15000);
 
 	await Match.setTeamNames(match);
-	await Match.execRcon(match, `changelevel ${matchMap.name}`);
+
+	if (/^\d+$/.test(matchMap.name)) {
+		// map name consists of numbers only -> assume it's a workshop id
+		await Match.execRcon(match, `host_workshop_map ${matchMap.name}`);
+	} else {
+		const response = await Match.execRcon(match, `changelevel ${matchMap.name}`);
+		if (response.includes('invalid map name')) {
+			match.log(`Map ${matchMap.name} could not be found on the server`);
+			await Match.say(
+				match,
+				`${colors.red}MAP ${
+					formatMapName(matchMap.name) + colors.red
+				} COULD NOT BE FOUND ON THE SERVER`
+			);
+		}
+	}
 
 	matchMap.state = 'WARMUP';
 	matchMap.readyTeams.teamA = false;

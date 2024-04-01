@@ -113,3 +113,10 @@ export const disconnect = async (match: Match.Match) => {
 		// ignore error
 	}
 };
+
+export const formatMapName = (mapName: string | undefined) => {
+	if (!mapName) {
+		return '';
+	}
+	return colors.grey + mapName + colors.white;
+};
