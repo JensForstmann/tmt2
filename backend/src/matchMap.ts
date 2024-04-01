@@ -168,6 +168,8 @@ export const onRoundEnd = async (
 };
 
 export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
+	const internalMapName = parseMapParts(matchMap.name).internal;
+
 	await Match.say(match, `MAP WILL BE CHANGED TO ${formatMapName(matchMap.name)} IN 15 SECONDS`);
 	match.log(`Change map to ${matchMap.name} (in 15 seconds)`);
 	match.data.state = 'MATCH_MAP';
@@ -176,11 +178,11 @@ export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
 
 	await Match.setTeamNames(match);
 
-	if (/^\d+$/.test(matchMap.name)) {
+	if (/^\d+$/.test(internalMapName)) {
 		// map name consists of numbers only -> assume it's a workshop id
-		await Match.execRcon(match, `host_workshop_map ${matchMap.name}`);
+		await Match.execRcon(match, `host_workshop_map ${internalMapName}`);
 	} else {
-		const response = await Match.execRcon(match, `changelevel ${matchMap.name}`);
+		const response = await Match.execRcon(match, `changelevel ${internalMapName}`);
 		if (response.includes('invalid map name')) {
 			match.log(`Map ${matchMap.name} could not be found on the server`);
 			await Match.say(
@@ -224,6 +226,17 @@ const startMatch = async (match: Match.Match, matchMap: IMatchMap) => {
 	await Match.say(match, 'MAP IS LIVE!');
 
 	Events.onMapStart(match, matchMap);
+};
+
+export const parseMapParts = (mapName: string) => {
+	if (mapName.indexOf('/') === -1) {
+		mapName = mapName + '/' + mapName;
+	}
+	const parts = mapName.split('/', 2);
+	return {
+		internal: parts[0] ?? '',
+		external: parts[1] ?? '',
+	};
 };
 
 const refreshOvertimeAndMaxRoundsSettings = async (match: Match.Match, matchMap: IMatchMap) => {

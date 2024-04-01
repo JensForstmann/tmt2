@@ -1,5 +1,6 @@
 import { IGameServer } from '../../common';
 import * as Match from './match';
+import { parseMapParts } from './matchMap';
 import { Rcon } from './rcon-client';
 
 export const colors = {
@@ -115,8 +116,5 @@ export const disconnect = async (match: Match.Match) => {
 };
 
 export const formatMapName = (mapName: string | undefined) => {
-	if (!mapName) {
-		return '';
-	}
-	return colors.grey + mapName + colors.white;
+	return colors.grey + parseMapParts(mapName ?? '').external + colors.white;
 };

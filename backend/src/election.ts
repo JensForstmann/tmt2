@@ -332,7 +332,9 @@ const onAgreeCommand: commands.CommandHandler = async (e) => {
 	const { match, parameters, player, teamAB, currentElectionStep } = enrichedEvent;
 	const map = (parameters[0] || '').toLowerCase();
 	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'AGREE') {
-		const matchMap = match.data.election.remainingMaps.findIndex((mapName) => mapName === map);
+		const matchMap = match.data.election.remainingMaps.findIndex(
+			(mapName) => MatchMap.parseMapParts(mapName).external === map
+		);
 		if (matchMap > -1) {
 			match.data.election.state = 'IN_PROGRESS';
 			const team = Match.getTeamByAB(match, teamAB);
@@ -358,7 +360,10 @@ const onAgreeCommand: commands.CommandHandler = async (e) => {
 					match,
 					`MAP ${formatMapName(map)} SUGGESTED BY ${escapeRconString(team.name)}`
 				);
-				await Match.say(match, `AGREE WITH ${commands.formatFirstIngameCommand('AGREE')}`);
+				await Match.say(
+					match,
+					`AGREE WITH ${commands.formatFirstIngameCommand('AGREE', map)}`
+				);
 				match.log(`${teamAB} (${team.name} - ${player.name}) suggests map ${map}`);
 			}
 			MatchService.scheduleSave(match);
@@ -379,7 +384,7 @@ const onBanCommand: commands.CommandHandler = async (e) => {
 	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'BAN') {
 		if (isValidTeam(match, currentElectionStep.map.who, teamAB)) {
 			const matchMap = match.data.election.remainingMaps.findIndex(
-				(mapName) => mapName === map
+				(mapName) => MatchMap.parseMapParts(mapName).external === map
 			);
 			if (matchMap > -1) {
 				ensureTeamXY(match, currentElectionStep.map.who, teamAB);
@@ -422,7 +427,7 @@ const onPickCommand: commands.CommandHandler = async (e) => {
 	if (match.data.election.currentSubStep === 'MAP' && currentElectionStep.map.mode === 'PICK') {
 		if (isValidTeam(match, currentElectionStep.map.who, teamAB)) {
 			const matchMap = match.data.election.remainingMaps.findIndex(
-				(mapName) => mapName === map
+				(mapName) => MatchMap.parseMapParts(mapName).external === map
 			);
 			if (matchMap > -1) {
 				ensureTeamXY(match, currentElectionStep.map.who, teamAB);
