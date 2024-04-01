@@ -21,7 +21,7 @@ COPY frontend/index.html .
 COPY frontend/postcss.config.js .
 COPY frontend/tailwind.config.js .
 COPY frontend/tsconfig.json .
-COPY frontend/vite.config.ts .
+COPY frontend/vite.config.mts .
 RUN npm run build
 
 FROM node:20-alpine
