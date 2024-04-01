@@ -43,7 +43,7 @@ export const create = (
 	};
 };
 
-export const sayPeriodicMessage = async (match: Match.Match, matchMap: IMatchMap) => {
+export const periodicJob = async (match: Match.Match, matchMap: IMatchMap) => {
 	if (matchMap.state === 'WARMUP') {
 		await Match.execRcon(match, 'mp_warmuptime 600');
 		await Match.execRcon(match, 'mp_warmup_pausetimer 1');
@@ -75,6 +75,7 @@ export const sayPeriodicMessage = async (match: Match.Match, matchMap: IMatchMap
 			break;
 		case 'WARMUP':
 			await Match.say(match, `MATCH IS IN WARMUP`);
+			await Match.sayWhatTeamToJoin(match);
 			break;
 	}
 
@@ -144,7 +145,7 @@ export const onRoundEnd = async (
 		matchMap.state = 'AFTER_KNIFE';
 		MatchService.scheduleSave(match);
 		await Match.execRcon(match, 'mp_pause_match');
-		await sayPeriodicMessage(match, matchMap);
+		await periodicJob(match, matchMap);
 		match.log(`${winnerTeamAB} (${winnerTeam.name}) won the knife`);
 		Events.onKnifeRoundEnd(match, matchMap, winnerTeam);
 		return;

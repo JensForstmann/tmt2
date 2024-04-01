@@ -36,7 +36,8 @@ const SAY_PREFIX = GameServer.colors.green + Settings.SAY_PREFIX + GameServer.co
 export interface Match {
 	data: IMatch;
 	rconConnection?: Rcon;
-	periodicTimerId?: NodeJS.Timeout;
+	periodicJobTimer?: NodeJS.Timeout;
+	periodicJobCounter: number;
 	logBuffer: string[];
 	log: (msg: string) => void;
 	warnAboutWrongTeam: boolean;
@@ -45,6 +46,7 @@ export interface Match {
 export const createFromData = async (data: IMatch) => {
 	const match: Match = {
 		data: data,
+		periodicJobCounter: 0,
 		logBuffer: [],
 		log: () => {},
 		warnAboutWrongTeam: true,
@@ -244,7 +246,7 @@ const registerLogAddress = async (match: Match) => {
 				if (match.data.state === 'ELECTION') {
 					await Election.auto(match);
 				}
-				await sayPeriodicMessage(match);
+				await periodicJob(match);
 			}
 		})
 		.catch((err) => {
@@ -284,20 +286,25 @@ export const getConfigVar = async (match: Match, configVar: string): Promise<str
 	return '';
 };
 
-const sayPeriodicMessage = async (match: Match) => {
-	if (match.periodicTimerId) {
-		clearTimeout(match.periodicTimerId);
+export const resetPeriodicJobTimer = (match: Match) => {
+	if (match.periodicJobTimer) {
+		clearTimeout(match.periodicJobTimer);
 	}
 
-	match.periodicTimerId = match.data.isStopped
+	match.periodicJobTimer = match.data.isStopped
 		? undefined
 		: setTimeout(async () => {
 				try {
-					await sayPeriodicMessage(match);
+					await periodicJob(match);
 				} catch (err) {
-					match.log(`Error in sayPeriodicMessage: ${err}`);
+					match.log(`Error in periodicJob: ${err}`);
 				}
 			}, Settings.PERIODIC_MESSAGE_FREQUENCY);
+};
+
+const periodicJob = async (match: Match) => {
+	resetPeriodicJobTimer(match);
+	match.periodicJobCounter = match.periodicJobCounter + 1;
 
 	const sv_password = await getConfigVar(match, 'sv_password');
 	if (sv_password && sv_password !== match.data.serverPassword) {
@@ -305,11 +312,11 @@ const sayPeriodicMessage = async (match: Match) => {
 	}
 
 	if (match.data.state === 'ELECTION') {
-		await Election.sayPeriodicMessage(match);
+		await Election.periodicJob(match);
 	} else if (match.data.state === 'MATCH_MAP') {
 		const matchMap = getCurrentMatchMap(match);
 		if (matchMap) {
-			await MatchMap.sayPeriodicMessage(match, matchMap);
+			await MatchMap.periodicJob(match, matchMap);
 		}
 	} else if (match.data.state === 'FINISHED') {
 		await say(match, 'MATCH IS FINISHED');
@@ -565,6 +572,7 @@ const onPlayerLogLine = async (
 		);
 		updatePlayerSide(match, player, toTeam, false, true);
 		teamString = toTeam;
+		await checkPlayerTeamAssignment(match, player, teamString);
 		return;
 	}
 
@@ -661,19 +669,27 @@ const onVersionCommand: commands.CommandHandler = async (e) => {
 };
 
 const onEveryCommand: commands.CommandHandler = async (e) => {
-	if (!e.player.team) {
+	await checkPlayerTeamAssignment(e.match, e.player, e.teamString);
+};
+
+const checkPlayerTeamAssignment = async (
+	match: Match,
+	player: IPlayer,
+	teamString: TTeamString
+) => {
+	if (!player.team) {
 		return;
 	}
-	const currentMatchMap = getCurrentMatchMap(e.match);
+	const currentMatchMap = getCurrentMatchMap(match);
 	const currentCtTeamAB = currentMatchMap
 		? getCurrentTeamSideAndRoundSwitch(currentMatchMap).currentCtTeamAB
 		: 'TEAM_A';
 	const currentTTeamAB = getOtherTeamAB(currentCtTeamAB);
 	if (
-		(e.teamString === 'TERRORIST' && e.player.team !== currentTTeamAB) ||
-		(e.teamString === 'CT' && e.player.team !== currentCtTeamAB)
+		(teamString === 'TERRORIST' && player.team !== currentTTeamAB) ||
+		(teamString === 'CT' && player.team !== currentCtTeamAB)
 	) {
-		await sayWrongTeamOrSide(e.match, e.player, e.teamString, e.player.team);
+		await sayWrongTeamOrSide(match, player, teamString, player.team);
 	}
 };
 
@@ -706,7 +722,9 @@ const sayWrongTeamOrSide = async (
 	const otherTeam = getTeamByAB(match, getOtherTeamAB(currentTeamAB));
 	await say(
 		match,
-		`PLAYER ${escapeRconString(player.name)} IS REGISTERED FOR ${escapeRconString(
+		`PLAYER ${GameServer.colors.lightRed}${escapeRconString(player.name)}${
+			GameServer.colors.white
+		} IS REGISTERED FOR ${escapeRconString(
 			currentTeam.name
 		)} BUT CURRENTLY IN ${currentSite} (${escapeRconString(otherTeam.name)})`
 	);
@@ -717,6 +735,40 @@ const sayWrongTeamOrSide = async (
 			currentTeamAB === 'TEAM_A' ? 'b' : 'a'
 		)} TO CHANGE REGISTRATION`
 	);
+};
+
+export const sayWhatTeamToJoin = async (match: Match) => {
+	const currentMatchMap = getCurrentMatchMap(match);
+	const currentCtTeamAB = currentMatchMap
+		? getCurrentTeamSideAndRoundSwitch(currentMatchMap).currentCtTeamAB
+		: 'TEAM_A';
+	if (currentCtTeamAB === 'TEAM_A') {
+		await say(
+			match,
+			`${escapeRconString(
+				match.data.teamA.name
+			)} MUST JOIN CT AND TYPE ${commands.formatFirstIngameCommand('TEAM', 'a')}`
+		);
+		await say(
+			match,
+			`${escapeRconString(
+				match.data.teamB.name
+			)} MUST JOIN T AND TYPE ${commands.formatFirstIngameCommand('TEAM', 'b')}`
+		);
+	} else {
+		await say(
+			match,
+			`${escapeRconString(
+				match.data.teamB.name
+			)} MUST JOIN CT AND TYPE ${commands.formatFirstIngameCommand('TEAM', 'b')}`
+		);
+		await say(
+			match,
+			`${escapeRconString(
+				match.data.teamA.name
+			)} MUST JOIN T AND TYPE ${commands.formatFirstIngameCommand('TEAM', 'a')}`
+		);
+	}
 };
 
 const onTeamCommand: commands.CommandHandler = async ({ match, player, parameters }) => {
@@ -860,8 +912,8 @@ export const stop = async (match: Match) => {
 	match.log(`Stop match`);
 	match.data.isStopped = true;
 	MatchService.scheduleSave(match);
-	if (match.periodicTimerId) {
-		clearTimeout(match.periodicTimerId);
+	if (match.periodicJobTimer) {
+		clearTimeout(match.periodicJobTimer);
 	}
 	await execRconCommands(match, 'end').catch((err) => {
 		match.log(`Error executing match end rcon commands: ${err}`);

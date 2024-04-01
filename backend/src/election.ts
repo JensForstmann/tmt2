@@ -16,7 +16,6 @@ import { colors } from './gameServer';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
-import { Settings } from './settings';
 
 /**
  * @throws if configuration is invalid
@@ -133,7 +132,7 @@ const getCurrentElectionStep = (match: Match.Match): IElectionStep | undefined =
 	return match.data.electionSteps[match.data.election.currentStep];
 };
 
-export const sayPeriodicMessage = async (match: Match.Match) => {
+export const periodicJob = async (match: Match.Match) => {
 	await Match.execRcon(match, 'mp_warmuptime 600');
 	await Match.execRcon(match, 'mp_warmup_pausetimer 1');
 	await Match.execRcon(match, 'mp_autokick 0');
@@ -144,11 +143,15 @@ export const sayPeriodicMessage = async (match: Match.Match) => {
 	) {
 		const currentElectionStep = getCurrentElectionStep(match);
 		if (!currentElectionStep) {
-			await Match.say(match, `ELECTION PROCESS BROKEN?`);
+			await Match.say(match, `${colors.red}ELECTION PROCESS BROKEN?${colors.white}`);
 			match.log(`Error: No currentElectionStep, election process broken?`);
 		} else {
-			await sayAvailableCommands(match, currentElectionStep);
-			await sayWhatIsUp(match);
+			const mod2 = match.periodicJobCounter % 2;
+			if (mod2 === 0) {
+				await sayWhatIsUp(match);
+			} else {
+				await Match.sayWhatTeamToJoin(match);
+			}
 		}
 	}
 };
@@ -156,6 +159,8 @@ export const sayPeriodicMessage = async (match: Match.Match) => {
 const sayWhatIsUp = async (match: Match.Match) => {
 	const currentElectionStep = getCurrentElectionStep(match);
 	if (!currentElectionStep) return;
+
+	Match.resetPeriodicJobTimer(match);
 
 	if (match.data.election.currentSubStep === 'MAP') {
 		if (currentElectionStep.map.mode === 'AGREE') {
@@ -166,16 +171,16 @@ const sayWhatIsUp = async (match: Match.Match) => {
 			if (match.data.election.currentAgree.teamA)
 				await Match.say(
 					match,
-					`TEAM ${escapeRconString(match.data.teamA.name)} WANTS TO PLAY ${
+					`TEAM ${escapeRconString(match.data.teamA.name)} WANTS TO PLAY ${formatMapName(
 						match.data.election.currentAgree.teamA
-					}`
+					)}`
 				);
 			if (match.data.election.currentAgree.teamB)
 				await Match.say(
 					match,
-					`TEAM ${escapeRconString(match.data.teamB.name)} WANTS TO PLAY ${
+					`TEAM ${escapeRconString(match.data.teamB.name)} WANTS TO PLAY ${formatMapName(
 						match.data.election.currentAgree.teamB
-					}`
+					)}`
 				);
 			await sayAvailableMaps(match);
 		} else if (currentElectionStep.map.mode === 'BAN') {
@@ -217,18 +222,18 @@ const sayWhatIsUp = async (match: Match.Match) => {
 					match,
 					`TEAM ${escapeRconString(
 						Match.getTeamByAB(match, validTeam).name
-					)} MUST CHOOSE A SIDE FOR MAP ${
+					)} MUST CHOOSE A SIDE FOR MAP ${formatMapName(
 						match.data.election.currentStepMap
-					} (${commands.formatFirstIngameCommand(
+					)} (${commands.formatFirstIngameCommand(
 						'CT'
 					)}, ${commands.formatFirstIngameCommand('T')})`
 				);
 			if (!validTeam)
 				await Match.say(
 					match,
-					`BOTH TEAMS CAN START TO CHOOSE A SIDE FOR MAP ${
+					`BOTH TEAMS CAN START TO CHOOSE A SIDE FOR MAP ${formatMapName(
 						match.data.election.currentStepMap
-					} (${commands.formatFirstIngameCommand(
+					)} (${commands.formatFirstIngameCommand(
 						'CT'
 					)}, ${commands.formatFirstIngameCommand('T')})`
 				);
@@ -240,7 +245,7 @@ const sayAvailableMaps = async (match: Match.Match) => {
 	await Match.say(
 		match,
 		`AVAILABLE MAPS: ${match.data.election.remainingMaps
-			.map((map) => colors.purple + map + colors.white)
+			.map((map) => formatMapName(map))
 			.join(', ')}`
 	);
 };
@@ -349,7 +354,10 @@ const onAgreeCommand: commands.CommandHandler = async (e) => {
 				match.log(`${teamAB} (${team.name} - ${player.name}) accepts map ${map}`);
 				await next(match);
 			} else {
-				await Match.say(match, `MAP ${map} SUGGESTED BY ${escapeRconString(team.name)}`);
+				await Match.say(
+					match,
+					`MAP ${formatMapName(map)} SUGGESTED BY ${escapeRconString(team.name)}`
+				);
 				await Match.say(match, `AGREE WITH ${commands.formatFirstIngameCommand('AGREE')}`);
 				match.log(`${teamAB} (${team.name} - ${player.name}) suggests map ${map}`);
 			}
@@ -383,7 +391,10 @@ const onBanCommand: commands.CommandHandler = async (e) => {
 					match.data.election.remainingMaps[matchMap]!,
 					team
 				);
-				await Match.say(match, `MAP ${match.data.election.remainingMaps[matchMap]} BANNED`);
+				await Match.say(
+					match,
+					`MAP ${formatMapName(match.data.election.remainingMaps[matchMap])} BANNED`
+				);
 				match.log(
 					`${teamAB} (${team.name} - ${player.name}) bans map ${match.data.election.remainingMaps[matchMap]}`
 				);
@@ -423,7 +434,9 @@ const onPickCommand: commands.CommandHandler = async (e) => {
 				MatchService.scheduleSave(match);
 				await Match.say(
 					match,
-					`${match.data.matchMaps.length + 1}. MAP: ${match.data.election.currentStepMap}`
+					`${match.data.matchMaps.length + 1}. MAP: ${formatMapName(
+						match.data.election.currentStepMap
+					)}`
 				);
 				match.log(
 					`${teamAB} (${team.name} - ${player.name}) picks map ${match.data.election.currentStepMap}`
@@ -468,9 +481,9 @@ const onTCommand: commands.CommandHandler = async (e) => {
 			MatchService.scheduleSave(match);
 			await Match.say(
 				match,
-				`${match.data.matchMaps.length}. MAP: ${
+				`${match.data.matchMaps.length}. MAP: ${formatMapName(
 					match.data.election.currentStepMap
-				} (T-SIDE: ${escapeRconString(team.name)})`
+				)} (T-SIDE: ${escapeRconString(team.name)})`
 			);
 			match.log(`${teamAB} (${team.name} - ${player.name}) picks t side`);
 			await next(match);
@@ -507,9 +520,9 @@ const onCtCommand: commands.CommandHandler = async (e) => {
 			MatchService.scheduleSave(match);
 			await Match.say(
 				match,
-				`${match.data.matchMaps.length}. MAP: ${
+				`${match.data.matchMaps.length}. MAP: ${formatMapName(
 					match.data.election.currentStepMap
-				} (CT-SIDE: ${escapeRconString(team.name)})`
+				)} (CT-SIDE: ${escapeRconString(team.name)})`
 			);
 			match.log(`${teamAB} (${team.name} - ${player.name}) picks ct side`);
 			await next(match);
@@ -547,7 +560,7 @@ const onRestartCommand: commands.CommandHandler = async (e) => {
 			await sayWhatIsUp(match);
 		} catch (err) {
 			match.log(`Error restarting the election process: ${err}`);
-			await Match.say(match, `ERROR RESTARTING THE ELECTION`);
+			await Match.say(match, `${colors.red}ERROR RESTARTING THE ELECTION${colors.white}`);
 		}
 	} else {
 		await Match.say(
@@ -607,7 +620,9 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 		Events.onElectionMapStep(match, 'FIXED', match.data.election.currentStepMap);
 		await Match.say(
 			match,
-			`${match.data.matchMaps.length + 1}. MAP: ${match.data.election.currentStepMap}`
+			`${match.data.matchMaps.length + 1}. MAP: ${formatMapName(
+				match.data.election.currentStepMap
+			)}`
 		);
 		await next(match);
 		MatchService.scheduleSave(match);
@@ -632,7 +647,7 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 				match,
 				`${match.data.election.remainingMaps.length > 1 ? 'RANDOM ' : ''}${
 					match.data.matchMaps.length + 1
-				}. MAP: ${match.data.election.currentStepMap}`
+				}. MAP: ${formatMapName(match.data.election.currentStepMap)}`
 			);
 		} else {
 			Events.onElectionMapStep(
@@ -640,7 +655,10 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 				'RANDOM_BAN',
 				match.data.election.remainingMaps[matchMap]!
 			);
-			await Match.say(match, `MAP ${match.data.election.remainingMaps[matchMap]} BANNED`);
+			await Match.say(
+				match,
+				`MAP ${formatMapName(match.data.election.remainingMaps[matchMap])} BANNED`
+			);
 		}
 		match.data.election.remainingMaps.splice(matchMap, 1);
 		await next(match);
@@ -665,9 +683,9 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, 'TEAM_A'));
 			await Match.say(
 				match,
-				`${match.data.matchMaps.length}. MAP: ${
+				`${match.data.matchMaps.length}. MAP: ${formatMapName(
 					match.data.election.currentStepMap
-				} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, 'TEAM_A').name)})`
+				)} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, 'TEAM_A').name)})`
 			);
 			await next(match);
 			return;
@@ -681,9 +699,9 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, 'TEAM_B'));
 			await Match.say(
 				match,
-				`${match.data.matchMaps.length}. MAP: ${
+				`${match.data.matchMaps.length}. MAP: ${formatMapName(
 					match.data.election.currentStepMap
-				} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, 'TEAM_B').name)})`
+				)} (CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, 'TEAM_B').name)})`
 			);
 			await next(match);
 			return;
@@ -700,9 +718,9 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 				);
 				await Match.say(
 					match,
-					`${match.data.matchMaps.length}. MAP: ${
+					`${match.data.matchMaps.length}. MAP: ${formatMapName(
 						match.data.election.currentStepMap
-					} (CT-SIDE: ${escapeRconString(
+					)} (CT-SIDE: ${escapeRconString(
 						Match.getTeamByAB(match, match.data.election.teamX).name
 					)})`
 				);
@@ -720,9 +738,9 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 				);
 				await Match.say(
 					match,
-					`${match.data.matchMaps.length}. MAP: ${
+					`${match.data.matchMaps.length}. MAP: ${formatMapName(
 						match.data.election.currentStepMap
-					} (CT-SIDE: ${escapeRconString(
+					)} (CT-SIDE: ${escapeRconString(
 						Match.getTeamByAB(match, match.data.election.teamY).name
 					)})`
 				);
@@ -737,7 +755,9 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, true));
 		await Match.say(
 			match,
-			`${match.data.matchMaps.length}. MAP: ${match.data.election.currentStepMap} (KNIFE FOR SIDE)`
+			`${match.data.matchMaps.length}. MAP: ${formatMapName(
+				match.data.election.currentStepMap
+			)} (KNIFE FOR SIDE)`
 		);
 		await next(match);
 		return;
@@ -752,11 +772,18 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, false, startAsCtTeam));
 		await Match.say(
 			match,
-			`${match.data.matchMaps.length}. MAP: ${
+			`${match.data.matchMaps.length}. MAP: ${formatMapName(
 				match.data.election.currentStepMap
-			} (RANDOM CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, startAsCtTeam).name)})`
+			)} (RANDOM CT-SIDE: ${escapeRconString(Match.getTeamByAB(match, startAsCtTeam).name)})`
 		);
 		await next(match);
 		return;
 	}
+};
+
+const formatMapName = (mapName: string | undefined) => {
+	if (!mapName) {
+		return '';
+	}
+	return colors.grey + mapName + colors.white;
 };
