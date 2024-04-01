@@ -13,6 +13,7 @@ websites or others via a REST API and webhooks to send real time notifications.
 - Fully configure the tournament match beforehand (and edit it after it's created)
 - Play how many maps you want in a series (BO1, BO2, BO3, BO*...)
 - Configure how to ban and pick maps & sides, even knife-for-side is supported
+- Support for workshop maps
 - Automatic map changes & side switches
 - Ingame chat commands for the players (see section [Ingame Chat Commands](#ingame-chat-commands))
 - Integrated support for round backups and rollbacks
@@ -110,8 +111,9 @@ While TMT watches a match the player ingame can use chat commands to communicate
   - `.ready` - set your team as ready (alias `.rdy`)
   - `.unready` - set your team as not ready (alias `.unrdy`)
 - during the match
-  - `.pause` - pause the match at the next freezetime
+  - `.pause` - pause the match at the next freezetime (alias `.tech`)
   - `.unpause` - set your team as ready (alias `.ready` & `.rdy`)
+  - `.tac` - like pause, but uses up a tactical timeout for that team (same as calling an ingame vote for a tactical timeout)
 
 
 

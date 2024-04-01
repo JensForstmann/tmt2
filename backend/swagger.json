@@ -688,7 +688,7 @@
 							"type": "string"
 						},
 						"type": "array",
-						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool.\nWorkshop maps are possible (contain numbers only).\nFriendly names for players when picking/banning maps can be added after a \"/\" delimiter and is advised for workshop maps.\n\nExample:\n```\n[\n   \"de_ancient\",\n   \"de_anubis/anubis\",\n   \"de_inferno\",\n   \"de_mirage\",\n   \"de_nuke\",\n   \"de_overpass\",\n   \"de_vertigo\",\n   \"3070923343/fy_pool_day\"\n]\n```"
 					},
 					"teamA": {
 						"$ref": "#/components/schemas/ITeam",
@@ -883,7 +883,7 @@
 							"type": "string"
 						},
 						"type": "array",
-						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool.\nWorkshop maps are possible (contain numbers only).\nFriendly names for players when picking/banning maps can be added after a \"/\" delimiter and is advised for workshop maps.\n\nExample:\n```\n[\n   \"de_ancient\",\n   \"de_anubis/anubis\",\n   \"de_inferno\",\n   \"de_mirage\",\n   \"de_nuke\",\n   \"de_overpass\",\n   \"de_vertigo\",\n   \"3070923343/fy_pool_day\"\n]\n```"
 					},
 					"teamA": {
 						"$ref": "#/components/schemas/ITeamCreateDto"
@@ -995,7 +995,7 @@
 							"type": "string"
 						},
 						"type": "array",
-						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool.\nWorkshop maps are possible (contain numbers only).\nFriendly names for players when picking/banning maps can be added after a \"/\" delimiter and is advised for workshop maps.\n\nExample:\n```\n[\n   \"de_ancient\",\n   \"de_anubis/anubis\",\n   \"de_inferno\",\n   \"de_mirage\",\n   \"de_nuke\",\n   \"de_overpass\",\n   \"de_vertigo\",\n   \"3070923343/fy_pool_day\"\n]\n```"
 					},
 					"teamA": {
 						"$ref": "#/components/schemas/ITeam",
@@ -1828,7 +1828,7 @@
 							"type": "string"
 						},
 						"type": "array",
-						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool."
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool.\nWorkshop maps are possible (contain numbers only).\nFriendly names for players when picking/banning maps can be added after a \"/\" delimiter and is advised for workshop maps.\n\nExample:\n```\n[\n   \"de_ancient\",\n   \"de_anubis/anubis\",\n   \"de_inferno\",\n   \"de_mirage\",\n   \"de_nuke\",\n   \"de_overpass\",\n   \"de_vertigo\",\n   \"3070923343/fy_pool_day\"\n]\n```"
 					},
 					"teamA": {
 						"$ref": "#/components/schemas/ITeamCreateDto"

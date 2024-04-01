@@ -1,18 +1,19 @@
 # TMT2 Match Init
 
-Template:
+Template (remove json comments before usage):
 
 ```json5
 {
     "passthrough": "<remote match id here>",
 	"mapPool": [ // map pool can contain any number of maps, but must be big enough for the given election steps, see below for more information
-        "de_ancient",
-		"de_anubis",
+        "de_ancient", // use the name of the map file
+		"de_anubis/anubis", // or add a friendly name for players when picking/banning maps
 		"de_inferno",
 		"de_mirage",
 		"de_nuke",
 		"de_overpass",
-		"de_vertigo"
+		"de_vertigo",
+        "3070923343/fy_pool_day" // workshop maps consists of numbers only (their workshop id), consider adding a friendly name for players when picking/banning maps
     ],
 	"teamA": {
 		"name": "Alpha",

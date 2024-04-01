@@ -30,6 +30,22 @@ export interface IMatch {
 	 * The maps the players can pick or ban.
 	 * Will also be used if a map is chosen randomly.
 	 * If the map is fixed it will not be removed from the map pool.
+	 * Workshop maps are possible (contain numbers only).
+	 * Friendly names for players when picking/banning maps can be added after a "/" delimiter and is advised for workshop maps.
+	 *
+	 * Example:
+	 * ```
+	 * [
+	 *    "de_ancient",
+	 *    "de_anubis/anubis",
+	 *    "de_inferno",
+	 *    "de_mirage",
+	 *    "de_nuke",
+	 *    "de_overpass",
+	 *    "de_vertigo",
+	 *    "3070923343/fy_pool_day"
+	 * ]
+	 * ```
 	 */
 	mapPool: string[];
 	/**
@@ -105,6 +121,22 @@ export interface IMatchCreateDto {
 	 * The maps the players can pick or ban.
 	 * Will also be used if a map is chosen randomly.
 	 * If the map is fixed it will not be removed from the map pool.
+	 * Workshop maps are possible (contain numbers only).
+	 * Friendly names for players when picking/banning maps can be added after a "/" delimiter and is advised for workshop maps.
+	 *
+	 * Example:
+	 * ```
+	 * [
+	 *    "de_ancient",
+	 *    "de_anubis/anubis",
+	 *    "de_inferno",
+	 *    "de_mirage",
+	 *    "de_nuke",
+	 *    "de_overpass",
+	 *    "de_vertigo",
+	 *    "3070923343/fy_pool_day"
+	 * ]
+	 * ```
 	 */
 	mapPool: string[];
 	teamA: ITeamCreateDto;
