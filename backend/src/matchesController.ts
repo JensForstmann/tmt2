@@ -20,7 +20,7 @@ import {
 	IMatchResponse,
 	IMatchUpdateDto,
 } from '../../common';
-import { IAuthResponse, IAuthResponseOptional } from './auth';
+import { ExpressRequest, IAuthResponse, IAuthResponseOptional } from './auth';
 import * as Events from './events';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
@@ -37,9 +37,9 @@ export class MatchesController extends Controller {
 	@Security('bearer_token_optional')
 	async createMatch(
 		@Body() requestBody: IMatchCreateDto,
-		@Request() { user }: { user: IAuthResponseOptional }
+		@Request() req: ExpressRequest<IAuthResponseOptional>
 	): Promise<IMatch> {
-		const match = await MatchService.create(requestBody, user.type === 'GLOBAL');
+		const match = await MatchService.create(requestBody, req.user.type === 'GLOBAL');
 		this.setHeader('Location', `/api/matches/${match.data.id}`);
 		this.setStatus(201);
 		return match.data;
@@ -54,7 +54,7 @@ export class MatchesController extends Controller {
 	 */
 	@Get()
 	async getAllMatches(
-		@Request() { user }: { user: IAuthResponse },
+		@Request() req: ExpressRequest<IAuthResponse>,
 		@Query('state') state?: string[],
 		@Query('passthrough') passthrough?: string[],
 		@Query('isStopped') isStopped?: boolean,
@@ -82,7 +82,7 @@ export class MatchesController extends Controller {
 	@Get('{id}')
 	async getMatch(
 		id: string,
-		@Request() { user }: { user: IAuthResponse }
+		@Request() req: ExpressRequest<IAuthResponse>
 	): Promise<IMatchResponse | void> {
 		const match = MatchService.get(id);
 		if (match) {
@@ -108,7 +108,7 @@ export class MatchesController extends Controller {
 	 * Get the last 1000 log lines from a specific match.
 	 */
 	@Get('{id}/logs')
-	async getLogs(id: string, @Request() { user }: { user: IAuthResponse }): Promise<string[]> {
+	async getLogs(id: string, @Request() req: ExpressRequest<IAuthResponse>): Promise<string[]> {
 		return await Match.getLogsTail(id);
 	}
 
@@ -116,7 +116,7 @@ export class MatchesController extends Controller {
 	 * Get the last 1000 events from a specific match.
 	 */
 	@Get('{id}/events')
-	async getEvents(id: string, @Request() { user }: { user: IAuthResponse }): Promise<Event[]> {
+	async getEvents(id: string, @Request() req: ExpressRequest<IAuthResponse>): Promise<Event[]> {
 		return await Events.getEventsTail(id);
 	}
 
@@ -127,7 +127,7 @@ export class MatchesController extends Controller {
 	@Get('{id}/server/round_backups')
 	async getRoundBackups(
 		id: string,
-		@Request() { user }: { user: IAuthResponse },
+		@Request() req: ExpressRequest<IAuthResponse>,
 		@Query('count') count?: number
 	): Promise<{ latestFiles: string[]; total: number } | void> {
 		const match = MatchService.get(id);
@@ -147,7 +147,7 @@ export class MatchesController extends Controller {
 	async loadRoundBackup(
 		id: string,
 		file: string,
-		@Request() { user }: { user: IAuthResponse }
+		@Request() req: ExpressRequest<IAuthResponse>
 	): Promise<boolean | void> {
 		const match = MatchService.get(id);
 		if (match) {
@@ -170,7 +170,7 @@ export class MatchesController extends Controller {
 	async updateMatch(
 		id: string,
 		@Body() requestBody: IMatchUpdateDto,
-		@Request() { user }: { user: IAuthResponse }
+		@Request() req: ExpressRequest<IAuthResponse>
 	): Promise<void> {
 		const match = MatchService.get(id);
 		if (match) {
@@ -188,7 +188,7 @@ export class MatchesController extends Controller {
 		id: string,
 		mapNumber: number,
 		@Body() requestBody: IMatchMapUpdateDto,
-		@Request() { user }: { user: IAuthResponse }
+		@Request() req: ExpressRequest<IAuthResponse>
 	): Promise<void> {
 		const match = MatchService.get(id);
 		if (!match) {
@@ -207,7 +207,7 @@ export class MatchesController extends Controller {
 	 * Stop supervising a specific match. TMT will no longer listen to the game server and will not execute any rcon commands.
 	 */
 	@Delete('{id}')
-	async deleteMatch(id: string, @Request() { user }: { user: IAuthResponse }): Promise<void> {
+	async deleteMatch(id: string, @Request() req: ExpressRequest<IAuthResponse>): Promise<void> {
 		if (!(await MatchService.remove(id))) {
 			this.setStatus(404);
 		}
@@ -217,7 +217,7 @@ export class MatchesController extends Controller {
 	 * Revive a specific match. TMT will start supervising a (stopped) match again (listen to the game sever and execute rcon commands).
 	 */
 	@Patch('{id}/revive')
-	async reviveMatch(id: string, @Request() { user }: { user: IAuthResponse }): Promise<void> {
+	async reviveMatch(id: string, @Request() req: ExpressRequest<IAuthResponse>): Promise<void> {
 		if (!(await MatchService.revive(id))) {
 			this.setStatus(404);
 		}
@@ -230,14 +230,14 @@ export class MatchesController extends Controller {
 	async rcon(
 		id: string,
 		@Body() requestBody: string[],
-		@Request() { user }: { user: IAuthResponse }
+		@Request() req: ExpressRequest<IAuthResponse>
 	): Promise<string[] | void> {
 		const match = MatchService.get(id);
 		if (!match) {
 			this.setStatus(404);
 			return;
 		}
-		if (match.data.gameServer.hideRconPassword && user.type === 'MATCH') {
+		if (match.data.gameServer.hideRconPassword && req.user.type === 'MATCH') {
 			this.setStatus(400);
 			throw 'cannot execute rcon commands on this server';
 		}

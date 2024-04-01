@@ -16,6 +16,10 @@ export type IAuthResponseOptional =
 			type: 'UNAUTHORIZED';
 	  };
 
+export type ExpressRequest<T extends IAuthResponse | IAuthResponseOptional> = Request & {
+	user: T;
+};
+
 interface ITokenContent {
 	comment?: string;
 }
