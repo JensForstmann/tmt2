@@ -1409,12 +1409,12 @@
 					"wonMapsTeamA": {
 						"type": "number",
 						"format": "double",
-						"description": "number of maps team a has won including a their advantage (if given)"
+						"description": "number of maps team a has won including its advantage (if given)"
 					},
 					"wonMapsTeamB": {
 						"type": "number",
 						"format": "double",
-						"description": "number of maps team b has won including a their advantage (if given)"
+						"description": "number of maps team b has won including its advantage (if given)"
 					},
 					"winnerTeam": {
 						"allOf": [
