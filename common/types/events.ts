@@ -63,7 +63,9 @@ export interface MapEndEvent extends BaseEvent {
 
 export interface MatchEndEvent extends BaseEvent {
 	type: 'MATCH_END';
+	/** number of maps team a has won including a their advantage (if given) */
 	wonMapsTeamA: number;
+	/** number of maps team b has won including a their advantage (if given) */
 	wonMapsTeamB: number;
 	/** winner of the match or null if it's a draw */
 	winnerTeam: ITeam | null;
