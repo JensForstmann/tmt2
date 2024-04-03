@@ -355,6 +355,7 @@ const onAgreeCommand: commands.CommandHandler = async (e) => {
 				Events.onElectionMapStep(match, 'AGREE', match.data.election.currentStepMap!, team);
 				match.log(`${teamAB} (${team.name} - ${player.name}) accepts map ${map}`);
 				await next(match);
+				await sayWhatIsUp(match);
 			} else {
 				await Match.say(
 					match,
