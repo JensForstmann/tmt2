@@ -639,6 +639,21 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	TTeamString: {
+		dataType: 'refAlias',
+		type: {
+			dataType: 'union',
+			subSchemas: [
+				{ dataType: 'enum', enums: ['Unassigned'] },
+				{ dataType: 'enum', enums: ['CT'] },
+				{ dataType: 'enum', enums: ['TERRORIST'] },
+				{ dataType: 'enum', enums: [''] },
+				{ dataType: 'enum', enums: ['Spectator'] },
+			],
+			validators: {},
+		},
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	EventType: {
 		dataType: 'refAlias',
 		type: {
@@ -684,7 +699,7 @@ const models: TsoaRoute.Models = {
 			},
 			message: { dataType: 'string', required: true },
 			isTeamChat: { dataType: 'boolean', required: true },
-			teamString: { dataType: 'string' },
+			teamString: { ref: 'TTeamString' },
 		},
 		additionalProperties: false,
 	},
@@ -718,6 +733,7 @@ const models: TsoaRoute.Models = {
 			type: { dataType: 'enum', enums: ['ROUND_END'], required: true },
 			mapIndex: { dataType: 'double', required: true },
 			mapName: { dataType: 'string', required: true },
+			matchMapCount: { dataType: 'double', required: true },
 			winnerTeam: { ref: 'ITeam', required: true },
 			scoreTeamA: { dataType: 'double', required: true },
 			scoreTeamB: { dataType: 'double', required: true },
@@ -738,6 +754,7 @@ const models: TsoaRoute.Models = {
 			type: { dataType: 'enum', enums: ['MAP_END'], required: true },
 			mapIndex: { dataType: 'double', required: true },
 			mapName: { dataType: 'string', required: true },
+			matchMapCount: { dataType: 'double', required: true },
 			scoreTeamA: { dataType: 'double', required: true },
 			scoreTeamB: { dataType: 'double', required: true },
 			winnerTeam: {
@@ -784,6 +801,7 @@ const models: TsoaRoute.Models = {
 				},
 				required: true,
 			},
+			matchMapCount: { dataType: 'double', required: true },
 		},
 		additionalProperties: false,
 	},
@@ -801,6 +819,7 @@ const models: TsoaRoute.Models = {
 			type: { dataType: 'enum', enums: ['KNIFE_END'], required: true },
 			mapIndex: { dataType: 'double', required: true },
 			mapName: { dataType: 'string', required: true },
+			matchMapCount: { dataType: 'double', required: true },
 			winnerTeam: { ref: 'ITeam', required: true },
 		},
 		additionalProperties: false,
@@ -819,6 +838,7 @@ const models: TsoaRoute.Models = {
 			type: { dataType: 'enum', enums: ['MAP_START'], required: true },
 			mapIndex: { dataType: 'double', required: true },
 			mapName: { dataType: 'string', required: true },
+			matchMapCount: { dataType: 'double', required: true },
 		},
 		additionalProperties: false,
 	},

@@ -115,6 +115,7 @@ export const onKnifeRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerT
 		...getBaseEvent(match, 'KNIFE_END'),
 		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
+		matchMapCount: match.data.matchMaps.length,
 		winnerTeam: winnerTeam,
 	};
 	send(match, data);
@@ -125,6 +126,7 @@ export const onRoundEnd = (match: Match.Match, matchMap: IMatchMap, winnerTeam: 
 		...getBaseEvent(match, 'ROUND_END'),
 		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
+		matchMapCount: match.data.matchMaps.length,
 		winnerTeam: winnerTeam,
 		scoreTeamA: matchMap.score.teamA,
 		scoreTeamB: matchMap.score.teamB,
@@ -185,6 +187,7 @@ export const onMatchEnd = (match: Match.Match, wonMapsTeamA: number, wonMapsTeam
 							? match.data.teamA
 							: match.data.teamB,
 			})),
+		matchMapCount: match.data.matchMaps.length,
 	};
 	send(match, data);
 };
@@ -194,6 +197,7 @@ export const onMapStart = (match: Match.Match, matchMap: IMatchMap) => {
 		...getBaseEvent(match, 'MAP_START'),
 		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
+		matchMapCount: match.data.matchMaps.length,
 	};
 	send(match, data);
 };
@@ -203,6 +207,7 @@ export const onMapEnd = (match: Match.Match, matchMap: IMatchMap) => {
 		...getBaseEvent(match, 'MAP_END'),
 		mapIndex: match.data.currentMap,
 		mapName: matchMap.name,
+		matchMapCount: match.data.matchMaps.length,
 		scoreTeamA: matchMap.score.teamA,
 		scoreTeamB: matchMap.score.teamB,
 		winnerTeam:

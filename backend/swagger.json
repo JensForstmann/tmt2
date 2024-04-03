@@ -1161,6 +1161,17 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"TTeamString": {
+				"type": "string",
+				"enum": [
+					"Unassigned",
+					"CT",
+					"TERRORIST",
+					"",
+					"Spectator"
+				],
+				"description": "Possible ingame sides of a player."
+			},
 			"EventType": {
 				"type": "string",
 				"enum": [
@@ -1204,7 +1215,8 @@
 								"$ref": "#/components/schemas/IPlayer"
 							}
 						],
-						"nullable": true
+						"nullable": true,
+						"description": "`null` when not a player (e.g. CONSOLE via rcon)"
 					},
 					"playerTeam": {
 						"allOf": [
@@ -1212,7 +1224,8 @@
 								"$ref": "#/components/schemas/ITeam"
 							}
 						],
-						"nullable": true
+						"nullable": true,
+						"description": "`null` when not a player (e.g. CONSOLE via rcon)"
 					},
 					"message": {
 						"type": "string"
@@ -1221,7 +1234,7 @@
 						"type": "boolean"
 					},
 					"teamString": {
-						"type": "string"
+						"$ref": "#/components/schemas/TTeamString"
 					}
 				},
 				"required": [
@@ -1301,6 +1314,11 @@
 					"mapName": {
 						"type": "string"
 					},
+					"matchMapCount": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps that could be played"
+					},
 					"winnerTeam": {
 						"$ref": "#/components/schemas/ITeam"
 					},
@@ -1320,6 +1338,7 @@
 					"type",
 					"mapIndex",
 					"mapName",
+					"matchMapCount",
 					"winnerTeam",
 					"scoreTeamA",
 					"scoreTeamB"
@@ -1354,6 +1373,11 @@
 					"mapName": {
 						"type": "string"
 					},
+					"matchMapCount": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps that could be played"
+					},
 					"scoreTeamA": {
 						"type": "number",
 						"format": "double"
@@ -1369,7 +1393,7 @@
 							}
 						],
 						"nullable": true,
-						"description": "winner of the match or null if it's a draw"
+						"description": "winner of the map or null if it's a draw"
 					}
 				},
 				"required": [
@@ -1379,6 +1403,7 @@
 					"type",
 					"mapIndex",
 					"mapName",
+					"matchMapCount",
 					"scoreTeamA",
 					"scoreTeamB",
 					"winnerTeam"
@@ -1457,7 +1482,13 @@
 							],
 							"type": "object"
 						},
-						"type": "array"
+						"type": "array",
+						"description": "all map results (but only for finished maps)"
+					},
+					"matchMapCount": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps that could have been played"
 					}
 				},
 				"required": [
@@ -1468,7 +1499,8 @@
 					"wonMapsTeamA",
 					"wonMapsTeamB",
 					"winnerTeam",
-					"mapResults"
+					"mapResults",
+					"matchMapCount"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1500,6 +1532,11 @@
 					"mapName": {
 						"type": "string"
 					},
+					"matchMapCount": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps that could be played"
+					},
 					"winnerTeam": {
 						"$ref": "#/components/schemas/ITeam"
 					}
@@ -1511,6 +1548,7 @@
 					"type",
 					"mapIndex",
 					"mapName",
+					"matchMapCount",
 					"winnerTeam"
 				],
 				"type": "object",
@@ -1542,6 +1580,11 @@
 					},
 					"mapName": {
 						"type": "string"
+					},
+					"matchMapCount": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps that could be played"
 					}
 				},
 				"required": [
@@ -1550,7 +1593,8 @@
 					"matchPassthrough",
 					"type",
 					"mapIndex",
-					"mapName"
+					"mapName",
+					"matchMapCount"
 				],
 				"type": "object",
 				"additionalProperties": false

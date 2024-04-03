@@ -2,7 +2,7 @@ import { TMapMode, TSideMode } from './electionStep';
 import { IMatchResponse } from './match';
 import { IPlayer } from './player';
 import { TTeamSides } from './stuff';
-import { ITeam } from './team';
+import { ITeam, TTeamString } from './team';
 
 export type EventType =
 	| 'CHAT'
@@ -30,11 +30,13 @@ export interface BaseEvent {
 
 export interface ChatEvent extends BaseEvent {
 	type: 'CHAT';
+	/** `null` when not a player (e.g. CONSOLE via rcon) */
 	player: IPlayer | null;
+	/** `null` when not a player (e.g. CONSOLE via rcon) */
 	playerTeam: ITeam | null;
 	message: string;
 	isTeamChat: boolean;
-	teamString?: string;
+	teamString?: TTeamString;
 }
 
 export interface ElectionEndEvent extends BaseEvent {
@@ -46,6 +48,8 @@ export interface RoundEndEvent extends BaseEvent {
 	type: 'ROUND_END';
 	mapIndex: number;
 	mapName: string;
+	/** number of maps that could be played */
+	matchMapCount: number;
 	winnerTeam: ITeam;
 	scoreTeamA: number;
 	scoreTeamB: number;
@@ -55,9 +59,11 @@ export interface MapEndEvent extends BaseEvent {
 	type: 'MAP_END';
 	mapIndex: number;
 	mapName: string;
+	/** number of maps that could be played */
+	matchMapCount: number;
 	scoreTeamA: number;
 	scoreTeamB: number;
-	/** winner of the match or null if it's a draw */
+	/** winner of the map or null if it's a draw */
 	winnerTeam: ITeam | null;
 }
 
@@ -69,6 +75,7 @@ export interface MatchEndEvent extends BaseEvent {
 	wonMapsTeamB: number;
 	/** winner of the match or null if it's a draw */
 	winnerTeam: ITeam | null;
+	/** all map results (but only for finished maps) */
 	mapResults: {
 		mapName: string;
 		scoreTeamA: number;
@@ -76,12 +83,16 @@ export interface MatchEndEvent extends BaseEvent {
 		/** winner of the match or null if it's a draw */
 		winnerTeam: ITeam | null;
 	}[];
+	/** number of maps that could have been played */
+	matchMapCount: number;
 }
 
 export interface KnifeRoundEndEvent extends BaseEvent {
 	type: 'KNIFE_END';
 	mapIndex: number;
 	mapName: string;
+	/** number of maps that could be played */
+	matchMapCount: number;
 	winnerTeam: ITeam;
 }
 
@@ -89,6 +100,8 @@ export interface MapStartEvent extends BaseEvent {
 	type: 'MAP_START';
 	mapIndex: number;
 	mapName: string;
+	/** number of maps that could be played */
+	matchMapCount: number;
 }
 
 export interface LogEvent extends BaseEvent {
