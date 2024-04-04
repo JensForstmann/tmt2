@@ -448,6 +448,7 @@ const onLogLine = async (match: Match, line: string) => {
 
 		// Game Over: competitive  de_overpass score 13:0 after 3 min
 		// Game Over: scrimcomp2v2  de_overpass score 9:0 after 3 min
+		// Game Over: competitive mg_active fy_pool_day score 0:13 after 4 min
 		const mapEndPattern = /Game Over: .*? score (\d+):(\d+)/;
 		const mapEndMatch = line.match(new RegExp(dateTimePattern.source + mapEndPattern.source));
 		if (mapEndMatch) {
@@ -804,27 +805,13 @@ const onMapEnd = async (match: Match) => {
 
 	const currentMatchMap = getCurrentMatchMap(match);
 	if (currentMatchMap) {
-		const mapNumber = match.data.currentMap + 1;
 		await MatchMap.onMapEnd(match, currentMatchMap);
-
-		const winnerTeamAB = MatchMap.getWinner(currentMatchMap);
-		if (!winnerTeamAB) {
-			await say(match, `${mapNumber}. MAP FINISHED (DRAW)`);
-			match.log(`${mapNumber}. map finished (draw)`);
-		} else {
-			const winnerTeam = getTeamByAB(match, winnerTeamAB);
-			await say(
-				match,
-				`${mapNumber}. MAP FINISHED (WINNER: ${escapeRconString(winnerTeam.name)})`
-			);
-			match.log(`${mapNumber}. map finished (winner: ${winnerTeam.name})`);
-		}
-
 		if (isMatchEnd(match)) {
 			match.log('Match finished');
 			await onMatchEnd(match);
 		} else {
 			match.data.currentMap++;
+			MatchService.scheduleSave(match);
 			const nextMap = getCurrentMatchMap(match);
 			if (nextMap) {
 				await MatchMap.loadMap(match, nextMap);
@@ -878,14 +865,16 @@ const onMatchEnd = async (match: Match) => {
 		const wonMapsTeamB = getTeamWins(match, 'TEAM_B');
 		Events.onMatchEnd(match, wonMapsTeamA, wonMapsTeamB);
 
+		await say(match, 'MATCH IS FINISHED');
+
 		// tell players what will happen next
 		const seconds = Math.round(Settings.MATCH_END_ACTION_DELAY / 1000);
 		switch (match.data.matchEndAction) {
 			case 'KICK_ALL':
-				say(match, `IN ${seconds} SECONDS ALL PLAYERS GET KICKED`);
+				await say(match, `IN ${seconds} SECONDS ALL PLAYERS GET KICKED`);
 				break;
 			case 'QUIT_SERVER':
-				say(match, `IN ${seconds} SECONDS THE SERVER SHUTS DOWN`);
+				await say(match, `IN ${seconds} SECONDS THE SERVER SHUTS DOWN`);
 				break;
 		}
 

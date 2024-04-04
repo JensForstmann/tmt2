@@ -174,6 +174,7 @@ export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
 	match.log(`Change map to ${matchMap.name} (in 15 seconds)`);
 	match.data.state = 'MATCH_MAP';
 	matchMap.state = 'MAP_CHANGE';
+	MatchService.scheduleSave(match);
 	await sleep(15000);
 
 	await Match.setTeamNames(match);
@@ -261,12 +262,25 @@ const refreshOvertimeAndMaxRoundsSettings = async (match: Match.Match, matchMap:
 };
 
 export const onMapEnd = async (match: Match.Match, matchMap: IMatchMap) => {
-	if (matchMap.state === 'IN_PROGRESS' || matchMap.state === 'PAUSED') {
-		matchMap.state = 'FINISHED';
-		MatchService.scheduleSave(match);
-		await Match.say(match, 'MAP FINISHED');
-		Events.onMapEnd(match, matchMap);
-		match.log('Map finished');
+	if (matchMap.state !== 'IN_PROGRESS' && matchMap.state !== 'PAUSED') {
+		return;
+	}
+
+	matchMap.state = 'FINISHED';
+	MatchService.scheduleSave(match);
+	Events.onMapEnd(match, matchMap);
+	const mapNumber = match.data.currentMap + 1;
+	const winnerTeamAB = getWinner(matchMap);
+	if (!winnerTeamAB) {
+		await Match.say(match, `${mapNumber}. MAP FINISHED (DRAW)`);
+		match.log(`${mapNumber}. map finished (draw)`);
+	} else {
+		const winnerTeam = Match.getTeamByAB(match, winnerTeamAB);
+		await Match.say(
+			match,
+			`${mapNumber}. MAP FINISHED (WINNER: ${escapeRconString(winnerTeam.name)})`
+		);
+		match.log(`${mapNumber}. map finished (winner: ${winnerTeam.name})`);
 	}
 };
 
