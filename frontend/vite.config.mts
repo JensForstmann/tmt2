@@ -6,4 +6,9 @@ export default defineConfig({
 	build: {
 		target: 'esnext',
 	},
+	server: {
+		watch: {
+			usePolling: true, // Needed to get HMR working within Docker
+		},
+	},
 });
