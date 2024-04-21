@@ -817,6 +817,11 @@
 						"format": "double",
 						"description": "Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC)"
 					},
+					"lastSavedAt": {
+						"type": "number",
+						"format": "double",
+						"description": "Last time the match was saved to disk (unix time in milliseconds since midnight, January 1, 1970 UTC)"
+					},
 					"mode": {
 						"$ref": "#/components/schemas/TMatchMode",
 						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
@@ -1123,6 +1128,11 @@
 						"type": "number",
 						"format": "double",
 						"description": "Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC)"
+					},
+					"lastSavedAt": {
+						"type": "number",
+						"format": "double",
+						"description": "Last time the match was saved to disk (unix time in milliseconds since midnight, January 1, 1970 UTC)"
 					},
 					"mode": {
 						"$ref": "#/components/schemas/TMatchMode",

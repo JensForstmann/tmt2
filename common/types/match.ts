@@ -106,6 +106,8 @@ export interface IMatch {
 	tmtLogAddress?: string;
 	/** Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC) */
 	createdAt: number;
+	/** Last time the match was saved to disk (unix time in milliseconds since midnight, January 1, 1970 UTC) */
+	lastSavedAt?: number;
 	/** Match mode (single: stops when match is finished, loop: starts again after match is finished) */
 	mode: TMatchMode;
 }

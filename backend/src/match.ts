@@ -43,6 +43,8 @@ export interface Match {
 	warnAboutWrongTeam: boolean;
 }
 
+export class GameServerInUseError extends Error {}
+
 export const createFromData = async (data: IMatch) => {
 	const match: Match = {
 		data: data,
@@ -63,6 +65,13 @@ export const createFromData = async (data: IMatch) => {
 		match.data.tmtLogAddress = la;
 	} else if (!TMT_LOG_ADDRESS) {
 		throw 'tmtLogAddress must be set';
+	}
+
+	const otherMatches = MatchService.getLiveMatchesByGameServer(data.gameServer);
+	if (otherMatches.length > 0) {
+		throw new GameServerInUseError(
+			'game server already in use by ' + otherMatches.map((match) => match.id).join(', ')
+		);
 	}
 
 	await connectToGameServer(match);
@@ -101,6 +110,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		serverPassword: '',
 		tmtLogAddress: dto.tmtLogAddress,
 		createdAt: Date.now(),
+		lastSavedAt: 0,
 		webhookUrl: dto.webhookUrl ?? null,
 		mode: dto.mode ?? 'SINGLE',
 	};

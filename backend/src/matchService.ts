@@ -1,5 +1,5 @@
 import { generate as shortUuid } from 'short-uuid';
-import { IMatch, IMatchCreateDto, IMatchResponse } from '../../common';
+import { IGameServer, IMatch, IMatchCreateDto, IMatchResponse } from '../../common';
 import * as Events from './events';
 import * as Match from './match';
 import * as Storage from './storage';
@@ -23,10 +23,22 @@ let timeout: NodeJS.Timeout;
 export const setup = async () => {
 	const matchesFromStorage = await getAllFromStorage();
 
+	// begin with recent matches so when there are multiple matches
+	// with the same game server we recreate the correct (most recent) one
+	matchesFromStorage.sort((a, b) => (b.lastSavedAt ?? 0) - (a.lastSavedAt ?? 0));
+
 	for (let i = 0; i < matchesFromStorage.length; i++) {
 		const matchData = matchesFromStorage[i]!;
 		if (matchData.state !== 'FINISHED' && !matchData.isStopped) {
-			await loadMatchFromStorage(matchData);
+			try {
+				await loadMatchFromStorage(matchData);
+			} catch (err) {
+				console.error(`error creating match ${matchData.id} from storage: ${err}`);
+				if (err instanceof Match.GameServerInUseError) {
+					matchData.isStopped = true;
+					await save(matchData);
+				}
+			}
 		}
 	}
 
@@ -40,9 +52,7 @@ const loadMatchFromStorage = async (matchData: IMatch) => {
 		matchData.parseIncomingLogs = false;
 		const match = await Match.createFromData(matchData);
 		matches.set(match.data.id, match);
-		await save(match);
-	} catch (err) {
-		console.error(`error creating match ${matchData.id} from storage: ${err}`);
+		await save(match.data);
 	} finally {
 		startingMatches.delete(matchData.id);
 	}
@@ -66,7 +76,7 @@ export const create = async (dto: IMatchCreateDto, isLoggedIn: boolean) => {
 		startingMatches.add(id);
 		const match = await Match.createFromCreateDto(dto, id, logSecret);
 		matches.set(match.data.id, match);
-		await save(match);
+		await save(match.data);
 		Events.onMatchCreate(match);
 		return match;
 	} catch (err) {
@@ -88,7 +98,7 @@ const periodicSaver = async () => {
 		const match = get(id);
 		if (match) {
 			try {
-				await save(match);
+				await save(match.data);
 			} catch (err) {
 				match.log(`Error saving match: ${err}`);
 				matchesToSave.add(id);
@@ -146,7 +156,7 @@ export const remove = async (id: string) => {
 	if (match) {
 		await Match.stop(match);
 		matches.delete(id);
-		save(match);
+		save(match.data);
 		return true;
 	} else {
 		return false;
@@ -167,14 +177,21 @@ export const revive = async (id: string) => {
 	return true;
 };
 
-export const save = async (match: Match.Match) => {
-	await Storage.write(STORAGE_PREFIX + match.data.id + STORAGE_SUFFIX, match.data);
+export const save = async (matchData: IMatch) => {
+	const previousLastSavedAt = matchData.lastSavedAt;
+	matchData.lastSavedAt = Date.now();
+	try {
+		await Storage.write(STORAGE_PREFIX + matchData.id + STORAGE_SUFFIX, matchData);
+	} catch (err) {
+		matchData.lastSavedAt = previousLastSavedAt;
+		throw err;
+	}
 };
 
 export const saveAll = async () => {
 	const allMatches = Array.from(matches.values());
 	for (let i = 0; i < allMatches.length; i++) {
-		await save(allMatches[i]!);
+		await save(allMatches[i]!.data);
 	}
 };
 
@@ -190,4 +207,11 @@ export const hideRconPassword = <T extends IMatch | IMatchResponse>(match: T): T
 			rconPassword: match.gameServer.hideRconPassword ? '' : match.gameServer.rconPassword,
 		},
 	};
+};
+
+export const getLiveMatchesByGameServer = (gameServer: IGameServer) => {
+	return getAllLive().filter(
+		(match) =>
+			match.gameServer.ip === gameServer.ip && match.gameServer.port === gameServer.port
+	);
 };
