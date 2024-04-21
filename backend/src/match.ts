@@ -162,6 +162,10 @@ const connectToGameServer = async (match: Match): Promise<void> => {
 const onRconConnectionEnd = async (match: Match) => {
 	const addr = `${match.rconConnection?.config.host}:${match.rconConnection?.config.port}`;
 	match.log(`Rcon connection lost: ${addr}`);
+
+	match.data.players.forEach((player) => (player.online = false)); // assume server restart or server change
+	MatchService.scheduleSave(match);
+
 	while (true) {
 		try {
 			await sleep(10000);
@@ -552,6 +556,7 @@ const onPlayerLogLine = async (
 			player = Player.create(steamId, name);
 			match.log(`Player ${player.steamId64} (${name}) created`);
 			match.data.players.push(player);
+			player = match.data.players[match.data.players.length - 1]!;
 			MatchService.scheduleSave(match);
 		}
 		if (player.name !== name) {
@@ -566,7 +571,8 @@ const onPlayerLogLine = async (
 		return;
 	}
 
-	if (player.online !== true) {
+	if (player.online !== true && !remainingLine.includes('committed suicide with "world"')) {
+		// "committed suicide" log line comes after "disconnected"
 		player.online = true;
 		MatchService.scheduleSave(match);
 	}

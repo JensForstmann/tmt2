@@ -1,4 +1,4 @@
-import { Component, For } from 'solid-js';
+import { Component, For, Show } from 'solid-js';
 import { IMatchResponse, IPlayer } from '../../../common';
 import { t } from '../utils/locale';
 import { Card } from './Card';
@@ -75,10 +75,10 @@ const Player: Component<{ player: IPlayer }> = (props) => {
 };
 
 const Side: Component<{ player: IPlayer }> = (props) => {
-	return props.player.side ? (
-		<div class="badge badge-neutral w-full">{props.player.side}</div>
-	) : (
-		<div></div>
+	return (
+		<Show when={props.player.side} fallback={<div></div>}>
+			<div class="badge badge-neutral w-full">{props.player.side}</div>
+		</Show>
 	);
 };
 
