@@ -2,6 +2,7 @@ import { useSearchParams } from '@solidjs/router';
 import { Component, createEffect, For, onCleanup, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { Event, IMatchResponse } from '../../../common';
+import { SvgSettings } from '../assets/Icons';
 import { Card } from '../components/Card';
 import {
 	MatchList,
@@ -12,11 +13,11 @@ import {
 import { createFetcher, getToken } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { createWebSocket } from '../utils/webSocket';
-import { SvgSettings } from '../assets/Icons';
 
 const defaultColumns: TColumnsToShow = {
 	TEAM_A: true,
 	TEAM_B: true,
+	ONLINE_PLAYER_COUNT: false,
 	AGE: true,
 	BEST_OF: true,
 	MATCH_STATE: true,
