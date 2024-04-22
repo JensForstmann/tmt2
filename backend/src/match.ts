@@ -1047,7 +1047,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		const nextMap = match.data.matchMaps[dto.currentMap];
 		if (nextMap) {
 			match.data.currentMap = dto.currentMap;
-			await MatchMap.loadMap(match, nextMap);
+			await MatchMap.loadMap(match, nextMap, true);
 		} else {
 			throw new ValidateError(
 				{

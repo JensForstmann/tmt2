@@ -167,15 +167,33 @@ export const onRoundEnd = async (
 	}
 };
 
-export const loadMap = async (match: Match.Match, matchMap: IMatchMap) => {
+export const loadMap = async (match: Match.Match, matchMap: IMatchMap, useDefaultDelay = false) => {
 	const internalMapName = parseMapParts(matchMap.name).internal;
 
-	await Match.say(match, `MAP WILL BE CHANGED TO ${formatMapName(matchMap.name)} IN 15 SECONDS`);
-	match.log(`Change map to ${matchMap.name} (in 15 seconds)`);
+	let delayInSeconds: number | undefined;
+	if (useDefaultDelay || match.data.currentMap === 0) {
+		delayInSeconds = 15;
+	} else {
+		const cVar = await Match.getConfigVar(match, 'mp_match_restart_delay');
+		if (/^\d+$/.test(cVar)) {
+			delayInSeconds = parseInt(cVar);
+		} else {
+			match.log('Config var mp_match_restart_delay cannot be parsed to number: ' + cVar);
+		}
+	}
+	if (!delayInSeconds || isNaN(delayInSeconds) || delayInSeconds < 15) {
+		delayInSeconds = 15;
+	}
+
+	await Match.say(
+		match,
+		`MAP WILL BE CHANGED TO ${formatMapName(matchMap.name)} IN ${delayInSeconds} SECONDS`
+	);
+	match.log(`Change map to ${matchMap.name} (in ${delayInSeconds} seconds)`);
 	match.data.state = 'MATCH_MAP';
 	matchMap.state = 'MAP_CHANGE';
 	MatchService.scheduleSave(match);
-	await sleep(15000);
+	await sleep(delayInSeconds * 1000);
 
 	await Match.setTeamNames(match);
 
@@ -604,7 +622,7 @@ export const update = async (
 	if (dto.name && matchMap.name !== dto.name) {
 		matchMap.name = dto.name;
 		if (match.data.currentMap === mapNumber) {
-			await loadMap(match, matchMap);
+			await loadMap(match, matchMap, true);
 		}
 	}
 
