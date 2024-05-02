@@ -883,18 +883,20 @@ const onMatchEnd = async (match: Match) => {
 
 		await say(match, 'MATCH IS FINISHED');
 
-		// tell players what will happen next
 		const seconds = Math.round(Settings.MATCH_END_ACTION_DELAY / 1000);
+		const delayInSeconds = Math.max(seconds, await getMapEndDelayInSeconds(match, seconds));
+
+		// tell players what will happen next
 		switch (match.data.matchEndAction) {
 			case 'KICK_ALL':
-				await say(match, `IN ${seconds} SECONDS ALL PLAYERS GET KICKED`);
+				await say(match, `IN ${delayInSeconds} SECONDS ALL PLAYERS GET KICKED`);
 				break;
 			case 'QUIT_SERVER':
-				await say(match, `IN ${seconds} SECONDS THE SERVER SHUTS DOWN`);
+				await say(match, `IN ${delayInSeconds} SECONDS THE SERVER SHUTS DOWN`);
 				break;
 		}
 
-		await sleep(Settings.MATCH_END_ACTION_DELAY);
+		await sleep(delayInSeconds * 1000);
 
 		switch (match.data.matchEndAction) {
 			case 'KICK_ALL':
@@ -970,6 +972,25 @@ const loopMatch = async (match: Match) => {
 		.catch(() => {
 			// shouldn't throw
 		});
+};
+
+/**
+ * Returns the number of seconds it should delay actions after a map ends (before changelevel or match end actions)
+ * @param match Match
+ * @param fallback
+ */
+export const getMapEndDelayInSeconds = async (match: Match, fallback: number): Promise<number> => {
+	let delayInSeconds: number | undefined;
+	const cVar = await getConfigVar(match, 'mp_match_restart_delay');
+	if (/^\d+$/.test(cVar)) {
+		delayInSeconds = parseInt(cVar);
+	} else {
+		match.log('Config var mp_match_restart_delay cannot be parsed to number: ' + cVar);
+	}
+	if (!delayInSeconds || isNaN(delayInSeconds)) {
+		delayInSeconds = fallback;
+	}
+	return delayInSeconds;
 };
 
 export const update = async (match: Match, dto: IMatchUpdateDto) => {

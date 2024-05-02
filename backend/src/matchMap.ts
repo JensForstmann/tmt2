@@ -170,20 +170,10 @@ export const onRoundEnd = async (
 export const loadMap = async (match: Match.Match, matchMap: IMatchMap, useDefaultDelay = false) => {
 	const internalMapName = parseMapParts(matchMap.name).internal;
 
-	let delayInSeconds: number | undefined;
-	if (useDefaultDelay || match.data.currentMap === 0) {
-		delayInSeconds = 15;
-	} else {
-		const cVar = await Match.getConfigVar(match, 'mp_match_restart_delay');
-		if (/^\d+$/.test(cVar)) {
-			delayInSeconds = parseInt(cVar);
-		} else {
-			match.log('Config var mp_match_restart_delay cannot be parsed to number: ' + cVar);
-		}
-	}
-	if (!delayInSeconds || isNaN(delayInSeconds) || delayInSeconds < 15) {
-		delayInSeconds = 15;
-	}
+	const delayInSeconds =
+		useDefaultDelay || match.data.currentMap === 0
+			? 15
+			: Math.max(15, await Match.getMapEndDelayInSeconds(match, 15));
 
 	await Match.say(
 		match,
