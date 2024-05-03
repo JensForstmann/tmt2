@@ -1,5 +1,5 @@
 import { generate as shortUuid } from 'short-uuid';
-import { IPreset, IPresetCreateDto, IPresetUpdateDto } from '../../common/types/preset';
+import { IPreset, IPresetCreateDto, IPresetUpdateDto } from '../../common';
 import * as Storage from './storage';
 
 const FILE_NAME = 'presets.json';

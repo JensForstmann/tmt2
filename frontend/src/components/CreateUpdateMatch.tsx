@@ -2,17 +2,18 @@ import autoAnimate from '@formkit/auto-animate';
 import { Component, For, Match, Show, Switch, createEffect, createSignal, onMount } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import {
+	IConfig,
 	IElectionStep,
 	IMatchCreateDto,
 	IMatchResponse,
 	IMatchUpdateDto,
+	IPreset,
+	IPresetCreateDto,
 	TMatchEndAction,
 	TMatchMode,
 	TTeamAB,
 	getOtherTeamAB,
 } from '../../../common';
-import { IConfig } from '../../../common/types/config';
-import { IPreset, IPresetCreateDto } from '../../../common/types/preset';
 import {
 	SvgAdd,
 	SvgDelete,

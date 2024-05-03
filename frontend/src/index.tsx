@@ -3,6 +3,7 @@ import { Route, Router } from '@solidjs/router';
 import { render } from 'solid-js/web';
 import { App } from './App';
 import { CreatePage } from './pages/create';
+import { DebugPage } from './pages/debug';
 import { GameServersPage } from './pages/gameServers';
 import { LoginPage } from './pages/login';
 import { LogoutPage } from './pages/logout';
@@ -23,6 +24,7 @@ render(
 			<Route path="/login" component={LoginPage} />
 			<Route path="/logout" component={LogoutPage} />
 			<Route path={['/', '/create']} component={CreatePage} />
+			<Route path="/debug" component={DebugPage} />
 			<Route path="/*" component={NotFoundPage} />
 		</Router>
 	),

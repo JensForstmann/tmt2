@@ -10,7 +10,7 @@ import {
 	Security,
 	SuccessResponse,
 } from '@tsoa/runtime';
-import { IPreset, IPresetCreateDto } from '../../common/types/preset';
+import { IPreset, IPresetCreateDto } from '../../common';
 import { ExpressRequest, IAuthResponse } from './auth';
 import * as Presets from './presets';
 

@@ -1,6 +1,6 @@
 import { Controller, Get, NoSecurity, Route, Security } from '@tsoa/runtime';
 import { TMT_LOG_ADDRESS } from '.';
-import { IConfig } from '../../common/types/config';
+import { IConfig } from '../../common';
 
 @Route('/api/config')
 @Security('bearer_token')

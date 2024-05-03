@@ -2187,6 +2187,49 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"IDebugResponse": {
+				"properties": {
+					"tmtVersion": {
+						"type": "string",
+						"nullable": true
+					},
+					"tmtStorageFolder": {
+						"type": "string"
+					},
+					"tmtPort": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "number",
+								"format": "double"
+							}
+						]
+					},
+					"tmtLogAddress": {
+						"type": "string",
+						"nullable": true
+					},
+					"tmtSayPrefix": {
+						"type": "string"
+					},
+					"webSockets": {
+						"items": {},
+						"type": "array"
+					}
+				},
+				"required": [
+					"tmtVersion",
+					"tmtStorageFolder",
+					"tmtPort",
+					"tmtLogAddress",
+					"tmtSayPrefix",
+					"webSockets"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"IConfig": {
 				"properties": {
 					"tmtLogAddress": {
@@ -2998,44 +3041,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"properties": {
-										"webSockets": {
-											"items": {},
-											"type": "array"
-										},
-										"tmtSayPrefix": {
-											"type": "string"
-										},
-										"tmtLogAddress": {
-											"type": "string"
-										},
-										"tmtPort": {
-											"anyOf": [
-												{
-													"type": "string"
-												},
-												{
-													"type": "number",
-													"format": "double"
-												}
-											]
-										},
-										"tmtStorageFolder": {
-											"type": "string"
-										},
-										"tmtVersion": {
-											"type": "string"
-										}
-									},
-									"required": [
-										"webSockets",
-										"tmtSayPrefix",
-										"tmtLogAddress",
-										"tmtPort",
-										"tmtStorageFolder",
-										"tmtVersion"
-									],
-									"type": "object"
+									"$ref": "#/components/schemas/IDebugResponse"
 								}
 							}
 						}

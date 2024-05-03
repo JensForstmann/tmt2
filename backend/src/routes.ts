@@ -1123,6 +1123,31 @@ const models: TsoaRoute.Models = {
 		additionalProperties: false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	IDebugResponse: {
+		dataType: 'refObject',
+		properties: {
+			tmtVersion: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			tmtStorageFolder: { dataType: 'string', required: true },
+			tmtPort: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'double' }],
+				required: true,
+			},
+			tmtLogAddress: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			tmtSayPrefix: { dataType: 'string', required: true },
+			webSockets: { dataType: 'array', array: { dataType: 'any' }, required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	IConfig: {
 		dataType: 'refObject',
 		properties: {
