@@ -11,22 +11,22 @@
 		"start": "node ./dist/backend/src/index.js"
 	},
 	"dependencies": {
-		"@tsoa/runtime": "^6.2.0",
+		"@tsoa/runtime": "^6.3.0",
 		"express": "^4.19.2",
-		"short-uuid": "^4.2.2",
+		"short-uuid": "^5.2.0",
 		"steamid": "^2.0.0",
 		"typed-emitter": "^2.1.0",
-		"ws": "^8.16.0"
+		"ws": "^8.17.1"
 	},
 	"devDependencies": {
-		"@tsoa/cli": "^6.2.0",
+		"@tsoa/cli": "^6.3.1",
 		"@types/debug": "^4.1.12",
 		"@types/express": "^4.17.21",
-		"@types/node": "^20.12.2",
+		"@types/node": "^20.14.8",
 		"@types/steamid": "^2.0.3",
 		"@types/ws": "^8.5.10",
-		"nodemon": "^3.1.0",
+		"nodemon": "^3.1.4",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.4.3"
+		"typescript": "^5.5.2"
 	}
 }

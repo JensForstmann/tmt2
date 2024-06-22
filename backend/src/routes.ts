@@ -1198,7 +1198,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(LoginController),
 		...fetchMiddlewares<RequestHandler>(LoginController.prototype.login),
 
-		function LoginController_login(request: ExRequest, response: ExResponse, next: any) {
+		async function LoginController_login(request: ExRequest, response: ExResponse, next: any) {
 			const args: Record<string, TsoaRoute.ParameterSchema> = {};
 
 			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1209,7 +1209,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new LoginController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'login',
 					controller,
 					response,
@@ -1229,7 +1229,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.createMatch),
 
-		function MatchesController_createMatch(
+		async function MatchesController_createMatch(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1252,7 +1252,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'createMatch',
 					controller,
 					response,
@@ -1272,7 +1272,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getAllMatches),
 
-		function MatchesController_getAllMatches(
+		async function MatchesController_getAllMatches(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1303,7 +1303,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'getAllMatches',
 					controller,
 					response,
@@ -1323,7 +1323,11 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getMatch),
 
-		function MatchesController_getMatch(request: ExRequest, response: ExResponse, next: any) {
+		async function MatchesController_getMatch(
+			request: ExRequest,
+			response: ExResponse,
+			next: any
+		) {
 			const args: Record<string, TsoaRoute.ParameterSchema> = {
 				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
 				req: { in: 'request', name: 'req', required: true, dataType: 'object' },
@@ -1337,7 +1341,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'getMatch',
 					controller,
 					response,
@@ -1357,7 +1361,11 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getLogs),
 
-		function MatchesController_getLogs(request: ExRequest, response: ExResponse, next: any) {
+		async function MatchesController_getLogs(
+			request: ExRequest,
+			response: ExResponse,
+			next: any
+		) {
 			const args: Record<string, TsoaRoute.ParameterSchema> = {
 				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
 				req: { in: 'request', name: 'req', required: true, dataType: 'object' },
@@ -1371,7 +1379,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'getLogs',
 					controller,
 					response,
@@ -1391,7 +1399,11 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getEvents),
 
-		function MatchesController_getEvents(request: ExRequest, response: ExResponse, next: any) {
+		async function MatchesController_getEvents(
+			request: ExRequest,
+			response: ExResponse,
+			next: any
+		) {
 			const args: Record<string, TsoaRoute.ParameterSchema> = {
 				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
 				req: { in: 'request', name: 'req', required: true, dataType: 'object' },
@@ -1405,7 +1417,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'getEvents',
 					controller,
 					response,
@@ -1425,7 +1437,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getRoundBackups),
 
-		function MatchesController_getRoundBackups(
+		async function MatchesController_getRoundBackups(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1444,7 +1456,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'getRoundBackups',
 					controller,
 					response,
@@ -1464,7 +1476,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.loadRoundBackup),
 
-		function MatchesController_loadRoundBackup(
+		async function MatchesController_loadRoundBackup(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1483,7 +1495,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'loadRoundBackup',
 					controller,
 					response,
@@ -1503,7 +1515,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.updateMatch),
 
-		function MatchesController_updateMatch(
+		async function MatchesController_updateMatch(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1527,7 +1539,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'updateMatch',
 					controller,
 					response,
@@ -1547,7 +1559,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.updateMatchMap),
 
-		function MatchesController_updateMatchMap(
+		async function MatchesController_updateMatchMap(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1572,7 +1584,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'updateMatchMap',
 					controller,
 					response,
@@ -1592,7 +1604,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.deleteMatch),
 
-		function MatchesController_deleteMatch(
+		async function MatchesController_deleteMatch(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1610,7 +1622,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'deleteMatch',
 					controller,
 					response,
@@ -1630,7 +1642,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.reviveMatch),
 
-		function MatchesController_reviveMatch(
+		async function MatchesController_reviveMatch(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1648,7 +1660,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'reviveMatch',
 					controller,
 					response,
@@ -1668,7 +1680,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.rcon),
 
-		function MatchesController_rcon(request: ExRequest, response: ExResponse, next: any) {
+		async function MatchesController_rcon(request: ExRequest, response: ExResponse, next: any) {
 			const args: Record<string, TsoaRoute.ParameterSchema> = {
 				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
 				requestBody: {
@@ -1689,7 +1701,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'rcon',
 					controller,
 					response,
@@ -1708,7 +1720,11 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(MatchesController),
 		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.receiveLog),
 
-		function MatchesController_receiveLog(request: ExRequest, response: ExResponse, next: any) {
+		async function MatchesController_receiveLog(
+			request: ExRequest,
+			response: ExResponse,
+			next: any
+		) {
 			const args: Record<string, TsoaRoute.ParameterSchema> = {
 				id: { in: 'path', name: 'id', required: true, dataType: 'string' },
 				secret: { in: 'path', name: 'secret', required: true, dataType: 'string' },
@@ -1723,7 +1739,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new MatchesController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'receiveLog',
 					controller,
 					response,
@@ -1743,7 +1759,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(GameServersController),
 		...fetchMiddlewares<RequestHandler>(GameServersController.prototype.getGameServers),
 
-		function GameServersController_getGameServers(
+		async function GameServersController_getGameServers(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1758,7 +1774,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new GameServersController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'getGameServers',
 					controller,
 					response,
@@ -1778,7 +1794,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(GameServersController),
 		...fetchMiddlewares<RequestHandler>(GameServersController.prototype.createGameServer),
 
-		function GameServersController_createGameServer(
+		async function GameServersController_createGameServer(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1800,7 +1816,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new GameServersController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'createGameServer',
 					controller,
 					response,
@@ -1820,7 +1836,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(GameServersController),
 		...fetchMiddlewares<RequestHandler>(GameServersController.prototype.updateGameServer),
 
-		function GameServersController_updateGameServer(
+		async function GameServersController_updateGameServer(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1844,7 +1860,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new GameServersController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'updateGameServer',
 					controller,
 					response,
@@ -1864,7 +1880,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(GameServersController),
 		...fetchMiddlewares<RequestHandler>(GameServersController.prototype.deleteGameServer),
 
-		function GameServersController_deleteGameServer(
+		async function GameServersController_deleteGameServer(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1882,7 +1898,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new GameServersController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'deleteGameServer',
 					controller,
 					response,
@@ -1902,7 +1918,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(DebugController),
 		...fetchMiddlewares<RequestHandler>(DebugController.prototype.getWebSocketClients),
 
-		function DebugController_getWebSocketClients(
+		async function DebugController_getWebSocketClients(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -1917,7 +1933,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new DebugController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'getWebSocketClients',
 					controller,
 					response,
@@ -1937,7 +1953,11 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(DebugController),
 		...fetchMiddlewares<RequestHandler>(DebugController.prototype.getInfos),
 
-		function DebugController_getInfos(request: ExRequest, response: ExResponse, next: any) {
+		async function DebugController_getInfos(
+			request: ExRequest,
+			response: ExResponse,
+			next: any
+		) {
 			const args: Record<string, TsoaRoute.ParameterSchema> = {};
 
 			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1948,7 +1968,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new DebugController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'getInfos',
 					controller,
 					response,
@@ -1967,7 +1987,11 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(ConfigController),
 		...fetchMiddlewares<RequestHandler>(ConfigController.prototype.getConfig),
 
-		function ConfigController_getConfig(request: ExRequest, response: ExResponse, next: any) {
+		async function ConfigController_getConfig(
+			request: ExRequest,
+			response: ExResponse,
+			next: any
+		) {
 			const args: Record<string, TsoaRoute.ParameterSchema> = {};
 
 			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1978,7 +2002,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new ConfigController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'getConfig',
 					controller,
 					response,
@@ -1998,7 +2022,11 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(PresetsController),
 		...fetchMiddlewares<RequestHandler>(PresetsController.prototype.getPresets),
 
-		function PresetsController_getPresets(request: ExRequest, response: ExResponse, next: any) {
+		async function PresetsController_getPresets(
+			request: ExRequest,
+			response: ExResponse,
+			next: any
+		) {
 			const args: Record<string, TsoaRoute.ParameterSchema> = {
 				req: { in: 'request', name: 'req', required: true, dataType: 'object' },
 			};
@@ -2011,7 +2039,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new PresetsController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'getPresets',
 					controller,
 					response,
@@ -2031,7 +2059,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(PresetsController),
 		...fetchMiddlewares<RequestHandler>(PresetsController.prototype.createPreset),
 
-		function PresetsController_createPreset(
+		async function PresetsController_createPreset(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -2054,7 +2082,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new PresetsController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'createPreset',
 					controller,
 					response,
@@ -2074,7 +2102,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(PresetsController),
 		...fetchMiddlewares<RequestHandler>(PresetsController.prototype.updatePreset),
 
-		function PresetsController_updatePreset(
+		async function PresetsController_updatePreset(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -2092,7 +2120,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new PresetsController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'updatePreset',
 					controller,
 					response,
@@ -2112,7 +2140,7 @@ export function RegisterRoutes(app: Router) {
 		...fetchMiddlewares<RequestHandler>(PresetsController),
 		...fetchMiddlewares<RequestHandler>(PresetsController.prototype.deletePreset),
 
-		function PresetsController_deletePreset(
+		async function PresetsController_deletePreset(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -2130,7 +2158,7 @@ export function RegisterRoutes(app: Router) {
 
 				const controller = new PresetsController();
 
-				templateService.apiHandler({
+				await templateService.apiHandler({
 					methodName: 'deletePreset',
 					controller,
 					response,
