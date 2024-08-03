@@ -20,10 +20,10 @@ const DEFAULT_PRESETS: IPreset[] = [
 			mapPool: [
 				'de_ancient',
 				'de_anubis',
+				'de_dust2',
 				'de_inferno',
 				'de_mirage',
 				'de_nuke',
-				'de_overpass',
 				'de_vertigo',
 			],
 			electionSteps: [
@@ -106,7 +106,14 @@ const DEFAULT_PRESETS: IPreset[] = [
 				advantage: 0,
 			},
 			gameServer: null,
-			mapPool: ['de_inferno', 'de_nuke', 'de_overpass', 'de_vertigo',	'de_memento', 'de_assembly'],
+			mapPool: [
+				'de_assembly',
+				'de_inferno',
+				'de_memento',
+				'de_nuke',
+				'de_overpass',
+				'de_vertigo',
+			],
 			electionSteps: [
 				{
 					map: {
