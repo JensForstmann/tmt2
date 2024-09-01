@@ -1,14 +1,5 @@
 import autoAnimate from '@formkit/auto-animate';
-import {
-	Component,
-	For,
-	Match,
-	Show,
-	Switch,
-	createEffect,
-	createSignal,
-	onMount
-} from 'solid-js';
+import { Component, For, Match, Show, Switch, createEffect, createSignal, onMount } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import {
 	IConfig,
