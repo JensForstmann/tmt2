@@ -29,6 +29,7 @@ const getUpdateDto = (
 		electionSteps: getUpdateDtoAttribute(match.electionSteps, dto.electionSteps),
 		gameServer: getUpdateDtoAttribute(match.gameServer, dto.gameServer),
 		webhookUrl: getUpdateDtoAttribute(match.webhookUrl, dto.webhookUrl),
+		webhookHeaders: getUpdateDtoAttribute(match.webhookHeaders, dto.webhookHeaders),
 		rconCommands: dto.rconCommands
 			? {
 					init: getUpdateDtoAttribute(match.rconCommands.init, dto.rconCommands.init),

@@ -204,7 +204,7 @@ export class MatchesController extends Controller {
 	}
 
 	/**
-	 * Stop supervising a specific match. TMT will no longer listen to the game server and will not execute any rcon commands.
+	 * Stop supervising a specific match. TMT will execute the "end rcon commands" and afterwards no longer listen to the game server.
 	 */
 	@Delete('{id}')
 	async deleteMatch(id: string, @Request() req: ExpressRequest<IAuthResponse>): Promise<void> {

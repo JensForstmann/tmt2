@@ -112,6 +112,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		createdAt: Date.now(),
 		lastSavedAt: 0,
 		webhookUrl: dto.webhookUrl ?? null,
+		webhookHeaders: dto.webhookHeaders ?? null,
 		mode: dto.mode ?? 'SINGLE',
 	};
 	try {
@@ -1034,6 +1035,10 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 
 	if (dto.webhookUrl !== undefined) {
 		match.data.webhookUrl = dto.webhookUrl;
+	}
+
+	if (dto.webhookHeaders !== undefined) {
+		match.data.webhookHeaders = dto.webhookHeaders;
 	}
 
 	if (dto.logSecret) {

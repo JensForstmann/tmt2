@@ -43,6 +43,7 @@ const send = (match: Match.Match, data: Event, isSystemEvent?: boolean) => {
 		fetch(url, {
 			method: 'POST',
 			headers: {
+				...match.data.webhookHeaders,
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify(data),

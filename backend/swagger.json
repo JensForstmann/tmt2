@@ -735,7 +735,16 @@
 					"webhookUrl": {
 						"type": "string",
 						"nullable": true,
-						"description": "if set various events will be posted to this url"
+						"description": "Send various events to this url (HTTP POST)"
+					},
+					"webhookHeaders": {
+						"properties": {},
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object",
+						"nullable": true,
+						"description": "Additional headers that will be added to each webhook request"
 					},
 					"rconCommands": {
 						"properties": {
@@ -841,6 +850,7 @@
 					"matchMaps",
 					"currentMap",
 					"webhookUrl",
+					"webhookHeaders",
 					"rconCommands",
 					"canClinch",
 					"matchEndAction",
@@ -920,7 +930,16 @@
 					"webhookUrl": {
 						"type": "string",
 						"nullable": true,
-						"description": "if set various events will be posted to this url"
+						"description": "Send various events to this url (HTTP POST)"
+					},
+					"webhookHeaders": {
+						"properties": {},
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object",
+						"nullable": true,
+						"description": "Additional headers that will be added to each webhook request"
 					},
 					"rconCommands": {
 						"properties": {
@@ -1047,7 +1066,16 @@
 					"webhookUrl": {
 						"type": "string",
 						"nullable": true,
-						"description": "if set various events will be posted to this url"
+						"description": "Send various events to this url (HTTP POST)"
+					},
+					"webhookHeaders": {
+						"properties": {},
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object",
+						"nullable": true,
+						"description": "Additional headers that will be added to each webhook request"
 					},
 					"rconCommands": {
 						"properties": {
@@ -1156,6 +1184,7 @@
 					"matchMaps",
 					"currentMap",
 					"webhookUrl",
+					"webhookHeaders",
 					"rconCommands",
 					"canClinch",
 					"matchEndAction",
@@ -1910,7 +1939,15 @@
 					},
 					"webhookUrl": {
 						"type": "string",
-						"description": "if set various events will be posted to this url"
+						"description": "Send various events to this url (HTTP POST)"
+					},
+					"webhookHeaders": {
+						"properties": {},
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object",
+						"description": "Additional headers that will be added to each webhook request"
 					},
 					"rconCommands": {
 						"properties": {
@@ -2499,7 +2536,7 @@
 						"description": "No content"
 					}
 				},
-				"description": "Stop supervising a specific match. TMT will no longer listen to the game server and will not execute any rcon commands.",
+				"description": "Stop supervising a specific match. TMT will execute the \"end rcon commands\" and afterwards no longer listen to the game server.",
 				"security": [
 					{
 						"bearer_token": []

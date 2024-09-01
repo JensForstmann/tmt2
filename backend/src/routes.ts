@@ -494,6 +494,18 @@ const models: TsoaRoute.Models = {
 				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
 				required: true,
 			},
+			webhookHeaders: {
+				dataType: 'union',
+				subSchemas: [
+					{
+						dataType: 'nestedObjectLiteral',
+						nestedProperties: {},
+						additionalProperties: { dataType: 'string' },
+					},
+					{ dataType: 'enum', enums: [null] },
+				],
+				required: true,
+			},
 			rconCommands: {
 				dataType: 'nestedObjectLiteral',
 				nestedProperties: {
@@ -561,6 +573,17 @@ const models: TsoaRoute.Models = {
 				dataType: 'union',
 				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
 			},
+			webhookHeaders: {
+				dataType: 'union',
+				subSchemas: [
+					{
+						dataType: 'nestedObjectLiteral',
+						nestedProperties: {},
+						additionalProperties: { dataType: 'string' },
+					},
+					{ dataType: 'enum', enums: [null] },
+				],
+			},
 			rconCommands: {
 				dataType: 'nestedObjectLiteral',
 				nestedProperties: {
@@ -605,6 +628,18 @@ const models: TsoaRoute.Models = {
 			webhookUrl: {
 				dataType: 'union',
 				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			webhookHeaders: {
+				dataType: 'union',
+				subSchemas: [
+					{
+						dataType: 'nestedObjectLiteral',
+						nestedProperties: {},
+						additionalProperties: { dataType: 'string' },
+					},
+					{ dataType: 'enum', enums: [null] },
+				],
 				required: true,
 			},
 			rconCommands: {
@@ -1007,6 +1042,11 @@ const models: TsoaRoute.Models = {
 			},
 			gameServer: { ref: 'IGameServer' },
 			webhookUrl: { dataType: 'string' },
+			webhookHeaders: {
+				dataType: 'nestedObjectLiteral',
+				nestedProperties: {},
+				additionalProperties: { dataType: 'string' },
+			},
 			rconCommands: {
 				dataType: 'nestedObjectLiteral',
 				nestedProperties: {

@@ -1,5 +1,14 @@
 import autoAnimate from '@formkit/auto-animate';
-import { Component, For, Match, Show, Switch, createEffect, createSignal, onMount } from 'solid-js';
+import {
+	Component,
+	For,
+	Match,
+	Show,
+	Switch,
+	createEffect,
+	createSignal,
+	onMount
+} from 'solid-js';
 import { createStore } from 'solid-js/store';
 import {
 	IConfig,
@@ -240,6 +249,7 @@ export const CreateUpdateMatch: Component<
 	const [dto, setDto] = createStore<IMatchUpdateDto & IMatchCreateDto>(copyObject(props.match));
 	const [showAdvanced, setShowAdvanced] = createSignal(false);
 	const [json, setJson] = createSignal('');
+	const [webhookHeadersErrorMessage, setWebhookHeadersErrorMessage] = createSignal('');
 
 	createEffect(() => {
 		try {
@@ -686,6 +696,80 @@ export const CreateUpdateMatch: Component<
 						)}
 						onInput={(e) => setDto('webhookUrl', e.currentTarget.value)}
 					/>
+					<TextArea
+						label={t('Webhook Headers')}
+						labelTopRight={t(
+							'Additional headers that will be added to each webhook request'
+						)}
+						rows="4"
+						value={Object.entries(dto.webhookHeaders ?? {})
+							.map((entry) => entry.join(': '))
+							.join('\n')}
+						class={
+							'font-mono border-2 ' +
+							getChangedClasses(
+								JSON.stringify(props.match.webhookHeaders ?? {}),
+								JSON.stringify(dto.webhookHeaders ?? {}),
+								'input-accent'
+							)
+						}
+						onInput={(e) => {
+							const newWebhookHeaders: IMatchCreateDto['webhookHeaders'] = {};
+							const lines = e.currentTarget.value.split('\n');
+							for (let i = 0; i < lines.length; i++) {
+								const line = lines[i].trim();
+								if (line === '') {
+									continue;
+								}
+								const colonIndex = line.indexOf(':');
+								if (colonIndex === -1) {
+									setWebhookHeadersErrorMessage(
+										'Headers must be in the format of "key: value"'
+									);
+									return;
+								}
+								const key = line.substring(0, colonIndex).trim();
+								const value = line.substring(colonIndex + 1).trimStart();
+								if (newWebhookHeaders[key] !== undefined) {
+									setWebhookHeadersErrorMessage(
+										'Multiple headers with the same key are not possible.'
+									);
+									return;
+								}
+								newWebhookHeaders[key] = value;
+							}
+							setWebhookHeadersErrorMessage('');
+							setDto('webhookHeaders', (prev) => {
+								if (prev) {
+									Object.keys(prev).forEach((key) => {
+										if (newWebhookHeaders[key] === undefined) {
+											newWebhookHeaders[key] = undefined!; // delete previous key/value pair which does exist any more
+										}
+									});
+								}
+								return newWebhookHeaders;
+							});
+						}}
+					/>
+					<Show when={webhookHeadersErrorMessage()}>
+						<div class="h-4"></div>
+						<div class="alert alert-error">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-6 w-6 shrink-0 stroke-current"
+								fill="none"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
+							</svg>
+							<span>{webhookHeadersErrorMessage()}</span>
+						</div>
+					</Show>
 					<TextInput
 						label={t('Match Passthrough')}
 						labelTopRight={t('Custom value to identify the match in 3rd party tools')}

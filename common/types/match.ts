@@ -78,8 +78,10 @@ export interface IMatch {
 	matchMaps: IMatchMap[];
 	/** Index of the matchMaps array indicating the current map. */
 	currentMap: number;
-	/** if set various events will be posted to this url */
+	/** Send various events to this url (HTTP POST) */
 	webhookUrl: string | null;
+	/** Additional headers that will be added to each webhook request */
+	webhookHeaders: { [key: string]: string } | null;
 	rconCommands: {
 		/** executed exactly once on match init */
 		init: string[];
@@ -145,8 +147,10 @@ export interface IMatchCreateDto {
 	teamB: ITeamCreateDto;
 	electionSteps: Array<IElectionStepAdd | IElectionStepSkip>;
 	gameServer: IGameServer | null;
-	/** if set various events will be posted to this url */
+	/** Send various events to this url (HTTP POST) */
 	webhookUrl?: string | null;
+	/** Additional headers that will be added to each webhook request */
+	webhookHeaders?: { [key: string]: string } | null;
 	rconCommands?: {
 		/** executed exactly once on match init */
 		init?: string[];
