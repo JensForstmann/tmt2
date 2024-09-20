@@ -1167,7 +1167,8 @@
 						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
 					},
 					"isLive": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "Match is currently supervised."
 					}
 				},
 				"required": [

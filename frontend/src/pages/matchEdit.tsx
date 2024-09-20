@@ -82,25 +82,23 @@ export const MatchEditPage: Component = () => {
 						<Show when={!match().isLive}>
 							<NotLiveCard match={match()} />
 						</Show>
-						<Show when={match().isLive}>
-							<Card>
-								<CreateUpdateMatch
-									mode="UPDATE"
-									match={match()}
-									callback={async (dto) => {
-										await fetcher(
-											'PATCH',
-											`/api/matches/${params.id}`,
-											getUpdateDto(match(), dto)
-										);
-										navigate(`/matches/${params.id}`);
-									}}
-									getFinalDto={(dto) =>
-										JSON.stringify(getUpdateDto(match(), dto), undefined, 4)
-									}
-								/>
-							</Card>
-						</Show>
+						<Card>
+							<CreateUpdateMatch
+								mode="UPDATE"
+								match={match()}
+								callback={async (dto) => {
+									await fetcher(
+										'PATCH',
+										`/api/matches/${params.id}`,
+										getUpdateDto(match(), dto)
+									);
+									navigate(`/matches/${params.id}`);
+								}}
+								getFinalDto={(dto) =>
+									JSON.stringify(getUpdateDto(match(), dto), undefined, 4)
+								}
+							/>
+						</Card>
 					</div>
 				)}
 			</Show>

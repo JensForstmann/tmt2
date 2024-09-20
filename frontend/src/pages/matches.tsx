@@ -1,9 +1,10 @@
 import { useSearchParams } from '@solidjs/router';
-import { Component, createEffect, For, onCleanup, Show } from 'solid-js';
+import { Component, createEffect, createSignal, For, onCleanup, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { Event, IMatchResponse } from '../../../common';
 import { SvgSettings } from '../assets/Icons';
 import { Card } from '../components/Card';
+import { SelectInput } from '../components/Inputs';
 import {
 	MatchList,
 	MatchTableColumnLabels,
@@ -28,22 +29,67 @@ const defaultColumns: TColumnsToShow = {
 	GAME_SERVER: true,
 };
 
+type FilterOption = {
+	title: string;
+	search: string;
+	label: string;
+	/** indicates, if new matches should be appended to the table */
+	includeNewMatches: boolean;
+};
+const filterOptions: FilterOption[] = [
+	{
+		title: t('Live Matches'),
+		search: '?isLive=true',
+		label: t('Only show matches that are currently being supervised'),
+		includeNewMatches: true,
+	},
+	{
+		title: t('Not Live'),
+		search: '?isLive=false',
+		label: t('Only show offline matches (not supervised)'),
+		includeNewMatches: false,
+	},
+	{
+		title: t('Dangling Matches'),
+		search: '?isLive=false&isStopped=false&state=ELECTION&state=MATCH_MAP',
+		label: t('Only show offline matches, which have not been properly stopped'),
+		includeNewMatches: false,
+	},
+];
+
 export const MatchesPage: Component = () => {
 	const [searchParams, setSearchParams] = useSearchParams<{
-		isLive?: string;
+		searchString?: string;
 		columns?: string;
+		includeNewMatches?: string;
 	}>();
 	const fetcher = createFetcher();
 	const [data, setData] = createStore<{
 		matches?: IMatchResponse[];
 	}>({});
+	const [filterLabel, setFilterLabel] = createSignal('');
+
+	const getCurrentFilterOption = () =>
+		!searchParams.searchString
+			? filterOptions[0]
+			: filterOptions.find((fo) => fo.search === searchParams.searchString);
 
 	createEffect(() => {
-		fetcher<IMatchResponse[]>('GET', `/api/matches?isLive=${searchParams.isLive ?? true}`).then(
-			(matches) => {
-				setData('matches', matches);
-			}
-		);
+		fetcher<IMatchResponse[]>(
+			'GET',
+			`/api/matches${searchParams.searchString || filterOptions[0].search}`
+		).then((matches) => {
+			setData('matches', matches);
+		});
+	});
+
+	createEffect(() => {
+		const filterOption = getCurrentFilterOption();
+		if (filterOption) {
+			setFilterLabel(filterOption.label);
+		} else {
+			setFilterLabel(t('A custom filter from the URL is used'));
+		}
 	});
 
 	const columnsToShow = (): TColumnsToShow => {
@@ -69,7 +115,7 @@ export const MatchesPage: Component = () => {
 		});
 		const str = columns.join(',').toLowerCase();
 		localStorage.setItem('columns', str);
-		setSearchParams({ columns: str });
+		setSearchParams({ columns: str }, { replace: true });
 	};
 
 	const onWsMsg = (msg: Event) => {
@@ -79,8 +125,10 @@ export const MatchesPage: Component = () => {
 				(setData as any)('matches', mapIndex, ...msg.path, msg.value);
 			}
 		} else if (msg.type === 'MATCH_CREATE') {
-			if (msg.match.isLive === ((searchParams.isLive ?? 'true') === 'true')) {
-				// only add to match list if filter matches
+			if (
+				searchParams.includeNewMatches === 'true' ||
+				getCurrentFilterOption()?.includeNewMatches
+			) {
 				setData('matches', (existing) => [...(existing ?? []), msg.match]);
 			}
 		}
@@ -128,22 +176,29 @@ export const MatchesPage: Component = () => {
 
 	return (
 		<Card>
-			<div class="flex w-full flex-row space-x-8">
-				<label class="label cursor-pointer">
-					<span class="label-text pr-4">{t('offline matches')}</span>
-					<input
-						type="checkbox"
-						class="toggle"
-						checked={searchParams.isLive !== 'false'}
-						onchange={(e) =>
-							setSearchParams(
-								{ isLive: e.currentTarget.checked + '' },
-								{ replace: true }
-							)
-						}
-					/>
-					<span class="label-text pl-4">{t('live matches')}</span>
-				</label>
+			<div class="flex w-full flex-row space-x-8 place-items-end">
+				<SelectInput
+					onInput={(e) =>
+						setSearchParams({ searchString: e.currentTarget.value }, { replace: true })
+					}
+					labelBottomLeft={filterLabel()}
+				>
+					<Show when={getCurrentFilterOption() === undefined}>
+						<option selected={getCurrentFilterOption() === undefined}>
+							{t('Custom Filter')}
+						</option>
+					</Show>
+					<For each={filterOptions}>
+						{(filterOption) => (
+							<option
+								value={filterOption.search}
+								selected={searchParams.searchString === filterOption.search}
+							>
+								{filterOption.title}
+							</option>
+						)}
+					</For>
+				</SelectInput>
 
 				<div class="flex-grow"></div>
 

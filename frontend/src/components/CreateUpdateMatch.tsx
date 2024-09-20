@@ -221,11 +221,11 @@ export const CreateUpdateMatch: Component<
 	(
 		| {
 				mode: 'CREATE';
-				match: IMatchCreateDto;
+				match: IMatchCreateDto & { isStopped?: boolean };
 		  }
 		| {
 				mode: 'UPDATE';
-				match: IMatchResponse;
+				match: IMatchResponse & { isStopped?: boolean };
 		  }
 	) & {
 		callback: (data: IMatchUpdateDto & IMatchCreateDto) => Promise<void>;
@@ -278,40 +278,43 @@ export const CreateUpdateMatch: Component<
 
 	return (
 		<>
-			<Show when={props.mode === 'CREATE'}>
-				<Presets
-					matchCreateDto={dto}
-					onSelect={(preset) => {
-						setDto(copyObject(preset));
-						if (!dto.tmtLogAddress) {
-							setTmtLogAddress();
-						}
-					}}
+			<Show when={props.match.isStopped !== true}>
+				<Show when={props.mode === 'CREATE'}>
+					<Presets
+						matchCreateDto={dto}
+						onSelect={(preset) => {
+							setDto(copyObject(preset));
+							if (!dto.tmtLogAddress) {
+								setTmtLogAddress();
+							}
+						}}
+					/>
+				</Show>
+				<div class="prose pt-4">
+					<h2>{t('Teams')}</h2>
+				</div>
+				<TextInput
+					label={t('Team A Name')}
+					value={dto.teamA.name}
+					class={getChangedClasses(
+						props.match.teamA.name,
+						dto.teamA.name,
+						'input-accent border-2'
+					)}
+					onInput={(e) => setDto('teamA', 'name', e.currentTarget.value)}
+				/>
+				<TextInput
+					label={t('Team B Name')}
+					value={dto.teamB.name}
+					class={getChangedClasses(
+						props.match.teamB.name,
+						dto.teamB.name,
+						'input-accent border-2'
+					)}
+					onInput={(e) => setDto('teamB', 'name', e.currentTarget.value)}
 				/>
 			</Show>
-			<div class="prose pt-4">
-				<h2>{t('Teams')}</h2>
-			</div>
-			<TextInput
-				label={t('Team A Name')}
-				value={dto.teamA.name}
-				class={getChangedClasses(
-					props.match.teamA.name,
-					dto.teamA.name,
-					'input-accent border-2'
-				)}
-				onInput={(e) => setDto('teamA', 'name', e.currentTarget.value)}
-			/>
-			<TextInput
-				label={t('Team B Name')}
-				value={dto.teamB.name}
-				class={getChangedClasses(
-					props.match.teamB.name,
-					dto.teamB.name,
-					'input-accent border-2'
-				)}
-				onInput={(e) => setDto('teamB', 'name', e.currentTarget.value)}
-			/>
+
 			<div class="prose pt-4">
 				<h2>{t('Game Server')}</h2>
 			</div>
@@ -364,220 +367,239 @@ export const CreateUpdateMatch: Component<
 				)}
 				onInput={(e) => setDto('gameServer', 'rconPassword', e.currentTarget.value)}
 			/>
-			<div class="prose pt-4 pb-2">
-				<h2>{t('Map Pool')}</h2>
-			</div>
-			<TextArea
-				value={dto.mapPool.join('\n')}
-				class={
-					'border-2 ' +
-					getChangedClasses(
-						props.match.mapPool.join('\n'),
-						dto.mapPool.join('\n'),
-						'input-accent'
-					)
-				}
-				onInput={(e) => setDto('mapPool', e.currentTarget.value.split('\n'))}
-				rows="8"
-			/>
-			<div class="prose pt-4 pb-2">
-				<h2>{t('Election Steps')}</h2>
-			</div>
-			<div class="flex items-baseline">
-				<div class="pr-2">{t('Quick Load:')}</div>
-				<div class="join">
-					<button
-						class="btn btn-sm join-item"
-						onClick={() => {
-							setDto('mapPool', minifyMapPool(dto.mapPool));
-							try {
-								setDto('electionSteps', getSimpleElectionSteps('BO1', dto.mapPool));
-								setElectionErrorMessage('');
-							} catch (err) {
-								setElectionErrorMessage(err + '');
-							}
-						}}
-					>
-						{t('Best of 1')}
-					</button>
-					<button
-						class="btn btn-sm join-item"
-						onClick={() => {
-							setDto('mapPool', minifyMapPool(dto.mapPool));
-							try {
-								setDto('electionSteps', getSimpleElectionSteps('BO3', dto.mapPool));
-								setElectionErrorMessage('');
-							} catch (err) {
-								setElectionErrorMessage(err + '');
-							}
-						}}
-					>
-						{t('Best of 3')}
-					</button>
-					<button
-						class="btn btn-sm join-item"
-						onClick={() => {
-							setDto('electionSteps', []);
-							setElectionErrorMessage('');
-						}}
-					>
-						{t('Empty')}
-					</button>
+
+			<Show when={props.match.isStopped !== true}>
+				<div class="prose pt-4 pb-2">
+					<h2>{t('Map Pool')}</h2>
 				</div>
-			</div>
-			<ErrorComponent errorMessage={electionErrorMessage()} />
-			<div
-				class={
-					'space-y-1 pt-4 ' +
-					getChangedClasses(
-						JSON.stringify(props.match.electionSteps),
-						JSON.stringify(dto.electionSteps),
-						'border-2 border-accent'
-					)
-				}
-				ref={electionStepsRef}
-			>
-				<For each={dto.electionSteps}>
-					{(electionStep, index) => (
-						<div class="flex items-center">
-							<div class="join leading-none">
-								<button
-									class="btn btn-square btn-xs join-item"
-									onClick={() => {
-										const newSteps = dto.electionSteps.filter(
-											(step, stepIndex) => stepIndex !== index()
-										);
-										setDto('electionSteps', newSteps);
-									}}
-								>
-									<SvgDelete />
-								</button>
-								<button
-									class="btn btn-square btn-xs join-item"
-									disabled={index() === 0}
-									onClick={() => {
-										const newSteps = [...dto.electionSteps];
-										newSteps.splice(index(), 1);
-										newSteps.splice(index() - 1, 0, electionStep);
-										setDto('electionSteps', newSteps);
-									}}
-								>
-									<SvgKeyboardArrowUp />
-								</button>
-								<button
-									class="btn btn-square btn-xs join-item"
-									disabled={index() === dto.electionSteps.length - 1}
-									onclick={() => {
-										const newSteps = [...dto.electionSteps];
-										newSteps.splice(index(), 1);
-										newSteps.splice(index() + 1, 0, electionStep);
-										setDto('electionSteps', newSteps);
-									}}
-								>
-									<SvgKeyboardArrowDown />
-								</button>
-								<div class="tooltip" data-tip={t('Add new Step')}>
+				<TextArea
+					value={dto.mapPool.join('\n')}
+					class={
+						'border-2 ' +
+						getChangedClasses(
+							props.match.mapPool.join('\n'),
+							dto.mapPool.join('\n'),
+							'input-accent'
+						)
+					}
+					onInput={(e) => setDto('mapPool', e.currentTarget.value.split('\n'))}
+					rows="8"
+				/>
+				<div class="prose pt-4 pb-2">
+					<h2>{t('Election Steps')}</h2>
+				</div>
+				<div class="flex items-baseline">
+					<div class="pr-2">{t('Quick Load:')}</div>
+					<div class="join">
+						<button
+							class="btn btn-sm join-item"
+							onClick={() => {
+								setDto('mapPool', minifyMapPool(dto.mapPool));
+								try {
+									setDto(
+										'electionSteps',
+										getSimpleElectionSteps('BO1', dto.mapPool)
+									);
+									setElectionErrorMessage('');
+								} catch (err) {
+									setElectionErrorMessage(err + '');
+								}
+							}}
+						>
+							{t('Best of 1')}
+						</button>
+						<button
+							class="btn btn-sm join-item"
+							onClick={() => {
+								setDto('mapPool', minifyMapPool(dto.mapPool));
+								try {
+									setDto(
+										'electionSteps',
+										getSimpleElectionSteps('BO3', dto.mapPool)
+									);
+									setElectionErrorMessage('');
+								} catch (err) {
+									setElectionErrorMessage(err + '');
+								}
+							}}
+						>
+							{t('Best of 3')}
+						</button>
+						<button
+							class="btn btn-sm join-item"
+							onClick={() => {
+								setDto('electionSteps', []);
+								setElectionErrorMessage('');
+							}}
+						>
+							{t('Empty')}
+						</button>
+					</div>
+				</div>
+				<ErrorComponent errorMessage={electionErrorMessage()} />
+				<div
+					class={
+						'space-y-1 pt-4 ' +
+						getChangedClasses(
+							JSON.stringify(props.match.electionSteps),
+							JSON.stringify(dto.electionSteps),
+							'border-2 border-accent'
+						)
+					}
+					ref={electionStepsRef}
+				>
+					<For each={dto.electionSteps}>
+						{(electionStep, index) => (
+							<div class="flex items-center">
+								<div class="join leading-none">
 									<button
 										class="btn btn-square btn-xs join-item"
 										onClick={() => {
-											addElectionStepIndex = index() + 1;
-											electionStepModalRef?.showModal();
+											const newSteps = dto.electionSteps.filter(
+												(step, stepIndex) => stepIndex !== index()
+											);
+											setDto('electionSteps', newSteps);
 										}}
 									>
-										<SvgAdd />
+										<SvgDelete />
 									</button>
+									<button
+										class="btn btn-square btn-xs join-item"
+										disabled={index() === 0}
+										onClick={() => {
+											const newSteps = [...dto.electionSteps];
+											newSteps.splice(index(), 1);
+											newSteps.splice(index() - 1, 0, electionStep);
+											setDto('electionSteps', newSteps);
+										}}
+									>
+										<SvgKeyboardArrowUp />
+									</button>
+									<button
+										class="btn btn-square btn-xs join-item"
+										disabled={index() === dto.electionSteps.length - 1}
+										onclick={() => {
+											const newSteps = [...dto.electionSteps];
+											newSteps.splice(index(), 1);
+											newSteps.splice(index() + 1, 0, electionStep);
+											setDto('electionSteps', newSteps);
+										}}
+									>
+										<SvgKeyboardArrowDown />
+									</button>
+									<div class="tooltip" data-tip={t('Add new Step')}>
+										<button
+											class="btn btn-square btn-xs join-item"
+											onClick={() => {
+												addElectionStepIndex = index() + 1;
+												electionStepModalRef?.showModal();
+											}}
+										>
+											<SvgAdd />
+										</button>
+									</div>
+								</div>
+								<div class="pl-2 font-light">
+									{getElectionStepString(electionStep)}
 								</div>
 							</div>
-							<div class="pl-2 font-light">{getElectionStepString(electionStep)}</div>
-						</div>
-					)}
-				</For>
-			</div>
-			<Show when={dto.electionSteps.length === 0}>
-				<button
-					class="btn btn-square btn-xs join-item"
-					onClick={() => {
-						addElectionStepIndex = 1;
-						electionStepModalRef?.showModal();
-					}}
-				>
-					<SvgAdd />
-				</button>
-			</Show>
-			<Modal ref={electionStepModalRef} class="bg-base-300">
-				<AddElectionStep
-					index={addElectionStepIndex}
-					add={(step) => {
-						const newSteps = [...dto.electionSteps];
-						newSteps.splice(addElectionStepIndex, 0, step);
-						setDto('electionSteps', newSteps);
-						electionStepModalRef?.close();
-					}}
+						)}
+					</For>
+				</div>
+				<Show when={dto.electionSteps.length === 0}>
+					<button
+						class="btn btn-square btn-xs join-item"
+						onClick={() => {
+							addElectionStepIndex = 1;
+							electionStepModalRef?.showModal();
+						}}
+					>
+						<SvgAdd />
+					</button>
+				</Show>
+				<Modal ref={electionStepModalRef} class="bg-base-300">
+					<AddElectionStep
+						index={addElectionStepIndex}
+						add={(step) => {
+							const newSteps = [...dto.electionSteps];
+							newSteps.splice(addElectionStepIndex, 0, step);
+							setDto('electionSteps', newSteps);
+							electionStepModalRef?.close();
+						}}
+					/>
+				</Modal>
+				<div class="prose pt-4">
+					<h2>{t('Rcon Commands')}</h2>
+				</div>
+				<TextArea
+					label={t('Init')}
+					labelTopRight={t('Executed only once: when the match is created')}
+					rows="4"
+					value={dto.rconCommands?.init?.join('\n') ?? ''}
+					class={
+						'font-mono border-2 ' +
+						getChangedClasses(
+							props.match.rconCommands?.init?.join('\n'),
+							dto.rconCommands?.init?.join('\n'),
+							'input-accent'
+						)
+					}
+					onInput={(e) =>
+						setDto('rconCommands', 'init', e.currentTarget.value.split('\n'))
+					}
 				/>
-			</Modal>
-			<div class="prose pt-4">
-				<h2>{t('Rcon Commands')}</h2>
-			</div>
-			<TextArea
-				label={t('Init')}
-				labelTopRight={t('Executed only once: when the match is created')}
-				rows="4"
-				value={dto.rconCommands?.init?.join('\n') ?? ''}
-				class={
-					'font-mono border-2 ' +
-					getChangedClasses(
-						props.match.rconCommands?.init?.join('\n'),
-						dto.rconCommands?.init?.join('\n'),
-						'input-accent'
-					)
-				}
-				onInput={(e) => setDto('rconCommands', 'init', e.currentTarget.value.split('\n'))}
-			/>
-			<TextArea
-				label={t('Knife')}
-				labelTopRight={t('Executed at the start of a knife round')}
-				rows="4"
-				value={dto.rconCommands?.knife?.join('\n') ?? ''}
-				class={
-					'font-mono border-2 ' +
-					getChangedClasses(
-						props.match.rconCommands?.knife?.join('\n'),
-						dto.rconCommands?.knife?.join('\n'),
-						'input-accent'
-					)
-				}
-				onInput={(e) => setDto('rconCommands', 'knife', e.currentTarget.value.split('\n'))}
-			/>
-			<TextArea
-				label={t('Match')}
-				labelTopRight={t('Executed at the start of each match map')}
-				rows="4"
-				value={dto.rconCommands?.match?.join('\n') ?? ''}
-				class={
-					'font-mono border-2 ' +
-					getChangedClasses(
-						props.match.rconCommands?.match?.join('\n'),
-						dto.rconCommands?.match?.join('\n'),
-						'input-accent'
-					)
-				}
-				onInput={(e) => setDto('rconCommands', 'match', e.currentTarget.value.split('\n'))}
-			/>
-			<TextArea
-				label={t('End')}
-				labelTopRight={t('Executed only once: after the end of the last map')}
-				rows="4"
-				value={dto.rconCommands?.end?.join('\n') ?? ''}
-				class={
-					'font-mono border-2 ' +
-					getChangedClasses(
-						props.match.rconCommands?.end?.join('\n'),
-						dto.rconCommands?.end?.join('\n'),
-						'input-accent'
-					)
-				}
-				onInput={(e) => setDto('rconCommands', 'end', e.currentTarget.value.split('\n'))}
-			/>
+				<TextArea
+					label={t('Knife')}
+					labelTopRight={t('Executed at the start of a knife round')}
+					rows="4"
+					value={dto.rconCommands?.knife?.join('\n') ?? ''}
+					class={
+						'font-mono border-2 ' +
+						getChangedClasses(
+							props.match.rconCommands?.knife?.join('\n'),
+							dto.rconCommands?.knife?.join('\n'),
+							'input-accent'
+						)
+					}
+					onInput={(e) =>
+						setDto('rconCommands', 'knife', e.currentTarget.value.split('\n'))
+					}
+				/>
+				<TextArea
+					label={t('Match')}
+					labelTopRight={t('Executed at the start of each match map')}
+					rows="4"
+					value={dto.rconCommands?.match?.join('\n') ?? ''}
+					class={
+						'font-mono border-2 ' +
+						getChangedClasses(
+							props.match.rconCommands?.match?.join('\n'),
+							dto.rconCommands?.match?.join('\n'),
+							'input-accent'
+						)
+					}
+					onInput={(e) =>
+						setDto('rconCommands', 'match', e.currentTarget.value.split('\n'))
+					}
+				/>
+				<TextArea
+					label={t('End')}
+					labelTopRight={t('Executed only once: after the end of the last map')}
+					rows="4"
+					value={dto.rconCommands?.end?.join('\n') ?? ''}
+					class={
+						'font-mono border-2 ' +
+						getChangedClasses(
+							props.match.rconCommands?.end?.join('\n'),
+							dto.rconCommands?.end?.join('\n'),
+							'input-accent'
+						)
+					}
+					onInput={(e) =>
+						setDto('rconCommands', 'end', e.currentTarget.value.split('\n'))
+					}
+				/>
+			</Show>
 
 			<div class="prose pt-4 grid grid-cols-[auto_auto_1fr] place-items-center">
 				<h2 class="m-0">{t('Advanced Settings')}</h2>
@@ -609,221 +631,234 @@ export const CreateUpdateMatch: Component<
 				}
 			>
 				<div class="collapse-content px-0">
-					<SelectInput
-						label={t('Mode')}
-						class={getChangedClasses(
-							props.match.mode,
-							dto.mode,
-							'input-accent border-2'
-						)}
-						onInput={(e) => setDto('mode', e.currentTarget.value as TMatchMode)}
-					>
-						<option value="SINGLE" selected={dto.mode === 'SINGLE'}>
-							{t('Single match (stops when match is finished)')}
-						</option>
-						<option value="LOOP" selected={dto.mode === 'LOOP'}>
-							{t('Loop mode (starts again after match is finished)')}
-						</option>
-					</SelectInput>
-					<SelectInput
-						label={t('Match End Action')}
-						class={getChangedClasses(
-							props.match.matchEndAction,
-							dto.matchEndAction,
-							'input-accent border-2'
-						)}
-						onInput={(e) =>
-							setDto('matchEndAction', e.currentTarget.value as TMatchEndAction)
-						}
-					>
-						<option value="NONE" selected={dto.matchEndAction === 'NONE'}>
-							{t('None')}
-						</option>
-						<option value="KICK_ALL" selected={dto.matchEndAction === 'KICK_ALL'}>
-							{t('Kick all players after match end')}
-						</option>
-						<option value="QUIT_SERVER" selected={dto.matchEndAction === 'QUIT_SERVER'}>
-							{t('Quit server via Rcon after match end')}
-						</option>
-					</SelectInput>
-					<TextInput
-						label={t('TMT Log Address')}
-						labelTopRight={t(
-							'HTTP log receiver from the perspective of the game server'
-						)}
-						value={dto.tmtLogAddress ?? ''}
-						class={getChangedClasses(
-							props.match.tmtLogAddress,
-							dto.tmtLogAddress,
-							'input-accent border-2'
-						)}
-						onInput={(e) => setDto('tmtLogAddress', e.currentTarget.value)}
-					/>
-					<TextInput
-						label={t('Webhook URL')}
-						labelTopRight={t("HTTP address to receive TMT's webhooks")}
-						value={dto.webhookUrl ?? ''}
-						class={getChangedClasses(
-							props.match.webhookUrl,
-							dto.webhookUrl,
-							'input-accent border-2'
-						)}
-						onInput={(e) => setDto('webhookUrl', e.currentTarget.value)}
-					/>
-					<TextArea
-						label={t('Webhook Headers')}
-						labelTopRight={t(
-							'Additional headers that will be added to each webhook request'
-						)}
-						rows="4"
-						value={Object.entries(dto.webhookHeaders ?? {})
-							.map((entry) => entry.join(': '))
-							.join('\n')}
-						class={
-							'font-mono border-2 ' +
-							getChangedClasses(
-								JSON.stringify(props.match.webhookHeaders ?? {}),
-								JSON.stringify(dto.webhookHeaders ?? {}),
-								'input-accent'
-							)
-						}
-						onInput={(e) => {
-							const newWebhookHeaders: IMatchCreateDto['webhookHeaders'] = {};
-							const lines = e.currentTarget.value.split('\n');
-							for (let i = 0; i < lines.length; i++) {
-								const line = lines[i].trim();
-								if (line === '') {
-									continue;
-								}
-								const colonIndex = line.indexOf(':');
-								if (colonIndex === -1) {
-									setWebhookHeadersErrorMessage(
-										'Headers must be in the format of "key: value"'
-									);
-									return;
-								}
-								const key = line.substring(0, colonIndex).trim();
-								const value = line.substring(colonIndex + 1).trimStart();
-								if (newWebhookHeaders[key] !== undefined) {
-									setWebhookHeadersErrorMessage(
-										'Multiple headers with the same key are not possible.'
-									);
-									return;
-								}
-								newWebhookHeaders[key] = value;
-							}
-							setWebhookHeadersErrorMessage('');
-							setDto('webhookHeaders', (prev) => {
-								if (prev) {
-									Object.keys(prev).forEach((key) => {
-										if (newWebhookHeaders[key] === undefined) {
-											newWebhookHeaders[key] = undefined!; // delete previous key/value pair which does exist any more
-										}
-									});
-								}
-								return newWebhookHeaders;
-							});
-						}}
-					/>
-					<ErrorComponent errorMessage={webhookHeadersErrorMessage()} />
-					<TextInput
-						label={t('Match Passthrough')}
-						labelTopRight={t('Custom value to identify the match in 3rd party tools')}
-						min={0}
-						value={dto.passthrough ?? ''}
-						class={getChangedClasses(
-							props.match.passthrough,
-							dto.passthrough,
-							'input-accent border-2'
-						)}
-						onInput={(e) => setDto('passthrough', e.currentTarget.value)}
-					/>
-					<TextInput
-						label={t('Team A Advantage')}
-						type="number"
-						min={0}
-						value={dto.teamA.advantage ?? 0}
-						class={getChangedClasses(
-							props.match.teamA.advantage,
-							dto.teamA.advantage,
-							'input-accent border-2'
-						)}
-						onInput={(e) =>
-							setDto('teamA', 'advantage', parseInt(e.currentTarget.value))
-						}
-					/>
-					<TextInput
-						label={t('Team A Passthrough')}
-						labelTopRight={t('Custom value to identify this team in 3rd party tools')}
-						min={0}
-						value={dto.teamA.passthrough ?? ''}
-						class={getChangedClasses(
-							props.match.teamA.passthrough,
-							dto.teamA.passthrough,
-							'input-accent border-2'
-						)}
-						onInput={(e) => setDto('teamA', 'passthrough', e.currentTarget.value)}
-					/>
-					<TextInput
-						label={t('Team B Advantage')}
-						type="number"
-						min={0}
-						value={dto.teamB.advantage ?? 0}
-						class={getChangedClasses(
-							props.match.teamB.advantage,
-							dto.teamB.advantage,
-							'input-accent border-2'
-						)}
-						onInput={(e) =>
-							setDto('teamB', 'advantage', parseInt(e.currentTarget.value))
-						}
-					/>
-					<TextInput
-						label={t('Team B Passthrough')}
-						labelTopRight={t('Custom value to identify this team in 3rd party tools')}
-						min={0}
-						value={dto.teamB.passthrough ?? ''}
-						class={getChangedClasses(
-							props.match.teamB.passthrough,
-							dto.teamB.passthrough,
-							'input-accent border-2'
-						)}
-						onInput={(e) => setDto('teamB', 'passthrough', e.currentTarget.value)}
-					/>
-					<ToggleInput
-						label={t('Can Clinch')}
-						labelTopRight={t('Ends match series after a map if a winner is determined')}
-						checked={dto.canClinch}
-						class={getChangedClasses(
-							props.match.canClinch,
-							dto.canClinch,
-							'input-accent border-2'
-						)}
-						onInput={(e) => setDto('canClinch', e.currentTarget.checked)}
-					/>
-					<Show when={props.mode === 'UPDATE'}>
+					<Show when={props.match.isStopped !== true}>
 						<SelectInput
-							label={t('Match State')}
-							labelTopRight={t(
-								'Overrides the match state (does not execute anything)'
-							)}
+							label={t('Mode')}
 							class={getChangedClasses(
-								props.mode === 'UPDATE' && props.match.state,
-								dto.state,
+								props.match.mode,
+								dto.mode,
 								'input-accent border-2'
 							)}
 							onInput={(e) => setDto('mode', e.currentTarget.value as TMatchMode)}
 						>
-							<option value="ELECTION" selected={dto.state === 'ELECTION'}>
-								{t('Election')}
+							<option value="SINGLE" selected={dto.mode === 'SINGLE'}>
+								{t('Single match (stops when match is finished)')}
 							</option>
-							<option value="MATCH_MAP" selected={dto.state === 'MATCH_MAP'}>
-								{t('Match Map')}
-							</option>
-							<option value="FINISHED" selected={dto.state === 'FINISHED'}>
-								{t('Finished')}
+							<option value="LOOP" selected={dto.mode === 'LOOP'}>
+								{t('Loop mode (starts again after match is finished)')}
 							</option>
 						</SelectInput>
+						<SelectInput
+							label={t('Match End Action')}
+							class={getChangedClasses(
+								props.match.matchEndAction,
+								dto.matchEndAction,
+								'input-accent border-2'
+							)}
+							onInput={(e) =>
+								setDto('matchEndAction', e.currentTarget.value as TMatchEndAction)
+							}
+						>
+							<option value="NONE" selected={dto.matchEndAction === 'NONE'}>
+								{t('None')}
+							</option>
+							<option value="KICK_ALL" selected={dto.matchEndAction === 'KICK_ALL'}>
+								{t('Kick all players after match end')}
+							</option>
+							<option
+								value="QUIT_SERVER"
+								selected={dto.matchEndAction === 'QUIT_SERVER'}
+							>
+								{t('Quit server via Rcon after match end')}
+							</option>
+						</SelectInput>
+						<TextInput
+							label={t('TMT Log Address')}
+							labelTopRight={t(
+								'HTTP log receiver from the perspective of the game server'
+							)}
+							value={dto.tmtLogAddress ?? ''}
+							class={getChangedClasses(
+								props.match.tmtLogAddress,
+								dto.tmtLogAddress,
+								'input-accent border-2'
+							)}
+							onInput={(e) => setDto('tmtLogAddress', e.currentTarget.value)}
+						/>
+						<TextInput
+							label={t('Webhook URL')}
+							labelTopRight={t("HTTP address to receive TMT's webhooks")}
+							value={dto.webhookUrl ?? ''}
+							class={getChangedClasses(
+								props.match.webhookUrl,
+								dto.webhookUrl,
+								'input-accent border-2'
+							)}
+							onInput={(e) => setDto('webhookUrl', e.currentTarget.value)}
+						/>
+						<TextArea
+							label={t('Webhook Headers')}
+							labelTopRight={t(
+								'Additional headers that will be added to each webhook request'
+							)}
+							rows="4"
+							value={Object.entries(dto.webhookHeaders ?? {})
+								.map((entry) => entry.join(': '))
+								.join('\n')}
+							class={
+								'font-mono border-2 ' +
+								getChangedClasses(
+									JSON.stringify(props.match.webhookHeaders ?? {}),
+									JSON.stringify(dto.webhookHeaders ?? {}),
+									'input-accent'
+								)
+							}
+							onInput={(e) => {
+								const newWebhookHeaders: IMatchCreateDto['webhookHeaders'] = {};
+								const lines = e.currentTarget.value.split('\n');
+								for (let i = 0; i < lines.length; i++) {
+									const line = lines[i].trim();
+									if (line === '') {
+										continue;
+									}
+									const colonIndex = line.indexOf(':');
+									if (colonIndex === -1) {
+										setWebhookHeadersErrorMessage(
+											'Headers must be in the format of "key: value"'
+										);
+										return;
+									}
+									const key = line.substring(0, colonIndex).trim();
+									const value = line.substring(colonIndex + 1).trimStart();
+									if (newWebhookHeaders[key] !== undefined) {
+										setWebhookHeadersErrorMessage(
+											'Multiple headers with the same key are not possible.'
+										);
+										return;
+									}
+									newWebhookHeaders[key] = value;
+								}
+								setWebhookHeadersErrorMessage('');
+								setDto('webhookHeaders', (prev) => {
+									if (prev) {
+										Object.keys(prev).forEach((key) => {
+											if (newWebhookHeaders[key] === undefined) {
+												newWebhookHeaders[key] = undefined!; // delete previous key/value pair which does exist any more
+											}
+										});
+									}
+									return newWebhookHeaders;
+								});
+							}}
+						/>
+						<ErrorComponent errorMessage={webhookHeadersErrorMessage()} />
+						<TextInput
+							label={t('Match Passthrough')}
+							labelTopRight={t(
+								'Custom value to identify the match in 3rd party tools'
+							)}
+							min={0}
+							value={dto.passthrough ?? ''}
+							class={getChangedClasses(
+								props.match.passthrough,
+								dto.passthrough,
+								'input-accent border-2'
+							)}
+							onInput={(e) => setDto('passthrough', e.currentTarget.value)}
+						/>
+						<TextInput
+							label={t('Team A Advantage')}
+							type="number"
+							min={0}
+							value={dto.teamA.advantage ?? 0}
+							class={getChangedClasses(
+								props.match.teamA.advantage,
+								dto.teamA.advantage,
+								'input-accent border-2'
+							)}
+							onInput={(e) =>
+								setDto('teamA', 'advantage', parseInt(e.currentTarget.value))
+							}
+						/>
+						<TextInput
+							label={t('Team A Passthrough')}
+							labelTopRight={t(
+								'Custom value to identify this team in 3rd party tools'
+							)}
+							min={0}
+							value={dto.teamA.passthrough ?? ''}
+							class={getChangedClasses(
+								props.match.teamA.passthrough,
+								dto.teamA.passthrough,
+								'input-accent border-2'
+							)}
+							onInput={(e) => setDto('teamA', 'passthrough', e.currentTarget.value)}
+						/>
+						<TextInput
+							label={t('Team B Advantage')}
+							type="number"
+							min={0}
+							value={dto.teamB.advantage ?? 0}
+							class={getChangedClasses(
+								props.match.teamB.advantage,
+								dto.teamB.advantage,
+								'input-accent border-2'
+							)}
+							onInput={(e) =>
+								setDto('teamB', 'advantage', parseInt(e.currentTarget.value))
+							}
+						/>
+						<TextInput
+							label={t('Team B Passthrough')}
+							labelTopRight={t(
+								'Custom value to identify this team in 3rd party tools'
+							)}
+							min={0}
+							value={dto.teamB.passthrough ?? ''}
+							class={getChangedClasses(
+								props.match.teamB.passthrough,
+								dto.teamB.passthrough,
+								'input-accent border-2'
+							)}
+							onInput={(e) => setDto('teamB', 'passthrough', e.currentTarget.value)}
+						/>
+						<ToggleInput
+							label={t('Can Clinch')}
+							labelTopRight={t(
+								'Ends match series after a map if a winner is determined'
+							)}
+							checked={dto.canClinch}
+							class={getChangedClasses(
+								props.match.canClinch,
+								dto.canClinch,
+								'input-accent border-2'
+							)}
+							onInput={(e) => setDto('canClinch', e.currentTarget.checked)}
+						/>
+						<Show when={props.mode === 'UPDATE'}>
+							<SelectInput
+								label={t('Match State')}
+								labelTopRight={t(
+									'Overrides the match state (does not execute anything)'
+								)}
+								class={getChangedClasses(
+									props.mode === 'UPDATE' && props.match.state,
+									dto.state,
+									'input-accent border-2'
+								)}
+								onInput={(e) => setDto('mode', e.currentTarget.value as TMatchMode)}
+							>
+								<option value="ELECTION" selected={dto.state === 'ELECTION'}>
+									{t('Election')}
+								</option>
+								<option value="MATCH_MAP" selected={dto.state === 'MATCH_MAP'}>
+									{t('Match Map')}
+								</option>
+								<option value="FINISHED" selected={dto.state === 'FINISHED'}>
+									{t('Finished')}
+								</option>
+							</SelectInput>
+						</Show>
 					</Show>
 					<TextArea
 						label={t('JSON Payload')}

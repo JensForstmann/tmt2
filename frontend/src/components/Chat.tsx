@@ -1,15 +1,17 @@
-import { Component } from 'solid-js';
+import { Component, createSignal } from 'solid-js';
 import { ChatEvent } from '../../../common';
 import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
 import { Card } from './Card';
-import { ScrollArea } from './ScrollArea';
+import { ErrorComponent } from './ErrorComponent';
 import { TextInput } from './Inputs';
+import { ScrollArea } from './ScrollArea';
 
 export const Chat: Component<{
 	messages: ChatEvent[];
-	sendMessage: (msg: string) => void;
+	sendMessage: (msg: string) => Promise<any>;
 }> = (props) => {
+	const [errorMessage, setErrorMessage] = createSignal('');
 	return (
 		<Card class="text-center">
 			<h2 class="text-lg font-bold">{t('Chat')}</h2>
@@ -18,14 +20,21 @@ export const Chat: Component<{
 			<TextInput
 				type="text"
 				onKeyDown={onEnter((e) => {
-					const msg = e.currentTarget.value.trim();
+					const input = e.currentTarget;
+					const msg = input.value.trim();
 					if (msg) {
-						props.sendMessage(msg);
-						e.currentTarget.value = '';
+						props
+							.sendMessage(msg)
+							.then(() => {
+								input.value = '';
+								setErrorMessage('');
+							})
+							.catch((err) => setErrorMessage(err + ''));
 					}
 				})}
 				placeholder={t('Send chat message...')}
 			/>
+			<ErrorComponent errorMessage={errorMessage()} />
 		</Card>
 	);
 };

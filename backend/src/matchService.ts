@@ -163,6 +163,16 @@ export const remove = async (id: string) => {
 	}
 };
 
+export const removeStopped = async (id: string) => {
+	const matchFromStorage = await getFromStorage(id);
+	if (!matchFromStorage) {
+		return false;
+	}
+	matchFromStorage.isStopped = true;
+	await save(matchFromStorage);
+	return true;
+};
+
 export const revive = async (id: string) => {
 	const match = matches.get(id);
 	if (match) {

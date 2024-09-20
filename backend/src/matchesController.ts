@@ -175,6 +175,13 @@ export class MatchesController extends Controller {
 		const match = MatchService.get(id);
 		if (match) {
 			await Match.update(match, requestBody);
+		} else if (requestBody.gameServer) {
+			// for offline matches only allow to update game server to get match running again
+			const offlineMatch = await MatchService.getFromStorage(id);
+			if (offlineMatch) {
+				offlineMatch.gameServer = requestBody.gameServer;
+				await MatchService.save(offlineMatch);
+			}
 		} else {
 			this.setStatus(404);
 		}
@@ -209,7 +216,9 @@ export class MatchesController extends Controller {
 	@Delete('{id}')
 	async deleteMatch(id: string, @Request() req: ExpressRequest<IAuthResponse>): Promise<void> {
 		if (!(await MatchService.remove(id))) {
-			this.setStatus(404);
+			if (!(await MatchService.removeStopped(id))) {
+				this.setStatus(404);
+			}
 		}
 	}
 

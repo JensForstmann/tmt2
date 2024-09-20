@@ -2,7 +2,6 @@ import { Component, For, createSignal } from 'solid-js';
 import {
 	IElectionStep,
 	IElectionStepAdd,
-	IFixedSide,
 	MapModes,
 	SideFixeds,
 	SideModes,
@@ -15,7 +14,7 @@ import {
 	isElectionStepSkip,
 } from '../../../common';
 import { t } from '../utils/locale';
-import { SelectInput, TextArea, TextInput } from './Inputs';
+import { SelectInput, TextInput } from './Inputs';
 
 export const AddElectionStep: Component<{
 	index: number;
@@ -110,7 +109,7 @@ export const AddElectionStep: Component<{
 						label={t('Map Mode')}
 						onInput={(e) => setSelectedMapMode(e.currentTarget.value as TMapMode)}
 					>
-						<For each={(MapModes as unknown as string[]).sort()}>
+						<For each={MapModes.toSorted()}>
 							{(MapMode) => (
 								<option value={MapMode} selected={selectedMapMode() === MapMode}>
 									{MapMode}
@@ -130,7 +129,7 @@ export const AddElectionStep: Component<{
 							selectedMapMode() === 'RANDOM_PICK'
 						}
 					>
-						<For each={(Whos as unknown as string[]).sort()}>
+						<For each={Whos.toSorted()}>
 							{(Who) => (
 								<option value={Who} selected={selectedMapWho() === Who}>
 									{Who}
@@ -156,7 +155,7 @@ export const AddElectionStep: Component<{
 						onInput={(e) => setSelectedSideMode(e.currentTarget.value as TSideMode)}
 						disabled={isElectionStepSkip(getElectionStep())}
 					>
-						<For each={(SideModes as unknown as string[]).sort()}>
+						<For each={SideModes.toSorted()}>
 							{(SideMode) => (
 								<option value={SideMode} selected={selectedSideMode() === SideMode}>
 									{SideMode}
@@ -173,7 +172,7 @@ export const AddElectionStep: Component<{
 							isElectionStepSkip(getElectionStep()) || selectedSideMode() !== 'PICK'
 						}
 					>
-						<For each={(Whos as unknown as string[]).sort()}>
+						<For each={Whos.toSorted()}>
 							{(Who) => (
 								<option value={Who} selected={selectedSideWho() === Who}>
 									{Who}
@@ -190,7 +189,7 @@ export const AddElectionStep: Component<{
 							isElectionStepSkip(getElectionStep()) || selectedSideMode() !== 'FIXED'
 						}
 					>
-						<For each={(SideFixeds as unknown as string[]).sort()}>
+						<For each={SideFixeds.toSorted()}>
 							{(SideFixed) => (
 								<option
 									value={SideFixed}

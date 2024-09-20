@@ -74,11 +74,10 @@ export const MatchPage: Component = () => {
 
 	onCleanup(() => disconnect());
 
-	const sendChatMessage = (msg: string) => {
+	const sendChatMessage = (msg: string) =>
 		fetcher('POST', `/api/matches/${params.id}/server/rcon`, [
 			`say ${escapeRconSayString(msg)}`,
 		]);
-	};
 
 	return (
 		<Show when={data.match} fallback={<Loader />}>

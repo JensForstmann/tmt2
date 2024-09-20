@@ -115,6 +115,7 @@ export interface IMatch {
 }
 
 export interface IMatchResponse extends IMatch {
+	/** Match is currently supervised. */
 	isLive: boolean;
 }
 

@@ -19,14 +19,20 @@ export const MatchCard: Component<{
 	const fetcher = createFetcher(props.match.tmtSecret);
 	const patchMatch = (dto: IMatchUpdateDto) =>
 		fetcher('PATCH', `/api/matches/${props.match.id}`, dto);
-	const stop = () => fetcher('DELETE', `/api/matches/${props.match.id}`);
+	const stop = () =>
+		fetcher('DELETE', `/api/matches/${props.match.id}`).finally(() => location.reload());
 	const restartElection = () => patchMatch({ _restartElection: true });
 	const init = () => patchMatch({ _init: true });
 	const setup = () => patchMatch({ _setup: true });
-	const revive = () => fetcher('PATCH', `/api/matches/${props.match.id}/revive`);
 	const l = window.location;
 	const shareLink = l.protocol + '//' + l.host + l.pathname + '?secret=' + props.match.tmtSecret;
 	let modalRef: HTMLDialogElement | undefined;
+
+	const goToEditPage = () =>
+		navigate(
+			`/matches/${props.match.id}/edit` +
+				(searchParams.secret ? `?secret=${searchParams.secret}` : '')
+		);
 
 	return (
 		<Card class="text-center">
@@ -40,18 +46,12 @@ export const MatchCard: Component<{
 								[t('init'), init],
 								[t('setup'), setup],
 								[t('share match with token'), () => modalRef?.showModal()],
-								[
-									t('edit match'),
-									() =>
-										navigate(
-											`/matches/${props.match.id}/edit` +
-												(searchParams.secret
-													? `?secret=${searchParams.secret}`
-													: '')
-										),
-								],
+								[t('edit match'), goToEditPage],
 							]
-						: [[t('revive'), mustConfirm(revive)]]
+						: [
+								[t('share match with token'), () => modalRef?.showModal()],
+								[t('edit match'), goToEditPage],
+							]
 				}
 			/>
 			<h2 class="text-lg font-bold">{t('Map Wins')}</h2>
