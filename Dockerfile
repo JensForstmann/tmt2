@@ -1,4 +1,4 @@
-FROM node:20 AS BACKEND_BUILD_IMAGE
+FROM node:20 AS backend_build_image
 WORKDIR /app/backend
 COPY backend/package-lock.json .
 COPY backend/package.json .
@@ -10,7 +10,7 @@ COPY backend/tsoa.json .
 RUN npm run build
 RUN npm prune --production
 
-FROM node:20 AS FRONTEND_BUILD_IMAGE
+FROM node:20 AS frontend_build_image
 WORKDIR /app/frontend
 COPY frontend/package-lock.json .
 COPY frontend/package.json .
@@ -25,10 +25,10 @@ COPY frontend/vite.config.mts .
 RUN npm run build
 
 FROM node:20
-COPY --from=BACKEND_BUILD_IMAGE /app/backend/package.json /app/backend/swagger.json /app/backend/
-COPY --from=BACKEND_BUILD_IMAGE /app/backend/dist /app/backend/dist
-COPY --from=BACKEND_BUILD_IMAGE /app/backend/node_modules /app/backend/node_modules
-COPY --from=FRONTEND_BUILD_IMAGE /app/frontend/dist /app/frontend/dist
+COPY --from=backend_build_image /app/backend/package.json /app/backend/swagger.json /app/backend/
+COPY --from=backend_build_image /app/backend/dist /app/backend/dist
+COPY --from=backend_build_image /app/backend/node_modules /app/backend/node_modules
+COPY --from=frontend_build_image /app/frontend/dist /app/frontend/dist
 VOLUME /app/backend/storage
 EXPOSE 8080
 ARG COMMIT_SHA
