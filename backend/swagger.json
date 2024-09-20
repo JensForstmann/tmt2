@@ -3042,6 +3042,67 @@
 						}
 					}
 				]
+			},
+			"post": {
+				"operationId": "Rcon",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										{}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Execute a rcon command on the game server.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "ip",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "port",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/debug/webSockets": {

@@ -1,13 +1,14 @@
+import { A } from '@solidjs/router';
 import { Component, For } from 'solid-js';
 import { IManagedGameServer, IManagedGameServerUpdateDto } from '../../../common';
+import { SvgCheck, SvgClear, SvgDelete, SvgTerminal } from '../assets/Icons';
 import { t } from '../utils/locale';
 import { Card } from './Card';
-import { SvgCheck, SvgClear, SvgDelete } from '../assets/Icons';
 
 export const ManagedGameServerList: Component<{
 	managedGameServers: IManagedGameServer[];
-	delete?: (managedGameServer: IManagedGameServer) => void;
-	update?: (managedGameServer: IManagedGameServerUpdateDto) => void;
+	delete: (managedGameServer: IManagedGameServer) => void;
+	update: (managedGameServer: IManagedGameServerUpdateDto) => void;
 }> = (props) => {
 	return (
 		<Card>
@@ -20,7 +21,7 @@ export const ManagedGameServerList: Component<{
 						<th>{t('Rcon Password')}</th>
 						<th>{t('Can Be Used?')}</th>
 						<th>{t('Used By')}</th>
-						{props.delete && <th>{t('Actions')}</th>}
+						<th>{t('Actions')}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -35,7 +36,7 @@ export const ManagedGameServerList: Component<{
 									<button
 										class="btn btn-circle btn-outline"
 										onClick={() =>
-											props.update?.({
+											props.update({
 												...managedGameServer,
 												canBeUsed: !managedGameServer.canBeUsed,
 											})
@@ -47,37 +48,39 @@ export const ManagedGameServerList: Component<{
 								<td>
 									{managedGameServer.usedBy && (
 										<>
-											<a href={`/matches/${managedGameServer.usedBy}`}>
+											<A href={`/matches/${managedGameServer.usedBy}`}>
 												{managedGameServer.usedBy}
-											</a>{' '}
-											{props.update && (
-												<button
-													class="btn btn-circle btn-outline"
-													onClick={() =>
-														props.update?.({
-															...managedGameServer,
-															usedBy: null,
-														})
-													}
-												>
-													<SvgClear />
-												</button>
-											)}
+											</A>{' '}
+											<button
+												class="btn btn-circle btn-outline"
+												onClick={() =>
+													props.update({
+														...managedGameServer,
+														usedBy: null,
+													})
+												}
+											>
+												<SvgClear />
+											</button>
 										</>
 									)}
 								</td>
-								{props.delete && (
-									<th>
-										{props.delete && (
-											<button
-												class="btn btn-circle btn-outline"
-												onClick={() => props.delete?.(managedGameServer)}
-											>
-												<SvgDelete />
-											</button>
-										)}
-									</th>
-								)}
+								<td class="space-x-2">
+									<div class="tooltip" data-tip={t('Rcon')}>
+										<A
+											href={`/gameservers/${managedGameServer.ip}:${managedGameServer.port}`}
+											class="btn btn-circle btn-outline"
+										>
+											<SvgTerminal />
+										</A>
+									</div>
+									<button
+										class="btn btn-circle btn-outline"
+										onClick={() => props.delete(managedGameServer)}
+									>
+										<SvgDelete />
+									</button>
+								</td>
 							</tr>
 						)}
 					</For>

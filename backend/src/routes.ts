@@ -1953,6 +1953,51 @@ export function RegisterRoutes(app: Router) {
 		}
 	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.post(
+		'/api/gameservers/:ip/:port',
+		authenticateMiddleware([{ bearer_token: [] }]),
+		...fetchMiddlewares<RequestHandler>(GameServersController),
+		...fetchMiddlewares<RequestHandler>(GameServersController.prototype.rcon),
+
+		async function GameServersController_rcon(
+			request: ExRequest,
+			response: ExResponse,
+			next: any
+		) {
+			const args: Record<string, TsoaRoute.ParameterSchema> = {
+				ip: { in: 'path', name: 'ip', required: true, dataType: 'string' },
+				port: { in: 'path', name: 'port', required: true, dataType: 'double' },
+				requestBody: {
+					in: 'body',
+					name: 'requestBody',
+					required: true,
+					dataType: 'array',
+					array: { dataType: 'string' },
+				},
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+				const controller = new GameServersController();
+
+				await templateService.apiHandler({
+					methodName: 'rcon',
+					controller,
+					response,
+					next,
+					validatedArgs,
+					successStatus: undefined,
+				});
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.get(
 		'/api/debug/webSockets',
 		authenticateMiddleware([{ bearer_token: [] }]),

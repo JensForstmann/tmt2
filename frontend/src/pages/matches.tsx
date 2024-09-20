@@ -128,7 +128,7 @@ export const MatchesPage: Component = () => {
 
 	return (
 		<Card>
-			<div class="flex w-fit w-full flex-row space-x-8">
+			<div class="flex w-full flex-row space-x-8">
 				<label class="label cursor-pointer">
 					<span class="label-text pr-4">{t('offline matches')}</span>
 					<input

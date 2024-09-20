@@ -58,4 +58,17 @@ export class GameServersController extends Controller {
 			port: port,
 		});
 	}
+
+	/**
+	 * Execute a rcon command on the game server.
+	 */
+	@Post('{ip}/{port}')
+	async rcon(ip: string, port: number, @Body() requestBody: string[]): Promise<string[] | void> {
+		const managedGameServers = ManagedGameServers.get(ip, port);
+		if (!managedGameServers) {
+			this.setStatus(404);
+			return;
+		}
+		return await ManagedGameServers.execManyRcon(managedGameServers, requestBody);
+	}
 }

@@ -4,6 +4,7 @@ import { render } from 'solid-js/web';
 import { App } from './App';
 import { CreatePage } from './pages/create';
 import { DebugPage } from './pages/debug';
+import { GameServerPage } from './pages/gameServer';
 import { GameServersPage } from './pages/gameServers';
 import { LoginPage } from './pages/login';
 import { LogoutPage } from './pages/logout';
@@ -20,6 +21,7 @@ render(
 			<Route path="/matches" component={MatchesPage} />
 			<Route path="/matches/:id" component={MatchPage} />
 			<Route path="/matches/:id/edit" component={MatchEditPage} />
+			<Route path="/gameservers/:ipPort" component={GameServerPage} />
 			<Route path="/gameservers" component={GameServersPage} />
 			<Route path="/login" component={LoginPage} />
 			<Route path="/logout" component={LogoutPage} />

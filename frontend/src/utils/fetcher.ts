@@ -86,7 +86,12 @@ export const createFetcher = (token?: string) => {
 				throw JSON.stringify(errRespObj);
 			}
 		} else if (response.status >= 400) {
-			throw await response.text();
+			const text = await response.text();
+			if (text) {
+				throw text;
+			} else {
+				throw response.status.toLocaleString();
+			}
 		} else if (response.headers.get('Content-Type')?.startsWith('application/json')) {
 			return response.json();
 		} else {

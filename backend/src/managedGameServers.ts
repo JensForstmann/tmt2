@@ -1,4 +1,5 @@
 import { IGameServer, IManagedGameServer, IManagedGameServerUpdateDto } from '../../common';
+import * as GameServer from './gameServer';
 import * as Storage from './storage';
 
 const FILE_NAME = 'managed_game_servers.json';
@@ -15,6 +16,10 @@ const key = (gameServer: IManagedGameServerUpdateDto) => {
 export const setup = async () => {
 	const data = await Storage.read(FILE_NAME, [] as IManagedGameServer[]);
 	data.forEach((managedGameServer) => add(managedGameServer, false));
+};
+
+export const get = (ip: string, port: number) => {
+	return managedGameServers.get(ip + ':' + port);
 };
 
 export const getAll = () => {
@@ -72,4 +77,29 @@ export const free = async (gameServer: IManagedGameServerUpdateDto, matchId: str
 		managedGameServer.usedBy = null;
 		await write();
 	}
+};
+
+export const execManyRcon = async (managedGameServer: IManagedGameServer, commands: string[]) => {
+	const responses = [];
+
+	const rconConnection = await GameServer.create(
+		{
+			ip: managedGameServer.ip,
+			port: managedGameServer.port,
+			rconPassword: managedGameServer.rconPassword,
+		},
+		(msg) => responses.push(`ERROR: ${msg}`)
+	);
+
+	for (let i = 0; i < commands.length; i++) {
+		responses.push(await rconConnection.send(commands[i]!));
+	}
+
+	try {
+		await rconConnection.end();
+	} catch (err) {
+		responses.push(`ERROR: ${err}`);
+	}
+
+	return responses;
 };
