@@ -12,6 +12,7 @@ export const Settings = {
 		'MAP_END',
 		'MAP_START',
 		'MATCH_END',
+		'MATCH_STOP',
 		'ROUND_END',
-	] as EventType[],
+	] satisfies EventType[] as EventType[],
 };

@@ -18,7 +18,8 @@ export type EventType =
 	| 'MATCH_END'
 	| 'LOG'
 	| 'MATCH_CREATE'
-	| 'MATCH_UPDATE';
+	| 'MATCH_UPDATE'
+	| 'MATCH_STOP';
 
 export interface BaseEvent {
 	/** ISO */
@@ -136,6 +137,10 @@ export interface MatchUpdateEvent extends BaseEvent {
 	value: any;
 }
 
+export interface MatchStopEvent extends BaseEvent {
+	type: 'MATCH_STOP';
+}
+
 export type Event =
 	| ChatEvent
 	| ElectionEndEvent
@@ -148,4 +153,5 @@ export type Event =
 	| ElectionMapStep
 	| ElectionSideStep
 	| MatchCreateEvent
-	| MatchUpdateEvent;
+	| MatchUpdateEvent
+	| MatchStopEvent;

@@ -15,6 +15,7 @@ import {
 	MapStartEvent,
 	MatchCreateEvent,
 	MatchEndEvent,
+	MatchStopEvent,
 	MatchUpdateEvent,
 	RoundEndEvent,
 	TMapMode,
@@ -249,4 +250,9 @@ export const onMatchUpdate = (match: Match.Match, path: Array<string | number>, 
 	// send as a system event if the match was created less than 10 seconds ago
 	const sendAsSysEvent = match.data.createdAt + 10000 > Date.now();
 	send(match, data, sendAsSysEvent);
+};
+
+export const onMatchStop = (match: Match.Match) => {
+	const data: MatchStopEvent = getBaseEvent(match, 'MATCH_STOP');
+	send(match, data);
 };

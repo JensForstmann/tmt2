@@ -929,6 +929,7 @@ export const stop = async (match: Match) => {
 	await say(match, `TMT IS OFFLINE`).catch(() => {});
 	await GameServer.disconnect(match);
 	await ManagedGameServers.free(match.data.gameServer, match.data.id);
+	Events.onMatchStop(match);
 };
 
 export const onElectionFinished = async (match: Match) => {

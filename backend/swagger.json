@@ -1226,7 +1226,8 @@
 					"MATCH_END",
 					"LOG",
 					"MATCH_CREATE",
-					"MATCH_UPDATE"
+					"MATCH_UPDATE",
+					"MATCH_STOP"
 				]
 			},
 			"ChatEvent": {
@@ -1863,6 +1864,36 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"MatchStopEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"MATCH_STOP"
+						],
+						"nullable": false
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Event": {
 				"anyOf": [
 					{
@@ -1900,6 +1931,9 @@
 					},
 					{
 						"$ref": "#/components/schemas/MatchUpdateEvent"
+					},
+					{
+						"$ref": "#/components/schemas/MatchStopEvent"
 					}
 				]
 			},
