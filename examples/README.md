@@ -5,53 +5,53 @@ Template (remove json comments before usage):
 ```json5
 {
     "passthrough": "<remote match id here>",
-	"mapPool": [ // map pool can contain any number of maps, but must be big enough for the given election steps, see below for more information
+    "mapPool": [ // map pool can contain any number of maps, but must be big enough for the given election steps, see below for more information
         "de_ancient", // use the name of the map file
-		"de_anubis/anubis", // or add a friendly name for players when picking/banning maps
-		"de_inferno",
-		"de_mirage",
-		"de_nuke",
-		"de_overpass",
-		"de_vertigo",
+        "de_anubis/anubis", // or add a friendly name for players when picking/banning maps
+        "de_inferno",
+        "de_mirage",
+        "de_nuke",
+        "de_overpass",
+        "de_vertigo",
         "3070923343/fy_pool_day" // workshop maps consists of numbers only (their workshop id), consider adding a friendly name for players when picking/banning maps
     ],
-	"teamA": {
-		"name": "Alpha",
-		"passthrough": "<remote team a id here>",
+    "teamA": {
+        "name": "Alpha",
+        "passthrough": "<remote team a id here>",
         "advantage": 0
-	},
-	"teamB": {
-		"name": "Bravo",
-		"passthrough": "<remote team a id here>",
+    },
+    "teamB": {
+        "name": "Bravo",
+        "passthrough": "<remote team a id here>",
         "advantage": 0
-	},
-	"electionSteps": [
+    },
+    "electionSteps": [
         // see below for templates
-	],
-	"gameServer": { // can be `null` instead of object if game servers are managed by TMT itself
-		"ip": "localhost",
-		"port": 27016,
-		"rconPassword": "blob"
-	},
-	"rconCommands": {
-		"init": [ // these rcon commands will be executed only once: when the match is created
+    ],
+    "gameServer": { // can be `null` instead of object if game servers are managed by TMT itself
+        "ip": "localhost",
+        "port": 27016,
+        "rconPassword": "blob"
+    },
+    "rconCommands": {
+        "init": [ // these rcon commands will be executed only once: when the match is created
             "game_type 0; game_mode 1; sv_game_mode_flags 0; sv_skirmish_id 0", // normal competitive, see below for other examples
-			"say > RCON INIT LOADED <"
-		],
-		"knife": [ // these rcon commands will only be executed at the start of a knife round
-			"mp_give_player_c4 0; mp_startmoney 0; mp_ct_default_secondary \"\"; mp_t_default_secondary \"\"",
-			"say > SPECIAL KNIFE CONFIG LOADED <"
-		],
-		"match": [ // these rcon commands will be executed at the start of each match map (after knife or when both teams are ready)
-			"mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary \"weapon_hkp2000\"; mp_t_default_secondary \"weapon_glock\"",
+            "say > RCON INIT LOADED <"
+        ],
+        "knife": [ // these rcon commands will only be executed at the start of a knife round
+            "mp_give_player_c4 0; mp_startmoney 0; mp_ct_default_secondary \"\"; mp_t_default_secondary \"\"",
+            "say > SPECIAL KNIFE CONFIG LOADED <"
+        ],
+        "match": [ // these rcon commands will be executed at the start of each match map (after knife or when both teams are ready)
+            "mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary \"weapon_hkp2000\"; mp_t_default_secondary \"weapon_glock\"",
             "mp_overtime_enable 1",
             "say > MATCH CONFIG LOADED <"
-		],
-		"end": [ // these rcon commands will be executed only once: after the end of the last map, or when the match has been stopped (by api)
+        ],
+        "end": [ // these rcon commands will be executed only once: after the end of the last map, or when the match has been stopped (by api)
             "say > MATCH END RCON LOADED <"
         ]
-	},
-	"tmtLogAddress": "http://localhost:8080" // tmt's http address the game server must send the logs to
+    },
+    "tmtLogAddress": "http://localhost:8080" // tmt's http address the game server must send the logs to
 }
 ```
 
@@ -298,16 +298,16 @@ Possible side configurations:
 // BO3, but max. two maps, because of advantage for one team
 {
     "electionSteps": [
-		{ "map": { "mode": "BAN", "who": "TEAM_A" } },
-		{ "map": { "mode": "BAN", "who": "TEAM_B" } },
-		{
-			"map": { "mode": "PICK", "who": "TEAM_A" },
-			"side": { "mode": "PICK", "who": "TEAM_B" }
-		},
-		{
-			"map": { "mode": "PICK", "who": "TEAM_B" },
-			"side": { "mode": "PICK", "who": "TEAM_A" }
-		}
+        { "map": { "mode": "BAN", "who": "TEAM_A" } },
+        { "map": { "mode": "BAN", "who": "TEAM_B" } },
+        {
+            "map": { "mode": "PICK", "who": "TEAM_A" },
+            "side": { "mode": "PICK", "who": "TEAM_B" }
+        },
+        {
+            "map": { "mode": "PICK", "who": "TEAM_B" },
+            "side": { "mode": "PICK", "who": "TEAM_A" }
+        }
     ]
 }
 ```
