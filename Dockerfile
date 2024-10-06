@@ -25,6 +25,9 @@ COPY frontend/vite.config.mts .
 RUN npm run build
 
 FROM node:20
+ENV TINI_VERSION=v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
 COPY --from=backend_build_image /app/backend/package.json /app/backend/swagger.json /app/backend/
 COPY --from=backend_build_image /app/backend/dist /app/backend/dist
 COPY --from=backend_build_image /app/backend/node_modules /app/backend/node_modules
@@ -34,4 +37,4 @@ EXPOSE 8080
 ARG COMMIT_SHA
 ENV COMMIT_SHA=${COMMIT_SHA}
 WORKDIR /app/backend
-CMD ["npm", "start"]
+CMD ["/tini", "node", "./dist/backend/src/index.js"]
