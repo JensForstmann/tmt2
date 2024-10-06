@@ -387,6 +387,7 @@ export const getRoundBackups = async (match: Match, count: number = 5) => {
 };
 
 export const loadRoundBackup = async (match: Match, file: string) => {
+	await execRcon(match, 'mp_warmup_end'); // CS2 could be stuck (frozen cam, no timer, no pause indication) if game was currently in warmup
 	await execRcon(match, 'mp_backup_restore_load_autopause 1');
 	await execRcon(match, 'mp_pause_match'); // mp_backup_restore_load_autopause doesn't work currently in CS2
 	await execRconCommands(match, 'match');
