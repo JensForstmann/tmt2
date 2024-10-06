@@ -79,6 +79,21 @@ export const GameServersPage: Component = () => {
 					<div class="h-8" />
 
 					<Card>
+						<div>
+							<p>
+								{t(
+									'Game servers managed by TMT can be used to automatically assign them to new matches.'
+								)}{' '}
+								{t(
+									'Anonymous (not logged in) users can then also use them for their games.'
+								)}
+							</p>
+						</div>
+
+						<div class="prose pt-4">
+							<h2>{t('Add Game Server')}</h2>
+						</div>
+
 						<TextInput
 							label={t('Game Server IP')}
 							value={ip()}
@@ -99,7 +114,7 @@ export const GameServersPage: Component = () => {
 						/>
 
 						<ToggleInput
-							label={t('Can be used?')}
+							label={t('Can be used for new matches?')}
 							checked={canBeUsed()}
 							onchange={(e) => setCanBeUsed(e.currentTarget.checked)}
 						/>

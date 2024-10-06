@@ -3,10 +3,16 @@ import { Component, ComponentProps, JSXElement, Show, splitProps } from 'solid-j
 export const ToggleInput: Component<
 	ComponentProps<'input'> & {
 		label?: string;
+		labelBottomLeft?: string;
 		labelTopRight?: string;
 	}
 > = (props) => {
-	const [local, others] = splitProps(props, ['label', 'class', 'labelTopRight']);
+	const [local, others] = splitProps(props, [
+		'label',
+		'class',
+		'labelBottomLeft',
+		'labelTopRight',
+	]);
 	return (
 		<div class="form-control">
 			<Show when={local.label || local.labelTopRight}>
@@ -16,6 +22,11 @@ export const ToggleInput: Component<
 				</label>
 			</Show>
 			<input type="checkbox" class={(local.class ?? '') + ' toggle'} {...others} />
+			<Show when={local.labelBottomLeft}>
+				<label class="label">
+					<span class="label-text-alt">{local.labelBottomLeft}</span>
+				</label>
+			</Show>
 		</div>
 	);
 };

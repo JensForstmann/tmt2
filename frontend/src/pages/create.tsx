@@ -33,7 +33,6 @@ const DEFAULT_RCON_END = ['say > MATCH END RCON LOADED <'];
 export const CreatePage: Component = () => {
 	const navigate = useNavigate();
 	const fetcher = createFetcher();
-	const [errorMessage, setErrorMessage] = createSignal('');
 
 	return (
 		<Card>
