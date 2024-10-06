@@ -27,6 +27,7 @@ export const MatchCard: Component<{
 	const l = window.location;
 	const shareLink = l.protocol + '//' + l.host + l.pathname + '?secret=' + props.match.tmtSecret;
 	let modalRef: HTMLDialogElement | undefined;
+	let divRef: HTMLDivElement | undefined;
 
 	const goToEditPage = () =>
 		navigate(
@@ -74,13 +75,13 @@ export const MatchCard: Component<{
 			<Modal ref={modalRef}>
 				<div class="space-y-6">
 					<p>{t('Copy & share the link below.')}</p>
-					<div class="flex">
+					<div class="flex" ref={divRef}>
 						<TextInput
 							value={shareLink}
 							class="bg-base-300 w-full"
 							containerClass="w-full"
 						/>
-						<button class="btn ml-4" onClick={() => copyToClipboard(shareLink)}>
+						<button class="btn ml-4" onClick={() => copyToClipboard(shareLink, divRef)}>
 							<SvgCopyAll />
 						</button>
 					</div>

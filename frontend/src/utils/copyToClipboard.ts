@@ -1,5 +1,10 @@
-// from https://stackoverflow.com/a/65996386
-export const copyToClipboard = async (textToCopy: string) => {
+/**
+ * Based on https://stackoverflow.com/a/65996386
+ *
+ * @param textToCopy
+ * @param node Set this to a HTML Element. Needed if copy button is in a modal.
+ */
+export const copyToClipboard = async (textToCopy: string, node?: HTMLElement) => {
 	// Navigator clipboard api needs a secure context (https)
 	if (navigator.clipboard && window.isSecureContext) {
 		await navigator.clipboard.writeText(textToCopy);
@@ -12,7 +17,7 @@ export const copyToClipboard = async (textToCopy: string) => {
 		textArea.style.position = 'absolute';
 		textArea.style.left = '-999999px';
 
-		document.body.prepend(textArea);
+		(node ?? document.body).prepend(textArea);
 		textArea.select();
 
 		try {
