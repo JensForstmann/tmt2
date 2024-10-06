@@ -179,8 +179,6 @@ export interface IMatchUpdateDto extends Partial<IMatchCreateDto> {
 	currentMap?: number;
 
 	_restartElection?: boolean;
-	_init?: boolean;
-	_setup?: boolean;
 	_execRconCommandsInit?: boolean;
 	_execRconCommandsKnife?: boolean;
 	_execRconCommandsMatch?: boolean;

@@ -2048,12 +2048,6 @@
 					"_restartElection": {
 						"type": "boolean"
 					},
-					"_init": {
-						"type": "boolean"
-					},
-					"_setup": {
-						"type": "boolean"
-					},
 					"_execRconCommandsInit": {
 						"type": "boolean"
 					},

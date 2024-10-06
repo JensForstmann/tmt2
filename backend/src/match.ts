@@ -117,7 +117,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 	};
 	try {
 		const match = await createFromData(data);
-		await init(match);
+		await execRconCommands(match, 'init');
 		return match;
 	} catch (err) {
 		if (!dto.gameServer) {
@@ -156,8 +156,7 @@ const connectToGameServer = async (match: Match): Promise<void> => {
 	match.rconConnection = gameServer;
 	previous?.end().catch(() => {});
 	match.log(`Connect rcon successful ${addr}`);
-	await setup(match);
-	await registerLogAddress(match);
+	await ensureLogAddressIsRegistered(match);
 };
 
 const onRconConnectionEnd = async (match: Match) => {
@@ -179,15 +178,6 @@ const onRconConnectionEnd = async (match: Match) => {
 			match.log(`Reconnect rcon failed ${addr}: ${err}`);
 		}
 	}
-};
-
-/**
- * Executed only once per match (at creation).
- */
-const init = async (match: Match) => {
-	match.log('Init match...');
-	await execRconCommands(match, 'init');
-	match.log('Init match finished');
 };
 
 /**
@@ -232,23 +222,34 @@ export const checkAndNormalizeLogAddress = (url: string): string | null => {
 	}
 };
 
-const registerLogAddress = async (match: Match) => {
+const ensureLogAddressIsRegistered = async (match: Match) => {
 	const logAddress = `${match.data.tmtLogAddress || TMT_LOG_ADDRESS}/api/matches/${
 		match.data.id
 	}/server/log/${match.data.logSecret}`;
-	const logAddressList = await execRcon(match, 'logaddress_list_http');
+
+	let logAddressList: string;
+	try {
+		logAddressList = await GameServer.exec(match, 'logaddress_list_http', false);
+	} catch (err) {
+		return;
+	}
+
 	const existing = logAddressList
 		.trim()
 		.split('\n')
 		.map((line) => line.trim())
 		.find((line) => line.startsWith(logAddress));
-	if (!existing) {
-		match.data.parseIncomingLogs = false;
-		match.log('Register log address');
-		await execRcon(match, `logaddress_add_http "${logAddress}"`);
 
-		MatchService.scheduleSave(match);
+	if (existing) {
+		return;
 	}
+
+	match.data.parseIncomingLogs = false;
+	match.log('Register log address');
+	await execRcon(match, 'logaddress_delall_http');
+	await execRcon(match, `logaddress_add_http "${logAddress}"`);
+
+	MatchService.scheduleSave(match);
 
 	// delay parsing of incoming log lines (because we don't care about the initial big batch)
 	sleep(2000)
@@ -257,7 +258,8 @@ const registerLogAddress = async (match: Match) => {
 				match.log('Enable parsing of incoming log');
 				match.data.parseIncomingLogs = true;
 				MatchService.scheduleSave(match);
-				await say(match, 'ONLINE');
+				await say(match, 'TMT IS ONLINE');
+				await setup(match);
 				if (match.data.state === 'ELECTION') {
 					await Election.auto(match);
 				}
@@ -320,6 +322,8 @@ export const resetPeriodicJobTimer = (match: Match) => {
 const periodicJob = async (match: Match) => {
 	resetPeriodicJobTimer(match);
 	match.periodicJobCounter = match.periodicJobCounter + 1;
+
+	await ensureLogAddressIsRegistered(match);
 
 	const sv_password = await getConfigVar(match, 'sv_password');
 	if (sv_password && sv_password !== match.data.serverPassword) {
@@ -1046,7 +1050,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		const previous = match.data.logSecret;
 		match.data.logSecret = dto.logSecret;
 		try {
-			await registerLogAddress(match);
+			await ensureLogAddressIsRegistered(match);
 		} catch (err) {
 			match.data.logSecret = previous;
 			throw err;
@@ -1066,8 +1070,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 			);
 		}
 		match.data.tmtLogAddress = addr;
-		await execRcon(match, 'logaddress_delall_http');
-		await registerLogAddress(match);
+		await ensureLogAddressIsRegistered(match);
 	}
 
 	if (dto.currentMap !== undefined && dto.currentMap !== match.data.currentMap) {
@@ -1116,14 +1119,6 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 
 	if (dto._restartElection) {
 		await restartElection(match);
-	}
-
-	if (dto._init) {
-		await init(match);
-	}
-
-	if (dto._setup) {
-		await setup(match);
 	}
 
 	if (dto._execRconCommandsInit) {

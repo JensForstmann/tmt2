@@ -1088,8 +1088,6 @@ const models: TsoaRoute.Models = {
 			logSecret: { dataType: 'string' },
 			currentMap: { dataType: 'double' },
 			_restartElection: { dataType: 'boolean' },
-			_init: { dataType: 'boolean' },
-			_setup: { dataType: 'boolean' },
 			_execRconCommandsInit: { dataType: 'boolean' },
 			_execRconCommandsKnife: { dataType: 'boolean' },
 			_execRconCommandsMatch: { dataType: 'boolean' },

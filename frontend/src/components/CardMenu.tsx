@@ -47,9 +47,9 @@ export const CardMenu: Component<{
 			</div>
 			<div
 				class={`${
-					showMenu() ? 'max-h-full' : 'max-h-0'
+					showMenu() ? 'max-h-fit' : 'max-h-0'
 				} absolute right-9 top-0 overflow-hidden rounded-br-lg rounded-bl-lg text-left shadow-sm transition-all
-				hover:cursor-pointer`}
+				hover:cursor-pointer z-10`}
 			>
 				<ul>
 					<For each={props.entries}>

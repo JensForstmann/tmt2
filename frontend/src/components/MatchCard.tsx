@@ -22,8 +22,6 @@ export const MatchCard: Component<{
 	const stop = () =>
 		fetcher('DELETE', `/api/matches/${props.match.id}`).finally(() => location.reload());
 	const restartElection = () => patchMatch({ _restartElection: true });
-	const init = () => patchMatch({ _init: true });
-	const setup = () => patchMatch({ _setup: true });
 	const l = window.location;
 	const shareLink = l.protocol + '//' + l.host + l.pathname + '?secret=' + props.match.tmtSecret;
 	let modalRef: HTMLDialogElement | undefined;
@@ -42,16 +40,30 @@ export const MatchCard: Component<{
 				entries={
 					props.match.isLive
 						? [
-								[t('stop'), mustConfirm(stop)],
-								[t('restart election'), mustConfirm(restartElection)],
-								[t('init'), init],
-								[t('setup'), setup],
-								[t('share match with token'), () => modalRef?.showModal()],
-								[t('edit match'), goToEditPage],
+								[t('Stop Match'), mustConfirm(stop)],
+								[t('Restart Match'), mustConfirm(restartElection)],
+								[
+									t('Execute Rcon Init Commands'),
+									() => patchMatch({ _execRconCommandsInit: true }),
+								],
+								[
+									t('Execute Rcon Knife Commands'),
+									() => patchMatch({ _execRconCommandsKnife: true }),
+								],
+								[
+									t('Execute Rcon Match Commands'),
+									() => patchMatch({ _execRconCommandsMatch: true }),
+								],
+								[
+									t('Execute Rcon End Commands'),
+									() => patchMatch({ _execRconCommandsEnd: true }),
+								],
+								[t('Share Match with Token'), () => modalRef?.showModal()],
+								[t('Edit Match'), goToEditPage],
 							]
 						: [
-								[t('share match with token'), () => modalRef?.showModal()],
-								[t('edit match'), goToEditPage],
+								[t('Share Match with Token'), () => modalRef?.showModal()],
+								[t('Edit Match'), goToEditPage],
 							]
 				}
 			/>
