@@ -108,14 +108,7 @@ const DEFAULT_PRESETS: IPreset[] = [
 				advantage: 0,
 			},
 			gameServer: null,
-			mapPool: [
-				'de_assembly',
-				'de_inferno',
-				'de_memento',
-				'de_nuke',
-				'de_overpass',
-				'de_vertigo',
-			],
+			mapPool: ['de_inferno', 'de_nuke', 'de_vertigo'],
 			electionSteps: [
 				{
 					map: {
@@ -131,17 +124,10 @@ const DEFAULT_PRESETS: IPreset[] = [
 				},
 				{
 					map: {
-						mode: 'BAN',
-						who: 'TEAM_A',
-					},
-				},
-				{
-					map: {
 						mode: 'RANDOM_PICK',
 					},
 					side: {
-						mode: 'PICK',
-						who: 'TEAM_B',
+						mode: 'KNIFE',
 					},
 				},
 			],
