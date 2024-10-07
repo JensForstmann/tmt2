@@ -1,0 +1,8 @@
+services:
+  tmt2:
+    image: jensforstmann/tmt2:latest
+    volumes:
+      - ./storage:/app/backend/storage
+    restart: unless-stopped
+    ports:
+      - 8080:8080/tcp

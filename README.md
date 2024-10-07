@@ -60,7 +60,7 @@ Table of Contents:
 
 TMT2 is available on docker hub: https://hub.docker.com/r/jensforstmann/tmt2
 
-Run it with:
+You can either use a [docker compose file (compose.yaml)](compose.yaml) or run it directly with `docker run`:
 
 ```sh
 docker run --name tmt2 -d -p 8080:8080 jensforstmann/tmt2
