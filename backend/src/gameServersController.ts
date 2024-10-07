@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Patch, Post, Route, Security } from '@tsoa/runtime';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	OperationId,
+	Patch,
+	Post,
+	Route,
+	Security,
+} from '@tsoa/runtime';
 import {
 	IManagedGameServer,
 	IManagedGameServerCreateDto,
@@ -63,6 +73,7 @@ export class GameServersController extends Controller {
 	 * Execute a rcon command on the game server.
 	 */
 	@Post('{ip}/{port}')
+	@OperationId('GameServerRcon')
 	async rcon(ip: string, port: number, @Body() requestBody: string[]): Promise<string[] | void> {
 		const managedGameServers = ManagedGameServers.get(ip, port);
 		if (!managedGameServers) {

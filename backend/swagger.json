@@ -3079,7 +3079,7 @@
 				]
 			},
 			"post": {
-				"operationId": "Rcon",
+				"operationId": "GameServerRcon",
 				"responses": {
 					"200": {
 						"description": "Ok",
