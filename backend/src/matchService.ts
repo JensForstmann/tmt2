@@ -61,20 +61,9 @@ const loadMatchFromStorage = async (matchData: IMatch, logMessageSuffix?: string
 	}
 };
 
-export const create = async (dto: IMatchCreateDto, isLoggedIn: boolean) => {
+export const create = async (dto: IMatchCreateDto) => {
 	const id = shortUuid();
 	try {
-		if (
-			isLoggedIn === false &&
-			[
-				...(dto.rconCommands?.init ?? []),
-				...(dto.rconCommands?.knife ?? []),
-				...(dto.rconCommands?.match ?? []),
-				...(dto.rconCommands?.end ?? []),
-			].find((cmd) => cmd.toLowerCase().includes('password'))
-		) {
-			throw 'not allowed to set passwords (text "password" found in rcon commands)';
-		}
 		const logSecret = shortUuid();
 		startingMatches.add(id);
 		const match = await Match.createFromCreateDto(dto, id, logSecret);
@@ -212,12 +201,18 @@ export const isStartingMatch = (id: string) => {
 	return startingMatches.has(id);
 };
 
-export const hideRconPassword = <T extends IMatch | IMatchResponse>(match: T): T => {
+export const hideRconPassword = <T extends IMatch | IMatchResponse>(
+	match: T,
+	isLoggedIn: boolean
+): T => {
 	return {
 		...match,
 		gameServer: {
 			...match.gameServer,
-			rconPassword: match.gameServer.hideRconPassword ? '' : match.gameServer.rconPassword,
+			rconPassword:
+				match.gameServer.hideRconPassword && !isLoggedIn
+					? ''
+					: match.gameServer.rconPassword,
 		},
 	};
 };

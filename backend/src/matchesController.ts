@@ -26,6 +26,26 @@ import * as Match from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
 
+const checkRconCommands = (
+	rconCommands: IMatchCreateDto['rconCommands'] | IMatchUpdateDto['rconCommands'] | string[],
+	isLoggedIn: boolean
+) => {
+	if (isLoggedIn) {
+		return;
+	}
+	const allRconCommands = Array.isArray(rconCommands)
+		? rconCommands
+		: [
+				...(rconCommands?.init ?? []),
+				...(rconCommands?.knife ?? []),
+				...(rconCommands?.match ?? []),
+				...(rconCommands?.end ?? []),
+			];
+	if (allRconCommands.find((cmd) => cmd.toLowerCase().includes('rcon_password'))) {
+		throw 'not allowed to set rcon_password (text "rcon_password" found in rcon commands)';
+	}
+};
+
 @Route('/api/matches')
 @Security('bearer_token')
 export class MatchesController extends Controller {
@@ -39,7 +59,10 @@ export class MatchesController extends Controller {
 		@Body() requestBody: IMatchCreateDto,
 		@Request() req: ExpressRequest<IAuthResponseOptional>
 	): Promise<IMatch> {
-		const match = await MatchService.create(requestBody, req.user.type === 'GLOBAL');
+		if (requestBody.gameServer === null) {
+			checkRconCommands(requestBody.rconCommands, req.user.type === 'GLOBAL');
+		}
+		const match = await MatchService.create(requestBody);
 		this.setHeader('Location', `/api/matches/${match.data.id}`);
 		this.setStatus(201);
 		return match.data;
@@ -73,7 +96,7 @@ export class MatchesController extends Controller {
 			)
 			.filter((m) => isStopped === undefined || m.isStopped === isStopped)
 			.filter((m) => isLive === undefined || m.isLive === isLive)
-			.map((m) => MatchService.hideRconPassword(m));
+			.map((m) => MatchService.hideRconPassword(m, req.user.type === 'GLOBAL'));
 	}
 
 	/**
@@ -87,7 +110,7 @@ export class MatchesController extends Controller {
 		const match = MatchService.get(id);
 		if (match) {
 			return {
-				...MatchService.hideRconPassword(match.data),
+				...MatchService.hideRconPassword(match.data, req.user.type === 'GLOBAL'),
 				isLive: true,
 			};
 		}
@@ -95,7 +118,7 @@ export class MatchesController extends Controller {
 		const matchFromStorage = await MatchService.getFromStorage(id);
 		if (matchFromStorage) {
 			return {
-				...MatchService.hideRconPassword(matchFromStorage),
+				...MatchService.hideRconPassword(matchFromStorage, req.user.type === 'GLOBAL'),
 				isLive: false,
 			};
 		}
@@ -174,12 +197,17 @@ export class MatchesController extends Controller {
 	): Promise<void> {
 		const match = MatchService.get(id);
 		if (match) {
+			if (match.data.gameServer.hideRconPassword) {
+				checkRconCommands(requestBody.rconCommands, req.user.type === 'GLOBAL');
+			}
 			await Match.update(match, requestBody);
 		} else if (requestBody.gameServer) {
 			// for offline matches only allow to update game server to get match running again
 			const offlineMatch = await MatchService.getFromStorage(id);
 			if (offlineMatch) {
+				const hideRconPassword = offlineMatch.gameServer.hideRconPassword;
 				offlineMatch.gameServer = requestBody.gameServer;
+				offlineMatch.gameServer.hideRconPassword = hideRconPassword;
 				await MatchService.save(offlineMatch);
 			}
 		} else {
@@ -246,9 +274,8 @@ export class MatchesController extends Controller {
 			this.setStatus(404);
 			return;
 		}
-		if (match.data.gameServer.hideRconPassword && req.user.type === 'MATCH') {
-			this.setStatus(400);
-			throw 'cannot execute rcon commands on this server';
+		if (match.data.gameServer.hideRconPassword) {
+			checkRconCommands(requestBody, req.user.type === 'GLOBAL');
 		}
 		return await Match.execManyRcon(match, requestBody);
 	}

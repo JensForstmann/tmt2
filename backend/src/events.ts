@@ -234,7 +234,7 @@ export const onMatchCreate = (match: Match.Match) => {
 	const data: MatchCreateEvent = {
 		...getBaseEvent(match, 'MATCH_CREATE'),
 		match: {
-			...MatchService.hideRconPassword(match.data),
+			...MatchService.hideRconPassword(match.data, false),
 			isLive: true,
 		},
 	};

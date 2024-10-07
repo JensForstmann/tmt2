@@ -327,7 +327,8 @@ const periodicJob = async (match: Match) => {
 	await ensureLogAddressIsRegistered(match);
 
 	const sv_password = await getConfigVar(match, 'sv_password');
-	if (sv_password && sv_password !== match.data.serverPassword) {
+	if (sv_password !== match.data.serverPassword) {
+		match.log('Server password updated');
 		match.data.serverPassword = sv_password;
 	}
 
