@@ -21,8 +21,9 @@ export class PresetsController extends Controller {
 	 * Get all configured presets.
 	 */
 	@Get()
+	@Security('bearer_token_optional')
 	async getPresets(@Request() req: ExpressRequest<IAuthResponse>): Promise<IPreset[]> {
-		return Presets.getAll();
+		return Presets.getAll().filter((preset) => preset.isPublic || req.user.type === 'GLOBAL');
 	}
 
 	/**

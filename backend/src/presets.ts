@@ -7,6 +7,7 @@ const DEFAULT_PRESETS: IPreset[] = [
 	{
 		id: 'rUqWHsdPuA1pCqEfseVpRn',
 		name: '5on5 Competitive',
+		isPublic: true,
 		data: {
 			teamA: {
 				name: 'Team A',
@@ -96,6 +97,7 @@ const DEFAULT_PRESETS: IPreset[] = [
 	{
 		id: '5yNVDnvcFHzVRaMnpjLYMv',
 		name: '2on2 Wingman',
+		isPublic: true,
 		data: {
 			teamA: {
 				name: 'Team A',

@@ -38,13 +38,10 @@ const Presets: Component<{
 	const fetcher = createFetcher();
 	const [presets, setPresets] = createSignal<IPreset[]>([]);
 	const [presetName, setPresetName] = createSignal('');
+	const [presetIsPublic, setPresetIsPublic] = createSignal(true);
 	const [selectedPresetId, setSelectedPresetId] = createSignal('');
 
-	createEffect(() => {
-		if (isLoggedIn()) {
-			refreshPresets();
-		}
-	});
+	onMount(() => refreshPresets());
 
 	const refreshPresets = () => {
 		fetcher<IPreset[]>('GET', `/api/presets`).then((presets) => {
@@ -54,11 +51,12 @@ const Presets: Component<{
 		});
 	};
 	const addPreset = () => {
-		if (!presetName()) {
+		if (!presetName() || !isLoggedIn()) {
 			return;
 		}
 		const presetCreateDto: IPresetCreateDto = {
 			name: presetName(),
+			isPublic: presetIsPublic(),
 			data: props.matchCreateDto,
 		};
 		fetcher<IPreset>('POST', `/api/presets`, presetCreateDto).then((preset) => {
@@ -66,16 +64,18 @@ const Presets: Component<{
 				setPresets((presets) => [...presets, preset]);
 				setSelectedPresetId(preset.id);
 				setPresetName(preset.name);
+				setPresetIsPublic(preset.isPublic ?? false);
 			}
 		});
 	};
 	const updatePreset = () => {
-		if (!selectedPresetId() || !presetName()) {
+		if (!selectedPresetId() || !presetName() || !isLoggedIn()) {
 			return;
 		}
 		const updatePresetDto: IPreset = {
 			id: selectedPresetId(),
 			name: presetName(),
+			isPublic: presetIsPublic(),
 			data: props.matchCreateDto,
 		};
 		fetcher('PUT', `/api/presets`, updatePresetDto).then(() => {
@@ -88,12 +88,13 @@ const Presets: Component<{
 	};
 	const deletePreset = () => {
 		const presetIdToDelete = selectedPresetId();
-		if (!presetIdToDelete) {
+		if (!presetIdToDelete || !isLoggedIn()) {
 			return;
 		}
 		fetcher('DELETE', `/api/presets/${presetIdToDelete}`).then(() => {
 			setPresets((presets) => presets.filter((preset) => preset.id !== presetIdToDelete));
 			setSelectedPresetId('');
+			setPresetIsPublic(true);
 			setPresetName('');
 		});
 	};
@@ -108,16 +109,18 @@ const Presets: Component<{
 	const getPresetById = (presetId: string) => {
 		return presets().find((preset) => preset.id === presetId);
 	};
+
 	return (
 		<>
 			<div class="flex items-end space-x-2">
 				<div class="flex-grow">
 					<SelectInput
 						label={t('Select Preset')}
-						value={selectedPresetId()}
 						onInput={(e) => {
 							setSelectedPresetId(e.currentTarget.value);
-							setPresetName(getPresetById(e.currentTarget.value)?.name ?? '');
+							const preset = getPresetById(e.currentTarget.value);
+							setPresetName(preset?.name ?? '');
+							setPresetIsPublic(preset?.isPublic ?? false);
 							setMatchDataFromPreset(e.currentTarget.value);
 						}}
 						disabled={presets().length === 0}
@@ -135,40 +138,55 @@ const Presets: Component<{
 						</For>
 					</SelectInput>
 				</div>
-				<button
-					class="btn"
-					onClick={() => deletePreset()}
-					disabled={selectedPresetId() === ''}
-				>
-					<SvgDelete />
-					{t('Delete preset')}
-				</button>
+				<Show when={isLoggedIn()}>
+					<button
+						class="btn"
+						onClick={() => deletePreset()}
+						disabled={selectedPresetId() === ''}
+					>
+						<SvgDelete />
+						{t('Delete preset')}
+					</button>
+				</Show>
 			</div>
-			<div class="flex items-end space-x-2">
-				<div class="flex-grow">
-					<TextInput
-						label={t('Preset Name')}
-						value={presetName()}
-						onInput={(e) => setPresetName(e.currentTarget.value)}
-					/>
+			<Show when={isLoggedIn()}>
+				<div class="flex items-end space-x-2">
+					<div class="flex-grow">
+						<TextInput
+							label={t('Preset Name')}
+							value={presetName()}
+							onInput={(e) => setPresetName(e.currentTarget.value)}
+						/>
+					</div>
+					<SelectInput
+						label={t('Can be used by')}
+						onInput={(e) => setPresetIsPublic(e.currentTarget.value === 'true')}
+					>
+						<option value="true" selected={presetIsPublic()}>
+							{t('Everybody')}
+						</option>
+						<option value="false" selected={!presetIsPublic()}>
+							{t('Onl logged in users')}
+						</option>
+					</SelectInput>
+					<button
+						class="btn"
+						onClick={() => addPreset()}
+						disabled={presetName().trim() === ''}
+					>
+						<SvgAdd />
+						{t('Add new preset')}
+					</button>
+					<button
+						class="btn"
+						onClick={() => updatePreset()}
+						disabled={presetName().trim() === '' || selectedPresetId() === ''}
+					>
+						<SvgSave />
+						{t('Update preset')}
+					</button>
 				</div>
-				<button
-					class="btn"
-					onClick={() => addPreset()}
-					disabled={presetName().trim() === ''}
-				>
-					<SvgAdd />
-					{t('Add new preset')}
-				</button>
-				<button
-					class="btn"
-					onClick={() => updatePreset()}
-					disabled={presetName().trim() === '' || selectedPresetId() === ''}
-				>
-					<SvgSave />
-					{t('Update preset')}
-				</button>
-			</div>
+			</Show>
 		</>
 	);
 };
