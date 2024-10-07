@@ -152,14 +152,14 @@ export const MatchesPage: Component = () => {
 			// unsubscribe
 			subs.forEach((matchId) => {
 				if (!data.matches?.find((match) => match.id === matchId)) {
-					console.info(`unsub from ${matchId}`);
+					console.info(`Unsub from ${matchId}`);
 					unsubscribe(matchId);
 				}
 			});
 			// subscribe
 			data.matches?.forEach((match) => {
 				if (!subs.includes(match.id)) {
-					console.info(`sub to ${match.id}`);
+					console.info(`Sub to ${match.id}`);
 					subscribe({
 						matchId: match.id,
 						token: match.tmtSecret,

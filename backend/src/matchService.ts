@@ -31,9 +31,9 @@ export const setup = async () => {
 		const matchData = matchesFromStorage[i]!;
 		if (matchData.state !== 'FINISHED' && !matchData.isStopped) {
 			try {
-				await loadMatchFromStorage(matchData);
+				await loadMatchFromStorage(matchData, '(TMT restarted)');
 			} catch (err) {
-				console.error(`error creating match ${matchData.id} from storage: ${err}`);
+				console.error(`Error creating match ${matchData.id} from storage: ${err}`);
 				if (err instanceof Match.GameServerInUseError) {
 					matchData.isStopped = true;
 					await save(matchData);
@@ -45,12 +45,15 @@ export const setup = async () => {
 	periodicSaver();
 };
 
-const loadMatchFromStorage = async (matchData: IMatch) => {
+const loadMatchFromStorage = async (matchData: IMatch, logMessageSuffix?: string) => {
 	try {
-		console.info(`load match ${matchData.id} from storage`);
+		console.info(`Load match ${matchData.id} from storage`);
 		startingMatches.add(matchData.id);
 		matchData.parseIncomingLogs = false;
-		const match = await Match.createFromData(matchData);
+		const match = await Match.createFromData(
+			matchData,
+			`Load match from storage ${logMessageSuffix ?? ''}`.trim()
+		);
 		matches.set(match.data.id, match);
 		await save(match.data);
 	} finally {
@@ -80,7 +83,7 @@ export const create = async (dto: IMatchCreateDto, isLoggedIn: boolean) => {
 		Events.onMatchCreate(match);
 		return match;
 	} catch (err) {
-		console.error(`error creating new match: ${err}`);
+		console.error(`Error creating new match: ${err}`);
 		throw err;
 	} finally {
 		startingMatches.delete(id);
@@ -183,7 +186,7 @@ export const revive = async (id: string) => {
 		return false;
 	}
 	matchFromStorage.isStopped = false;
-	await loadMatchFromStorage(matchFromStorage);
+	await loadMatchFromStorage(matchFromStorage, '(revive)');
 	return true;
 };
 

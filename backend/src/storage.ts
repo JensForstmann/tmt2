@@ -27,7 +27,7 @@ export const read: TRead = async <T>(fileName: string, fallback?: T) => {
 		const content = await fsp.readFile(fullPath, { encoding: 'utf-8' });
 		return JSON.parse(content);
 	} catch (err) {
-		console.warn(`error storage read ${fileName}: ${err}. Use fallback.`);
+		console.warn(`Error storage read ${fileName}: ${err}. Use fallback.`);
 		return fallback;
 	}
 };
@@ -36,7 +36,7 @@ export const appendLine = async (fileName: string, content: any) => {
 	try {
 		await fsp.appendFile(path.join(STORAGE_FOLDER, fileName), JSON.stringify(content) + '\n');
 	} catch (err) {
-		console.warn(`error storage appendLine ${fileName}: ${err}`);
+		console.warn(`Error storage appendLine ${fileName}: ${err}`);
 	}
 };
 
@@ -57,7 +57,7 @@ export const readLines = async (
 			.map((line) => JSON.parse(line))
 			.slice(-(numberLastOfLines ?? 0));
 	} catch (err) {
-		console.warn(`error storage readLines ${fileName}: ${err}. Use fallback.`);
+		console.warn(`Error storage readLines ${fileName}: ${err}. Use fallback.`);
 		return fallback;
 	}
 };

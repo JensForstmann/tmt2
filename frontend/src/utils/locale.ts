@@ -6,7 +6,7 @@ export const t = (key: string) => {
 	const l = getCurrentLocale() as { [key: string]: string };
 	const value = l[key];
 	if (!value) {
-		console.debug(`no entry for "${key}" in locale "${currentLocale()}"`);
+		console.debug(`No entry for "${key}" in locale "${currentLocale()}"`);
 	}
 	return value ?? key;
 };
@@ -45,7 +45,7 @@ const getCurrentLocale = () => {
 	} else if (cl === 'en') {
 		return en;
 	} else {
-		console.warn(`locale ${cl} is not available, use "en" instead`);
+		console.warn(`Locale ${cl} is not available, use "en" instead`);
 		return en;
 	}
 };

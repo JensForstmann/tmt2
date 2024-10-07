@@ -68,7 +68,7 @@ const subscribe = async (ws: WebSocket, msg: SubscribeMessage | SubscribeSysMess
 		const matchId = msg.type === 'SUBSCRIBE' ? msg.matchId : undefined;
 		const authResponse = await Auth.isAuthorized(msg.token, matchId);
 		if (!authResponse) {
-			console.warn(`prevent subscribing: not authorized, payload: ${JSON.stringify(msg)}`);
+			console.warn(`Prevent subscribing: not authorized, payload: ${JSON.stringify(msg)}`);
 			return;
 		}
 		const wsData = WS_CLIENTS.get(ws);
@@ -80,7 +80,7 @@ const subscribe = async (ws: WebSocket, msg: SubscribeMessage | SubscribeSysMess
 			}
 		}
 	} catch (err) {
-		console.error(`subscribe error: ${err}`);
+		console.error(`Subscribe error: ${err}`);
 	}
 };
 

@@ -2314,6 +2314,9 @@
 					"name": {
 						"type": "string"
 					},
+					"isPublic": {
+						"type": "boolean"
+					},
 					"data": {
 						"$ref": "#/components/schemas/IMatchCreateDto"
 					},
@@ -2333,6 +2336,9 @@
 				"properties": {
 					"name": {
 						"type": "string"
+					},
+					"isPublic": {
+						"type": "boolean"
 					},
 					"data": {
 						"$ref": "#/components/schemas/IMatchCreateDto"
@@ -3223,7 +3229,7 @@
 				"description": "Get all configured presets.",
 				"security": [
 					{
-						"bearer_token": []
+						"bearer_token_optional": []
 					}
 				],
 				"parameters": []

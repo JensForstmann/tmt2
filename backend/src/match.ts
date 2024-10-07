@@ -45,7 +45,7 @@ export interface Match {
 
 export class GameServerInUseError extends Error {}
 
-export const createFromData = async (data: IMatch) => {
+export const createFromData = async (data: IMatch, logMessage?: string) => {
 	const match: Match = {
 		data: data,
 		periodicJobCounter: 0,
@@ -55,6 +55,9 @@ export const createFromData = async (data: IMatch) => {
 	};
 	match.data = addChangeListener(data, createOnDataChangeHandler(match));
 	match.log = createLogger(match);
+	if (logMessage) {
+		match.log(logMessage);
+	}
 
 	// http log address checks
 	if (match.data.tmtLogAddress) {
@@ -116,7 +119,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		mode: dto.mode ?? 'SINGLE',
 	};
 	try {
-		const match = await createFromData(data);
+		const match = await createFromData(data, 'Create new match');
 		await execRconCommands(match, 'init');
 		return match;
 	} catch (err) {
@@ -157,6 +160,7 @@ const connectToGameServer = async (match: Match): Promise<void> => {
 	previous?.end().catch(() => {});
 	match.log(`Connect rcon successful ${addr}`);
 	await ensureLogAddressIsRegistered(match);
+	resetPeriodicJobTimer(match);
 };
 
 const onRconConnectionEnd = async (match: Match) => {
@@ -240,14 +244,12 @@ const ensureLogAddressIsRegistered = async (match: Match) => {
 		.map((line) => line.trim())
 		.find((line) => line.startsWith(logAddress));
 
-	if (existing) {
-		return;
+	if (!existing) {
+		match.data.parseIncomingLogs = false;
+		match.log('Register log address');
+		await execRcon(match, 'logaddress_delall_http');
+		await execRcon(match, `logaddress_add_http "${logAddress}"`);
 	}
-
-	match.data.parseIncomingLogs = false;
-	match.log('Register log address');
-	await execRcon(match, 'logaddress_delall_http');
-	await execRcon(match, `logaddress_add_http "${logAddress}"`);
 
 	MatchService.scheduleSave(match);
 
@@ -263,7 +265,6 @@ const ensureLogAddressIsRegistered = async (match: Match) => {
 				if (match.data.state === 'ELECTION') {
 					await Election.auto(match);
 				}
-				await periodicJob(match);
 			}
 		})
 		.catch((err) => {
@@ -316,7 +317,7 @@ export const resetPeriodicJobTimer = (match: Match) => {
 				} catch (err) {
 					match.log(`Error in periodicJob: ${err}`);
 				}
-			}, Settings.PERIODIC_MESSAGE_FREQUENCY);
+			}, Settings.PERIODIC_JOB_FREQUENCY);
 };
 
 const periodicJob = async (match: Match) => {

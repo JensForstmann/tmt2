@@ -74,14 +74,17 @@ export const createFetcher = (token?: string) => {
 		) {
 			const errRespObj = await response.json();
 			if (errRespObj.name === 'ValidateError' && errRespObj.fields) {
-				let errString = [] as string[];
+				const errorStrings = [] as string[];
 				Object.entries(errRespObj.fields as Record<string, { message: string }>).forEach(
-					([key, { message }]) => errString.push(key + ': ' + message)
+					([key, { message }]) => errorStrings.push(key + ': ' + message)
 				);
-				console.log(errString);
-				throw errRespObj.fields.length === 1
-					? t('Error') + ': '
-					: t('Errors') + ': ' + errString.join(', ');
+				const errorString = errorStrings.join(', ');
+				console.error('Fetcher error:', errorString);
+				throw (
+					(errRespObj.fields.length === 1 ? t('Error') : t('Errors')) +
+					': ' +
+					errorStrings
+				);
 			} else {
 				throw JSON.stringify(errRespObj);
 			}
