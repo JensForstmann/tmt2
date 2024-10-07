@@ -53,7 +53,8 @@ Table of Contents:
     - [match specific access tokens](#match-specific-access-tokens)
 - [Development](#development)
   - [Docker](#docker)
-  - [NodeJS](#nodejs)
+  - [Install dependencies and run application in development mode](#install-dependencies-and-run-application-in-development-mode)
+  - [Build docker image](#build-docker-image)
 
 ## Getting Started
 
@@ -65,7 +66,9 @@ Run it with:
 docker run --name tmt2 -d -p 8080:8080 jensforstmann/tmt2
 ```
 
-Data will be written within the container to `/app/backend/storage`. To keep the files with different containers you can either specify a docker volume or a path on the local system:
+Data will be written within the container to `/app/backend/storage`.
+To keep the files with different containers
+you can either specify a docker volume or a path on the local system:
 
 ```sh
 # docker volume
@@ -79,7 +82,8 @@ The matches which are neither finished nor stopped will be loaded on application
 
 ### Create you first Match
 
-After running the container you can open the web frontend: http://localhost:8080 (or at whatever ip/server your docker container runs on.)
+After running the container you can open the web frontend: http://localhost:8080
+(or at whatever ip/server your docker container runs on.)
 
 
 
@@ -88,14 +92,19 @@ _Example screenshot: Create a new match from the web frontend (both dark and lig
 
 
 
-Even without an admin token you can create and manage matches (but only your own ones). If you want to know your admin token (a random one is generated at startup) either take a look at the `access_tokens.json` file or take a look at the first lines of the log output (`docker logs tmt2`).
+Even without an admin token you can create and manage matches (but only your own ones).
+If you want to know your admin token (a random one is generated at startup)
+either take a look at the `access_tokens.json` file
+or take a look at the first lines of the log output (`docker logs tmt2`).
 
 
 ### Ingame Chat Commands
 
 While TMT watches a match the player ingame can use chat commands to communicate with TMT:
 
-- `.team a` or `.team b` - you need to choose a team before you can execute any other commands, check the response in the chat to be sure you've joined the right one, also check the scoreboard (team names are visible there) if you're on the right side (CT/T)
+- `.team a` or `.team b` - you need to choose a team before you can execute any other commands,
+  check the response in the chat to be sure you've joined the right one,
+  also check the scoreboard (team names are visible there) if you're on the right side (CT/T)
 - during the map election process:
   - `.ban` - ban a map from the map pool
   - `.pick` - pick a map to be played
@@ -113,7 +122,8 @@ While TMT watches a match the player ingame can use chat commands to communicate
 - during the match
   - `.pause` - pause the match at the next freezetime (alias `.tech`)
   - `.unpause` - set your team as ready (alias `.ready` & `.rdy`)
-  - `.tac` - like pause, but uses up a tactical timeout for that team (same as calling an ingame vote for a tactical timeout)
+  - `.tac` - like pause, but uses up a tactical timeout for that team
+    (same as calling an ingame vote for a tactical timeout)
 
 
 
@@ -139,7 +149,8 @@ TMT_SAY_PREFIX="[TMT] "
 
 ## API
 
-See [`backend/swagger.json`](backend/swagger.json). You might want to copy its content and paste it into https://editor.swagger.io/.
+See [`backend/swagger.json`](backend/swagger.json).
+You might want to copy its content and paste it into https://editor.swagger.io/.
 
 See also the [`examples`](examples) folder.
 
@@ -201,41 +212,67 @@ After starting the dev processes you can reach the backend & frontend at:
 
 ## Docker
 
-Docker is recommended as it's easy to use and doesn't require any other software to be installed (if docker is already set up).
+Docker is recommended as it's easy to use and doesn't require any other software to be installed
+(if docker is already set up).
 
-> Note for windows user: It's recommended to have docker installed **directly within** WSL (not using Windows Docker from WSL) or to run a Linux VM.
+> *Note for windows user:*
+> 
+> For better performance it's recommended to have docker (and this repo)
+> installed **directly within** WSL (not using Windows Docker from WSL) or to run a Linux VM.
 
-Init the dev environment:
+```shell
+# Linux:
+./dev-container.sh
+```
 
-    ./dev-container-init.sh
-
-Start a docker container with port forwarding and hot reloading:
-
-    ./dev-container-start.sh
-
+```powershell
+# Windows
+.\dev-container.ps1
+```
 
 
-## NodeJS
 
-If you don't want to use docker or want to use NodeJS directly, you can do the following to setup a dev environment:
+## Install dependencies and run application in development mode
 
 Install dependencies:
 
-    npm install
-    cd backend
-    npm install
-    cd ../frontend
-    npm install
+```sh
+npm install
+cd backend
+npm install
+cd ../frontend
+npm install
+```
 
 Run backend with hot reloading:
 
-    cd backend
-    npm run dev
+```sh
+cd backend
+npm run dev
+```
 
 Run frontend with hot reloading:
 
-    cd frontend
-    npm run dev
+```sh
+cd frontend
+npm run dev
+```
+
+Run both backend and frontend with hot reloading:
+
+```sh
+npm run dev
+```
+
+
+
+## Build docker image
+
+To build a docker image locally:
+
+```sh
+docker build -t tmt2 .
+```
 
 
 
