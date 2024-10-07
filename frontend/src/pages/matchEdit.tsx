@@ -69,9 +69,12 @@ export const MatchEditPage: Component = () => {
 		});
 	});
 
+	const matchLink = () =>
+		`/matches/${params.id}` + (searchParams.secret ? `?secret=${searchParams.secret}` : '');
+
 	return (
 		<>
-			<A href={`/matches/${params.id}`} class="btn">
+			<A href={matchLink()} class="btn">
 				<SvgNavigateBefore class="inline-block" />
 				{t('Back to the Match')}
 			</A>
@@ -92,7 +95,7 @@ export const MatchEditPage: Component = () => {
 										`/api/matches/${params.id}`,
 										getUpdateDto(match(), dto)
 									);
-									navigate(`/matches/${params.id}`);
+									navigate(matchLink());
 								}}
 								getFinalDto={(dto) =>
 									JSON.stringify(getUpdateDto(match(), dto), undefined, 4)
