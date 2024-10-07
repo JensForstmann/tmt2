@@ -6,13 +6,13 @@ import { Card } from './Card';
 import { copyToClipboard } from '../utils/copyToClipboard';
 
 export const GameServerCard: Component<{
-	match: IMatchResponse;
+	ipPort: string;
+	serverPassword: string;
 }> = (props) => {
-	const ipPort = () => `${props.match.gameServer.ip}:${props.match.gameServer.port}`;
-	const steamUrl = () => `steam://connect/${ipPort()}?appid=730/${props.match.serverPassword}`;
+	const steamUrl = () => `steam://connect/${props.ipPort}?appid=730/${props.serverPassword}`;
 	const command = () =>
-		(props.match.serverPassword ? `password "${props.match.serverPassword}"; ` : '') +
-		`connect ${ipPort()}`;
+		(props.serverPassword ? `password "${props.serverPassword}"; ` : '') +
+		`connect ${props.ipPort}`;
 
 	return (
 		<Card class="text-center">
@@ -28,5 +28,16 @@ export const GameServerCard: Component<{
 				</button>
 			</p>
 		</Card>
+	);
+};
+
+export const MatchGameServerCard: Component<{
+	match: IMatchResponse;
+}> = (props) => {
+	return (
+		<GameServerCard
+			ipPort={`${props.match.gameServer.ip}:${props.match.gameServer.port}`}
+			serverPassword={props.match.serverPassword}
+		/>
 	);
 };

@@ -3,7 +3,7 @@ import { Component, createEffect, For, onCleanup, onMount, Show } from 'solid-js
 import { createStore } from 'solid-js/store';
 import { ChatEvent, escapeRconSayString, Event, IMatchResponse, LogEvent } from '../../../common';
 import { Chat } from '../components/Chat';
-import { GameServerCard } from '../components/GameServerCard';
+import { MatchGameServerCard } from '../components/GameServerCard';
 import { Loader } from '../components/Loader';
 import { LogViewer } from '../components/LogViewer';
 import { MatchCard } from '../components/MatchCard';
@@ -90,7 +90,7 @@ export const MatchPage: Component = () => {
 					<For each={match().matchMaps}>
 						{(map, i) => <MatchMapCard match={match()} map={map} mapIndex={i()} />}
 					</For>
-					<GameServerCard match={match()} />
+					<MatchGameServerCard match={match()} />
 					<PlayerListCard match={match()} />
 					<Show when={data.chatEvents}>
 						<Chat messages={data.chatEvents!} sendMessage={sendChatMessage} />
