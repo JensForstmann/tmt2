@@ -12,7 +12,7 @@ jobs:
         uses: olegtarasov/get-tag@v2.1
         id: tagName
         with:
-          tagRegex: "(?<major>.*)\\.(?<minor>.*)"
+          tagRegex: "v(?<major>.*)\\.(?<minor>.*)\\.(?<patch>.*)"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -33,3 +33,4 @@ jobs:
           tags: |
             jensforstmann/tmt2:${{ steps.tagName.outputs.major }}
             jensforstmann/tmt2:${{ steps.tagName.outputs.major }}.${{ steps.tagName.outputs.minor }}
+            jensforstmann/tmt2:${{ steps.tagName.outputs.major }}.${{ steps.tagName.outputs.minor }}.${{ steps.tagName.outputs.patch }}
