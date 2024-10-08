@@ -22,7 +22,7 @@ jobs:
         run: npm ci
 
       - name: Check syntax (prettier)
-        run: npx prettier --check .
+        run: npm run prettier-check
 
   build:
     runs-on: ubuntu-latest

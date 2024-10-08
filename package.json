@@ -8,8 +8,8 @@
 	"scripts": {
 		"build": "cd backend && npm run build && cd ../frontend && npm run build",
 		"dev": "cd backend && npm run dev & cd frontend && npm run dev",
-		"clean": "prettier --write .",
-		"prettier-check": "prettier --check ."
+		"clean": "prettier '!**/*md' . --write",
+		"prettier-check": "prettier '!**/*md' . --check"
 	},
 	"devDependencies": {
 		"prettier": "^3.3.3",
