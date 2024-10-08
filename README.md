@@ -1,7 +1,10 @@
 # TMT2 - Tournament Match Tracker 2
 
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/JensForstmann/tmt2/docker.yml?label=docker%20build)](https://github.com/JensForstmann/tmt2/actions/workflows/docker.yml)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jensforstmann/tmt2)](https://hub.docker.com/r/jensforstmann/tmt2)
-[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/jensforstmann/tmt2/latest)](https://hub.docker.com/r/jensforstmann/tmt2)
+[![Docker Image Size](https://img.shields.io/docker/image-size/jensforstmann/tmt2/latest?label=docker%20image%20size)](https://hub.docker.com/r/jensforstmann/tmt2)
+
+
 
 TMT is a tool that tracks/watches/observes a Counter-Strike 2 match.
 
@@ -56,6 +59,8 @@ Table of Contents:
   - [Install dependencies and run application in development mode](#install-dependencies-and-run-application-in-development-mode)
   - [Build docker image](#build-docker-image)
 
+
+
 ## Getting Started
 
 TMT2 is available on docker hub: https://hub.docker.com/r/jensforstmann/tmt2
@@ -80,6 +85,8 @@ docker run --name tmt2 -d -p 8080:8080 -v /home/tmt2/storage:/app/backend/storag
 
 The matches which are neither finished nor stopped will be loaded on application start.
 
+
+
 ### Create you first Match
 
 After running the container you can open the web frontend: http://localhost:8080
@@ -96,6 +103,7 @@ Even without an admin token you can create and manage matches (but only your own
 If you want to know your admin token (a random one is generated at startup)
 either take a look at the `access_tokens.json` file
 or take a look at the first lines of the log output (`docker logs tmt2`).
+
 
 
 ### Ingame Chat Commands
@@ -147,12 +155,15 @@ TMT_SAY_PREFIX="[TMT] "
 ```
 
 
+
 ## API
 
 See [`backend/swagger.json`](backend/swagger.json).
 You might want to copy its content and paste it into https://editor.swagger.io/.
 
 See also the [`examples`](examples) folder.
+
+
 
 ## Security / Authentication
 
@@ -168,6 +179,8 @@ Both are used in client requests in the Authorization header with a "Bearer "-pr
     ...
     Authorization: Bearer 2Mgog6ATqAs495NtUQUsph
     ...
+
+
 
 ### global access tokens
 
@@ -193,6 +206,8 @@ Example:
 
 If the file does not exist at startup a new one with a single auto generated global access token will be created.
 
+
+
 ### match specific access tokens
 
 Every match will have a `tmtSecret` property. This can be used in the same way as a global access token.
@@ -209,6 +224,8 @@ After starting the dev processes you can reach the backend & frontend at:
 
 - Backend: http://localhost:8080
 - Frontend: http://localhost:5173
+
+
 
 ## Docker
 
@@ -277,5 +294,7 @@ docker build -t tmt2 .
 
 
 ---
+
+
 
 > This project is a complete rewrite of the former [TMT](https://github.com/JensForstmann/CSGO-PHP-TournamentMatchTracker).

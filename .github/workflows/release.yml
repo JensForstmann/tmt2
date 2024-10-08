@@ -34,3 +34,4 @@ jobs:
             jensforstmann/tmt2:${{ steps.tagName.outputs.major }}
             jensforstmann/tmt2:${{ steps.tagName.outputs.major }}.${{ steps.tagName.outputs.minor }}
             jensforstmann/tmt2:${{ steps.tagName.outputs.major }}.${{ steps.tagName.outputs.minor }}.${{ steps.tagName.outputs.patch }}
+            jensforstmann/tmt2:v${{ steps.tagName.outputs.major }}
