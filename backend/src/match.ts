@@ -120,7 +120,6 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 	};
 	try {
 		const match = await createFromData(data, 'Create new match');
-		await execRconCommands(match, 'init');
 		return match;
 	} catch (err) {
 		if (!dto.gameServer) {
@@ -159,8 +158,35 @@ const connectToGameServer = async (match: Match): Promise<void> => {
 	match.rconConnection = gameServer;
 	previous?.end().catch(() => {});
 	match.log(`Connect rcon successful ${addr}`);
+	await setup(match);
+	await init(match);
 	await ensureLogAddressIsRegistered(match);
 	resetPeriodicJobTimer(match);
+};
+
+const init = async (match: Match) => {
+	const aliasKey = 'TMT_MATCH_ID';
+	const aliasResponse = await execRcon(match, 'alias');
+	const aliasMatchId = aliasResponse
+		.trim()
+		.split('\n')
+		.map((line) => line.trim())
+		.find((line) => line.startsWith(`${aliasKey} : `))
+		?.substring(aliasKey.length + 3); // 3 for " : "
+	if (aliasMatchId !== match.data.id) {
+		// server was restarted or TMT was never connected before
+		await execRcon(match, `alias ${aliasKey} ${match.data.id}`);
+		await execRconCommands(match, 'init');
+
+		// if match is already in progress (server crashed) -> load match map
+		const currentMatchMap = getCurrentMatchMap(match);
+		if (currentMatchMap) {
+			match.log(
+				`Match is already in progress (assume server crash): load match map ${currentMatchMap.name}`
+			);
+			await MatchMap.loadMap(match, currentMatchMap, true);
+		}
+	}
 };
 
 const onRconConnectionEnd = async (match: Match) => {
@@ -246,12 +272,11 @@ const ensureLogAddressIsRegistered = async (match: Match) => {
 
 	if (!existing) {
 		match.data.parseIncomingLogs = false;
+		MatchService.scheduleSave(match);
 		match.log('Register log address');
 		await execRcon(match, 'logaddress_delall_http');
 		await execRcon(match, `logaddress_add_http "${logAddress}"`);
 	}
-
-	MatchService.scheduleSave(match);
 
 	// delay parsing of incoming log lines (because we don't care about the initial big batch)
 	sleep(2000)
@@ -261,7 +286,6 @@ const ensureLogAddressIsRegistered = async (match: Match) => {
 				match.data.parseIncomingLogs = true;
 				MatchService.scheduleSave(match);
 				await say(match, 'TMT IS ONLINE');
-				await setup(match);
 				if (match.data.state === 'ELECTION') {
 					await Election.auto(match);
 				}
