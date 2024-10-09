@@ -1800,7 +1800,8 @@
 						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
 					},
 					"state": {
-						"$ref": "#/components/schemas/TMatchState"
+						"$ref": "#/components/schemas/TMatchState",
+						"description": "Overwrite the match state.\nOnly sets the state. Does not execute any code/logic."
 					},
 					"logSecret": {
 						"type": "string",
@@ -1808,10 +1809,12 @@
 					},
 					"currentMap": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"description": "Change to this match map (0-based index)."
 					},
 					"_restartElection": {
-						"type": "boolean"
+						"type": "boolean",
+						"description": "Restart the complete match.\nWill restart the election process as well.\nMust be executed when the election steps were changed after the match was created."
 					},
 					"_execRconCommandsInit": {
 						"type": "boolean"

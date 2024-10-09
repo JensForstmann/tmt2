@@ -173,11 +173,23 @@ export interface IMatchCreateDto {
 }
 
 export interface IMatchUpdateDto extends Partial<IMatchCreateDto> {
+	/**
+	 * Overwrite the match state.
+	 * Only sets the state. Does not execute any code/logic.
+	 */
 	state?: TMatchState;
 	/** updates the server's log address automatically */
 	logSecret?: string;
+	/**
+	 * Change to this match map (0-based index).
+	 */
 	currentMap?: number;
 
+	/**
+	 * Restart the complete match.
+	 * Will restart the election process as well.
+	 * Must be executed when the election steps were changed after the match was created.
+	 */
 	_restartElection?: boolean;
 	_execRconCommandsInit?: boolean;
 	_execRconCommandsKnife?: boolean;
