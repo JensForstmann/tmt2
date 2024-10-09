@@ -2005,6 +2005,14 @@
 						"type": "string",
 						"nullable": true
 					},
+					"tmtCommitSha": {
+						"type": "string",
+						"nullable": true
+					},
+					"tmtImageBuildTimestamp": {
+						"type": "string",
+						"nullable": true
+					},
 					"tmtStorageFolder": {
 						"type": "string"
 					},
@@ -2033,6 +2041,8 @@
 				},
 				"required": [
 					"tmtVersion",
+					"tmtCommitSha",
+					"tmtImageBuildTimestamp",
 					"tmtStorageFolder",
 					"tmtPort",
 					"tmtLogAddress",

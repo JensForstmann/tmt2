@@ -1,6 +1,6 @@
 import { ValidateError } from '@tsoa/runtime';
 import { generate as shortUuid } from 'short-uuid';
-import { TMT_LOG_ADDRESS, VERSION } from '.';
+import { COMMIT_SHA, IMAGE_BUILD_TIMESTAMP, TMT_LOG_ADDRESS, VERSION } from '.';
 import {
 	IMatch,
 	IMatchCreateDto,
@@ -716,7 +716,10 @@ export const registerCommandHandlers = () => {
 };
 
 const onVersionCommand: commands.CommandHandler = async (e) => {
-	await say(e.match, `TMT version: ${VERSION ?? 'unknown'}`);
+	await say(
+		e.match,
+		`TMT: version ${VERSION ?? 'unknown'}, commit ${COMMIT_SHA ?? 'unknown'}, build timestamp ${IMAGE_BUILD_TIMESTAMP ?? 'unknown'}`
+	);
 };
 
 const onEveryCommand: commands.CommandHandler = async (e) => {

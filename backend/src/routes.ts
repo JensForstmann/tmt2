@@ -1186,6 +1186,16 @@ const models: TsoaRoute.Models = {
 				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
 				required: true,
 			},
+			tmtCommitSha: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			tmtImageBuildTimestamp: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			tmtStorageFolder: { dataType: 'string', required: true },
 			tmtPort: {
 				dataType: 'union',

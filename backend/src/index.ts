@@ -1,16 +1,16 @@
 import { ValidateError } from '@tsoa/runtime';
 import express, { ErrorRequestHandler } from 'express';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import http from 'http';
 import path from 'path';
 import * as Auth from './auth';
 import * as Election from './election';
 import * as ManagedGameServers from './managedGameServers';
-import * as Presets from './presets';
 import * as Match from './match';
 import { checkAndNormalizeLogAddress } from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
+import * as Presets from './presets';
 import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
 import * as WebSocket from './webSocket';
@@ -28,18 +28,31 @@ export const TMT_LOG_ADDRESS: string | null = (() => {
 	return addr;
 })();
 
-const STATIC_PATH = (() => {
-	if (existsSync(path.join(__dirname, '../../frontend/dist'))) {
-		return path.join(__dirname, '../../frontend/dist');
+const APP_DIR = (() => {
+	if (__dirname.endsWith(path.join('/backend/dist/backend/src'))) {
+		// in production: __dirname = /app/backend/dist/backend/src
+		return path.join(__dirname, '../../../..');
 	}
-	if (existsSync(path.join(__dirname, '../../../../frontend/dist'))) {
-		return path.join(__dirname, '../../../../frontend/dist');
+	if (__dirname.endsWith(path.join('/backend/src'))) {
+		// in development: __dirname = /app/backend/src
+		return path.join(__dirname, '../..');
 	}
-	throw 'Could not determine static path';
+	console.error(`__dirname is ${__dirname}`);
+	throw 'Could not determine APP_DIR';
 })();
 
+const FRONTEND_DIR = path.join(APP_DIR, '/frontend/dist');
+
 export const PORT = process.env['TMT_PORT'] || 8080;
-export const VERSION = process.env['COMMIT_SHA'] || null;
+export const VERSION = process.env['TMT_VERSION'] || null;
+export const COMMIT_SHA = process.env['TMT_COMMIT_SHA'] || null;
+export const IMAGE_BUILD_TIMESTAMP = (() => {
+	const file = path.join(APP_DIR, '.TMT_IMAGE_BUILD_TIMESTAMP');
+	if (existsSync(file)) {
+		return readFileSync(file).toString().trim();
+	}
+	return null;
+})();
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -103,11 +116,14 @@ app.get('/api', (req, res) => {
 	res.sendFile('swagger.json', { root: '.' });
 });
 
-app.get('*', express.static(STATIC_PATH));
-app.get('*', (req, res) => res.sendFile(path.join(STATIC_PATH, 'index.html')));
+app.get('*', express.static(FRONTEND_DIR));
+app.get('*', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'index.html')));
 
 const main = async () => {
-	console.info(`Start TMT (version ${VERSION ? VERSION : 'unknown'})`);
+	console.info(
+		`Start TMT (version ${VERSION ?? 'unknown'}, commit ${COMMIT_SHA ?? 'unknown'}, build timestamp ${IMAGE_BUILD_TIMESTAMP ?? 'unknown'})`
+	);
+	console.info(`App dir: ${APP_DIR}, frontend dir: ${FRONTEND_DIR}`);
 	await Storage.setup();
 	await Auth.setup();
 	await WebSocket.setup(httpServer);

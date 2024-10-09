@@ -1,5 +1,5 @@
 import { Controller, Get, Route, Security } from '@tsoa/runtime';
-import { PORT, TMT_LOG_ADDRESS, VERSION } from '.';
+import { COMMIT_SHA, IMAGE_BUILD_TIMESTAMP, PORT, TMT_LOG_ADDRESS, VERSION } from '.';
 import { IDebugResponse } from '../../common';
 import { Settings } from './settings';
 import { STORAGE_FOLDER } from './storage';
@@ -20,6 +20,8 @@ export class DebugController extends Controller {
 	async getInfos(): Promise<IDebugResponse> {
 		return {
 			tmtVersion: VERSION,
+			tmtCommitSha: COMMIT_SHA,
+			tmtImageBuildTimestamp: IMAGE_BUILD_TIMESTAMP,
 			tmtStorageFolder: STORAGE_FOLDER,
 			tmtPort: PORT,
 			tmtLogAddress: TMT_LOG_ADDRESS,

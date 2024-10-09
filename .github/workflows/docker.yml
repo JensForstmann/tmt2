@@ -43,7 +43,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name == 'push' }}
           build-args: |
-            COMMIT_SHA=${{ github.sha }}
+            TMT_COMMIT_SHA=${{ github.sha }}
           tags: |
             jensforstmann/tmt2:${{ github.sha }}
             jensforstmann/tmt2:latest

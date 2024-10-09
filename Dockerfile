@@ -34,7 +34,10 @@ COPY --from=backend_build_image /app/backend/node_modules /app/backend/node_modu
 COPY --from=frontend_build_image /app/frontend/dist /app/frontend/dist
 VOLUME /app/backend/storage
 EXPOSE 8080
-ARG COMMIT_SHA
-ENV COMMIT_SHA=${COMMIT_SHA}
+ARG TMT_COMMIT_SHA
+ENV TMT_COMMIT_SHA=${TMT_COMMIT_SHA}
+ARG TMT_VERSION
+ENV TMT_VERSION=${TMT_VERSION}
+RUN date -u +"%Y-%m-%dT%H:%M:%SZ" > /app/.TMT_IMAGE_BUILD_TIMESTAMP
 WORKDIR /app/backend
 CMD ["/tini", "node", "./dist/backend/src/index.js"]
