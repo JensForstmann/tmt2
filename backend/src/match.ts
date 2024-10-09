@@ -132,6 +132,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 
 const createLogger = (match: Match) => (msg: string) => {
 	const ds = new Date().toISOString();
+	msg = GameServer.removeColors(msg);
 	Storage.appendLine(STORAGE_LOGS_PREFIX + match.data.id + STORAGE_LOGS_SUFFIX, `${ds} | ${msg}`);
 	console.info(`${ds} [${match.data.id}] ${msg}`);
 	Events.onLog(match, msg);
@@ -703,6 +704,7 @@ const onPlayerSay = async (
 const onConsoleSay = async (match: Match, message: string) => {
 	message = message.trim();
 	if (!message.startsWith(SAY_PREFIX)) {
+		message = GameServer.removeColors(message);
 		Events.onConsoleSay(match, message);
 	}
 };

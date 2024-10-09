@@ -16,6 +16,11 @@ export const colors = {
 	orange: '\u0010', // #E4AF3A
 };
 
+export const removeColors = (string: string) => {
+	Object.values(colors).forEach((colorCode) => (string = string.replaceAll(colorCode, '')));
+	return string;
+};
+
 export const create = async (dto: IGameServer, log: (msg: string) => void): Promise<Rcon> => {
 	const rcon = new Rcon({
 		host: dto.ip,
