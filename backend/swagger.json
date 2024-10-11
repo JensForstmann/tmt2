@@ -26,7 +26,7 @@
 					"advantage": {
 						"type": "number",
 						"format": "double",
-						"description": "Advantage in map wins, useful for double elemination tournament finals."
+						"description": "Advantage in map wins, useful for double elimination tournament finals."
 					},
 					"playerSteamIds64": {
 						"items": {
@@ -759,7 +759,7 @@
 					"advantage": {
 						"type": "number",
 						"format": "double",
-						"description": "Advantage in map wins, useful for double elemination tournament finals."
+						"description": "Advantage in map wins, useful for double elimination tournament finals."
 					},
 					"playerSteamIds64": {
 						"items": {

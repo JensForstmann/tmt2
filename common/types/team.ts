@@ -9,7 +9,7 @@ export interface ITeam {
 	passthrough?: string;
 	/** Team name. */
 	name: string;
-	/** Advantage in map wins, useful for double elemination tournament finals. */
+	/** Advantage in map wins, useful for double elimination tournament finals. */
 	advantage: number;
 	/** Steam ids of players in "Steam ID 64" format. Will be forced into this team.*/
 	playerSteamIds64?: string[];
@@ -25,7 +25,7 @@ export interface ITeamCreateDto {
 	 * Will be present in every response/webhook.
 	 */
 	passthrough?: string;
-	/** Advantage in map wins, useful for double elemination tournament finals. */
+	/** Advantage in map wins, useful for double elimination tournament finals. */
 	advantage?: number;
 	/** Steam ids of players in "Steam ID 64" format. Will be forced into this team.*/
 	playerSteamIds64?: string[];
