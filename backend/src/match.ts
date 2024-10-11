@@ -447,7 +447,13 @@ export const onLog = async (match: Match, body: string) => {
 		// logBuffer was empty before -> no other onLogLine is in progress right now
 		while (match.logBuffer.length > 0) {
 			const oldestLine = match.logBuffer[0]!;
-			await onLogLine(match, oldestLine);
+			try {
+				await onLogLine(match, oldestLine);
+			} catch (err) {
+				match.log(`Error processing incoming log line from game server: ${oldestLine}`);
+				match.log(`Failed line: ${oldestLine}`);
+				match.log(`Message: ${err}`);
+			}
 			match.logBuffer.splice(0, 1);
 		}
 	}
@@ -586,10 +592,10 @@ const onPlayerLogLine = async (
 		const steamId64 = Player.getSteamID64(steamId);
 		player = match.data.players.find((p) => p.steamId64 === steamId64);
 		if (!player) {
-			player = Player.create(steamId, name);
+			player = Player.create(match, steamId, name);
 			match.log(`Player ${player.steamId64} (${name}) created`);
 			match.data.players.push(player);
-			player = match.data.players[match.data.players.length - 1]!;
+			player = match.data.players[match.data.players.length - 1]!; // re-assign to work nicely with changeListener (ProxyHandler)
 			MatchService.scheduleSave(match);
 		}
 		if (player.name !== name) {
@@ -828,10 +834,14 @@ export const sayWhatTeamToJoin = async (match: Match) => {
 const onTeamCommand: commands.CommandHandler = async ({ match, player, parameters }) => {
 	const firstParameter = parameters[0]?.toUpperCase();
 	if (firstParameter === 'A' || firstParameter === 'B') {
+		if (Player.getForcedTeam(match, player.steamId64)) {
+			await say(match, `PLAYER ${escapeRconString(player.name)} CANNOT CHANGE THEIR TEAM`);
+			return;
+		}
 		player.team = firstParameter === 'A' ? 'TEAM_A' : 'TEAM_B';
 		MatchService.scheduleSave(match);
 		const team = getTeamByAB(match, player.team);
-		say(
+		await say(
 			match,
 			`PLAYER ${escapeRconString(player.name)} JOINED TEAM ${escapeRconString(team.name)}`
 		);
@@ -839,14 +849,14 @@ const onTeamCommand: commands.CommandHandler = async ({ match, player, parameter
 	} else {
 		const playerTeam = player.team;
 		if (playerTeam) {
-			say(
+			await say(
 				match,
-				`YOU ARE IN TEAM ${playerTeam === 'TEAM_A' ? 'A' : 'B'}: ${escapeRconString(
+				`PLAYER ${escapeRconString(player.name)} IS IN TEAM ${playerTeam === 'TEAM_A' ? 'A' : 'B'}: ${escapeRconString(
 					playerTeam === 'TEAM_A' ? match.data.teamA.name : match.data.teamB.name
 				)}`
 			);
 		} else {
-			say(match, `YOU HAVE NO TEAM`);
+			await say(match, `PLAYER ${escapeRconString(player.name)} HAS NO TEAM`);
 		}
 	}
 };
@@ -1049,6 +1059,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto.teamA || dto.teamB) {
+		Player.forcePlayerIntoTeams(match);
 		await setTeamNames(match);
 	}
 

@@ -9,7 +9,11 @@ export interface IPlayer {
 	steamId64: string;
 	/** Name. */
 	name: string;
-	/** Current team as they joined with `.team`. */
+	/**
+	 * Current team as they joined with `.team`.
+	 * If the player's steam id is in the team's `playerSteamIds64`
+	 * this cannot be changed and is always set to the team.
+	 */
 	team?: TTeamAB;
 	/** Current ingame side. */
 	side?: TTeamSides | null;

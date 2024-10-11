@@ -27,6 +27,13 @@
 						"type": "number",
 						"format": "double",
 						"description": "Advantage in map wins, useful for double elemination tournament finals."
+					},
+					"playerSteamIds64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "Steam ids of players in \"Steam ID 64\" format. Will be forced into this team."
 					}
 				},
 				"required": ["name", "advantage"],
@@ -524,7 +531,7 @@
 					},
 					"team": {
 						"$ref": "#/components/schemas/TTeamAB",
-						"description": "Current team as they joined with `.team`."
+						"description": "Current team as they joined with `.team`.\nIf the player's steam id is in the team's `playerSteamIds64`\nthis cannot be changed and is always set to the team."
 					},
 					"side": {
 						"allOf": [
@@ -753,6 +760,13 @@
 						"type": "number",
 						"format": "double",
 						"description": "Advantage in map wins, useful for double elemination tournament finals."
+					},
+					"playerSteamIds64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "Steam ids of players in \"Steam ID 64\" format. Will be forced into this team."
 					}
 				},
 				"required": ["name"],

@@ -32,7 +32,7 @@ import { SelectInput, TextArea, TextInput, ToggleInput } from './Inputs';
 import { Modal } from './Modal';
 
 const Presets: Component<{
-	onSelect: (preset: IPreset) => void;
+	onSelect: (preset: IMatchCreateDto) => void;
 	matchCreateDto: IMatchCreateDto;
 }> = (props) => {
 	const fetcher = createFetcher();
@@ -235,6 +235,10 @@ const minifyMapPool = (maps: string[]) => {
 	return maps.map((map) => map.trim()).filter((l) => l.length > 0);
 };
 
+const minifyPlayerSteamIds64 = (steamIds: string[]) => {
+	return steamIds.map((steamId) => steamId.trim()).filter((l) => l.length > 0);
+};
+
 export const CreateUpdateMatch: Component<
 	(
 		| {
@@ -265,6 +269,12 @@ export const CreateUpdateMatch: Component<
 		try {
 			const tempDto = copyObject(dto);
 			tempDto.mapPool = minifyMapPool(tempDto.mapPool);
+			tempDto.teamA.playerSteamIds64 = minifyPlayerSteamIds64(
+				tempDto.teamA.playerSteamIds64 ?? []
+			);
+			tempDto.teamB.playerSteamIds64 = minifyPlayerSteamIds64(
+				tempDto.teamB.playerSteamIds64 ?? []
+			);
 			setJson(props.getFinalDto?.(tempDto) ?? JSON.stringify(tempDto, undefined, 4));
 		} catch (err) {
 			setJson('ERROR!\n' + err);
@@ -812,6 +822,27 @@ export const CreateUpdateMatch: Component<
 							)}
 							onInput={(e) => setDto('teamA', 'passthrough', e.currentTarget.value)}
 						/>
+						<TextArea
+							label={t('Team A Player Steam IDs 64')}
+							labelTopRight={t('Force players by their steam id 64 into team A')}
+							value={dto.teamA.playerSteamIds64?.join('\n')}
+							class={
+								'border-2 ' +
+								getChangedClasses(
+									props.match.teamA.playerSteamIds64?.join('\n'),
+									dto.teamA.playerSteamIds64?.join('\n'),
+									'input-accent'
+								)
+							}
+							onInput={(e) =>
+								setDto(
+									'teamA',
+									'playerSteamIds64',
+									e.currentTarget.value.split('\n')
+								)
+							}
+							rows="5"
+						/>
 						<TextInput
 							label={t('Team B Advantage')}
 							type="number"
@@ -839,6 +870,27 @@ export const CreateUpdateMatch: Component<
 								'input-accent border-2'
 							)}
 							onInput={(e) => setDto('teamB', 'passthrough', e.currentTarget.value)}
+						/>
+						<TextArea
+							label={t('Team B Player Steam IDs 64')}
+							labelTopRight={t('Force players by their steam id 64 into team B')}
+							value={dto.teamB.playerSteamIds64?.join('\n')}
+							class={
+								'border-2 ' +
+								getChangedClasses(
+									props.match.teamB.playerSteamIds64?.join('\n'),
+									dto.teamB.playerSteamIds64?.join('\n'),
+									'input-accent'
+								)
+							}
+							onInput={(e) =>
+								setDto(
+									'teamB',
+									'playerSteamIds64',
+									e.currentTarget.value.split('\n')
+								)
+							}
+							rows="5"
 						/>
 						<ToggleInput
 							label={t('Can Clinch')}

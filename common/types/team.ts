@@ -11,6 +11,8 @@ export interface ITeam {
 	name: string;
 	/** Advantage in map wins, useful for double elemination tournament finals. */
 	advantage: number;
+	/** Steam ids of players in "Steam ID 64" format. Will be forced into this team.*/
+	playerSteamIds64?: string[];
 }
 
 /**
@@ -25,6 +27,8 @@ export interface ITeamCreateDto {
 	passthrough?: string;
 	/** Advantage in map wins, useful for double elemination tournament finals. */
 	advantage?: number;
+	/** Steam ids of players in "Steam ID 64" format. Will be forced into this team.*/
+	playerSteamIds64?: string[];
 }
 
 /** Possible ingame sides of a player. */
