@@ -834,11 +834,13 @@ export const sayWhatTeamToJoin = async (match: Match) => {
 const onTeamCommand: commands.CommandHandler = async ({ match, player, parameters }) => {
 	const firstParameter = parameters[0]?.toUpperCase();
 	if (firstParameter === 'A' || firstParameter === 'B') {
-		if (Player.getForcedTeam(match, player.steamId64)) {
+		const forcedTeam = Player.getForcedTeam(match, player.steamId64);
+		const wantedTeam: TTeamAB = firstParameter === 'A' ? 'TEAM_A' : 'TEAM_B';
+		if (forcedTeam && forcedTeam !== wantedTeam) {
 			await say(match, `PLAYER ${escapeRconString(player.name)} CANNOT CHANGE THEIR TEAM`);
 			return;
 		}
-		player.team = firstParameter === 'A' ? 'TEAM_A' : 'TEAM_B';
+		player.team = wantedTeam;
 		MatchService.scheduleSave(match);
 		const team = getTeamByAB(match, player.team);
 		await say(
