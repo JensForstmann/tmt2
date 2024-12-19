@@ -166,7 +166,7 @@ const Presets: Component<{
 							{t('Everybody')}
 						</option>
 						<option value="false" selected={!presetIsPublic()}>
-							{t('Onl logged in users')}
+							{t('Only logged in users')}
 						</option>
 					</SelectInput>
 					<button
@@ -362,7 +362,7 @@ export const CreateUpdateMatch: Component<
 				/>
 			</Show>
 			<TextInput
-				label={t('Game Server IP Address')}
+				label={t('Game Server IP')}
 				value={dto.gameServer?.ip ?? ''}
 				disabled={dto.gameServer === null}
 				class={getChangedClasses(
@@ -385,7 +385,7 @@ export const CreateUpdateMatch: Component<
 				onInput={(e) => setDto('gameServer', 'port', parseInt(e.currentTarget.value))}
 			/>
 			<TextInput
-				label={t('Game Server Rcon Password')}
+				label={t('Game Server RCON Password')}
 				value={dto.gameServer?.rconPassword ?? ''}
 				disabled={dto.gameServer === null}
 				class={getChangedClasses(
@@ -557,7 +557,7 @@ export const CreateUpdateMatch: Component<
 					/>
 				</Modal>
 				<div class="prose pt-4">
-					<h2>{t('Rcon Commands')}</h2>
+					<h2>{t('RCON Commands')}</h2>
 				</div>
 				<TextArea
 					label={t('Init')}
@@ -697,7 +697,7 @@ export const CreateUpdateMatch: Component<
 								value="QUIT_SERVER"
 								selected={dto.matchEndAction === 'QUIT_SERVER'}
 							>
-								{t('Quit server via Rcon after match end')}
+								{t('Quit server via RCON after match end')}
 							</option>
 						</SelectInput>
 						<TextInput

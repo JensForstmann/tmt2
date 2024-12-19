@@ -50,7 +50,7 @@ const RconCard: Component<{
 
 	return (
 		<Card class="text-center">
-			<h2 class="text-lg font-bold">{t('Rcon')}</h2>
+			<h2 class="text-lg font-bold">{t('RCON')}</h2>
 			<ScrollArea scroll>{output()}</ScrollArea>
 			<div class="h-4"></div>
 			<TextInput
@@ -77,7 +77,7 @@ const RconCard: Component<{
 						}
 					}
 				)}
-				placeholder={t('Execute rcon command...')}
+				placeholder={t('Execute RCON command...')}
 			/>
 			<ErrorComponent errorMessage={errorMessage()} />
 		</Card>

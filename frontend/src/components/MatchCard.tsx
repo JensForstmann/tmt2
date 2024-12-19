@@ -43,26 +43,26 @@ export const MatchCard: Component<{
 								[t('Stop Match'), mustConfirm(stop)],
 								[t('Restart Match'), mustConfirm(restartElection)],
 								[
-									t('Execute Rcon Init Commands'),
+									t('Execute RCON Init Commands'),
 									() => patchMatch({ _execRconCommandsInit: true }),
 								],
 								[
-									t('Execute Rcon Knife Commands'),
+									t('Execute RCON Knife Commands'),
 									() => patchMatch({ _execRconCommandsKnife: true }),
 								],
 								[
-									t('Execute Rcon Match Commands'),
+									t('Execute RCON Match Commands'),
 									() => patchMatch({ _execRconCommandsMatch: true }),
 								],
 								[
-									t('Execute Rcon End Commands'),
+									t('Execute RCON End Commands'),
 									() => patchMatch({ _execRconCommandsEnd: true }),
 								],
-								[t('Share Match with Token'), () => modalRef?.showModal()],
+								[t('Share Match With Token'), () => modalRef?.showModal()],
 								[t('Edit Match'), goToEditPage],
 							]
 						: [
-								[t('Share Match with Token'), () => modalRef?.showModal()],
+								[t('Share Match With Token'), () => modalRef?.showModal()],
 								[t('Edit Match'), goToEditPage],
 							]
 				}
