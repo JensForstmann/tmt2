@@ -515,7 +515,7 @@ export const CreateUpdateMatch: Component<
 									>
 										<SvgKeyboardArrowDown />
 									</button>
-									<div class="tooltip" data-tip={t('Add new Step')}>
+									<div class="tooltip" data-tip={t('Add new step')}>
 										<button
 											class="btn btn-square btn-xs join-item"
 											onClick={() => {
