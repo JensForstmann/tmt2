@@ -35,7 +35,7 @@ export const setup = async () => {
 			comment: 'first auto generated access token',
 		},
 	};
-	const tokensFromStorage = await Storage.read('access_tokens.json', firstToken);
+	const tokensFromStorage = await Storage.readJson('access_tokens.json', firstToken);
 	const tokenComments: string[] = [];
 	Object.entries(tokensFromStorage).forEach(([token, content]) => {
 		tokens.set(token, content);

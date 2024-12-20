@@ -133,7 +133,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 const createLogger = (match: Match) => (msg: string) => {
 	const ds = new Date().toISOString();
 	msg = GameServer.removeColors(msg);
-	Storage.appendLine(STORAGE_LOGS_PREFIX + match.data.id + STORAGE_LOGS_SUFFIX, `${ds} | ${msg}`);
+	Storage.appendLineJson(STORAGE_LOGS_PREFIX + match.data.id + STORAGE_LOGS_SUFFIX, `${ds} | ${msg}`);
 	console.info(`${ds} [${match.data.id}] ${msg}`);
 	Events.onLog(match, msg);
 };
@@ -143,7 +143,7 @@ const createOnDataChangeHandler = (match: Match) => (path: Array<string | number
 };
 
 export const getLogsTail = async (matchId: string, numberOfLines = 1000): Promise<string[]> => {
-	return await Storage.readLines(
+	return await Storage.readLinesJson(
 		STORAGE_LOGS_PREFIX + matchId + STORAGE_LOGS_SUFFIX,
 		[],
 		numberOfLines

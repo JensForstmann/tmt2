@@ -109,7 +109,9 @@ export const get = (id: string) => {
 };
 
 export const getFromStorage = async (id: string) => {
-	const matchData: IMatch | undefined = await Storage.read(STORAGE_PREFIX + id + STORAGE_SUFFIX);
+	const matchData: IMatch | undefined = await Storage.readJson(
+		STORAGE_PREFIX + id + STORAGE_SUFFIX
+	);
 	return matchData;
 };
 
@@ -124,7 +126,7 @@ export const getAllFromStorage = async () => {
 
 	for (let i = 0; i < matchesFromStorage.length; i++) {
 		const fileName = matchesFromStorage[i]!;
-		const matchData: IMatch | undefined = await Storage.read(fileName);
+		const matchData: IMatch | undefined = await Storage.readJson(fileName);
 		if (matchData && fileName === STORAGE_PREFIX + matchData.id + STORAGE_SUFFIX) {
 			matches.push(matchData);
 		}
@@ -183,7 +185,7 @@ export const save = async (matchData: IMatch) => {
 	const previousLastSavedAt = matchData.lastSavedAt;
 	matchData.lastSavedAt = Date.now();
 	try {
-		await Storage.write(STORAGE_PREFIX + matchData.id + STORAGE_SUFFIX, matchData);
+		await Storage.writeJson(STORAGE_PREFIX + matchData.id + STORAGE_SUFFIX, matchData);
 	} catch (err) {
 		matchData.lastSavedAt = previousLastSavedAt;
 		throw err;

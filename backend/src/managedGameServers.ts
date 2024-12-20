@@ -2,11 +2,20 @@ import { IGameServer, IManagedGameServer, IManagedGameServerUpdateDto } from '..
 import * as GameServer from './gameServer';
 import * as Storage from './storage';
 
-const FILE_NAME = 'managed_game_servers.json';
 const managedGameServers = new Map<string, IManagedGameServer>();
 
 const write = async () => {
-	await Storage.write(FILE_NAME, Array.from(managedGameServers.values()));
+	await Storage.writeDB(`DELETE FROM ${Storage.GAME_SERVERS_TABLE}`);
+	for (const managedGameServer of managedGameServers.values()) {
+		await Storage.writeDB(
+			`INSERT OR REPLACE INTO ${Storage.GAME_SERVERS_TABLE} (ip, port, rconPassword, usedBy, canBeUsed) ` +
+				`VALUES ("${managedGameServer.ip}", ` +
+				`${managedGameServer.port}, ` +
+				`"${managedGameServer.rconPassword}", ` +
+				`${managedGameServer.usedBy ? `"${managedGameServer.usedBy}"` : 'NULL'}, ` +
+				`${managedGameServer.canBeUsed ? 'TRUE' : 'FALSE'})`
+		);
+	}
 };
 
 const key = (gameServer: IManagedGameServerUpdateDto) => {
@@ -14,7 +23,9 @@ const key = (gameServer: IManagedGameServerUpdateDto) => {
 };
 
 export const setup = async () => {
-	const data = await Storage.read(FILE_NAME, [] as IManagedGameServer[]);
+	const data = (await Storage.readDB(
+		`SELECT * FROM ${Storage.GAME_SERVERS_TABLE}`
+	)) as IManagedGameServer[];
 	data.forEach((managedGameServer) => add(managedGameServer, false));
 };
 
