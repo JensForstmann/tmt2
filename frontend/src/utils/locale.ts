@@ -1,6 +1,7 @@
 import { createSignal } from 'solid-js';
 import de from '../locales/de.json';
 import en from '../locales/en.json';
+import fr from '../locales/fr.json';
 
 export const t = (key: string) => {
 	const l = getCurrentLocale() as { [key: string]: string };
@@ -11,41 +12,41 @@ export const t = (key: string) => {
 	return value ?? key;
 };
 
-const fromBrowserLanguage = () => {
-	const nl = navigator.language?.substring(0, 2);
-	if (['de', 'en'].includes(nl)) {
+type Locale = 'de' | 'en' | 'fr';
+
+const locales: Locale[] = ['de', 'en', 'fr'];
+
+const fromBrowserLanguage = (): Locale => {
+	const nl = navigator.language?.substring(0, 2) as Locale;
+	if (locales.includes(nl)) {
 		return nl;
 	}
 	return 'en';
 };
 
-const [currentLocale, setCurrentLocale] = createSignal<'de' | 'en'>(
-	(localStorage.getItem('locale') as 'de' | 'en') ?? fromBrowserLanguage()
+const [currentLocale, setCurrentLocale] = createSignal<Locale>(
+	(localStorage.getItem('locale') as Locale) ?? fromBrowserLanguage()
 );
 export { currentLocale };
 
 export const cycleLocale = () => {
 	const cl = currentLocale();
-	let next: 'de' | 'en';
-	if (cl === 'de') {
-		next = 'en';
-	} else if (cl === 'en') {
-		next = 'de';
-	} else {
-		next = 'en';
-	}
+	let next: Locale = locales[(locales.indexOf(cl) + 1)%locales.length];
 	setCurrentLocale(next);
 	localStorage.setItem('locale', next);
 };
 
 const getCurrentLocale = () => {
 	const cl = currentLocale();
-	if (cl === 'de') {
-		return de;
-	} else if (cl === 'en') {
-		return en;
-	} else {
-		console.warn(`Locale ${cl} is not available, use "en" instead`);
-		return en;
+	switch (cl) {
+		case 'de':
+			return de;
+		case 'en':
+			return en;
+		case 'fr':
+			return fr;
+		default:
+			console.warn(`Locale ${cl} is not available, use "en" instead`);
+			return en;
 	}
 };

@@ -52,7 +52,7 @@ const filterOptions: FilterOption[] = [
 	{
 		title: t('Dangling Matches'),
 		search: '?isLive=false&isStopped=false&state=ELECTION&state=MATCH_MAP',
-		label: t('Only show offline matches, which have not been properly stopped'),
+		label: t('Only show offline matches which have not been properly stopped'),
 		includeNewMatches: false,
 	},
 ];
