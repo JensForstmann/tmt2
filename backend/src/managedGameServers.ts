@@ -1,19 +1,17 @@
 import { IGameServer, IManagedGameServer, IManagedGameServerUpdateDto } from '../../common';
 import * as GameServer from './gameServer';
 import * as Storage from './storage';
+import { SqlAttribute, TableSchema } from './tableSchema';
 
 const managedGameServers = new Map<string, IManagedGameServer>();
+const GAME_SERVERS_TABLE = 'gameServers';
 
 const write = async () => {
-	await Storage.writeDB(`DELETE FROM ${Storage.GAME_SERVERS_TABLE}`);
+	await Storage.flushDB(GAME_SERVERS_TABLE);
 	for (const managedGameServer of managedGameServers.values()) {
-		await Storage.writeDB(
-			`INSERT OR REPLACE INTO ${Storage.GAME_SERVERS_TABLE} (ip, port, rconPassword, usedBy, canBeUsed) ` +
-				`VALUES ("${managedGameServer.ip}", ` +
-				`${managedGameServer.port}, ` +
-				`"${managedGameServer.rconPassword}", ` +
-				`${managedGameServer.usedBy ? `"${managedGameServer.usedBy}"` : 'NULL'}, ` +
-				`${managedGameServer.canBeUsed ? 'TRUE' : 'FALSE'})`
+		await Storage.insertDB(
+			GAME_SERVERS_TABLE,
+			new Map<string, any>(Object.entries(managedGameServer))
 		);
 	}
 };
@@ -23,8 +21,17 @@ const key = (gameServer: IManagedGameServerUpdateDto) => {
 };
 
 export const setup = async () => {
+	const attributes = [
+		{ name: 'ip', type: 'TEXT' },
+		{ name: 'port', type: 'INTEGER' },
+		{ name: 'rconPassword', type: 'TEXT' },
+		{ name: 'usedBy', type: 'TEXT' },
+		{ name: 'canBeUsed', type: 'INTEGER' },
+	] as SqlAttribute[];
+	const tableSchema = new TableSchema(GAME_SERVERS_TABLE, attributes, ['ip', 'port']);
+	await Storage.createTableDB(GAME_SERVERS_TABLE, tableSchema.generateCreateTableParameters());
 	const data = (await Storage.readDB(
-		`SELECT * FROM ${Storage.GAME_SERVERS_TABLE}`
+		`SELECT * FROM ${GAME_SERVERS_TABLE}`
 	)) as IManagedGameServer[];
 	data.forEach((managedGameServer) => add(managedGameServer, false));
 };

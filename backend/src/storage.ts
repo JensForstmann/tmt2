@@ -5,112 +5,15 @@ import { Database } from 'sqlite3';
 
 export const STORAGE_FOLDER = process.env['TMT_STORAGE_FOLDER'] || 'storage';
 export const DATABASE_PATH = path.join(STORAGE_FOLDER, 'database.sqlite');
-export const GAME_SERVERS_TABLE = 'gameServers';
-export const PLAYERS_TABLE = 'players';
-export const MATCHES_TABLE = 'matches';
-export const PLAYER_MATCH_STATS_TABLE = 'playerMatchStats';
 
 export const setup = async () => {
 	await fsp.mkdir(STORAGE_FOLDER, {
 		recursive: true,
 	});
-
-	const db = new Database(DATABASE_PATH);
-	db.serialize(() => {
-		db.run(
-			`CREATE TABLE IF NOT EXISTS ${GAME_SERVERS_TABLE} (
-				ip TEXT,
-				port INTEGER,
-				rconPassword TEXT,
-				usedBy TEXT,
-				canBeUsed BOOLEAN,
-				PRIMARY KEY (ip, port)
-			)`,
-			(err) => {
-				if (err) {
-					console.error(err);
-				}
-			}
-		);
-
-		db.run(
-			`CREATE TABLE IF NOT EXISTS ${PLAYERS_TABLE} ( 
-				steamId TEXT PRIMARY KEY, 
-				name TEXT, 
-				tKills INTEGER, 
-				tDeaths INTEGER, 
-				tAssists INTEGER, 
-				tDiff INTEGER, 
-				tHeadshots INTEGER, 
-				tAdr INTEGER)`,
-			(err) => {
-				if (err) {
-					console.error(err);
-				}
-			}
-		);
-
-		db.run(
-			`CREATE TABLE IF NOT EXISTS ${MATCHES_TABLE} ( 
-				matchId TEXT PRIMARY KEY, 
-				teamA TEXT, 
-				teamAScore TEXT, 
-				teamB TEXT, 
-				teamBScore TEXT, 
-				map TEXT, 
-				winner TEXT)`,
-			(err) => {
-				if (err) {
-					console.error(err);
-				}
-			}
-		);
-
-		db.run(
-			`CREATE TABLE IF NOT EXISTS ${PLAYER_MATCH_STATS_TABLE} ( 
-				steamId TEXT REFERENCES ${PLAYERS_TABLE}(steamId), 
-				matchId TEXT REFERENCES ${MATCHES_TABLE}(matchId), 
-				kills INTEGER, 
-				deaths INTEGER, 
-				assists INTEGER, 
-				diff INTEGER, 
-				headshots FLOAT, 
-				adr FLOAT, 
-				CHECK (headshots >= 0 AND headshots <= 100), 
-				PRIMARY KEY (steamId, matchId))`,
-			(err) => {
-				if (err) {
-					console.error(err);
-				}
-			}
-		);
-	});
-	db.close((err) => {
-		if (err) {
-			console.error('Error closing the database:', err.message);
-		}
-	});
 };
 
 export const writeJson = async <T>(fileName: string, content: T) => {
 	await fsp.writeFile(path.join(STORAGE_FOLDER, fileName), JSON.stringify(content, null, 4));
-};
-
-export const writeDB = async (query: string) => {
-	console.log(query);
-	const db = new Database(DATABASE_PATH);
-	db.serialize(() => {
-		db.run(query, (err) => {
-			if (err) {
-				console.error(err);
-			}
-		});
-	});
-	db.close((err) => {
-		if (err) {
-			console.error('Error closing the database:', err.message);
-		}
-	});
 };
 
 type TRead = {
@@ -129,28 +32,6 @@ export const readJson: TRead = async <T>(fileName: string, fallback?: T) => {
 		console.warn(`Error storage read ${fileName}: ${err}. Use fallback.`);
 		return fallback;
 	}
-};
-
-export const readDB = async (query: string) => {
-	return new Promise((resolve, reject) => {
-		const db = new Database(DATABASE_PATH);
-		db.serialize(() => {
-			db.all(query, (err, rows) => {
-				if (err) {
-					console.error(err);
-					reject(err);
-				} else {
-					console.log(rows);
-					resolve(rows);
-				}
-			});
-		});
-		db.close((err) => {
-			if (err) {
-				console.error('Error closing the database:', err.message);
-			}
-		});
-	});
 };
 
 export const appendLineJson = async (fileName: string, content: any) => {
@@ -181,6 +62,99 @@ export const readLinesJson = async (
 		console.warn(`Error storage readLines ${fileName}: ${err}. Use fallback.`);
 		return fallback;
 	}
+};
+
+export const createTableDB = async (table: string, attributes: string): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		const db = new Database(DATABASE_PATH);
+		db.serialize(() => {
+			db.run(`CREATE TABLE IF NOT EXISTS ${table} ${attributes}`, (err) => {
+				if (err) {
+					console.error('Error creating the table:', err.message);
+					reject(err);
+					return;
+				}
+				resolve();
+			});
+		});
+		db.close((err) => {
+			if (err) {
+				console.error('Error closing the database:', err.message);
+				reject(err);
+			}
+		});
+	});
+};
+
+export const flushDB = async (table: string): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		const db = new Database(DATABASE_PATH);
+		db.serialize(() => {
+			db.run(`DELETE FROM ${table}`, (err) => {
+				if (err) {
+					console.error('Error creating the table:', err.message);
+					reject(err);
+					return;
+				}
+				resolve();
+			});
+		});
+		db.close((err) => {
+			if (err) {
+				console.error('Error closing the database:', err.message);
+				reject(err);
+			}
+		});
+	});
+};
+
+export const insertDB = async (table: string, values: Map<string, any>): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		const db = new Database(DATABASE_PATH);
+		db.serialize(() => {
+			const columns = Array.from(values.keys()).join(', ');
+			const placeholders = Array.from(values.keys())
+				.map(() => '?')
+				.join(', ');
+			const stmt = db.prepare(`INSERT INTO ${table} (${columns}) VALUES (${placeholders})`);
+			stmt.run(Array.from(values.values()), (err) => {
+				if (err) {
+					console.error('Error inserting into the database:', err.message);
+					reject(err);
+					return;
+				}
+			});
+			stmt.finalize();
+			resolve();
+		});
+		db.close((err) => {
+			if (err) {
+				console.error('Error closing the database:', err.message);
+				reject(err);
+			}
+		});
+	});
+};
+
+export const readDB = async (query: string) => {
+	return new Promise((resolve, reject) => {
+		const db = new Database(DATABASE_PATH);
+		db.serialize(() => {
+			db.all(query, (err, rows) => {
+				if (err) {
+					console.error('Error reading the database:', err.message);
+					reject(err);
+				} else {
+					resolve(rows);
+				}
+			});
+		});
+		db.close((err) => {
+			if (err) {
+				console.error('Error closing the database:', err.message);
+			}
+		});
+	});
 };
 
 /**
