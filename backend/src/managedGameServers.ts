@@ -27,10 +27,11 @@ export const setup = async () => {
 		{ name: 'rconPassword', type: 'TEXT' },
 		{ name: 'usedBy', type: 'TEXT' },
 		{ name: 'canBeUsed', type: 'INTEGER' },
-	] as SqlAttribute[];
+	] as SqlAttribute[];	
 	const tableSchema = new TableSchema(GAME_SERVERS_TABLE, attributes, ['ip', 'port']);
-	await Storage.createTableDB(GAME_SERVERS_TABLE, tableSchema.generateCreateTableParameters());
-	const data = (await Storage.readDB(
+	await Storage.createTableDB(tableSchema);
+
+	const data = (await Storage.queryDB(
 		`SELECT * FROM ${GAME_SERVERS_TABLE}`
 	)) as IManagedGameServer[];
 	data.forEach((managedGameServer) => add(managedGameServer, false));

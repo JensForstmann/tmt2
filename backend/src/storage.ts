@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
 import { Database } from 'sqlite3';
+import { TableSchema } from './tableSchema';
 
 export const STORAGE_FOLDER = process.env['TMT_STORAGE_FOLDER'] || 'storage';
 export const DATABASE_PATH = path.join(STORAGE_FOLDER, 'database.sqlite');
@@ -64,11 +65,11 @@ export const readLinesJson = async (
 	}
 };
 
-export const createTableDB = async (table: string, attributes: string): Promise<void> => {
+export const createTableDB = async (tableSchema: TableSchema): Promise<void> => {
 	return new Promise((resolve, reject) => {
 		const db = new Database(DATABASE_PATH);
 		db.serialize(() => {
-			db.run(`CREATE TABLE IF NOT EXISTS ${table} ${attributes}`, (err) => {
+			db.run(`CREATE TABLE IF NOT EXISTS ${tableSchema.generateCreateTableParameters()}`, (err) => {
 				if (err) {
 					console.error('Error creating the table:', err.message);
 					reject(err);
@@ -136,7 +137,7 @@ export const insertDB = async (table: string, values: Map<string, any>): Promise
 	});
 };
 
-export const readDB = async (query: string) => {
+export const queryDB = async (query: string) => {
 	return new Promise((resolve, reject) => {
 		const db = new Database(DATABASE_PATH);
 		db.serialize(() => {

@@ -30,6 +30,6 @@ export class TableSchema {
 			? `, PRIMARY KEY (${this.primaryKey.join(', ')})`
 			: '';
 
-		return `(${attributes}${primaryKeyDefinition});`;
+		return `${this.tableName} (${attributes}${primaryKeyDefinition});`;
 	}
 }
