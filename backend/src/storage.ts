@@ -69,14 +69,17 @@ export const createTableDB = async (tableSchema: TableSchema): Promise<void> => 
 	return new Promise((resolve, reject) => {
 		const db = new Database(DATABASE_PATH);
 		db.serialize(() => {
-			db.run(`CREATE TABLE IF NOT EXISTS ${tableSchema.generateCreateTableParameters()}`, (err) => {
-				if (err) {
-					console.error('Error creating the table:', err.message);
-					reject(err);
-					return;
+			db.run(
+				`CREATE TABLE IF NOT EXISTS ${tableSchema.generateCreateTableParameters()}`,
+				(err) => {
+					if (err) {
+						console.error('Error creating the table:', err.message);
+						reject(err);
+						return;
+					}
+					resolve();
 				}
-				resolve();
-			});
+			);
 		});
 		db.close((err) => {
 			if (err) {
