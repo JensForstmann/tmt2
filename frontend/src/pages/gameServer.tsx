@@ -27,7 +27,7 @@ export const GameServerPage: Component = () => {
 	});
 
 	return Number.isNaN(port) ? (
-		<ErrorComponent errorMessage={t('ip:port invalid')} />
+		<ErrorComponent errorMessage={t('ip: port invalid')} />
 	) : (
 		<div class="space-y-5">
 			<GameServerCard ipPort={ip + ':' + port} serverPassword={serverPassword()} />

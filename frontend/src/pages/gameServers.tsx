@@ -108,7 +108,7 @@ export const GameServersPage: Component = () => {
 						/>
 
 						<TextInput
-							label={t('Game Server Rcon Password')}
+							label={t('Game Server RCON Password')}
 							value={rconPassword()}
 							onInput={(e) => setRconPassword(e.currentTarget.value)}
 						/>

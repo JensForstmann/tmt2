@@ -18,7 +18,7 @@ export const ManagedGameServerList: Component<{
 						<th>{t('#')}</th>
 						<th>{t('IP')}</th>
 						<th>{t('Port')}</th>
-						<th>{t('Rcon Password')}</th>
+						<th>{t('RCON Password')}</th>
 						<th>{t('Can Be Used?')}</th>
 						<th>{t('Used By')}</th>
 						<th>{t('Actions')}</th>
@@ -66,7 +66,7 @@ export const ManagedGameServerList: Component<{
 									)}
 								</td>
 								<td class="space-x-2">
-									<div class="tooltip" data-tip={t('Rcon')}>
+									<div class="tooltip" data-tip={t('RCON')}>
 										<A
 											href={`/gameservers/${managedGameServer.ip}:${managedGameServer.port}`}
 											class="btn btn-circle btn-outline"
