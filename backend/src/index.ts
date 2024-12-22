@@ -14,6 +14,7 @@ import * as Presets from './presets';
 import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
 import * as WebSocket from './webSocket';
+import * as StatsLogger from './statsLogger';
 
 export const TMT_LOG_ADDRESS: string | null = (() => {
 	if (!process.env['TMT_LOG_ADDRESS']) {
@@ -126,6 +127,7 @@ const main = async () => {
 	console.info(`App dir: ${APP_DIR}, frontend dir: ${FRONTEND_DIR}`);
 	await Storage.setup();
 	await ManagedGameServers.setup();
+	await StatsLogger.setup();
 	await Auth.setup();
 	await WebSocket.setup(httpServer);
 	await Presets.setup();
