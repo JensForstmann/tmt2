@@ -58,7 +58,9 @@ export const MatchEditPage: Component = () => {
 	const navigate = useNavigate();
 	const params = useParams();
 	const [searchParams] = useSearchParams();
-	const fetcher = createFetcher(searchParams.secret);
+	const fetcher = createFetcher(
+		typeof searchParams.secret === 'string' ? searchParams.secret : undefined
+	);
 	const [data, setData] = createStore<{
 		match?: IMatchResponse;
 	}>({});

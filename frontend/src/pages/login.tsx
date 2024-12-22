@@ -13,7 +13,9 @@ export const LoginPage: Component = () => {
 
 	const submit = async () => {
 		if (await login(token())) {
-			navigate(searchParams.path ? decodeURIComponent(searchParams.path) : '/');
+			navigate(
+				typeof searchParams.path === 'string' ? decodeURIComponent(searchParams.path) : '/'
+			);
 		} else {
 			setMsg(t('Login failed'));
 		}
