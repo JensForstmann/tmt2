@@ -151,7 +151,7 @@
 	"This match is not being supervised.": "Ce match n'est pas supervisé.",
 	"Start Supervising": "Commencer Supervision",
 	"This match was not stopped properly.": "Ce match n'a pas été arrêté correctement.",
-	"The next time TMT starts, it will try to supervise it again." : "La prochaine fois que TMT démarrera, il réessaiera de le superviser.",
+	"The next time TMT starts, it will try to supervise it again.": "La prochaine fois que TMT démarrera, il réessaiera de le superviser.",
 	"Stop it to prevent supervising retries.": "Arrêtez le pour empêcher d'essayer la supervision.",
 	"Stop Supervising": "Arrêter Supervision",
 	"Players": "Joueurs",

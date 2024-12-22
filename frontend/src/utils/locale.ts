@@ -31,7 +31,7 @@ export { currentLocale };
 
 export const cycleLocale = () => {
 	const cl = currentLocale();
-	let next: Locale = locales[(locales.indexOf(cl) + 1)%locales.length];
+	let next: Locale = locales[(locales.indexOf(cl) + 1) % locales.length];
 	setCurrentLocale(next);
 	localStorage.setItem('locale', next);
 };
