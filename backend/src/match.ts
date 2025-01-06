@@ -133,7 +133,10 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 const createLogger = (match: Match) => (msg: string) => {
 	const ds = new Date().toISOString();
 	msg = GameServer.removeColors(msg);
-	Storage.appendLineJson(STORAGE_LOGS_PREFIX + match.data.id + STORAGE_LOGS_SUFFIX, `${ds} | ${msg}`);
+	Storage.appendLineJson(
+		STORAGE_LOGS_PREFIX + match.data.id + STORAGE_LOGS_SUFFIX,
+		`${ds} | ${msg}`
+	);
 	console.info(`${ds} [${match.data.id}] ${msg}`);
 	Events.onLog(match, msg);
 };
