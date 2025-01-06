@@ -33,7 +33,7 @@ const STORAGE_EVENTS_SUFFIX = '.jsonl';
 
 const send = (match: Match.Match, data: Event, isSystemEvent?: boolean) => {
 	// Storage
-	Storage.appendLine(STORAGE_EVENTS_PREFIX + match.data.id + STORAGE_EVENTS_SUFFIX, data);
+	Storage.appendLineJson(STORAGE_EVENTS_PREFIX + match.data.id + STORAGE_EVENTS_SUFFIX, data);
 
 	// WebSocket
 	WebSocket.publish(data, isSystemEvent);
@@ -55,7 +55,7 @@ const send = (match: Match.Match, data: Event, isSystemEvent?: boolean) => {
 };
 
 export const getEventsTail = async (matchId: string, numberOfLines = 1000): Promise<Event[]> => {
-	return await Storage.readLines(
+	return await Storage.readLinesJson(
 		STORAGE_EVENTS_PREFIX + matchId + STORAGE_EVENTS_SUFFIX,
 		[],
 		numberOfLines

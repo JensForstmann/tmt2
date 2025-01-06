@@ -125,9 +125,9 @@ const main = async () => {
 	);
 	console.info(`App dir: ${APP_DIR}, frontend dir: ${FRONTEND_DIR}`);
 	await Storage.setup();
+	await ManagedGameServers.setup();
 	await Auth.setup();
 	await WebSocket.setup(httpServer);
-	await ManagedGameServers.setup();
 	await Presets.setup();
 	Match.registerCommandHandlers();
 	MatchMap.registerCommandHandlers();

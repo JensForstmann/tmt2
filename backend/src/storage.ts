@@ -1,8 +1,11 @@
 import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
+import { Database } from 'sqlite3';
+import { TableSchema } from './tableSchema';
 
 export const STORAGE_FOLDER = process.env['TMT_STORAGE_FOLDER'] || 'storage';
+export const DATABASE_PATH = path.join(STORAGE_FOLDER, 'database.sqlite');
 
 export const setup = async () => {
 	await fsp.mkdir(STORAGE_FOLDER, {
@@ -10,7 +13,7 @@ export const setup = async () => {
 	});
 };
 
-export const write = async <T>(fileName: string, content: T) => {
+export const writeJson = async <T>(fileName: string, content: T) => {
 	await fsp.writeFile(path.join(STORAGE_FOLDER, fileName), JSON.stringify(content, null, 4));
 };
 
@@ -18,11 +21,11 @@ type TRead = {
 	<T>(fileName: string, fallback: T): Promise<T>;
 	<T>(fileName: string, fallback?: T): Promise<T | undefined>;
 };
-export const read: TRead = async <T>(fileName: string, fallback?: T) => {
+export const readJson: TRead = async <T>(fileName: string, fallback?: T) => {
 	try {
 		const fullPath = path.join(STORAGE_FOLDER, fileName);
 		if (!fs.existsSync(fullPath) && fallback) {
-			await write(fileName, fallback);
+			await writeJson(fileName, fallback);
 		}
 		const content = await fsp.readFile(fullPath, { encoding: 'utf-8' });
 		return JSON.parse(content);
@@ -32,7 +35,7 @@ export const read: TRead = async <T>(fileName: string, fallback?: T) => {
 	}
 };
 
-export const appendLine = async (fileName: string, content: any) => {
+export const appendLineJson = async (fileName: string, content: any) => {
 	try {
 		await fsp.appendFile(path.join(STORAGE_FOLDER, fileName), JSON.stringify(content) + '\n');
 	} catch (err) {
@@ -40,7 +43,7 @@ export const appendLine = async (fileName: string, content: any) => {
 	}
 };
 
-export const readLines = async (
+export const readLinesJson = async (
 	fileName: string,
 	fallback: Array<any>,
 	numberLastOfLines?: number
@@ -60,6 +63,102 @@ export const readLines = async (
 		console.warn(`Error storage readLines ${fileName}: ${err}. Use fallback.`);
 		return fallback;
 	}
+};
+
+export const createTableDB = async (tableSchema: TableSchema): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		const db = new Database(DATABASE_PATH);
+		db.serialize(() => {
+			db.run(
+				`CREATE TABLE IF NOT EXISTS ${tableSchema.generateCreateTableParameters()}`,
+				(err) => {
+					if (err) {
+						console.error('Error creating the table:', err.message);
+						reject(err);
+						return;
+					}
+					resolve();
+				}
+			);
+		});
+		db.close((err) => {
+			if (err) {
+				console.error('Error closing the database:', err.message);
+				reject(err);
+			}
+		});
+	});
+};
+
+export const flushDB = async (table: string): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		const db = new Database(DATABASE_PATH);
+		db.serialize(() => {
+			db.run(`DELETE FROM ${table}`, (err) => {
+				if (err) {
+					console.error('Error creating the table:', err.message);
+					reject(err);
+					return;
+				}
+				resolve();
+			});
+		});
+		db.close((err) => {
+			if (err) {
+				console.error('Error closing the database:', err.message);
+				reject(err);
+			}
+		});
+	});
+};
+
+export const insertDB = async (table: string, values: Map<string, any>): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		const db = new Database(DATABASE_PATH);
+		db.serialize(() => {
+			const columns = Array.from(values.keys()).join(', ');
+			const placeholders = Array.from(values.keys())
+				.map(() => '?')
+				.join(', ');
+			const stmt = db.prepare(`INSERT INTO ${table} (${columns}) VALUES (${placeholders})`);
+			stmt.run(Array.from(values.values()), (err) => {
+				if (err) {
+					console.error('Error inserting into the database:', err.message);
+					reject(err);
+					return;
+				}
+			});
+			stmt.finalize();
+			resolve();
+		});
+		db.close((err) => {
+			if (err) {
+				console.error('Error closing the database:', err.message);
+				reject(err);
+			}
+		});
+	});
+};
+
+export const queryDB = async (query: string) => {
+	return new Promise((resolve, reject) => {
+		const db = new Database(DATABASE_PATH);
+		db.serialize(() => {
+			db.all(query, (err, rows) => {
+				if (err) {
+					console.error('Error reading the database:', err.message);
+					reject(err);
+				} else {
+					resolve(rows);
+				}
+			});
+		});
+		db.close((err) => {
+			if (err) {
+				console.error('Error closing the database:', err.message);
+			}
+		});
+	});
 };
 
 /**

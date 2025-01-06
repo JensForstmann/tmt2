@@ -1,12 +1,19 @@
 import { IGameServer, IManagedGameServer, IManagedGameServerUpdateDto } from '../../common';
 import * as GameServer from './gameServer';
 import * as Storage from './storage';
+import { SqlAttribute, TableSchema } from './tableSchema';
 
-const FILE_NAME = 'managed_game_servers.json';
 const managedGameServers = new Map<string, IManagedGameServer>();
+const GAME_SERVERS_TABLE = 'gameServers';
 
 const write = async () => {
-	await Storage.write(FILE_NAME, Array.from(managedGameServers.values()));
+	await Storage.flushDB(GAME_SERVERS_TABLE);
+	for (const managedGameServer of managedGameServers.values()) {
+		await Storage.insertDB(
+			GAME_SERVERS_TABLE,
+			new Map<string, any>(Object.entries(managedGameServer))
+		);
+	}
 };
 
 const key = (gameServer: IManagedGameServerUpdateDto) => {
@@ -14,7 +21,19 @@ const key = (gameServer: IManagedGameServerUpdateDto) => {
 };
 
 export const setup = async () => {
-	const data = await Storage.read(FILE_NAME, [] as IManagedGameServer[]);
+	const attributes = [
+		{ name: 'ip', type: 'TEXT' },
+		{ name: 'port', type: 'INTEGER' },
+		{ name: 'rconPassword', type: 'TEXT' },
+		{ name: 'usedBy', type: 'TEXT' },
+		{ name: 'canBeUsed', type: 'INTEGER' },
+	] as SqlAttribute[];
+	const tableSchema = new TableSchema(GAME_SERVERS_TABLE, attributes, ['ip', 'port']);
+	await Storage.createTableDB(tableSchema);
+
+	const data = (await Storage.queryDB(
+		`SELECT * FROM ${GAME_SERVERS_TABLE}`
+	)) as IManagedGameServer[];
 	data.forEach((managedGameServer) => add(managedGameServer, false));
 };
 

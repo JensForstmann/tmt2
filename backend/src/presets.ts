@@ -156,11 +156,11 @@ const DEFAULT_PRESETS: IPreset[] = [
 const presets = new Map<string, IPreset>();
 
 const write = async () => {
-	await Storage.write(FILE_NAME, Array.from(presets.values()));
+	await Storage.writeJson(FILE_NAME, Array.from(presets.values()));
 };
 
 export const setup = async () => {
-	const data = await Storage.read(FILE_NAME, DEFAULT_PRESETS);
+	const data = await Storage.readJson(FILE_NAME, DEFAULT_PRESETS);
 	data.forEach((preset) => presets.set(preset.id, preset));
 };
 
