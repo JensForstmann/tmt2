@@ -96,7 +96,7 @@ export const flushDB = async (table: string): Promise<void> => {
 		db.serialize(() => {
 			db.run(`DELETE FROM ${table}`, (err) => {
 				if (err) {
-					console.error('Error creating the table:', err.message);
+					console.error('Error flushing the table:', err.message);
 					reject(err);
 					return;
 				}

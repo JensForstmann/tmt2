@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { IGameServer, IManagedGameServer, IManagedGameServerUpdateDto } from '../../common';
 import * as GameServer from './gameServer';
 import * as Storage from './storage';
@@ -5,6 +7,7 @@ import { SqlAttribute, TableSchema } from './tableSchema';
 
 const managedGameServers = new Map<string, IManagedGameServer>();
 const GAME_SERVERS_TABLE = 'gameServers';
+const JSON_NAME = 'managed_game_servers.json';
 
 const write = async () => {
 	await Storage.flushDB(GAME_SERVERS_TABLE);
@@ -31,10 +34,22 @@ export const setup = async () => {
 	const tableSchema = new TableSchema(GAME_SERVERS_TABLE, attributes, ['ip', 'port']);
 	await Storage.createTableDB(tableSchema);
 
-	const data = (await Storage.queryDB(
-		`SELECT * FROM ${GAME_SERVERS_TABLE}`
-	)) as IManagedGameServer[];
+	let data: IManagedGameServer[];
+	if (fs.existsSync(path.join(Storage.STORAGE_FOLDER, JSON_NAME))) {
+		console.log('JSON file found: migrating managed game servers from JSON to SQLite');
+		data = await Storage.readJson(JSON_NAME, [] as IManagedGameServer[]);
+		fs.renameSync(
+			path.join(Storage.STORAGE_FOLDER, JSON_NAME),
+			path.join(Storage.STORAGE_FOLDER, JSON_NAME + '.old')
+		);
+	} else {
+		data = (await Storage.queryDB(
+			`SELECT * FROM ${GAME_SERVERS_TABLE}`
+		)) as IManagedGameServer[];
+	}
+
 	data.forEach((managedGameServer) => add(managedGameServer, false));
+	await write();
 };
 
 export const get = (ip: string, port: number) => {
