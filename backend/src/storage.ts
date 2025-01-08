@@ -6,6 +6,7 @@ import { TableSchema } from './tableSchema';
 
 export const STORAGE_FOLDER = process.env['TMT_STORAGE_FOLDER'] || 'storage';
 export const DATABASE_PATH = path.join(STORAGE_FOLDER, 'database.sqlite');
+const DATABASE = new Database(DATABASE_PATH);
 
 export const setup = async () => {
 	await fsp.mkdir(STORAGE_FOLDER, {
@@ -67,9 +68,8 @@ export const readLinesJson = async (
 
 export const createTableDB = async (tableSchema: TableSchema): Promise<void> => {
 	return new Promise((resolve, reject) => {
-		const db = new Database(DATABASE_PATH);
-		db.serialize(() => {
-			db.run(
+		DATABASE.serialize(() => {
+			DATABASE.run(
 				`CREATE TABLE IF NOT EXISTS ${tableSchema.generateCreateTableParameters()}`,
 				(err) => {
 					if (err) {
@@ -81,20 +81,13 @@ export const createTableDB = async (tableSchema: TableSchema): Promise<void> => 
 				}
 			);
 		});
-		db.close((err) => {
-			if (err) {
-				console.error('Error closing the database:', err.message);
-				reject(err);
-			}
-		});
 	});
 };
 
 export const flushDB = async (table: string): Promise<void> => {
 	return new Promise((resolve, reject) => {
-		const db = new Database(DATABASE_PATH);
-		db.serialize(() => {
-			db.run(`DELETE FROM ${table}`, (err) => {
+		DATABASE.serialize(() => {
+			DATABASE.run(`DELETE FROM ${table}`, (err) => {
 				if (err) {
 					console.error('Error flushing the table:', err.message);
 					reject(err);
@@ -103,24 +96,19 @@ export const flushDB = async (table: string): Promise<void> => {
 				resolve();
 			});
 		});
-		db.close((err) => {
-			if (err) {
-				console.error('Error closing the database:', err.message);
-				reject(err);
-			}
-		});
 	});
 };
 
 export const insertDB = async (table: string, values: Map<string, any>): Promise<void> => {
 	return new Promise((resolve, reject) => {
-		const db = new Database(DATABASE_PATH);
-		db.serialize(() => {
+		DATABASE.serialize(() => {
 			const columns = Array.from(values.keys()).join(', ');
 			const placeholders = Array.from(values.keys())
 				.map(() => '?')
 				.join(', ');
-			const stmt = db.prepare(`INSERT INTO ${table} (${columns}) VALUES (${placeholders})`);
+			const stmt = DATABASE.prepare(
+				`INSERT INTO ${table} (${columns}) VALUES (${placeholders})`
+			);
 			stmt.run(Array.from(values.values()), (err) => {
 				if (err) {
 					console.error('Error inserting into the database:', err.message);
@@ -131,20 +119,13 @@ export const insertDB = async (table: string, values: Map<string, any>): Promise
 			stmt.finalize();
 			resolve();
 		});
-		db.close((err) => {
-			if (err) {
-				console.error('Error closing the database:', err.message);
-				reject(err);
-			}
-		});
 	});
 };
 
 export const queryDB = async (query: string) => {
 	return new Promise((resolve, reject) => {
-		const db = new Database(DATABASE_PATH);
-		db.serialize(() => {
-			db.all(query, (err, rows) => {
+		DATABASE.serialize(() => {
+			DATABASE.all(query, (err, rows) => {
 				if (err) {
 					console.error('Error reading the database:', err.message);
 					reject(err);
@@ -152,11 +133,6 @@ export const queryDB = async (query: string) => {
 					resolve(rows);
 				}
 			});
-		});
-		db.close((err) => {
-			if (err) {
-				console.error('Error closing the database:', err.message);
-			}
 		});
 	});
 };
