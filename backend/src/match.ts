@@ -28,6 +28,7 @@ import { Rcon } from './rcon-client';
 import { Settings } from './settings';
 import * as Storage from './storage';
 import * as Team from './team';
+import * as StatsLogger from './statsLogger';
 
 const STORAGE_LOGS_PREFIX = 'logs_';
 const STORAGE_LOGS_SUFFIX = '.jsonl';
@@ -226,6 +227,7 @@ const setup = async (match: Match) => {
 	await setTeamNames(match);
 
 	await execRcon(match, 'log on');
+	await execRcon(match, 'mp_logdetail 1');
 	await execRcon(match, 'mp_warmuptime 600');
 	await execRcon(match, 'mp_warmup_pausetimer 1');
 	await execRcon(match, 'mp_autokick 0');
@@ -596,6 +598,48 @@ const onPlayerLogLine = async (
 		player = match.data.players.find((p) => p.steamId64 === steamId64);
 		if (!player) {
 			player = Player.create(match, steamId, name);
+			const playerExists =
+				(
+					(await Storage.queryDB(
+						`SELECT * FROM ${StatsLogger.PLAYERS_TABLE} WHERE steamId = '${player.steamId64}'`
+					)) as any[]
+				).length > 0;
+			if (!playerExists) {
+				await Storage.insertDB(
+					StatsLogger.PLAYERS_TABLE,
+					new Map<string, string | number>([
+						['steamId', player.steamId64],
+						['name', player.name],
+						['tKills', 0],
+						['tDeaths', 0],
+						['tAssists', 0],
+						['tDiff', 0],
+						['tHits', 0],
+						['tHeadshots', 0],
+						['tHsPct', 0],
+						['tRounds', 0],
+						['tDamages', 0],
+						['tAdr', 0],
+					])
+				);
+			}
+			await Storage.insertDB(
+				StatsLogger.PLAYERS_TABLE,
+				new Map<string, string | number>([
+					['steamId', player.steamId64],
+					['matchId', match.data.id],
+					['kills', 0],
+					['deaths', 0],
+					['assists', 0],
+					['diff', 0],
+					['hits', 0],
+					['headshots', 0],
+					['hsPct', 0],
+					['rounds', 0],
+					['damages', 0],
+					['adr', 0],
+				])
+			);
 			match.log(`Player ${player.steamId64} (${name}) created`);
 			match.data.players.push(player);
 			player = match.data.players[match.data.players.length - 1]!; // re-assign to work nicely with changeListener (ProxyHandler)
@@ -667,6 +711,44 @@ const onPlayerLogLine = async (
 		const isTeamChat = sayMatch[1] === '_team';
 		const message = sayMatch[2]!;
 		await onPlayerSay(match, player, message, isTeamChat, teamString);
+		return;
+	}
+
+	//attacked "PlayerName<1><U:1:12345678><CT>" [2397 2079 133] with "glock" (damage "117") (damage_armor "0") (health "0") (armor "0") (hitgroup "head")
+	const damageMatch = remainingLine.match(
+		/^attacked ".+<\d+><([\[\]\w:]+)><(?:TERRORIST|CT)>" \[-?\d+ -?\d+ -?\d+\] with "\w+" \(damage "(\d+)"\) \(damage_armor "(\d+)"\) \(health "(\d+)"\) \(armor "(\d+)"\) \(hitgroup "([\w ]+)"\)$/
+	);
+	if (damageMatch) {
+		const victimId = damageMatch[1]!;
+		const damage = Number(damageMatch[2]);
+		const damageArmor = Number(damageMatch[3]);
+		const headshot = damageMatch[4] == 'head';
+		await StatsLogger.onDamage(match.data.id, steamId, victimId, damage, damageArmor, headshot);
+		return;
+	}
+
+	//killed "PlayerName<2><STEAM_1:1:12345678><TERRORIST>" [-100 150 60] with "ak47" (headshot)
+	const killMatch = remainingLine.match(
+		/^killed ".+<\d+><([\[\]\w:]+)><(?:|Unassigned|TERRORIST|CT)>" \[-?\d+ -?\d+ -?\d+\] with "\w+" ?\(?(headshot|penetrated|headshot penetrated)?\)?$/
+	);
+	if (killMatch) {
+		const victimId = killMatch[1]!;
+		await StatsLogger.onKill(match.data.id, steamId, victimId);
+		return;
+	}
+
+	//assisted killing "PlayerName2<3><STEAM_1:1:87654321><CT>"
+	const assistMatch = remainingLine.match(/^assisted killing/);
+	if (assistMatch) {
+		await StatsLogger.onAssist(match.data.id, steamId);
+		return;
+	}
+
+	//committed suicide with "world"
+	//was killed by the bomb
+	const bombKillMatch = remainingLine.match(/^(?:was killed by the bomb|committed suicide with)/);
+	if (bombKillMatch) {
+		await StatsLogger.onOtherDeath(match.data.id, steamId);
 		return;
 	}
 };
