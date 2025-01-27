@@ -29,6 +29,7 @@ const NavBar: Component = () => {
 				</div>
 			</div>
 			<div class="grow"></div>
+			<NavLink href="/stats">{t('Statistics')}</NavLink>
 			<NavLink href="/create">{t('Create')}</NavLink>
 			<NavLink href="/matches">{t('Matches')}</NavLink>
 			<NavLink href="/gameservers">{t('Game Servers')}</NavLink>

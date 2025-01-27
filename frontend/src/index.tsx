@@ -1,7 +1,8 @@
 /* @refresh reload */
-import { Route, Router } from '@solidjs/router';
+import { Navigate, Route, Router } from '@solidjs/router';
 import { render } from 'solid-js/web';
 import { App } from './App';
+import { StatsPage } from './pages/stats';
 import { CreatePage } from './pages/create';
 import { DebugPage } from './pages/debug';
 import { GameServerPage } from './pages/gameServer';
@@ -18,6 +19,8 @@ import './index.css';
 render(
 	() => (
 		<Router root={App}>
+			<Route path="/" component={() => <Navigate href="/stats" />} />
+			<Route path='/stats' component={StatsPage} />
 			<Route path="/matches" component={MatchesPage} />
 			<Route path="/matches/:id" component={MatchPage} />
 			<Route path="/matches/:id/edit" component={MatchEditPage} />
@@ -25,7 +28,7 @@ render(
 			<Route path="/gameservers" component={GameServersPage} />
 			<Route path="/login" component={LoginPage} />
 			<Route path="/logout" component={LogoutPage} />
-			<Route path={['/', '/create']} component={CreatePage} />
+			<Route path="/create" component={CreatePage} />
 			<Route path="/debug" component={DebugPage} />
 			<Route path="/*" component={NotFoundPage} />
 		</Router>
