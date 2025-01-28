@@ -628,6 +628,7 @@ const onPlayerLogLine = async (
 				new Map<string, string | number>([
 					['steamId', player.steamId64],
 					['matchId', match.data.id],
+					['map', match.data.matchMaps[match.data.currentMap]?.name ?? ''],
 					['kills', 0],
 					['deaths', 0],
 					['assists', 0],
@@ -716,14 +717,20 @@ const onPlayerLogLine = async (
 
 	//attacked "PlayerName<1><U:1:12345678><CT>" [2397 2079 133] with "glock" (damage "117") (damage_armor "0") (health "0") (armor "0") (hitgroup "head")
 	const damageMatch = remainingLine.match(
-		/^attacked ".+<\d+><([\[\]\w:]+)><(?:TERRORIST|CT)>" \[-?\d+ -?\d+ -?\d+\] with "\w+" \(damage "(\d+)"\) \(damage_armor "(\d+)"\) \(health "(\d+)"\) \(armor "(\d+)"\) \(hitgroup "([\w ]+)"\)$/
+		/^attacked ".+<\d+><[\[\]\w:]+><(?:TERRORIST|CT)>" \[-?\d+ -?\d+ -?\d+\] with "\w+" \(damage "(\d+)"\) \(damage_armor "(\d+)"\) \(health "(\d+)"\) \(armor "(\d+)"\) \(hitgroup "([\w ]+)"\)$/
 	);
 	if (damageMatch) {
-		const victimId = damageMatch[1]!;
-		const damage = Number(damageMatch[2]);
-		const damageArmor = Number(damageMatch[3]);
-		const headshot = damageMatch[4] == 'head';
-		await StatsLogger.onDamage(match.data.id, steamId, victimId, damage, damageArmor, headshot);
+		const damage = Number(damageMatch[1]);
+		const damageArmor = Number(damageMatch[2]);
+		const headshot = damageMatch[3] === 'head';
+		await StatsLogger.onDamage(
+			match.data.id,
+			match.data.matchMaps[match.data.currentMap]?.name ?? '',
+			steamId,
+			damage,
+			damageArmor,
+			headshot
+		);
 		return;
 	}
 
@@ -733,22 +740,37 @@ const onPlayerLogLine = async (
 	);
 	if (killMatch) {
 		const victimId = killMatch[1]!;
-		await StatsLogger.onKill(match.data.id, steamId, victimId);
+		await StatsLogger.onKill(
+			match.data.id,
+			match.data.matchMaps[match.data.currentMap]?.name ?? '',
+			steamId,
+			victimId
+		);
 		return;
 	}
 
 	//assisted killing "PlayerName2<3><STEAM_1:1:87654321><CT>"
 	const assistMatch = remainingLine.match(/^assisted killing/);
 	if (assistMatch) {
-		await StatsLogger.onAssist(match.data.id, steamId);
+		await StatsLogger.onAssist(
+			match.data.id,
+			match.data.matchMaps[match.data.currentMap]?.name ?? '',
+			steamId
+		);
 		return;
 	}
 
 	//committed suicide with "world"
 	//was killed by the bomb
-	const bombKillMatch = remainingLine.match(/^(?:was killed by the bomb|committed suicide with)/);
-	if (bombKillMatch) {
-		await StatsLogger.onOtherDeath(match.data.id, steamId);
+	const otherDeathMatch = remainingLine.match(
+		/^(?:was killed by the bomb|committed suicide with)/
+	);
+	if (otherDeathMatch) {
+		await StatsLogger.onOtherDeath(
+			match.data.id,
+			match.data.matchMaps[match.data.currentMap]?.name ?? '',
+			steamId
+		);
 		return;
 	}
 };
