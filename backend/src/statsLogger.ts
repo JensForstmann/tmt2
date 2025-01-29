@@ -243,45 +243,45 @@ export const updateRoundCount = async (match: IMatch, matchMap: IMatchMap) => {
 
 const cache = new NodeCache({ stdTTL: 10 });
 
-export const getPlayerStats = async (matchId?: string): Promise<IPlayerStats[]> => {
-	if (matchId) {
-		const cached = cache.get('match/' + matchId) as IPlayerStats[];
-		if (cached) return cached;
-		
-		const playerStats = (await queryDB(
-			`SELECT
-				t1.steamId,
-				t1.name,
-				t2.kills,
-				t2.deaths,
-				t2.assists,
-				t2.diff,
-				t2.hits,
-				t2.headshots,
-				t2.hsPct,
-				t2.rounds,
-				t2.damages,
-				t2.adr
-			 FROM ${PLAYERS_TABLE} t1
-			 INNER JOIN ${PLAYER_MATCH_STATS_TABLE} t2
-			 ON t1.steamId = t2.steamId
-			 WHERE t2.matchId = '${matchId}'`
-		)) as IPlayerStats[];
-		cache.set('match/' + matchId, playerStats);
-		return playerStats;
-	} else {
-		const cached = cache.get('players') as IPlayerStats[];
-		if (cached) return cached;
-		
-		const playerStats = (await queryDB(
-			`SELECT * FROM ${PLAYERS_TABLE}`
-		)) as IPlayerStats[];
-		cache.set('players', playerStats);
-		return playerStats;
-	}
+export const getPlayersStats = async (): Promise<IPlayerStats[]> => {
+	const cached = cache.get('players') as IPlayerStats[];
+	if (cached) return cached;
+	
+	const playerStats = (await queryDB(
+		`SELECT * FROM ${PLAYERS_TABLE}`
+	)) as IPlayerStats[];
+	cache.set('players', playerStats);
+	return playerStats;
 };
 
-export const getMatchStats = async (): Promise<IMatchStats[]> => {
+export const getMatchPlayersStats = async (matchId: string): Promise<IPlayerStats[]> => {
+	const cached = cache.get('match/' + matchId) as IPlayerStats[];
+	if (cached) return cached;
+
+	const playerStats = (await queryDB(
+		`SELECT
+			t1.steamId,
+			t1.name,
+			t2.kills,
+			t2.deaths,
+			t2.assists,
+			t2.diff,
+			t2.hits,
+			t2.headshots,
+			t2.hsPct,
+			t2.rounds,
+			t2.damages,
+			t2.adr
+		 FROM ${PLAYERS_TABLE} t1
+		 INNER JOIN ${PLAYER_MATCH_STATS_TABLE} t2
+		 ON t1.steamId = t2.steamId
+		 WHERE t2.matchId = '${matchId}'`
+	)) as IPlayerStats[];
+	cache.set('match/' + matchId, playerStats);
+	return playerStats;
+};
+
+export const getMatchesStats = async (steamId?: string): Promise<IMatchStats[]> => {
 	const cached = cache.get('matches') as IMatchStats[];
 	if (cached) return cached;
 	

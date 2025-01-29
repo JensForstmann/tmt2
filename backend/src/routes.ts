@@ -2326,9 +2326,9 @@ export function RegisterRoutes(app: Router) {
 		'/api/stats/players',
 		authenticateMiddleware([{ bearer_token_optional: [] }]),
 		...fetchMiddlewares<RequestHandler>(StatsController),
-		...fetchMiddlewares<RequestHandler>(StatsController.prototype.getPlayerStats),
+		...fetchMiddlewares<RequestHandler>(StatsController.prototype.getPlayersStats),
 
-		async function StatsController_getPlayerStats(
+		async function StatsController_getPlayersStats(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -2344,7 +2344,7 @@ export function RegisterRoutes(app: Router) {
 				const controller = new StatsController();
 
 				await templateService.apiHandler({
-					methodName: 'getPlayerStats',
+					methodName: 'getPlayersStats',
 					controller,
 					response,
 					next,
@@ -2361,15 +2361,15 @@ export function RegisterRoutes(app: Router) {
 		'/api/stats/players/match',
 		authenticateMiddleware([{ bearer_token_optional: [] }]),
 		...fetchMiddlewares<RequestHandler>(StatsController),
-		...fetchMiddlewares<RequestHandler>(StatsController.prototype.getPlayerMatchStats),
+		...fetchMiddlewares<RequestHandler>(StatsController.prototype.getMatchPlayersStats),
 
-		async function StatsController_getPlayerMatchStats(
+		async function StatsController_getMatchPlayersStats(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
 		) {
 			const args: Record<string, TsoaRoute.ParameterSchema> = {
-				matchId: { in: 'query', name: 'id', required: true, dataType: 'string' },
+				id: { in: 'query', name: 'id', required: true, dataType: 'string' },
 			};
 
 			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -2381,7 +2381,7 @@ export function RegisterRoutes(app: Router) {
 				const controller = new StatsController();
 
 				await templateService.apiHandler({
-					methodName: 'getPlayerMatchStats',
+					methodName: 'getMatchPlayersStats',
 					controller,
 					response,
 					next,
@@ -2398,9 +2398,9 @@ export function RegisterRoutes(app: Router) {
 		'/api/stats/matches',
 		authenticateMiddleware([{ bearer_token_optional: [] }]),
 		...fetchMiddlewares<RequestHandler>(StatsController),
-		...fetchMiddlewares<RequestHandler>(StatsController.prototype.getMatchStats),
+		...fetchMiddlewares<RequestHandler>(StatsController.prototype.getMatchesStats),
 
-		async function StatsController_getMatchStats(
+		async function StatsController_getMatchesStats(
 			request: ExRequest,
 			response: ExResponse,
 			next: any
@@ -2416,7 +2416,7 @@ export function RegisterRoutes(app: Router) {
 				const controller = new StatsController();
 
 				await templateService.apiHandler({
-					methodName: 'getMatchStats',
+					methodName: 'getMatchesStats',
 					controller,
 					response,
 					next,

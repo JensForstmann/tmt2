@@ -181,7 +181,19 @@
 	"Error": "Erreur",
 	"caution, please confirm": "attention, veuillez confirmer",
 	"Statistics": "Statistiques",
-	"Match statistics": "Statistiques de match",
-	"Per-match player statistics": "Statistiques joueurs par match",
-	"Global player statistics": "Statistiques globales joueurs"
+	"ID": "ID",
+	"Map": "Carte",
+	"Score": "Score",
+	"Winner Team": "Équipe Gagnante",
+	"Name": "Nom",
+	"Kills": "Kills",
+	"Deaths": "Morts",
+	"Assists": "Assists",
+	"Diff": "Diff",
+	"Hits": "Hits",
+	"Headshots": "Headshots",
+	"Headshot %": "% Headshot",
+	"Rounds": "Rounds",
+	"Damages": "Dégâts",
+	"ADR": "ADR"
 }

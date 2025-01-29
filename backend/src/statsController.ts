@@ -20,23 +20,31 @@ export class StatsController extends Controller {
 	 * Get global player statistics.
 	 */
 	@Get('/players')
-	async getPlayerStats(): Promise<IPlayerStats[]> {
-		return StatsLogger.getPlayerStats();
+	async getPlayersStats(): Promise<IPlayerStats[]> {
+		return StatsLogger.getPlayersStats();
 	}
 
 	/**
-	 * Get per-match player statistics.
+	 * Get the stats of all the players for a match.
 	 */
 	@Get('/players/match')
-	async getPlayerMatchStats(@Query('id') matchId: string): Promise<IPlayerStats[]> {
-		return StatsLogger.getPlayerStats(matchId);
+	async getMatchPlayersStats(@Query('id') id: string): Promise<IPlayerStats[]> {
+		return StatsLogger.getMatchPlayersStats(id);
 	}
 
 	/**
 	 * Get match statistics.
 	 */
 	@Get('/matches')
-	async getMatchStats(): Promise<IMatchStats[]> {
-		return StatsLogger.getMatchStats();
+	async getMatchesStats(): Promise<IMatchStats[]> {
+		return StatsLogger.getMatchesStats();
 	}
+
+	// /**
+	//  * Get the stats of a player, divided by match.
+	//  */
+	// @Get('/matches/player')
+	// async getPlayerMatchesStats(@Query('id') id: string): Promise<IMatchStats[]> {
+	// 	return StatsLogger.getPlayerMatchesStats();
+	// }
 }

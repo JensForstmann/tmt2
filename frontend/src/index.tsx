@@ -2,7 +2,7 @@
 import { Navigate, Route, Router } from '@solidjs/router';
 import { render } from 'solid-js/web';
 import { App } from './App';
-import { StatsPage } from './pages/stats';
+import { PlayersStatsPage, /*PlayerStatsPage,*/ MatchesStatsPage, MatchStatsPage } from './pages/stats';
 import { CreatePage } from './pages/create';
 import { DebugPage } from './pages/debug';
 import { GameServerPage } from './pages/gameServer';
@@ -20,7 +20,11 @@ render(
 	() => (
 		<Router root={App}>
 			<Route path="/" component={() => <Navigate href="/stats" />} />
-			<Route path='/stats' component={StatsPage} />
+			<Route path="/stats" component={() => <Navigate href="/stats/players" />} />
+			<Route path="/stats/matches" component={MatchesStatsPage} />
+			<Route path="/stats/match/:id" component={MatchStatsPage} />
+			<Route path="/stats/players" component={PlayersStatsPage} />
+			{/* <Route path="/stats/player/:id" component={PlayerStatsPage} /> */}
 			<Route path="/matches" component={MatchesPage} />
 			<Route path="/matches/:id" component={MatchPage} />
 			<Route path="/matches/:id/edit" component={MatchEditPage} />
