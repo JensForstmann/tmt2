@@ -9,6 +9,7 @@ export * from './match';
 export * from './matchMap';
 export * from './player';
 export * from './preset';
+export * from './stats';
 export * from './stuff';
 export * from './team';
 export * from './webSocket';

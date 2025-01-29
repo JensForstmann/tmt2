@@ -2111,6 +2111,108 @@
 				"required": ["name", "data"],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"IPlayerStats": {
+				"properties": {
+					"steamId": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"kills": {
+						"type": "number",
+						"format": "double"
+					},
+					"deaths": {
+						"type": "number",
+						"format": "double"
+					},
+					"assists": {
+						"type": "number",
+						"format": "double"
+					},
+					"diff": {
+						"type": "number",
+						"format": "double"
+					},
+					"hits": {
+						"type": "number",
+						"format": "double"
+					},
+					"headshots": {
+						"type": "number",
+						"format": "double"
+					},
+					"hsPct": {
+						"type": "number",
+						"format": "double"
+					},
+					"rounds": {
+						"type": "number",
+						"format": "double"
+					},
+					"damages": {
+						"type": "number",
+						"format": "double"
+					},
+					"adr": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"steamId",
+					"name",
+					"kills",
+					"deaths",
+					"assists",
+					"diff",
+					"hits",
+					"headshots",
+					"hsPct",
+					"rounds",
+					"damages",
+					"adr"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IMatchStats": {
+				"properties": {
+					"matchId": {
+						"type": "string"
+					},
+					"map": {
+						"type": "string"
+					},
+					"teamA": {
+						"type": "string"
+					},
+					"teamAScore": {
+						"type": "string"
+					},
+					"teamB": {
+						"type": "string"
+					},
+					"teamBScore": {
+						"type": "string"
+					},
+					"winner": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"matchId",
+					"map",
+					"teamA",
+					"teamAScore",
+					"teamB",
+					"teamBScore",
+					"winner"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {
@@ -3074,6 +3176,96 @@
 						}
 					}
 				]
+			}
+		},
+		"/api/stats/players": {
+			"get": {
+				"operationId": "GetPlayerStats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IPlayerStats"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get global player statistics.",
+				"security": [
+					{
+						"bearer_token_optional": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/api/stats/players/match": {
+			"get": {
+				"operationId": "GetPlayerMatchStats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IPlayerStats"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get per-match player statistics.",
+				"security": [
+					{
+						"bearer_token_optional": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/stats/matches": {
+			"get": {
+				"operationId": "GetMatchStats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IMatchStats"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get match statistics.",
+				"security": [
+					{
+						"bearer_token_optional": []
+					}
+				],
+				"parameters": []
 			}
 		}
 	},
