@@ -2,12 +2,12 @@ import { Component, createSignal, For } from 'solid-js';
 import { Card } from '../components/Card';
 import { StatsNavBar } from '../components/StatsNavBar';
 import { t } from '../utils/locale';
-import { useParams } from '@solidjs/router';
+import { A, useParams } from '@solidjs/router';
 import { createEffect } from 'solid-js';
 import { createFetcher } from '../utils/fetcher';
 import { IPlayerStats, IMatchStats } from '../../../common';
 
-//TODO: Sort tables properly
+//TODO: Add ability to sort tables by columns
 
 const Loading: Component = () => (
 	<div class="p-4">
@@ -56,6 +56,14 @@ export const MatchesStatsPage = () => {
 									<td>{match.teamB}</td>
 									<td>{match.teamAScore + ' / ' + match.teamBScore}</td>
 									<td>{match.winner}</td>
+									<td class="w-24">
+										<A
+											href={`/stats/match/${match.matchId}`}
+											class="btn btn-outline btn-sm w-full"
+										>
+											{t('Details')}
+										</A>
+									</td>
 								</tr>
 							)}
 						</For>
@@ -69,11 +77,101 @@ export const MatchesStatsPage = () => {
 
 export const MatchStatsPage = () => {
 	const matchId = useParams().id;
+	const fetcher = createFetcher();
+	const [loading, setLoading] = createSignal(true);
+	const [match, setMatch] = createSignal<IMatchStats>();
+	const [players, setPlayers] = createSignal<IPlayerStats[]>([]);
+	let [maps, setMaps] = createSignal<string[]>([]);
+
+	createEffect(() => {
+		fetcher<IMatchStats>('GET', `/api/stats/match?id=${matchId}`).then((data) => {
+			if (data) setMatch(data);
+		});
+	});
+
+	createEffect(() => {
+		fetcher<IPlayerStats[]>('GET', `/api/stats/players/match?id=${matchId}`).then((data) => {
+			if (data) {
+				setPlayers(data);
+				const uniqueMaps = new Set<string>();
+				for (const player of data) {
+					if (player.map) {
+						uniqueMaps.add(player.map);
+					}
+				}
+				setMaps(Array.from(uniqueMaps));
+			}
+			setLoading(false);
+		});
+	});
 
 	return (
 		<>
 			<StatsNavBar />
-			TODO
+			<Card>
+				<div class="prose text-center mx-auto">
+					<h2>{t('Match') + ' ' + matchId}</h2>
+				</div>
+				<div class="prose text-center mx-auto pt-4 flex justify-center items-center">
+					<div class="flex-1 text-right pr-4">
+						<h3 class="m-0">{match()?.teamA}</h3>
+						{match()?.teamAScore}
+					</div>
+					<div class="border-r border-gray-300 h-16"></div>
+					<div class="flex-1 text-left pl-4">
+						<h3 class="m-0">{match()?.teamB}</h3>
+						{match()?.teamBScore}
+					</div>
+				</div>
+			</Card>
+			<div class="h-8" />
+			<Card>
+				<table class="table-zebra table">
+					<thead>
+						<tr>
+							<th>{t('Map')}</th>
+							<th>{t('Name')}</th>
+							<th>{t('Kills')}</th>
+							<th>{t('Deaths')}</th>
+							<th>{t('Assists')}</th>
+							<th>{t('Diff')}</th>
+							<th>{t('Hits')}</th>
+							<th>{t('Headshots')}</th>
+							<th>{t('Headshot %')}</th>
+							<th>{t('Rounds')}</th>
+							<th>{t('Damages')}</th>
+							<th>{t('ADR')}</th>
+						</tr>
+					</thead>
+					<tbody>
+						<For each={maps()}>
+							{(map) => (
+								<>
+									{players()
+										.filter((player) => player.map === map)
+										.map((player, index) => (
+											<tr>
+												<td>{index === 0 ? map : ''}</td>
+												<td>{player.name}</td>
+												<td>{player.kills}</td>
+												<td>{player.deaths}</td>
+												<td>{player.assists}</td>
+												<td>{player.diff}</td>
+												<td>{player.hits}</td>
+												<td>{player.headshots}</td>
+												<td>{player.hsPct}</td>
+												<td>{player.rounds}</td>
+												<td>{player.damages}</td>
+												<td>{player.adr}</td>
+											</tr>
+										))}
+								</>
+							)}
+						</For>
+					</tbody>
+				</table>
+				{loading() && <Loading />}
+			</Card>
 		</>
 	);
 };

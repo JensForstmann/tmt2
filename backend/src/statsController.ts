@@ -24,11 +24,19 @@ export class StatsController extends Controller {
 	}
 
 	/**
-	 * Get match statistics.
+	 * Get global match statistics.
 	 */
 	@Get('/matches')
 	async getMatchesStats(): Promise<IMatchStats[]> {
 		return StatsLogger.getMatchesStats();
+	}
+
+	/**
+	 * Get match stats for a specific match.
+	 */
+	@Get('/match')
+	async getMatchStats(@Query('id') id: string): Promise<IMatchStats> {
+		return StatsLogger.getMatchStats(id);
 	}
 
 	// /**

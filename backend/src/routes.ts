@@ -1265,6 +1265,7 @@ const models: TsoaRoute.Models = {
 			rounds: { dataType: 'double', required: true },
 			damages: { dataType: 'double', required: true },
 			adr: { dataType: 'double', required: true },
+			map: { dataType: 'string' },
 		},
 		additionalProperties: false,
 	},
@@ -2417,6 +2418,43 @@ export function RegisterRoutes(app: Router) {
 
 				await templateService.apiHandler({
 					methodName: 'getMatchesStats',
+					controller,
+					response,
+					next,
+					validatedArgs,
+					successStatus: undefined,
+				});
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get(
+		'/api/stats/match',
+		authenticateMiddleware([{ bearer_token_optional: [] }]),
+		...fetchMiddlewares<RequestHandler>(StatsController),
+		...fetchMiddlewares<RequestHandler>(StatsController.prototype.getMatchStats),
+
+		async function StatsController_getMatchStats(
+			request: ExRequest,
+			response: ExResponse,
+			next: any
+		) {
+			const args: Record<string, TsoaRoute.ParameterSchema> = {
+				id: { in: 'query', name: 'id', required: true, dataType: 'string' },
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+				const controller = new StatsController();
+
+				await templateService.apiHandler({
+					methodName: 'getMatchStats',
 					controller,
 					response,
 					next,

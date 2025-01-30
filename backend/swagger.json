@@ -2159,6 +2159,9 @@
 					"adr": {
 						"type": "number",
 						"format": "double"
+					},
+					"map": {
+						"type": "string"
 					}
 				},
 				"required": [
@@ -3259,13 +3262,46 @@
 						}
 					}
 				},
-				"description": "Get match statistics.",
+				"description": "Get global match statistics.",
 				"security": [
 					{
 						"bearer_token_optional": []
 					}
 				],
 				"parameters": []
+			}
+		},
+		"/api/stats/match": {
+			"get": {
+				"operationId": "GetMatchStats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IMatchStats"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get match stats for a specific match.",
+				"security": [
+					{
+						"bearer_token_optional": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		}
 	},

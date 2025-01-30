@@ -11,6 +11,7 @@ export interface IPlayerStats {
 	rounds: number;
 	damages: number;
 	adr: number;
+	map?: string;
 }
 
 export interface IMatchStats {
