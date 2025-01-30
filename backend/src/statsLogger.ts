@@ -246,9 +246,22 @@ const cache = new NodeCache({ stdTTL: 10 });
 export const getPlayersStats = async (): Promise<IPlayerStats[]> => {
 	const cached = cache.get('players') as IPlayerStats[];
 	if (cached) return cached;
-	
+
 	const playerStats = (await queryDB(
-		`SELECT * FROM ${PLAYERS_TABLE}`
+		`SELECT
+		steamId,
+		name,
+		tKills AS kills,
+		tDeaths AS deaths,
+		tAssists AS assists,
+		tDiff AS diff,
+		tHits AS hits,
+		tHeadshots AS headshots,
+		tHsPct AS hsPct,
+		tRounds AS rounds,
+		tDamages AS damages,
+		tAdr AS adr
+		FROM ${PLAYERS_TABLE}`
 	)) as IPlayerStats[];
 	cache.set('players', playerStats);
 	return playerStats;
@@ -284,10 +297,8 @@ export const getMatchPlayersStats = async (matchId: string): Promise<IPlayerStat
 export const getMatchesStats = async (steamId?: string): Promise<IMatchStats[]> => {
 	const cached = cache.get('matches') as IMatchStats[];
 	if (cached) return cached;
-	
-	const matchStats = (await queryDB(
-		`SELECT * FROM ${MATCHES_TABLE}`
-	)) as IMatchStats[];
+
+	const matchStats = (await queryDB(`SELECT * FROM ${MATCHES_TABLE}`)) as IMatchStats[];
 	cache.set('matches', matchStats);
 	return matchStats;
 };

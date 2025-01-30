@@ -1,26 +1,36 @@
-import { For } from "solid-js";
-import { Card } from "../components/Card";
-import { StatsNavBar } from "../components/StatsNavBar";
-import { t } from "../utils/locale";
-import { useParams } from "@solidjs/router";
+import { Component, createSignal, For } from 'solid-js';
+import { Card } from '../components/Card';
+import { StatsNavBar } from '../components/StatsNavBar';
+import { t } from '../utils/locale';
+import { useParams } from '@solidjs/router';
 import { createEffect } from 'solid-js';
 import { createFetcher } from '../utils/fetcher';
-import { IPlayerStats, IMatchStats } from "../../../common";
+import { IPlayerStats, IMatchStats } from '../../../common';
 
 //TODO: Sort tables properly
 
+const Loading: Component = () => (
+	<div class="p-4">
+		<div class="flex justify-center items-center h-full p-4">
+			<span class="text-gray-500">Loading...</span>
+		</div>
+	</div>
+);
+
 export const MatchesStatsPage = () => {
 	const fetcher = createFetcher();
-	let matches: IMatchStats[] = [];
-	let loading = true;
+	const [loading, setLoading] = createSignal(true);
+	const [matches, setMatches] = createSignal<IMatchStats[]>([]);
 
 	createEffect(() => {
 		fetcher<IMatchStats[]>('GET', `/api/stats/matches`).then((data) => {
-			matches = data ?? [];
-			loading = false;
+			if (data) {
+				setMatches(data);
+			}
+			setLoading(false);
 		});
 	});
-	
+
 	return (
 		<>
 			<StatsNavBar />
@@ -37,20 +47,21 @@ export const MatchesStatsPage = () => {
 						</tr>
 					</thead>
 					<tbody>
-						<For each={matches}>
+						<For each={matches()}>
 							{(match, i) => (
 								<tr>
 									<td>{match.matchId}</td>
 									<td>{match.map}</td>
 									<td>{match.teamA}</td>
 									<td>{match.teamB}</td>
-									<td>{match.teamAScore + ' / ' + match.teamBScore}</td> 
+									<td>{match.teamAScore + ' / ' + match.teamBScore}</td>
 									<td>{match.winner}</td>
 								</tr>
 							)}
 						</For>
 					</tbody>
 				</table>
+				{loading() && <Loading />}
 			</Card>
 		</>
 	);
@@ -58,7 +69,7 @@ export const MatchesStatsPage = () => {
 
 export const MatchStatsPage = () => {
 	const matchId = useParams().id;
-	
+
 	return (
 		<>
 			<StatsNavBar />
@@ -69,13 +80,15 @@ export const MatchStatsPage = () => {
 
 export const PlayersStatsPage = () => {
 	const fetcher = createFetcher();
-	let players: IPlayerStats[] = [];
-	let loading = true;
+	const [loading, setLoading] = createSignal(true);
+	const [players, setPlayers] = createSignal<IPlayerStats[]>([]);
 
 	createEffect(() => {
 		fetcher<IPlayerStats[]>('GET', `/api/stats/players`).then((data) => {
-			players = data ?? [];
-			loading = false;
+			if (data) {
+				setPlayers(data);
+			}
+			setLoading(false);
 		});
 	});
 
@@ -100,7 +113,7 @@ export const PlayersStatsPage = () => {
 						</tr>
 					</thead>
 					<tbody>
-						<For each={players}>
+						<For each={players()}>
 							{(player, i) => (
 								<tr>
 									<td>{player.name}</td>
@@ -119,6 +132,7 @@ export const PlayersStatsPage = () => {
 						</For>
 					</tbody>
 				</table>
+				{loading() && <Loading />}
 			</Card>
 		</>
 	);

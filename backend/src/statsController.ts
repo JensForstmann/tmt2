@@ -1,15 +1,6 @@
-import {
-	Controller,
-	Get,
-	Query,
-	Route,
-	Security,
-} from '@tsoa/runtime';
+import { Controller, Get, Query, Route, Security } from '@tsoa/runtime';
 
-import {
-	IPlayerStats,
-	IMatchStats,
-} from '../../common';
+import { IPlayerStats, IMatchStats } from '../../common';
 
 import * as StatsLogger from './statsLogger';
 
