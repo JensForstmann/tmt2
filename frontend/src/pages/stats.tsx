@@ -268,6 +268,7 @@ export const PlayerStatsPage = () => {
 	const [loading, setLoading] = createSignal(true);
 	const [player, setPlayer] = createSignal<IPlayerStats>();
 	const [playerData, setPlayerData] = createSignal<IPlayerStats[]>([]);
+	const [matchIds, setMatchIds] = createSignal<string[]>([]);
 
 	createEffect(() => {
 		fetcher<IPlayerStats>('GET', `/api/stats/player?id=${steamId}`).then((data) => {
@@ -281,6 +282,13 @@ export const PlayerStatsPage = () => {
 		fetcher<IPlayerStats[]>('GET', `/api/stats/matches/player?id=${steamId}`).then((data) => {
 			if (data) {
 				setPlayerData(data);
+				const uniqueMatchIds = new Set<string>();
+				for (const player of data) {
+					if (player.matchId) {
+						uniqueMatchIds.add(player.matchId);
+					}
+				}
+				setMatchIds(Array.from(uniqueMatchIds));
 			}
 			setLoading(false);
 		});
@@ -344,18 +352,24 @@ export const PlayerStatsPage = () => {
 						</tr>
 					</thead>
 					<tbody>
-						<For each={playerData()}>
-							{(player, i) => (
-								<tr>
-									<td>{player.matchId}</td>
-									<td>{player.map}</td>
-									<td>{player.kills}</td>
-									<td>{player.deaths}</td>
-									<td>{player.assists}</td>
-									<td>{player.diff}</td>
-									<td>{player.hsPct}</td>
-									<td>{player.adr}</td>
-								</tr>
+						<For each={matchIds()}>
+							{(id) => (
+								<>
+									{playerData()
+										.filter((player) => player.matchId === id)
+										.map((player, index) => (
+											<tr>
+												<td>{index === 0 ? player.matchId : ''}</td>
+												<td>{player.map}</td>
+												<td>{player.kills}</td>
+												<td>{player.deaths}</td>
+												<td>{player.assists}</td>
+												<td>{player.diff}</td>
+												<td>{player.hsPct}</td>
+												<td>{player.adr}</td>
+											</tr>
+										))}
+								</>
 							)}
 						</For>
 					</tbody>
