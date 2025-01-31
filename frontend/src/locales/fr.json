@@ -195,5 +195,7 @@
 	"Headshot %": "% Headshot",
 	"Rounds": "Rounds",
 	"Damages": "Dégâts",
-	"ADR": "ADR"
+	"ADR": "ADR",
+	"Global": "Global",
+	"Per-map": "Par carte"
 }

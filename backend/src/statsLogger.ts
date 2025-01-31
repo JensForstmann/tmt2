@@ -304,6 +304,17 @@ export const getMatchesStats = async (steamId?: string): Promise<IMatchStats[]> 
 	return matchStats;
 };
 
+export const getPlayerMatchesStats = async (steamId: string): Promise<IPlayerStats[]> => {
+	const cached = cache.get('matches/player/' + steamId) as IPlayerStats[];
+	if (cached) return cached;
+
+	const playerStats = (await queryDB(
+		`SELECT * FROM ${PLAYER_MATCH_STATS_TABLE} WHERE steamId = '${steamId}'`
+	)) as IPlayerStats[];
+	cache.set('matches/player/' + steamId, playerStats);
+	return playerStats;
+};
+
 export const getMatchStats = async (matchId: string): Promise<IMatchStats> => {
 	const cached = cache.get('matches/' + matchId) as IMatchStats;
 	if (cached) return cached;
@@ -318,4 +329,34 @@ export const getMatchStats = async (matchId: string): Promise<IMatchStats> => {
 		return matchStats;
 	}
 	throw new Error(`Match stats not found for matchId: ${matchId}`);
+};
+
+export const getPlayerStats = async (steamId: string): Promise<IPlayerStats> => {
+	const cached = cache.get('players/' + steamId) as IPlayerStats;
+	if (cached) return cached;
+
+	const playerStats = (
+		(await queryDB(
+			`SELECT
+			steamId,
+			name,
+			tKills AS kills,
+			tDeaths AS deaths,
+			tAssists AS assists,
+			tDiff AS diff,
+			tHits AS hits,
+			tHeadshots AS headshots,
+			tHsPct AS hsPct,
+			tRounds AS rounds,
+			tDamages AS damages,
+			tAdr AS adr
+			FROM ${PLAYERS_TABLE}
+			WHERE steamId = '${steamId}'`
+		)) as IPlayerStats[]
+	)[0];
+	if (playerStats) {
+		cache.set('players/' + steamId, playerStats);
+		return playerStats;
+	}
+	throw new Error(`Player stats not found for steamId: ${steamId}`);
 };

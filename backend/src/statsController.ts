@@ -39,11 +39,16 @@ export class StatsController extends Controller {
 		return StatsLogger.getMatchStats(id);
 	}
 
-	// /**
-	//  * Get the stats of a player, divided by match.
-	//  */
-	// @Get('/matches/player')
-	// async getPlayerMatchesStats(@Query('id') id: string): Promise<IMatchStats[]> {
-	// 	return StatsLogger.getPlayerMatchesStats();
-	// }
+	@Get('/player')
+	async getPlayerStats(@Query('id') id: string): Promise<IPlayerStats> {
+		return StatsLogger.getPlayerStats(id);
+	}
+
+	/**
+	 * Get the stats of a player, divided by match.
+	 */
+	@Get('/matches/player')
+	async getPlayerMatchesStats(@Query('id') id: string): Promise<IPlayerStats[]> {
+		return StatsLogger.getPlayerMatchesStats(id);
+	}
 }

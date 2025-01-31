@@ -2162,6 +2162,9 @@
 					},
 					"map": {
 						"type": "string"
+					},
+					"matchId": {
+						"type": "string"
 					}
 				},
 				"required": [
@@ -3287,6 +3290,74 @@
 					}
 				},
 				"description": "Get match stats for a specific match.",
+				"security": [
+					{
+						"bearer_token_optional": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/stats/player": {
+			"get": {
+				"operationId": "GetPlayerStats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IPlayerStats"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer_token_optional": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/stats/matches/player": {
+			"get": {
+				"operationId": "GetPlayerMatchesStats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IPlayerStats"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get the stats of a player, divided by match.",
 				"security": [
 					{
 						"bearer_token_optional": []

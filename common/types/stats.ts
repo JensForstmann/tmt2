@@ -12,6 +12,7 @@ export interface IPlayerStats {
 	damages: number;
 	adr: number;
 	map?: string;
+	matchId?: string;
 }
 
 export interface IMatchStats {
