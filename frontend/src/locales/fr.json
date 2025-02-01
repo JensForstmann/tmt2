@@ -197,5 +197,7 @@
 	"Damages": "Dégâts",
 	"ADR": "ADR",
 	"Global": "Global",
-	"Per-map": "Par carte"
+	"Per-map": "Par carte",
+	"steamID": "steamID",
+	"Player": "Joueur"
 }

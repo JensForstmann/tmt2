@@ -1,22 +1,17 @@
-import { Component, createSignal, For } from 'solid-js';
+import { createSignal } from 'solid-js';
 import { Card } from '../components/Card';
 import { StatsNavBar } from '../components/StatsNavBar';
 import { t } from '../utils/locale';
-import { A, useParams } from '@solidjs/router';
+import { useParams } from '@solidjs/router';
 import { createEffect } from 'solid-js';
 import { createFetcher } from '../utils/fetcher';
 import { IPlayerStats, IMatchStats } from '../../../common';
 import { assemblePlayers } from '../utils/assemblePlayers';
+import { StatsTable } from '../components/StatsTable';
 
 //TODO: Add ability to sort tables by columns
-
-const Loading: Component = () => (
-	<div class="p-4">
-		<div class="flex justify-center items-center h-full p-4">
-			<span class="text-gray-500">Loading...</span>
-		</div>
-	</div>
-);
+//TODO: Refresh every 15 seconds
+//TODO: Cache data in the front as well
 
 export const MatchesStatsPage = () => {
 	const fetcher = createFetcher();
@@ -36,41 +31,28 @@ export const MatchesStatsPage = () => {
 		<>
 			<StatsNavBar />
 			<Card>
-				<table class="table-zebra table">
-					<thead>
-						<tr>
-							<th>{t('ID')}</th>
-							<th>{t('Map')}</th>
-							<th>{t('Team A')}</th>
-							<th>{t('Team B')}</th>
-							<th>{t('Score')}</th>
-							<th>{t('Winner Team')}</th>
-						</tr>
-					</thead>
-					<tbody>
-						<For each={matches()}>
-							{(match, i) => (
-								<tr>
-									<td>{match.matchId}</td>
-									<td>{match.map}</td>
-									<td>{match.teamA}</td>
-									<td>{match.teamB}</td>
-									<td>{match.teamAScore + ' / ' + match.teamBScore}</td>
-									<td>{match.winner}</td>
-									<td class="w-24 p-2">
-										<A
-											href={`/stats/match/${match.matchId}`}
-											class="btn btn-outline btn-sm w-full hover:no-underline"
-										>
-											{t('Details')}
-										</A>
-									</td>
-								</tr>
-							)}
-						</For>
-					</tbody>
-				</table>
-				{loading() && <Loading />}
+				<StatsTable
+					headers={[
+						t('ID'),
+						t('Map'),
+						t('Team A'),
+						t('Team B'),
+						t('Score'),
+						t('Winner Team'),
+					]}
+					data={matches()}
+					columns={[
+						'matchId',
+						'map',
+						'teamA',
+						'teamB',
+						'teamAScore| / |teamBScore',
+						'winner',
+					]}
+					loading={loading()}
+					detailsPrefix="/stats/match/"
+					detailsProp="matchId"
+				/>
 			</Card>
 		</>
 	);
@@ -142,61 +124,48 @@ export const MatchStatsPage = () => {
 					<div class="mx-4">{t('Per-map')}</div>
 				</div>
 				<div class="h-2" />
-				<table class="table-zebra table">
-					<thead>
-						<tr>
-							{permap() && <th>{t('Map')}</th>}
-							<th>{t('Name')}</th>
-							<th>{t('Kills')}</th>
-							<th>{t('Deaths')}</th>
-							<th>{t('Assists')}</th>
-							<th>{t('Diff')}</th>
-							<th>{t('Headshot %')}</th>
-							<th>{t('ADR')}</th>
-						</tr>
-					</thead>
-					<tbody>
-						{permap() ? (
-							<For each={maps()}>
-								{(map) => (
-									<>
-										{players()
-											.filter((player) => player.map === map)
-											.map((player, index) => (
-												<tr>
-													<td>{index === 0 ? map : ''}</td>
-													<td>{player.name}</td>
-													<td>{player.kills}</td>
-													<td>{player.deaths}</td>
-													<td>{player.assists}</td>
-													<td>{player.diff}</td>
-													<td>{player.hsPct}</td>
-													<td>{player.adr}</td>
-												</tr>
-											))}
-									</>
-								)}
-							</For>
-						) : (
-							<>
-								<For each={assembledPlayers()}>
-									{(player, i) => (
-										<tr>
-											<td>{player.name}</td>
-											<td>{player.kills}</td>
-											<td>{player.deaths}</td>
-											<td>{player.assists}</td>
-											<td>{player.diff}</td>
-											<td>{player.hsPct}</td>
-											<td>{player.adr}</td>
-										</tr>
-									)}
-								</For>
-							</>
-						)}
-					</tbody>
-				</table>
-				{loading() && <Loading />}
+				{permap() ? (
+					<StatsTable
+						headers={[
+							t('Map'),
+							t('Name'),
+							t('Kills'),
+							t('Deaths'),
+							t('Assists'),
+							t('Diff'),
+							t('Headshot %'),
+							t('ADR'),
+						]}
+						data={players()}
+						columns={[
+							'map',
+							'name',
+							'kills',
+							'deaths',
+							'assists',
+							'diff',
+							'hsPct',
+							'adr',
+						]}
+						loading={loading()}
+						groupBy="map"
+					/>
+				) : (
+					<StatsTable
+						headers={[
+							t('Name'),
+							t('Kills'),
+							t('Deaths'),
+							t('Assists'),
+							t('Diff'),
+							t('Headshot %'),
+							t('ADR'),
+						]}
+						data={assembledPlayers()}
+						columns={['name', 'kills', 'deaths', 'assists', 'diff', 'hsPct', 'adr']}
+						loading={loading()}
+					/>
+				)}
 			</Card>
 		</>
 	);
@@ -220,43 +189,22 @@ export const PlayersStatsPage = () => {
 		<>
 			<StatsNavBar />
 			<Card>
-				<table class="table-zebra table">
-					<thead>
-						<tr>
-							<th>{t('Name')}</th>
-							<th>{t('Kills')}</th>
-							<th>{t('Deaths')}</th>
-							<th>{t('Assists')}</th>
-							<th>{t('Diff')}</th>
-							<th>{t('Headshot %')}</th>
-							<th>{t('ADR')}</th>
-						</tr>
-					</thead>
-					<tbody>
-						<For each={players()}>
-							{(player, i) => (
-								<tr>
-									<td>{player.name}</td>
-									<td>{player.kills}</td>
-									<td>{player.deaths}</td>
-									<td>{player.assists}</td>
-									<td>{player.diff}</td>
-									<td>{player.hsPct}</td>
-									<td>{player.adr}</td>
-									<td class="w-24 p-2">
-										<A
-											href={`/stats/player/${player.steamId}`}
-											class="btn btn-outline btn-sm w-full hover:no-underline"
-										>
-											{t('Details')}
-										</A>
-									</td>
-								</tr>
-							)}
-						</For>
-					</tbody>
-				</table>
-				{loading() && <Loading />}
+				<StatsTable
+					headers={[
+						t('Name'),
+						t('Kills'),
+						t('Deaths'),
+						t('Assists'),
+						t('Diff'),
+						t('Headshot %'),
+						t('ADR'),
+					]}
+					data={players()}
+					columns={['name', 'kills', 'deaths', 'assists', 'diff', 'hsPct', 'adr']}
+					loading={loading()}
+					detailsPrefix="/stats/player/"
+					detailsProp="steamId"
+				/>
 			</Card>
 		</>
 	);
@@ -305,76 +253,66 @@ export const PlayerStatsPage = () => {
 					</span>
 				</div>
 				<div class="prose text-center mx-auto pt-4 flex justify-center items-center">
-					<div class="flex-1 text-center pr-4">
-						<h3 class="m-0">{t('Kills')}</h3>
-						{player()?.kills}
-					</div>
-					<div class="border-r border-gray-300 h-16"></div>
-					<div class="flex-1 text-center px-4">
-						<h3 class="m-0">{t('Deaths')}</h3>
-						{player()?.deaths}
-					</div>
-					<div class="border-r border-gray-300 h-16"></div>
-					<div class="flex-1 text-center px-4">
-						<h3 class="m-0">{t('Assists')}</h3>
-						{player()?.assists}
-					</div>
-					<div class="border-r border-gray-300 h-16"></div>
-					<div class="flex-1 text-center px-4">
-						<h3 class="m-0">{t('Diff')}</h3>
-						{player()?.diff}
-					</div>
-					<div class="border-r border-gray-300 h-16"></div>
-					<div class="flex-2 text-center px-4">
-						<h3 class="m-0">{t('Headshot %')}</h3>
-						{player()?.hsPct}
-					</div>
-					<div class="border-r border-gray-300 h-16"></div>
-					<div class="flex-1 text-center pl-4">
-						<h3 class="m-0">{t('ADR')}</h3>
-						{player()?.adr}
+					<div class="flex items-center">
+						<div class="px-4">
+							<h3 class="m-0">{t('Kills')}</h3>
+							{player()?.kills}
+						</div>
+						<div class="border-r border-gray-300 h-16"></div>
+						<div class="px-4">
+							<h3 class="m-0">{t('Deaths')}</h3>
+							{player()?.deaths}
+						</div>
+						<div class="border-r border-gray-300 h-16"></div>
+						<div class="px-4">
+							<h3 class="m-0">{t('Assists')}</h3>
+							{player()?.assists}
+						</div>
+						<div class="border-r border-gray-300 h-16"></div>
+						<div class="px-4">
+							<h3 class="m-0">{t('Diff')}</h3>
+							{player()?.diff}
+						</div>
+						<div class="border-r border-gray-300 h-16"></div>
+						<div class="px-4">
+							<h3 class="m-0">{t('Headshot %')}</h3>
+							{player()?.hsPct}
+						</div>
+						<div class="border-r border-gray-300 h-16"></div>
+						<div class="px-4">
+							<h3 class="m-0">{t('ADR')}</h3>
+							{player()?.adr}
+						</div>
 					</div>
 				</div>
 			</Card>
 			<div class="h-8" />
 			<Card>
-				<table class="table-zebra table">
-					<thead>
-						<tr>
-							<th>{t('Match')}</th>
-							<th>{t('Map')}</th>
-							<th>{t('Kills')}</th>
-							<th>{t('Deaths')}</th>
-							<th>{t('Assists')}</th>
-							<th>{t('Diff')}</th>
-							<th>{t('Headshot %')}</th>
-							<th>{t('ADR')}</th>
-						</tr>
-					</thead>
-					<tbody>
-						<For each={matchIds()}>
-							{(id) => (
-								<>
-									{playerData()
-										.filter((player) => player.matchId === id)
-										.map((player, index) => (
-											<tr>
-												<td>{index === 0 ? player.matchId : ''}</td>
-												<td>{player.map}</td>
-												<td>{player.kills}</td>
-												<td>{player.deaths}</td>
-												<td>{player.assists}</td>
-												<td>{player.diff}</td>
-												<td>{player.hsPct}</td>
-												<td>{player.adr}</td>
-											</tr>
-										))}
-								</>
-							)}
-						</For>
-					</tbody>
-				</table>
-				{loading() && <Loading />}
+				<StatsTable
+					headers={[
+						t('Match'),
+						t('Map'),
+						t('Kills'),
+						t('Deaths'),
+						t('Assists'),
+						t('Diff'),
+						t('Headshot %'),
+						t('ADR'),
+					]}
+					data={playerData()}
+					columns={[
+						'matchId',
+						'map',
+						'kills',
+						'deaths',
+						'assists',
+						'diff',
+						'hsPct',
+						'adr',
+					]}
+					loading={loading()}
+					groupBy="matchId"
+				/>
 			</Card>
 		</>
 	);
