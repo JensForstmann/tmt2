@@ -6,12 +6,20 @@ export const StatsTable: Component<{
 	headers: string[];
 	data: any[];
 	columns: string[];
+	sortable?: boolean[];
+	defaultSortColumn: string;
+	defaultSortAsc?: boolean;
 	loading: boolean;
 	groupBy?: string;
 	detailsPrefix?: string;
 	detailsProp?: string;
 }> = (props) => {
 	const [uniqueGroups, setUniqueGroups] = createSignal<string[]>([]);
+	const [sortedUniqueGroups, setSortedUniqueGroups] = createSignal<string[]>([]);
+	const [sortColumn, setSortColumn] = createSignal(props.defaultSortColumn);
+	const [sortAsc, setSortAsc] = createSignal(props.defaultSortAsc ?? true);
+	const [sortedData, setSortedData] = createSignal<any[]>([]);
+	const [sorted, setSorted] = createSignal(false);
 
 	createEffect(() => {
 		if (props.groupBy && props.columns.includes(props.groupBy)) {
@@ -21,6 +29,42 @@ export const StatsTable: Component<{
 			}
 			setUniqueGroups(Array.from(ug));
 		}
+	});
+
+	createEffect(() => {
+		if (sortColumn() === props.groupBy) {
+			setSortedUniqueGroups(
+				[...uniqueGroups()].sort((a, b) => {
+					if (a < b) {
+						return sortAsc() ? -1 : 1;
+					}
+					if (a > b) {
+						return sortAsc() ? 1 : -1;
+					}
+					return 0;
+				})
+			);
+			setSortedData([...props.data]);
+		} else {
+			setSortedData(
+				[...props.data].sort((a, b) => {
+					const column =
+						sortColumn()
+							.split('|')
+							.find((col) => props.columns.includes(col)) ||
+						sortColumn().split('|')[0];
+					if (a[column] < b[column]) {
+						return sortAsc() ? -1 : 1;
+					}
+					if (a[column] > b[column]) {
+						return sortAsc() ? 1 : -1;
+					}
+					return 0;
+				})
+			);
+			setSortedUniqueGroups(uniqueGroups());
+		}
+		setSorted(true);
 	});
 
 	const cell = (d: any, column: string) => {
@@ -48,18 +92,47 @@ export const StatsTable: Component<{
 
 	return (
 		<>
-			<table class="table">
+			<table class="table table-fixed">
 				<thead>
 					<tr class="border-b border-gray-700">
-						<For each={props.headers}>{(header) => <th>{header}</th>}</For>
+						<For each={props.headers}>
+							{(header, i) => (
+								<th
+									onClick={
+										(props.sortable?.[i()] ?? true)
+											? () => {
+													const column = props.columns[i()];
+													setSortAsc(
+														sortColumn() === column && sortAsc()
+															? false
+															: true
+													);
+													setSortColumn(column);
+												}
+											: undefined
+									}
+									style={{
+										cursor:
+											(props.sortable?.[i()] ?? true) ? 'pointer' : 'default',
+									}}
+								>
+									{header +
+										(sortColumn() === props.columns[i()]
+											? sortAsc()
+												? ' ▴'
+												: ' ▾'
+											: '')}
+								</th>
+							)}
+						</For>
 					</tr>
 				</thead>
 				<tbody>
 					{props.groupBy && props.columns.includes(props.groupBy) ? (
-						<For each={uniqueGroups()}>
+						<For each={sortedUniqueGroups()}>
 							{(group) => (
 								<>
-									{props.data
+									{sortedData()
 										.filter((d) => props.groupBy && d[props.groupBy] === group)
 										.map((d, index) => (
 											<tr class="border-b border-gray-800 last:border-b-0">
@@ -81,7 +154,7 @@ export const StatsTable: Component<{
 							)}
 						</For>
 					) : (
-						<For each={props.data}>
+						<For each={sortedData()}>
 							{(d) => (
 								<tr class="border-b border-gray-800 last:border-b-0">
 									<For each={props.columns}>{(column) => cell(d, column)}</For>
@@ -92,7 +165,7 @@ export const StatsTable: Component<{
 					)}
 				</tbody>
 			</table>
-			{props.loading && (
+			{(props.loading || !sorted()) && (
 				<div class="p-4">
 					<div class="flex justify-center items-center h-full p-4">
 						<span class="text-gray-500">Loading...</span>

@@ -9,10 +9,6 @@ import { IPlayerStats, IMatchStats } from '../../../common';
 import { assemblePlayers } from '../utils/assemblePlayers';
 import { StatsTable } from '../components/StatsTable';
 
-//TODO: Add ability to sort tables by columns
-//TODO: Refresh every 15 seconds
-//TODO: Cache data in the front as well
-
 export const MatchesStatsPage = () => {
 	const fetcher = createFetcher();
 	const [loading, setLoading] = createSignal(true);
@@ -49,6 +45,7 @@ export const MatchesStatsPage = () => {
 						'teamAScore| / |teamBScore',
 						'winner',
 					]}
+					defaultSortColumn="matchId"
 					loading={loading()}
 					detailsPrefix="/stats/match/"
 					detailsProp="matchId"
@@ -96,7 +93,7 @@ export const MatchStatsPage = () => {
 			<StatsNavBar />
 			<Card>
 				<div class="prose text-center mx-auto">
-					<h2>{t('Match') + ' ' + matchId}</h2>
+					<h2>{t('Match') + ' ' + match()?.matchId}</h2>
 				</div>
 				<div class="prose text-center mx-auto pt-4 flex justify-center items-center">
 					<div class="flex-1 text-right pr-4">
@@ -147,6 +144,7 @@ export const MatchStatsPage = () => {
 							'hsPct',
 							'adr',
 						]}
+						defaultSortColumn="name"
 						loading={loading()}
 						groupBy="map"
 					/>
@@ -163,6 +161,7 @@ export const MatchStatsPage = () => {
 						]}
 						data={assembledPlayers()}
 						columns={['name', 'kills', 'deaths', 'assists', 'diff', 'hsPct', 'adr']}
+						defaultSortColumn="name"
 						loading={loading()}
 					/>
 				)}
@@ -201,6 +200,7 @@ export const PlayersStatsPage = () => {
 					]}
 					data={players()}
 					columns={['name', 'kills', 'deaths', 'assists', 'diff', 'hsPct', 'adr']}
+					defaultSortColumn="name"
 					loading={loading()}
 					detailsPrefix="/stats/player/"
 					detailsProp="steamId"
@@ -310,6 +310,7 @@ export const PlayerStatsPage = () => {
 						'hsPct',
 						'adr',
 					]}
+					defaultSortColumn="matchId"
 					loading={loading()}
 					groupBy="matchId"
 				/>
