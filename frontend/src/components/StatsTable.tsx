@@ -1,6 +1,7 @@
 import { A } from '@solidjs/router';
 import { Component, createEffect, createSignal, For } from 'solid-js';
 import { t } from '../utils/locale';
+import { TStatus } from '../../../common/types/status';
 
 export const StatsTable: Component<{
 	headers: string[];
@@ -9,7 +10,7 @@ export const StatsTable: Component<{
 	sortable?: boolean[];
 	defaultSortColumn: string;
 	defaultSortAsc?: boolean;
-	loading: boolean;
+	status: TStatus;
 	groupBy?: string;
 	detailsPrefix?: string;
 	detailsProp?: string;
@@ -165,10 +166,26 @@ export const StatsTable: Component<{
 					)}
 				</tbody>
 			</table>
-			{(props.loading || !sorted()) && (
+			{props.status === 'NOT_FOUND' && (
 				<div class="p-4">
 					<div class="flex justify-center items-center h-full p-4">
-						<span class="text-gray-500">Loading...</span>
+						<span class="text-red-500">{t('This data does not exist.')}</span>
+					</div>
+				</div>
+			)}
+			{props.status === 'ERROR' && (
+				<div class="p-4">
+					<div class="flex justify-center items-center h-full p-4">
+						<span class="text-red-500">
+							{t('There was an error while fetching this data.')}
+						</span>
+					</div>
+				</div>
+			)}
+			{(props.status === 'LOADING' || !sorted()) && (
+				<div class="p-4">
+					<div class="flex justify-center items-center h-full p-4">
+						<span class="text-gray-500">{t('Loading...')}</span>
 					</div>
 				</div>
 			)}
