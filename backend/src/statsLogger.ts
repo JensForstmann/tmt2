@@ -273,23 +273,23 @@ export const getMatchPlayersStats = async (matchId: string): Promise<IPlayerStat
 
 	const playerStats = (await queryDB(
 		`SELECT
-			t1.steamId,
-			t1.name,
-			t2.kills,
-			t2.deaths,
-			t2.assists,
-			t2.diff,
-			t2.hits,
-			t2.headshots,
-			t2.hsPct,
-			t2.rounds,
-			t2.damages,
-			t2.adr,
-			t2.map
-		 FROM ${PLAYERS_TABLE} t1
-		 INNER JOIN ${PLAYER_MATCH_STATS_TABLE} t2
-		 ON t1.steamId = t2.steamId
-		 WHERE t2.matchId = '${matchId}'`
+		t1.steamId,
+		t1.name,
+		t2.kills,
+		t2.deaths,
+		t2.assists,
+		t2.diff,
+		t2.hits,
+		t2.headshots,
+		t2.hsPct,
+		t2.rounds,
+		t2.damages,
+		t2.adr,
+		t2.map
+		FROM ${PLAYERS_TABLE} t1
+		INNER JOIN ${PLAYER_MATCH_STATS_TABLE} t2
+		ON t1.steamId = t2.steamId
+		WHERE t2.matchId = '${matchId}'`
 	)) as IPlayerStats[];
 	cache.set('players/match/' + matchId, playerStats);
 	return playerStats;
@@ -328,7 +328,7 @@ export const getMatchStats = async (matchId: string): Promise<IMatchStats> => {
 		cache.set('matches/' + matchId, matchStats);
 		return matchStats;
 	}
-	throw new Error(`Match stats not found for matchId: ${matchId}`);
+	throw { status: 404, message: `Match stats not found for matchId: ${matchId}` };
 };
 
 export const getPlayerStats = async (steamId: string): Promise<IPlayerStats> => {
@@ -358,5 +358,5 @@ export const getPlayerStats = async (steamId: string): Promise<IPlayerStats> => 
 		cache.set('players/' + steamId, playerStats);
 		return playerStats;
 	}
-	throw new Error(`Player stats not found for steamId: ${steamId}`);
+	throw { status: 404, message: `Player stats not found for steamId: ${steamId}` };
 };

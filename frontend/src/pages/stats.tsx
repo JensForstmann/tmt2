@@ -87,7 +87,7 @@ export const MatchStatsPage = () => {
 				}
 			})
 			.catch((error) => {
-				if (error.response?.status === 404) {
+				if (error === 'Not Found') {
 					setStatus('NOT_FOUND');
 				} else {
 					setStatus('ERROR');
@@ -113,7 +113,7 @@ export const MatchStatsPage = () => {
 				}
 			})
 			.catch((error) => {
-				if (error.response?.status === 404) {
+				if (error === 'Not Found') {
 					setStatus('NOT_FOUND');
 				} else {
 					setStatus('ERROR');
@@ -280,7 +280,7 @@ export const PlayerStatsPage = () => {
 				}
 			})
 			.catch((error) => {
-				if (error.response?.status === 404) {
+				if (error === 'Not Found') {
 					setStatus('NOT_FOUND');
 				} else {
 					setStatus('ERROR');
@@ -305,7 +305,7 @@ export const PlayerStatsPage = () => {
 				}
 			})
 			.catch((error) => {
-				if (error.response?.status === 404) {
+				if (error === 'Not Found') {
 					setStatus('NOT_FOUND');
 				} else {
 					setStatus('ERROR');
