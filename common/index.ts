@@ -1,5 +1,6 @@
 export * from './types';
 
+export * from './combinedStatus';
 export * from './electionStep';
 export * from './match';
 export * from './matchMap';

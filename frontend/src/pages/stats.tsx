@@ -5,10 +5,9 @@ import { t } from '../utils/locale';
 import { useParams } from '@solidjs/router';
 import { createEffect } from 'solid-js';
 import { createFetcher } from '../utils/fetcher';
-import { IPlayerStats, IMatchStats } from '../../../common';
+import { IPlayerStats, IMatchStats, TStatus, combinedStatus } from '../../../common';
 import { assemblePlayers } from '../utils/assemblePlayers';
 import { StatsTable } from '../components/StatsTable';
-import { TStatus } from '../../../common/types/status';
 
 export const MatchesStatsPage = () => {
 	const fetcher = createFetcher();
@@ -69,28 +68,34 @@ export const MatchesStatsPage = () => {
 export const MatchStatsPage = () => {
 	const matchId = useParams().id;
 	const fetcher = createFetcher();
-	const [status, setStatus] = createSignal<TStatus>('LOADING');
+	const [status, setStatus] = createSignal<TStatus[]>(['LOADING', 'LOADING']);
 	const [match, setMatch] = createSignal<IMatchStats>();
 	const [players, setPlayers] = createSignal<IPlayerStats[]>([]);
 	const [assembledPlayers, setAssembledPlayers] = createSignal<IPlayerStats[]>([]);
 	const [permap, setPermap] = createSignal(false);
-	let [maps, setMaps] = createSignal<string[]>([]);
+
+	const updateStatus = (index: number, value: TStatus) => {
+		const updated = [...status()];
+		updated[index] = value;
+		setStatus(updated);
+		console.log('status updated');
+	};
 
 	createEffect(() => {
 		fetcher<IMatchStats>('GET', `/api/stats/match?id=${matchId}`)
 			.then((data) => {
 				if (data) {
 					setMatch(data);
-					setStatus('OK');
+					updateStatus(0, 'OK');
 				} else {
-					setStatus('ERROR');
+					updateStatus(0, 'ERROR');
 				}
 			})
 			.catch((error) => {
 				if (error === 'Not Found') {
-					setStatus('NOT_FOUND');
+					updateStatus(0, 'NOT_FOUND');
 				} else {
-					setStatus('ERROR');
+					updateStatus(0, 'ERROR');
 				}
 			});
 	});
@@ -101,22 +106,16 @@ export const MatchStatsPage = () => {
 				if (data) {
 					setPlayers(data);
 					setAssembledPlayers(assemblePlayers(data));
-					const uniqueMaps = new Set<string>();
-					for (const player of data) {
-						if (player.map) {
-							uniqueMaps.add(player.map);
-						}
-					}
-					setMaps(Array.from(uniqueMaps));
+					updateStatus(1, 'OK');
 				} else {
-					setStatus('ERROR');
+					updateStatus(1, 'ERROR');
 				}
 			})
 			.catch((error) => {
 				if (error === 'Not Found') {
-					setStatus('NOT_FOUND');
+					updateStatus(1, 'NOT_FOUND');
 				} else {
-					setStatus('ERROR');
+					updateStatus(1, 'ERROR');
 				}
 			});
 	});
@@ -124,7 +123,7 @@ export const MatchStatsPage = () => {
 	return (
 		<>
 			<StatsNavBar />
-			{status() === 'OK' && (
+			{combinedStatus(status()) === 'OK' && (
 				<>
 					<Card>
 						<div class="prose text-center mx-auto">
@@ -146,7 +145,7 @@ export const MatchStatsPage = () => {
 				</>
 			)}
 			<Card>
-				{status() === 'OK' && (
+				{combinedStatus(status()) === 'OK' && (
 					<>
 						<div class="flex justify-center">
 							<div class="mx-4">{t('Global')}</div>
@@ -186,7 +185,7 @@ export const MatchStatsPage = () => {
 							'adr',
 						]}
 						defaultSortColumn="name"
-						status={status()}
+						status={combinedStatus(status())}
 						groupBy="map"
 					/>
 				) : (
@@ -203,7 +202,7 @@ export const MatchStatsPage = () => {
 						data={assembledPlayers()}
 						columns={['name', 'kills', 'deaths', 'assists', 'diff', 'hsPct', 'adr']}
 						defaultSortColumn="name"
-						status={status()}
+						status={combinedStatus(status())}
 					/>
 				)}
 			</Card>
@@ -264,26 +263,32 @@ export const PlayersStatsPage = () => {
 export const PlayerStatsPage = () => {
 	const steamId = useParams().id;
 	const fetcher = createFetcher();
-	const [status, setStatus] = createSignal<TStatus>('LOADING');
+	const [status, setStatus] = createSignal<TStatus[]>(['LOADING', 'LOADING']);
 	const [player, setPlayer] = createSignal<IPlayerStats>();
 	const [playerData, setPlayerData] = createSignal<IPlayerStats[]>([]);
-	const [matchIds, setMatchIds] = createSignal<string[]>([]);
+
+	const updateStatus = (index: number, value: TStatus) => {
+		const updated = [...status()];
+		updated[index] = value;
+		setStatus(updated);
+		console.log('status updated');
+	};
 
 	createEffect(() => {
 		fetcher<IPlayerStats>('GET', `/api/stats/player?id=${steamId}`)
 			.then((data) => {
 				if (data) {
 					setPlayer(data);
-					setStatus('OK');
+					updateStatus(0, 'OK');
 				} else {
-					setStatus('ERROR');
+					updateStatus(0, 'ERROR');
 				}
 			})
 			.catch((error) => {
 				if (error === 'Not Found') {
-					setStatus('NOT_FOUND');
+					updateStatus(0, 'NOT_FOUND');
 				} else {
-					setStatus('ERROR');
+					updateStatus(0, 'ERROR');
 				}
 			});
 	});
@@ -293,22 +298,16 @@ export const PlayerStatsPage = () => {
 			.then((data) => {
 				if (data) {
 					setPlayerData(data);
-					const uniqueMatchIds = new Set<string>();
-					for (const player of data) {
-						if (player.matchId) {
-							uniqueMatchIds.add(player.matchId);
-						}
-					}
-					setMatchIds(Array.from(uniqueMatchIds));
+					updateStatus(1, 'OK');
 				} else {
-					setStatus('ERROR');
+					updateStatus(1, 'ERROR');
 				}
 			})
 			.catch((error) => {
 				if (error === 'Not Found') {
-					setStatus('NOT_FOUND');
+					updateStatus(1, 'NOT_FOUND');
 				} else {
-					setStatus('ERROR');
+					updateStatus(1, 'ERROR');
 				}
 			});
 	});
@@ -316,7 +315,7 @@ export const PlayerStatsPage = () => {
 	return (
 		<>
 			<StatsNavBar />
-			{status() === 'OK' && (
+			{combinedStatus(status()) === 'OK' && (
 				<>
 					<Card>
 						<div class="prose text-center mx-auto">
@@ -386,7 +385,7 @@ export const PlayerStatsPage = () => {
 						'adr',
 					]}
 					defaultSortColumn="matchId"
-					status={status()}
+					status={combinedStatus(status())}
 					groupBy="matchId"
 				/>
 			</Card>

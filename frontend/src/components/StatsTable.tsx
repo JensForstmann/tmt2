@@ -1,7 +1,7 @@
 import { A } from '@solidjs/router';
 import { Component, createEffect, createSignal, For } from 'solid-js';
 import { t } from '../utils/locale';
-import { TStatus } from '../../../common/types/status';
+import { TStatus } from '../../../common';
 
 export const StatsTable: Component<{
 	headers: string[];
