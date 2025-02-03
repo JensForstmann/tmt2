@@ -5,7 +5,7 @@ export const ScrollArea: Component<{
 	children: JSXElement[];
 	scroll?: boolean;
 }> = (props) => {
-	let ref: HTMLDivElement;
+	let ref!: HTMLDivElement;
 	onMount(() => {
 		if (ref) {
 			autoAnimate(ref);

@@ -11,8 +11,8 @@
 		"start": "node ./dist/backend/src/index.js"
 	},
 	"dependencies": {
-		"@tsoa/runtime": "^6.4.0",
-		"express": "^4.21.1",
+		"@tsoa/runtime": "^6.6.0",
+		"express": "^4.21.2",
 		"short-uuid": "^5.2.0",
 		"sqlite3": "^5.1.7",
 		"steamid": "^2.1.0",
@@ -20,14 +20,14 @@
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {
-		"@tsoa/cli": "^6.4.0",
+		"@tsoa/cli": "^6.6.0",
 		"@types/debug": "^4.1.12",
 		"@types/express": "^5.0.0",
-		"@types/node": "^22.7.5",
+		"@types/node": "^22.10.2",
 		"@types/steamid": "^2.0.3",
-		"@types/ws": "^8.5.12",
-		"nodemon": "^3.1.7",
+		"@types/ws": "^8.5.13",
+		"nodemon": "^3.1.9",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.6.3"
+		"typescript": "^5.7.2"
 	}
 }
