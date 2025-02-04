@@ -23,10 +23,14 @@ export const assemblePlayers = (players: IPlayerStats[]) => {
 			}
 		}
 	}
-	for (const player of result) {
-		player.diff = player.kills - player.deaths;
-		player.hsPct = Math.round((player.headshots / player.hits) * 100);
-		player.adr = Math.round(player.damages / player.rounds);
-	}
-	return result;
+
+	return result.map(calculatePlayerRatios);
+};
+
+export const calculatePlayerRatios = (player: IPlayerStats) => {
+	player.kd = Math.round((player.kills / player.deaths) * 100) / 100;
+	player.hsPct = Math.round((player.headshots / player.hits) * 100);
+	player.adr = Math.round(player.damages / player.rounds);
+
+	return player;
 };

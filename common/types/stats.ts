@@ -4,23 +4,21 @@ export interface IPlayerStats {
 	kills: number;
 	deaths: number;
 	assists: number;
-	diff: number;
 	hits: number;
 	headshots: number;
-	hsPct: number;
 	rounds: number;
 	damages: number;
-	adr: number;
+	kd?: number;
+	hsPct?: number;
+	adr?: number;
 	map?: string;
 	matchId?: string;
 }
 
 export interface IMatchStats {
 	matchId: string;
-	map: string;
 	teamA: string;
 	teamAScore: string;
 	teamB: string;
 	teamBScore: string;
-	winner: string;
 }

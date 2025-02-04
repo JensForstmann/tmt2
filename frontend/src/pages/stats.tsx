@@ -6,7 +6,7 @@ import { useParams } from '@solidjs/router';
 import { createEffect } from 'solid-js';
 import { createFetcher } from '../utils/fetcher';
 import { IPlayerStats, IMatchStats, TStatus, combinedStatus } from '../../../common';
-import { assemblePlayers } from '../utils/assemblePlayers';
+import { assemblePlayers, calculatePlayerRatios } from '../utils/playerStatsUtils';
 import { StatsTable } from '../components/StatsTable';
 
 export const MatchesStatsPage = () => {
@@ -38,23 +38,9 @@ export const MatchesStatsPage = () => {
 			<StatsNavBar />
 			<Card>
 				<StatsTable
-					headers={[
-						t('ID'),
-						t('Map'),
-						t('Team A'),
-						t('Team B'),
-						t('Score'),
-						t('Winner Team'),
-					]}
+					headers={[t('ID'), t('Team A'), t('Team B'), t('Score')]}
 					data={matches()}
-					columns={[
-						'matchId',
-						'map',
-						'teamA',
-						'teamB',
-						'teamAScore| / |teamBScore',
-						'winner',
-					]}
+					columns={['matchId', 'teamA', 'teamB', 'teamAScore| / |teamBScore']}
 					defaultSortColumn="matchId"
 					status={status()}
 					detailsPrefix="/stats/match/"
@@ -104,7 +90,7 @@ export const MatchStatsPage = () => {
 		fetcher<IPlayerStats[]>('GET', `/api/stats/players/match?id=${matchId}`)
 			.then((data) => {
 				if (data) {
-					setPlayers(data);
+					setPlayers(data.map(calculatePlayerRatios));
 					setAssembledPlayers(assemblePlayers(data));
 					updateStatus(1, 'OK');
 				} else {
@@ -169,7 +155,7 @@ export const MatchStatsPage = () => {
 							t('Kills'),
 							t('Deaths'),
 							t('Assists'),
-							t('Diff'),
+							t('K/D'),
 							t('Headshot %'),
 							t('ADR'),
 						]}
@@ -180,7 +166,7 @@ export const MatchStatsPage = () => {
 							'kills',
 							'deaths',
 							'assists',
-							'diff',
+							'kd',
 							'hsPct',
 							'adr',
 						]}
@@ -195,12 +181,12 @@ export const MatchStatsPage = () => {
 							t('Kills'),
 							t('Deaths'),
 							t('Assists'),
-							t('Diff'),
+							t('K/D'),
 							t('Headshot %'),
 							t('ADR'),
 						]}
 						data={assembledPlayers()}
-						columns={['name', 'kills', 'deaths', 'assists', 'diff', 'hsPct', 'adr']}
+						columns={['name', 'kills', 'deaths', 'assists', 'kd', 'hsPct', 'adr']}
 						defaultSortColumn="name"
 						status={combinedStatus(status())}
 					/>
@@ -219,7 +205,7 @@ export const PlayersStatsPage = () => {
 		fetcher<IPlayerStats[]>('GET', `/api/stats/players`)
 			.then((data) => {
 				if (data) {
-					setPlayers(data);
+					setPlayers(data.map(calculatePlayerRatios));
 					setStatus('OK');
 				} else {
 					setStatus('ERROR');
@@ -244,12 +230,12 @@ export const PlayersStatsPage = () => {
 						t('Kills'),
 						t('Deaths'),
 						t('Assists'),
-						t('Diff'),
+						t('K/D'),
 						t('Headshot %'),
 						t('ADR'),
 					]}
 					data={players()}
-					columns={['name', 'kills', 'deaths', 'assists', 'diff', 'hsPct', 'adr']}
+					columns={['name', 'kills', 'deaths', 'assists', 'kd', 'hsPct', 'adr']}
 					defaultSortColumn="name"
 					status={status()}
 					detailsPrefix="/stats/player/"
@@ -278,7 +264,7 @@ export const PlayerStatsPage = () => {
 		fetcher<IPlayerStats>('GET', `/api/stats/player?id=${steamId}`)
 			.then((data) => {
 				if (data) {
-					setPlayer(data);
+					setPlayer(calculatePlayerRatios(data));
 					updateStatus(0, 'OK');
 				} else {
 					updateStatus(0, 'ERROR');
@@ -297,7 +283,7 @@ export const PlayerStatsPage = () => {
 		fetcher<IPlayerStats[]>('GET', `/api/stats/matches/player?id=${steamId}`)
 			.then((data) => {
 				if (data) {
-					setPlayerData(data);
+					setPlayerData(data.map(calculatePlayerRatios));
 					updateStatus(1, 'OK');
 				} else {
 					updateStatus(1, 'ERROR');
@@ -342,8 +328,8 @@ export const PlayerStatsPage = () => {
 								</div>
 								<div class="border-r border-gray-300 h-16"></div>
 								<div class="px-4">
-									<h3 class="m-0">{t('Diff')}</h3>
-									{player()?.diff}
+									<h3 class="m-0">{t('K/D')}</h3>
+									{player()?.kd}
 								</div>
 								<div class="border-r border-gray-300 h-16"></div>
 								<div class="px-4">
@@ -369,21 +355,12 @@ export const PlayerStatsPage = () => {
 						t('Kills'),
 						t('Deaths'),
 						t('Assists'),
-						t('Diff'),
+						t('K/D'),
 						t('Headshot %'),
 						t('ADR'),
 					]}
 					data={playerData()}
-					columns={[
-						'matchId',
-						'map',
-						'kills',
-						'deaths',
-						'assists',
-						'diff',
-						'hsPct',
-						'adr',
-					]}
+					columns={['matchId', 'map', 'kills', 'deaths', 'assists', 'kd', 'hsPct', 'adr']}
 					defaultSortColumn="matchId"
 					status={combinedStatus(status())}
 					groupBy="matchId"
