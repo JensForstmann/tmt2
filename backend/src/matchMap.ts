@@ -14,6 +14,7 @@ import * as Events from './events';
 import { colors, formatMapName } from './gameServer';
 import * as Match from './match';
 import * as MatchService from './matchService';
+import * as StatsLogger from './statsLogger';
 
 export const create = (
 	map: string,
@@ -163,6 +164,7 @@ export const onRoundEnd = async (
 			match.log('Switching sides');
 			await Match.say(match, 'SWITCHING SIDES');
 		}
+		await StatsLogger.updateRoundCount(match.data, matchMap);
 		return;
 	}
 };

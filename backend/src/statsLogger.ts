@@ -1,8 +1,9 @@
 import { SqlAttribute, TableSchema } from './tableSchema';
-import { createTableDB, queryDB, updateDB } from './storage';
-import { update } from './match';
+import { createTableDB, insertDB, queryDB, updateDB } from './storage';
+import { IMatch, IMatchMap } from '../../common';
 
 export const PLAYERS_TABLE = 'players';
+export const MATCH_MAPS_TABLE = 'matchMaps';
 export const MATCHES_TABLE = 'matches';
 export const PLAYER_MATCH_STATS_TABLE = 'playerMatchStats';
 
@@ -17,33 +18,59 @@ export const setup = async () => {
 		{ name: 'tDiff', type: 'INTEGER' },
 		{ name: 'tHits', type: 'INTEGER' },
 		{ name: 'tHeadshots', type: 'INTEGER' },
-		{
-			name: 'tHsPct',
-			type: 'FLOAT',
-			constraints: 'CHECK (tHeadshots >= 0 AND tHeadshots <= 100)',
-		},
 		{ name: 'tRounds', type: 'INTEGER' },
 		{ name: 'tDamages', type: 'INTEGER' },
-		{ name: 'tAdr', type: 'INTEGER' },
 	] as SqlAttribute[];
 	const playersTableSchema = new TableSchema(PLAYERS_TABLE, playersAttributes, ['steamId']);
 	await createTableDB(playersTableSchema);
 
-	// Create matches table
-	const matchesAttributes = [
+	// Create match map table
+	const matchMapsAttributes = [
 		{ name: 'matchId', type: 'TEXT' },
 		{ name: 'map', type: 'TEXT' },
 		{ name: 'teamA', type: 'TEXT' },
-		{ name: 'teamAScore', type: 'TEXT' },
+		{ name: 'teamAScore', type: 'INTEGER' },
 		{ name: 'teamB', type: 'TEXT' },
-		{ name: 'teamBScore', type: 'TEXT' },
-		{ name: 'winner', type: 'TEXT' },
+		{ name: 'teamBScore', type: 'INTEGER' },
+		{
+			name: 'timestamp',
+			type: 'TIMESTAMP',
+			constraints: 'DEFAULT CURRENT_TIMESTAMP',
+		},
 	] as SqlAttribute[];
-	const matchesTableSchema = new TableSchema(MATCHES_TABLE, matchesAttributes, [
+	const matchMapsTableSchema = new TableSchema(MATCH_MAPS_TABLE, matchMapsAttributes, [
 		'matchId',
 		'map',
 	]);
+	await createTableDB(matchMapsTableSchema);
+
+	// Create matches table
+	const matchesAttributes = [
+		{ name: 'matchId', type: 'TEXT' },
+		{ name: 'teamA', type: 'TEXT' },
+		{ name: 'teamAScore', type: 'INTEGER' },
+		{ name: 'teamB', type: 'TEXT' },
+		{ name: 'teamBScore', type: 'INTEGER' },
+		{
+			name: 'timestamp',
+			type: 'TIMESTAMP',
+			constraints: 'DEFAULT CURRENT_TIMESTAMP',
+		},
+	] as SqlAttribute[];
+	const matchesTableSchema = new TableSchema(MATCHES_TABLE, matchesAttributes, ['matchId']);
 	await createTableDB(matchesTableSchema);
+
+	//Create teams table
+	const teamsAttributes = [
+		{ name: 'teamName', type: 'TEXT' },
+		{
+			name: 'steamId',
+			type: 'TEXT',
+			constraints: `REFERENCES ${PLAYERS_TABLE} (steamId)`,
+		},
+	] as SqlAttribute[];
+	const teamsTableSchema = new TableSchema('teams', teamsAttributes, ['teamName']);
+	await createTableDB(teamsTableSchema);
 
 	// Create player match stats table
 	const playerMatchStatsAttributes = [
@@ -65,17 +92,10 @@ export const setup = async () => {
 		{ name: 'kills', type: 'INTEGER' },
 		{ name: 'deaths', type: 'INTEGER' },
 		{ name: 'assists', type: 'INTEGER' },
-		{ name: 'diff', type: 'INTEGER' },
 		{ name: 'hits', type: 'INTEGER' },
 		{ name: 'headshots', type: 'INTEGER' },
-		{
-			name: 'hsPct',
-			type: 'FLOAT',
-			constraints: 'CHECK (headshots >= 0 AND headshots <= 100)',
-		},
 		{ name: 'rounds', type: 'INTEGER' },
 		{ name: 'damages', type: 'INTEGER' },
-		{ name: 'adr', type: 'FLOAT' },
 	] as SqlAttribute[];
 	const playerMatchStatsTableSchema = new TableSchema(
 		PLAYER_MATCH_STATS_TABLE,
@@ -83,6 +103,23 @@ export const setup = async () => {
 		['steamId', 'matchId', 'map']
 	);
 	await createTableDB(playerMatchStatsTableSchema);
+};
+
+export const onNewMatch = async (data: IMatch) => {
+	await insertDB(
+		MATCHES_TABLE,
+		new Map<string, string | number>([
+			['matchId', data.id],
+			['teamA', data.teamA.name],
+			['teamAScore', 0],
+			['teamB', data.teamB.name],
+			['teamBScore', 0],
+		])
+	);
+};
+
+export const onNewMap = async () => {
+	// TODO
 };
 
 export const onDamage = async (
@@ -120,9 +157,6 @@ export const onDamage = async (
 			`steamId = '${attackerId}'`
 		);
 	}
-
-	await updateAdr(matchId, map, attackerId);
-	await updateHsPct(matchId, map, attackerId);
 };
 
 export const onKill = async (matchId: string, map: string, killerId: string, victimId: string) => {
@@ -159,8 +193,6 @@ export const onKill = async (matchId: string, map: string, killerId: string, vic
 		new Map<string, number>([['tDeaths', currentVictimGlobalStats + 1]]),
 		`steamId = '${victimId}'`
 	);
-
-	await updateDiff(matchId, map, killerId);
 };
 
 export const onAssist = async (matchId: string, map: string, attackerId: string) => {
@@ -201,82 +233,8 @@ export const onOtherDeath = async (matchId: string, map: string, victimId: strin
 		new Map<string, number>([['tDeaths', currentVictimGlobalStats + 1]]),
 		`steamId = '${victimId}'`
 	);
-
-	await updateDiff(matchId, map, victimId);
 };
 
-export const updateRoundCount = async (matchId: string, map: string) => {
+export const updateRoundCount = async (match: IMatch, matchMap: IMatchMap) => {
 	// TODO
-};
-
-const updateDiff = async (matchId: string, map: string, steamId: string) => {
-	const matchStats = (await queryDB(
-		`SELECT kills,deaths FROM ${PLAYER_MATCH_STATS_TABLE} WHERE steamId = '${steamId}' AND matchId = '${matchId}' AND map = '${map}'`
-	)) as number[] | undefined;
-	const globalStats = (await queryDB(
-		`SELECT tKills,tDeaths FROM ${PLAYERS_TABLE} WHERE steamId = '${steamId}'`
-	)) as number[] | undefined;
-
-	if (matchStats && globalStats) {
-		let diff = (matchStats[1] ?? 0) - (matchStats[0] ?? 0);
-		await updateDB(
-			PLAYER_MATCH_STATS_TABLE,
-			new Map<string, number>([['diff', diff]]),
-			`steamId = '${steamId}' AND matchId = '${matchId}' AND map = '${map}'`
-		);
-		diff = (globalStats[1] ?? 0) - (globalStats[0] ?? 0);
-		await updateDB(
-			PLAYERS_TABLE,
-			new Map<string, number>([['diff', diff]]),
-			`steamId = '${steamId}'`
-		);
-	}
-};
-
-const updateHsPct = async (matchId: string, map: string, steamId: string) => {
-	const matchStats = (await queryDB(
-		`SELECT hits,headshots FROM ${PLAYER_MATCH_STATS_TABLE} WHERE steamId = '${steamId}' AND matchId = '${matchId}' AND map = '${map}'`
-	)) as number[] | undefined;
-	const globalStats = (await queryDB(
-		`SELECT tHits,tHeadshots FROM ${PLAYERS_TABLE} WHERE steamId = '${steamId}'`
-	)) as number[] | undefined;
-
-	if (matchStats && globalStats) {
-		let hsPct = (100 * (matchStats[1] ?? 0)) / (matchStats[0] ?? 1);
-		await updateDB(
-			PLAYER_MATCH_STATS_TABLE,
-			new Map<string, number>([['hsPct', hsPct]]),
-			`steamId = '${steamId}' AND matchId = '${matchId}' AND map = '${map}'`
-		);
-		hsPct = (100 * (globalStats[1] ?? 0)) / (globalStats[0] ?? 1);
-		await updateDB(
-			PLAYERS_TABLE,
-			new Map<string, number>([['tHsPct', hsPct]]),
-			`steamId = '${steamId}'`
-		);
-	}
-};
-
-const updateAdr = async (matchId: string, map: string, steamId: string) => {
-	const matchStats = (await queryDB(
-		`SELECT rounds,damages FROM ${PLAYER_MATCH_STATS_TABLE} WHERE steamId = '${steamId}' AND matchId = '${matchId}' AND map = '${map}'`
-	)) as number[] | undefined;
-	const globalStats = (await queryDB(
-		`SELECT tRounds,tDamages FROM ${PLAYERS_TABLE} WHERE steamId = '${steamId}'`
-	)) as number[] | undefined;
-
-	if (matchStats && globalStats) {
-		let adr = (matchStats[1] ?? 0) / (matchStats[0] ?? 1);
-		await updateDB(
-			PLAYER_MATCH_STATS_TABLE,
-			new Map<string, number>([['adr', adr]]),
-			`steamId = '${steamId}' AND matchId = '${matchId}' AND map = '${map}'`
-		);
-		adr = (globalStats[1] ?? 0) / (globalStats[0] ?? 1);
-		await updateDB(
-			PLAYERS_TABLE,
-			new Map<string, number>([['tAdr', adr]]),
-			`steamId = '${steamId}'`
-		);
-	}
 };
