@@ -72,7 +72,11 @@ export const StatsTable: Component<{
 		let result = '';
 		for (const key of column.split('|')) {
 			if (key in d) {
-				result += d[key];
+				if (d[key] instanceof Date) {
+					result += d[key].toLocaleString('fr-FR');
+				} else {
+					result += d[key];
+				}
 			} else {
 				result += key;
 			}
@@ -135,22 +139,30 @@ export const StatsTable: Component<{
 								<>
 									{sortedData()
 										.filter((d) => props.groupBy && d[props.groupBy] === group)
-										.map((d, index) => (
-											<tr class="border-b border-gray-800 last:border-b-0">
-												<For each={props.columns}>
-													{(column) => {
-														if (
-															column != props.groupBy ||
-															index === 0
-														) {
-															return cell(d, column);
-														}
-														return <td></td>;
-													}}
-												</For>
-												{props.detailsPrefix && detailsButton(d)}
-											</tr>
-										))}
+										.map((d, index, a) => {
+											let cl = '';
+											if (index === a.length - 1) {
+												cl = 'border-b border-gray-700 last:border-b-0';
+											} else {
+												cl = 'border-b border-gray-800 last:border-b-0';
+											}
+											return (
+												<tr class={cl}>
+													<For each={props.columns}>
+														{(column) => {
+															if (
+																column != props.groupBy ||
+																index === 0
+															) {
+																return cell(d, column);
+															}
+															return <td></td>;
+														}}
+													</For>
+													{props.detailsPrefix && detailsButton(d)}
+												</tr>
+											);
+										})}
 								</>
 							)}
 						</For>

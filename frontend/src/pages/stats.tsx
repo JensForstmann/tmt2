@@ -38,9 +38,15 @@ export const MatchesStatsPage = () => {
 			<StatsNavBar />
 			<Card>
 				<StatsTable
-					headers={[t('ID'), t('Team A'), t('Team B'), t('Score')]}
+					headers={[t('ID'), t('Team A'), t('Team B'), t('Score'), t('Date')]}
 					data={matches()}
-					columns={['matchId', 'teamA', 'teamB', 'teamAScore| / |teamBScore']}
+					columns={[
+						'matchId',
+						'teamA',
+						'teamB',
+						'teamAScore| / |teamBScore',
+						'timestamp',
+					]}
 					defaultSortColumn="matchId"
 					status={status()}
 					detailsPrefix="/stats/match/"
@@ -56,6 +62,8 @@ export const MatchStatsPage = () => {
 	const fetcher = createFetcher();
 	const [status, setStatus] = createSignal<TStatus[]>(['LOADING', 'LOADING']);
 	const [match, setMatch] = createSignal<IMatchStats>();
+	const [teamA, setTeamA] = createSignal<string[]>([]);
+	const [teamB, setTeamB] = createSignal<string[]>([]);
 	const [players, setPlayers] = createSignal<IPlayerStats[]>([]);
 	const [assembledPlayers, setAssembledPlayers] = createSignal<IPlayerStats[]>([]);
 	const [permap, setPermap] = createSignal(false);
@@ -64,7 +72,6 @@ export const MatchStatsPage = () => {
 		const updated = [...status()];
 		updated[index] = value;
 		setStatus(updated);
-		console.log('status updated');
 	};
 
 	createEffect(() => {
@@ -87,11 +94,10 @@ export const MatchStatsPage = () => {
 	});
 
 	createEffect(() => {
-		fetcher<IPlayerStats[]>('GET', `/api/stats/players/match?id=${matchId}`)
+		fetcher<string[]>('GET', `/api/stats/team?id=${match()?.teamA}`)
 			.then((data) => {
 				if (data) {
-					setPlayers(data.map(calculatePlayerRatios));
-					setAssembledPlayers(assemblePlayers(data));
+					setTeamA(data);
 					updateStatus(1, 'OK');
 				} else {
 					updateStatus(1, 'ERROR');
@@ -102,6 +108,42 @@ export const MatchStatsPage = () => {
 					updateStatus(1, 'NOT_FOUND');
 				} else {
 					updateStatus(1, 'ERROR');
+				}
+			});
+		fetcher<string[]>('GET', `/api/stats/team?id=${match()?.teamB}`)
+			.then((data) => {
+				if (data) {
+					setTeamB(data);
+					updateStatus(2, 'OK');
+				} else {
+					updateStatus(2, 'ERROR');
+				}
+			})
+			.catch((error) => {
+				if (error === 'Not Found') {
+					updateStatus(2, 'NOT_FOUND');
+				} else {
+					updateStatus(2, 'ERROR');
+				}
+			});
+	});
+
+	createEffect(() => {
+		fetcher<IPlayerStats[]>('GET', `/api/stats/players/match?id=${matchId}`)
+			.then((data) => {
+				if (data) {
+					setPlayers(data.map(calculatePlayerRatios));
+					setAssembledPlayers(assemblePlayers(data));
+					updateStatus(3, 'OK');
+				} else {
+					updateStatus(3, 'ERROR');
+				}
+			})
+			.catch((error) => {
+				if (error === 'Not Found') {
+					updateStatus(3, 'NOT_FOUND');
+				} else {
+					updateStatus(3, 'ERROR');
 				}
 			});
 	});
@@ -118,12 +160,16 @@ export const MatchStatsPage = () => {
 						<div class="prose text-center mx-auto pt-4 flex justify-center items-center">
 							<div class="flex-1 text-right pr-4">
 								<h3 class="m-0">{match()?.teamA}</h3>
-								{match()?.teamAScore}
+								{teamA().join(', ')}
+								<br />
+								<span class="text-xl">{match()?.teamAScore}</span>
 							</div>
-							<div class="border-r border-gray-300 h-16"></div>
+							<div class="border-r border-gray-300 h-20"></div>
 							<div class="flex-1 text-left pl-4">
 								<h3 class="m-0">{match()?.teamB}</h3>
-								{match()?.teamBScore}
+								{teamB().join(', ')}
+								<br />
+								<span class="text-xl">{match()?.teamBScore}</span>
 							</div>
 						</div>
 					</Card>
@@ -257,7 +303,6 @@ export const PlayerStatsPage = () => {
 		const updated = [...status()];
 		updated[index] = value;
 		setStatus(updated);
-		console.log('status updated');
 	};
 
 	createEffect(() => {

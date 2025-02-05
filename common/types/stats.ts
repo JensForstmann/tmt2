@@ -21,4 +21,5 @@ export interface IMatchStats {
 	teamAScore: string;
 	teamB: string;
 	teamBScore: string;
+	timestamp: Date;
 }

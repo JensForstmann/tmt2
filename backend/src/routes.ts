@@ -59,6 +59,7 @@ const models: TsoaRoute.Models = {
 			teamAScore: { dataType: 'string', required: true },
 			teamB: { dataType: 'string', required: true },
 			teamBScore: { dataType: 'string', required: true },
+			timestamp: { dataType: 'datetime', required: true },
 		},
 		additionalProperties: false,
 	},
@@ -1503,6 +1504,43 @@ export function RegisterRoutes(app: Router) {
 
 				await templateService.apiHandler({
 					methodName: 'getPlayerMatchesStats',
+					controller,
+					response,
+					next,
+					validatedArgs,
+					successStatus: undefined,
+				});
+			} catch (err) {
+				return next(err);
+			}
+		}
+	);
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get(
+		'/api/stats/team',
+		authenticateMiddleware([{ bearer_token_optional: [] }]),
+		...fetchMiddlewares<RequestHandler>(StatsController),
+		...fetchMiddlewares<RequestHandler>(StatsController.prototype.getTeamPlayers),
+
+		async function StatsController_getTeamPlayers(
+			request: ExRequest,
+			response: ExResponse,
+			next: any
+		) {
+			const args: Record<string, TsoaRoute.ParameterSchema> = {
+				id: { in: 'query', name: 'id', required: true, dataType: 'string' },
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+				const controller = new StatsController();
+
+				await templateService.apiHandler({
+					methodName: 'getTeamPlayers',
 					controller,
 					response,
 					next,

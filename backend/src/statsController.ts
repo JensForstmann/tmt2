@@ -39,6 +39,9 @@ export class StatsController extends Controller {
 		return StatsLogger.getMatchStats(id);
 	}
 
+	/**
+	 * Get the total stats of a player.
+	 */
 	@Get('/player')
 	async getPlayerStats(@Query('id') id: string): Promise<IPlayerStats> {
 		return StatsLogger.getPlayerStats(id);
@@ -50,5 +53,13 @@ export class StatsController extends Controller {
 	@Get('/matches/player')
 	async getPlayerMatchesStats(@Query('id') id: string): Promise<IPlayerStats[]> {
 		return StatsLogger.getPlayerMatchesStats(id);
+	}
+
+	/**
+	 * Get all the players for a team.
+	 */
+	@Get('/team')
+	async getTeamPlayers(@Query('id') id: string): Promise<string[]> {
+		return StatsLogger.getTeamPlayers(id);
 	}
 }

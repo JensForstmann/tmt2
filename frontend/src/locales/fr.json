@@ -190,11 +190,7 @@
 	"Deaths": "Morts",
 	"Assists": "Assists",
 	"K/D": "K/D",
-	"Hits": "Hits",
-	"Headshots": "Headshots",
 	"Headshot %": "% Headshot",
-	"Rounds": "Rounds",
-	"Damages": "Dégâts",
 	"ADR": "ADR",
 	"Global": "Global",
 	"Per-map": "Par carte",
@@ -202,5 +198,6 @@
 	"Player": "Joueur",
 	"Loading...": "Chargement...",
 	"There was an error while fetching this data.": "Une erreur a eu lieu lors de la récupération des données.",
-	"This data does not exist.": "Ces données n'existent pas."
+	"This data does not exist.": "Ces données n'existent pas.",
+	"Date": "Date"
 }

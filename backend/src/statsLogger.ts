@@ -351,3 +351,20 @@ export const getPlayerStats = async (steamId: string): Promise<IPlayerStats> => 
 	}
 	throw { status: 404, message: `Player stats not found for steamId: ${steamId}` };
 };
+
+export const getTeamPlayers = async (teamName: string): Promise<string[]> => {
+	const cached = cache.get('team/' + teamName) as string[];
+	if (cached) return cached;
+
+	const teamPlayers = (
+		(await queryDB(
+			`SELECT p.name
+			FROM teams t
+			INNER JOIN ${PLAYERS_TABLE} p
+			ON t.steamId = p.steamId
+			WHERE t.teamName = '${teamName}'`
+		)) as Array<{ name: string }>
+	).map((row: { name: string }) => row.name) as string[];
+	cache.set('team/' + teamName, teamPlayers);
+	return teamPlayers;
+};
