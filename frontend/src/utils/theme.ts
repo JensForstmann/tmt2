@@ -42,7 +42,7 @@ export const cycleDarkMode = () => {
 	updateDarkClasses();
 };
 
-const currentMode = () => {
+export const currentMode = () => {
 	const swd = systemWantsDark();
 	const ct = currentTheme();
 	if (ct === 'system') {

@@ -98,13 +98,24 @@
 						"format": "date-time"
 					}
 				},
-				"required": ["matchId", "teamA", "teamAScore", "teamB", "teamBScore", "timestamp"],
+				"required": [
+					"matchId",
+					"teamA",
+					"teamAScore",
+					"teamB",
+					"teamBScore",
+					"timestamp"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"TMatchState": {
 				"type": "string",
-				"enum": ["ELECTION", "MATCH_MAP", "FINISHED"],
+				"enum": [
+					"ELECTION",
+					"MATCH_MAP",
+					"FINISHED"
+				],
 				"description": "Possible match states."
 			},
 			"ITeam": {
@@ -131,7 +142,10 @@
 						"description": "Steam ids of players in \"Steam ID 64\" format. Will be forced into this team."
 					}
 				},
-				"required": ["name", "advantage"],
+				"required": [
+					"name",
+					"advantage"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -140,7 +154,9 @@
 				"properties": {
 					"mode": {
 						"type": "string",
-						"enum": ["FIXED"],
+						"enum": [
+							"FIXED"
+						],
 						"nullable": false
 					},
 					"fixed": {
@@ -148,27 +164,40 @@
 						"description": "The name of the map, e.g. de_anubis."
 					}
 				},
-				"required": ["mode", "fixed"],
+				"required": [
+					"mode",
+					"fixed"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"TWho": {
 				"type": "string",
-				"enum": ["TEAM_A", "TEAM_B", "TEAM_X", "TEAM_Y"]
+				"enum": [
+					"TEAM_A",
+					"TEAM_B",
+					"TEAM_X",
+					"TEAM_Y"
+				]
 			},
 			"IPickMap": {
 				"description": "Pick a map from the map pool.",
 				"properties": {
 					"mode": {
 						"type": "string",
-						"enum": ["PICK"],
+						"enum": [
+							"PICK"
+						],
 						"nullable": false
 					},
 					"who": {
 						"$ref": "#/components/schemas/TWho"
 					}
 				},
-				"required": ["mode", "who"],
+				"required": [
+					"mode",
+					"who"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -177,10 +206,15 @@
 				"properties": {
 					"mode": {
 						"type": "string",
-						"enum": ["RANDOM_PICK", "AGREE"]
+						"enum": [
+							"RANDOM_PICK",
+							"AGREE"
+						]
 					}
 				},
-				"required": ["mode"],
+				"required": [
+					"mode"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -202,14 +236,19 @@
 				"properties": {
 					"mode": {
 						"type": "string",
-						"enum": ["FIXED"],
+						"enum": [
+							"FIXED"
+						],
 						"nullable": false
 					},
 					"fixed": {
 						"$ref": "#/components/schemas/TSideFixed"
 					}
 				},
-				"required": ["mode", "fixed"],
+				"required": [
+					"mode",
+					"fixed"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -218,14 +257,19 @@
 				"properties": {
 					"mode": {
 						"type": "string",
-						"enum": ["PICK"],
+						"enum": [
+							"PICK"
+						],
 						"nullable": false
 					},
 					"who": {
 						"$ref": "#/components/schemas/TWho"
 					}
 				},
-				"required": ["mode", "who"],
+				"required": [
+					"mode",
+					"who"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -234,10 +278,15 @@
 				"properties": {
 					"mode": {
 						"type": "string",
-						"enum": ["RANDOM", "KNIFE"]
+						"enum": [
+							"RANDOM",
+							"KNIFE"
+						]
 					}
 				},
-				"required": ["mode"],
+				"required": [
+					"mode"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -271,7 +320,10 @@
 						]
 					}
 				},
-				"required": ["map", "side"],
+				"required": [
+					"map",
+					"side"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -280,11 +332,15 @@
 				"properties": {
 					"mode": {
 						"type": "string",
-						"enum": ["RANDOM_BAN"],
+						"enum": [
+							"RANDOM_BAN"
+						],
 						"nullable": false
 					}
 				},
-				"required": ["mode"],
+				"required": [
+					"mode"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -293,14 +349,19 @@
 				"properties": {
 					"mode": {
 						"type": "string",
-						"enum": ["BAN"],
+						"enum": [
+							"BAN"
+						],
 						"nullable": false
 					},
 					"who": {
 						"$ref": "#/components/schemas/TWho"
 					}
 				},
-				"required": ["mode", "who"],
+				"required": [
+					"mode",
+					"who"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -318,7 +379,9 @@
 						]
 					}
 				},
-				"required": ["map"],
+				"required": [
+					"map"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -335,15 +398,25 @@
 			},
 			"TElectionState": {
 				"type": "string",
-				"enum": ["NOT_STARTED", "IN_PROGRESS", "FINISHED"]
+				"enum": [
+					"NOT_STARTED",
+					"IN_PROGRESS",
+					"FINISHED"
+				]
 			},
 			"TTeamAB": {
 				"type": "string",
-				"enum": ["TEAM_A", "TEAM_B"]
+				"enum": [
+					"TEAM_A",
+					"TEAM_B"
+				]
 			},
 			"TStep": {
 				"type": "string",
-				"enum": ["MAP", "SIDE"]
+				"enum": [
+					"MAP",
+					"SIDE"
+				]
 			},
 			"IElection": {
 				"properties": {
@@ -387,7 +460,10 @@
 								"nullable": true
 							}
 						},
-						"required": ["teamB", "teamA"],
+						"required": [
+							"teamB",
+							"teamA"
+						],
 						"type": "object",
 						"description": "Holds the wanted maps of each team."
 					},
@@ -400,7 +476,10 @@
 								"type": "boolean"
 							}
 						},
-						"required": ["teamB", "teamA"],
+						"required": [
+							"teamB",
+							"teamA"
+						],
 						"type": "object",
 						"description": "The election process can be restarted if both teams vote for it."
 					}
@@ -433,7 +512,11 @@
 						"description": "If plebs (client without an admin token) create a match the hideRconPassword attribute is set to true.\nThis will prevent executing rcon commands from the frontend by the (unauthorized) user."
 					}
 				},
-				"required": ["ip", "port", "rconPassword"],
+				"required": [
+					"ip",
+					"port",
+					"rconPassword"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -480,7 +563,10 @@
 								"type": "boolean"
 							}
 						},
-						"required": ["teamB", "teamA"],
+						"required": [
+							"teamB",
+							"teamA"
+						],
 						"type": "object"
 					},
 					"knifeRestart": {
@@ -492,7 +578,10 @@
 								"type": "boolean"
 							}
 						},
-						"required": ["teamB", "teamA"],
+						"required": [
+							"teamB",
+							"teamA"
+						],
 						"type": "object"
 					},
 					"score": {
@@ -506,7 +595,10 @@
 								"format": "double"
 							}
 						},
-						"required": ["teamB", "teamA"],
+						"required": [
+							"teamB",
+							"teamA"
+						],
 						"type": "object",
 						"description": "Current score of both teams."
 					},
@@ -542,17 +634,26 @@
 			},
 			"TMatchEndAction": {
 				"type": "string",
-				"enum": ["KICK_ALL", "QUIT_SERVER", "NONE"]
+				"enum": [
+					"KICK_ALL",
+					"QUIT_SERVER",
+					"NONE"
+				]
 			},
 			"TLogType": {
 				"type": "string",
-				"enum": ["CHAT", "SYSTEM"]
+				"enum": [
+					"CHAT",
+					"SYSTEM"
+				]
 			},
 			"ILogChat": {
 				"properties": {
 					"type": {
 						"type": "string",
-						"enum": ["CHAT"],
+						"enum": [
+							"CHAT"
+						],
 						"nullable": false
 					},
 					"timestamp": {
@@ -569,19 +670,32 @@
 						"type": "string"
 					}
 				},
-				"required": ["type", "timestamp", "isTeamChat", "steamId64", "message"],
+				"required": [
+					"type",
+					"timestamp",
+					"isTeamChat",
+					"steamId64",
+					"message"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"TSystemLogCategory": {
 				"type": "string",
-				"enum": ["ERROR", "WARN", "INFO", "DEBUG"]
+				"enum": [
+					"ERROR",
+					"WARN",
+					"INFO",
+					"DEBUG"
+				]
 			},
 			"ILogSystem": {
 				"properties": {
 					"type": {
 						"type": "string",
-						"enum": ["SYSTEM"],
+						"enum": [
+							"SYSTEM"
+						],
 						"nullable": false
 					},
 					"timestamp": {
@@ -595,7 +709,12 @@
 						"type": "string"
 					}
 				},
-				"required": ["type", "timestamp", "category", "message"],
+				"required": [
+					"type",
+					"timestamp",
+					"category",
+					"message"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -611,7 +730,10 @@
 			},
 			"TTeamSides": {
 				"type": "string",
-				"enum": ["CT", "T"]
+				"enum": [
+					"CT",
+					"T"
+				]
 			},
 			"IPlayer": {
 				"description": "Player.",
@@ -642,13 +764,19 @@
 						"description": "Player currently on the game server (online)?"
 					}
 				},
-				"required": ["steamId64", "name"],
+				"required": [
+					"steamId64",
+					"name"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"TMatchMode": {
 				"type": "string",
-				"enum": ["SINGLE", "LOOP"],
+				"enum": [
+					"SINGLE",
+					"LOOP"
+				],
 				"description": "Possible match modes."
 			},
 			"IMatch": {
@@ -758,7 +886,12 @@
 								"description": "executed exactly once on match init"
 							}
 						},
-						"required": ["end", "match", "knife", "init"],
+						"required": [
+							"end",
+							"match",
+							"knife",
+							"init"
+						],
 						"type": "object"
 					},
 					"canClinch": {
@@ -864,7 +997,9 @@
 						"description": "Steam ids of players in \"Steam ID 64\" format. Will be forced into this team."
 					}
 				},
-				"required": ["name"],
+				"required": [
+					"name"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -972,7 +1107,13 @@
 						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
 					}
 				},
-				"required": ["mapPool", "teamA", "teamB", "electionSteps", "gameServer"],
+				"required": [
+					"mapPool",
+					"teamA",
+					"teamB",
+					"electionSteps",
+					"gameServer"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1083,7 +1224,12 @@
 								"description": "executed exactly once on match init"
 							}
 						},
-						"required": ["end", "match", "knife", "init"],
+						"required": [
+							"end",
+							"match",
+							"knife",
+							"init"
+						],
 						"type": "object"
 					},
 					"canClinch": {
@@ -1173,7 +1319,13 @@
 			},
 			"TTeamString": {
 				"type": "string",
-				"enum": ["Unassigned", "CT", "TERRORIST", "", "Spectator"],
+				"enum": [
+					"Unassigned",
+					"CT",
+					"TERRORIST",
+					"",
+					"Spectator"
+				],
 				"description": "Possible ingame sides of a player."
 			},
 			"EventType": {
@@ -1209,7 +1361,9 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["CHAT"],
+						"enum": [
+							"CHAT"
+						],
 						"nullable": false
 					},
 					"player": {
@@ -1268,7 +1422,9 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["MAP_ELECTION_END"],
+						"enum": [
+							"MAP_ELECTION_END"
+						],
 						"nullable": false
 					},
 					"mapNames": {
@@ -1278,7 +1434,13 @@
 						"type": "array"
 					}
 				},
-				"required": ["timestamp", "matchId", "matchPassthrough", "type", "mapNames"],
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mapNames"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1297,7 +1459,9 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["ROUND_END"],
+						"enum": [
+							"ROUND_END"
+						],
 						"nullable": false
 					},
 					"mapIndex": {
@@ -1354,7 +1518,9 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["MAP_END"],
+						"enum": [
+							"MAP_END"
+						],
 						"nullable": false
 					},
 					"mapIndex": {
@@ -1417,7 +1583,9 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["MATCH_END"],
+						"enum": [
+							"MATCH_END"
+						],
 						"nullable": false
 					},
 					"wonMapsTeamA": {
@@ -1463,7 +1631,12 @@
 									"type": "string"
 								}
 							},
-							"required": ["winnerTeam", "scoreTeamB", "scoreTeamA", "mapName"],
+							"required": [
+								"winnerTeam",
+								"scoreTeamB",
+								"scoreTeamA",
+								"mapName"
+							],
 							"type": "object"
 						},
 						"type": "array",
@@ -1504,7 +1677,9 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["KNIFE_END"],
+						"enum": [
+							"KNIFE_END"
+						],
 						"nullable": false
 					},
 					"mapIndex": {
@@ -1551,7 +1726,9 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["MAP_START"],
+						"enum": [
+							"MAP_START"
+						],
 						"nullable": false
 					},
 					"mapIndex": {
@@ -1594,20 +1771,35 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["LOG"],
+						"enum": [
+							"LOG"
+						],
 						"nullable": false
 					},
 					"message": {
 						"type": "string"
 					}
 				},
-				"required": ["timestamp", "matchId", "matchPassthrough", "type", "message"],
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"message"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"TMapMode": {
 				"type": "string",
-				"enum": ["FIXED", "PICK", "RANDOM_PICK", "AGREE", "BAN", "RANDOM_BAN"],
+				"enum": [
+					"FIXED",
+					"PICK",
+					"RANDOM_PICK",
+					"AGREE",
+					"BAN",
+					"RANDOM_BAN"
+				],
 				"description": "Possible map modes for a election step."
 			},
 			"ElectionMapStep": {
@@ -1625,7 +1817,9 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["ELECTION_MAP_STEP"],
+						"enum": [
+							"ELECTION_MAP_STEP"
+						],
 						"nullable": false
 					},
 					"mode": {
@@ -1638,13 +1832,25 @@
 						"$ref": "#/components/schemas/ITeam"
 					}
 				},
-				"required": ["timestamp", "matchId", "matchPassthrough", "type", "mode", "mapName"],
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mode",
+					"mapName"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"TSideMode": {
 				"type": "string",
-				"enum": ["KNIFE", "FIXED", "PICK", "RANDOM"],
+				"enum": [
+					"KNIFE",
+					"FIXED",
+					"PICK",
+					"RANDOM"
+				],
 				"description": "Possible side modes to determine the starting sides of each team."
 			},
 			"ElectionSideStep": {
@@ -1662,7 +1868,9 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["ELECTION_SIDE_STEP"],
+						"enum": [
+							"ELECTION_SIDE_STEP"
+						],
 						"nullable": false
 					},
 					"mode": {
@@ -1681,7 +1889,13 @@
 						"$ref": "#/components/schemas/ITeam"
 					}
 				},
-				"required": ["timestamp", "matchId", "matchPassthrough", "type", "mode"],
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mode"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1700,14 +1914,22 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["MATCH_CREATE"],
+						"enum": [
+							"MATCH_CREATE"
+						],
 						"nullable": false
 					},
 					"match": {
 						"$ref": "#/components/schemas/IMatchResponse"
 					}
 				},
-				"required": ["timestamp", "matchId", "matchPassthrough", "type", "match"],
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"match"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1726,7 +1948,9 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["MATCH_UPDATE"],
+						"enum": [
+							"MATCH_UPDATE"
+						],
 						"nullable": false
 					},
 					"path": {
@@ -1745,7 +1969,14 @@
 					},
 					"value": {}
 				},
-				"required": ["timestamp", "matchId", "matchPassthrough", "type", "path", "value"],
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"path",
+					"value"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1764,11 +1995,18 @@
 					},
 					"type": {
 						"type": "string",
-						"enum": ["MATCH_STOP"],
+						"enum": [
+							"MATCH_STOP"
+						],
 						"nullable": false
 					}
 				},
-				"required": ["timestamp", "matchId", "matchPassthrough", "type"],
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1897,7 +2135,11 @@
 					},
 					"matchEndAction": {
 						"type": "string",
-						"enum": ["KICK_ALL", "QUIT_SERVER", "NONE"],
+						"enum": [
+							"KICK_ALL",
+							"QUIT_SERVER",
+							"NONE"
+						],
 						"description": "defaults to NONE"
 					},
 					"tmtLogAddress": {
@@ -1971,7 +2213,10 @@
 								"type": "boolean"
 							}
 						},
-						"required": ["teamB", "teamA"],
+						"required": [
+							"teamB",
+							"teamA"
+						],
 						"type": "object"
 					},
 					"knifeRestart": {
@@ -1983,7 +2228,10 @@
 								"type": "boolean"
 							}
 						},
-						"required": ["teamB", "teamA"],
+						"required": [
+							"teamB",
+							"teamA"
+						],
 						"type": "object"
 					},
 					"score": {
@@ -1997,7 +2245,10 @@
 								"format": "double"
 							}
 						},
-						"required": ["teamB", "teamA"],
+						"required": [
+							"teamB",
+							"teamA"
+						],
 						"type": "object",
 						"description": "Current score of both teams."
 					},
@@ -2053,7 +2304,13 @@
 						"description": "Match id which is currently using this managed game server."
 					}
 				},
-				"required": ["ip", "port", "rconPassword", "canBeUsed", "usedBy"],
+				"required": [
+					"ip",
+					"port",
+					"rconPassword",
+					"canBeUsed",
+					"usedBy"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -2078,7 +2335,11 @@
 						"description": "Can the server be used for new matches?"
 					}
 				},
-				"required": ["ip", "port", "rconPassword"],
+				"required": [
+					"ip",
+					"port",
+					"rconPassword"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -2104,7 +2365,10 @@
 						"description": "Set or delete the link to a match. If it's null and `canBeUsed` is true, the game server is available."
 					}
 				},
-				"required": ["ip", "port"],
+				"required": [
+					"ip",
+					"port"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -2168,7 +2432,9 @@
 						"nullable": true
 					}
 				},
-				"required": ["tmtLogAddress"],
+				"required": [
+					"tmtLogAddress"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -2187,7 +2453,11 @@
 						"type": "string"
 					}
 				},
-				"required": ["name", "data", "id"],
+				"required": [
+					"name",
+					"data",
+					"id"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -2203,7 +2473,10 @@
 						"$ref": "#/components/schemas/IMatchCreateDto"
 					}
 				},
-				"required": ["name", "data"],
+				"required": [
+					"name",
+					"data"
+				],
 				"type": "object",
 				"additionalProperties": false
 			}
@@ -2368,6 +2641,7 @@
 						}
 					}
 				},
+				"description": "Get the total stats of a player.",
 				"security": [
 					{
 						"bearer_token_optional": []
@@ -2439,6 +2713,7 @@
 						}
 					}
 				},
+				"description": "Get all the players for a team.",
 				"security": [
 					{
 						"bearer_token_optional": []
@@ -2766,7 +3041,10 @@
 													"type": "array"
 												}
 											},
-											"required": ["total", "latestFiles"],
+											"required": [
+												"total",
+												"latestFiles"
+											],
 											"type": "object"
 										},
 										{}

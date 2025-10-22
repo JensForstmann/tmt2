@@ -1,11 +1,12 @@
 import { RouteSectionProps } from '@solidjs/router';
 import { Component, Match, Switch, onMount } from 'solid-js';
 import { SvgComputer, SvgDarkMode, SvgLightMode } from './assets/Icons';
-import logo from './assets/logo.svg';
+import logo from './assets/logo.png';
+import logo_black from './assets/logo-black.png';
 
 import { isLoggedIn } from './utils/fetcher';
 import { t } from './utils/locale';
-import { currentTheme, cycleDarkMode, updateDarkClasses } from './utils/theme';
+import { currentMode, currentTheme, cycleDarkMode, updateDarkClasses } from './utils/theme';
 import { NavLink } from './components/NavLink';
 
 const NavBar: Component = () => {
@@ -13,12 +14,10 @@ const NavBar: Component = () => {
 		<nav class="bg-base-300 flex items-center justify-center space-x-1 p-2 lg:space-x-10">
 			<div class="w-1 lg:w-20"></div>
 			<div>
-				<img class="mr-1 inline-block h-10 w-auto align-middle" src={logo} alt="Logo" />
+				<img class="mr-2 inline-block h-10 w-auto align-middle" src={currentMode() === 'dark' ? logo : logo_black} alt="Logo" />
 				<div class="inline-block align-middle text-xs lg:hidden">TMT</div>
-				<div class="hidden align-middle text-xs lg:inline-block">
-					Tournament
-					<br />
-					MatchTracker
+				<div class="hidden align-middle text-l lg:inline-block font-bold">
+					TMT2
 				</div>
 			</div>
 			<div class="grow"></div>
