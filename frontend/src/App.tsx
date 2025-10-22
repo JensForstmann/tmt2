@@ -14,7 +14,7 @@ const NavBar: Component = () => {
 		<nav class="bg-base-300 flex items-center justify-center space-x-1 p-2 lg:space-x-10">
 			<div class="w-1 lg:w-20"></div>
 			<div>
-				<img class="mr-2 inline-block h-10 w-auto align-middle" src={currentMode() === 'dark' ? logo : logo_black} alt="Logo" />
+				<img class="mr-4 inline-block h-10 w-auto align-middle" src={currentMode() === 'dark' ? logo : logo_black} alt="Logo" />
 				<div class="inline-block align-middle text-xs lg:hidden">TMT</div>
 				<div class="hidden align-middle text-l lg:inline-block font-bold">
 					TMT2
