@@ -8,6 +8,7 @@ export const StatsNavBar: Component = () => {
 			<nav class="bg-base-200 flex items-center justify-center space-x-1 p-2 lg:space-x-10 rounded-lg">
 				<NavLink href="/stats/players">{t('Players')}</NavLink>
 				<NavLink href="/stats/matches">{t('Matches')}</NavLink>
+				<NavLink href="/stats/data">{t('Data Management')}</NavLink>
 			</nav>
 		</header>
 	);

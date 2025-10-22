@@ -199,5 +199,9 @@
 	"Loading...": "Chargement...",
 	"There was an error while fetching this data.": "Une erreur a eu lieu lors de la récupération des données.",
 	"This data does not exist.": "Ces données n'existent pas.",
-	"Date": "Date"
+	"Date": "Date",
+	"Data Management": "Gestion des Données",
+	"Download database": "Télécharger base de données",
+	"Import database file": "Importer fichier base de données",
+	"Empty database": "Vider base de données"
 }
