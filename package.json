@@ -12,7 +12,7 @@
 		"prettier-check": "prettier '!**/*md' . --check"
 	},
 	"devDependencies": {
-		"prettier": "^3.4.2",
-		"prettier-plugin-tailwindcss": "^0.6.9"
+		"prettier": "^3.6.2",
+		"prettier-plugin-tailwindcss": "^0.7.1"
 	}
 }

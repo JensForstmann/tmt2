@@ -13,8 +13,6 @@ import { MatchEditPage } from './pages/matchEdit';
 import { MatchesPage } from './pages/matches';
 import { NotFoundPage } from './pages/notFound';
 
-import './index.css';
-
 render(
 	() => (
 		<Router root={App}>

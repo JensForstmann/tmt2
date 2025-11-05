@@ -116,8 +116,8 @@ app.get('/api', (req, res) => {
 	res.sendFile('swagger.json', { root: '.' });
 });
 
-app.get('*', express.static(FRONTEND_DIR));
-app.get('*', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'index.html')));
+app.get('{*any}', express.static(FRONTEND_DIR));
+app.get('{*any}', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'index.html')));
 
 const main = async () => {
 	console.info(

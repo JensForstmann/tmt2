@@ -12,21 +12,21 @@
 	},
 	"dependencies": {
 		"@tsoa/runtime": "^6.6.0",
-		"express": "^4.21.2",
+		"express": "^5.1.0",
 		"short-uuid": "^5.2.0",
 		"steamid": "^2.1.0",
 		"typed-emitter": "^2.1.0",
-		"ws": "^8.18.0"
+		"ws": "^8.18.3"
 	},
 	"devDependencies": {
 		"@tsoa/cli": "^6.6.0",
 		"@types/debug": "^4.1.12",
-		"@types/express": "^5.0.0",
-		"@types/node": "^22.10.2",
-		"@types/steamid": "^2.0.3",
-		"@types/ws": "^8.5.13",
-		"nodemon": "^3.1.9",
+		"@types/express": "^5.0.5",
+		"@types/node": "^24.10.0",
+		"@types/steamid": "^2.0.4",
+		"@types/ws": "^8.18.1",
+		"nodemon": "^3.1.10",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.7.2"
+		"typescript": "^5.9.3"
 	}
 }
