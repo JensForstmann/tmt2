@@ -311,7 +311,17 @@ export const execManyRcon = async (match: Match, commands: string[]) => {
 
 export const execRconCommands = async (match: Match, key: keyof IMatch['rconCommands']) => {
 	match.log(`Execute rcon commands (${key})`);
-	await execManyRcon(match, match.data.rconCommands[key]);
+	const currentMatchMap = getCurrentMatchMap(match);
+	const mapName = currentMatchMap ? MatchMap.parseMapParts(currentMatchMap.name).external : '';
+	const mapNumber = currentMatchMap ? (match.data.currentMap + 1).toString() : '';
+	const commands = match.data.rconCommands[key].map((command) =>
+		command
+			.replaceAll('%TMT_TEAM_A_NAME%', match.data.teamA.name)
+			.replaceAll('%TMT_TEAM_B_NAME%', match.data.teamB.name)
+			.replaceAll('%TMT_MAP_NAME%', mapName)
+			.replaceAll('%TMT_MAP_NUMBER%', mapNumber)
+	);
+	await execManyRcon(match, commands);
 };
 
 export const say = async (match: Match, message: string) => {

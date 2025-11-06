@@ -76,6 +76,7 @@ const DEFAULT_PRESETS: IPreset[] = [
 			rconCommands: {
 				init: [
 					'game_type 0; game_mode 1; sv_game_mode_flags 0; sv_skirmish_id 0',
+					'hostname Match: %TMT_TEAM_A_NAME% - %TMT_TEAM_B_NAME%',
 					'say > RCON INIT LOADED <',
 				],
 				knife: [
@@ -86,6 +87,7 @@ const DEFAULT_PRESETS: IPreset[] = [
 					'mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary "weapon_hkp2000"; mp_t_default_secondary "weapon_glock"',
 					'mp_overtime_enable 1',
 					'say > MATCH CONFIG LOADED <',
+					'say > HF & LG - %TMT_MAP_NUMBER%. map: %TMT_MAP_NAME% <',
 				],
 				end: ['say > MATCH END RCON LOADED <'],
 			},
@@ -134,6 +136,7 @@ const DEFAULT_PRESETS: IPreset[] = [
 			rconCommands: {
 				init: [
 					'game_type 0; game_mode 2; sv_game_mode_flags 0; sv_skirmish_id 0',
+					'hostname Match: %TMT_TEAM_A_NAME% - %TMT_TEAM_B_NAME%',
 					'say > RCON INIT LOADED <',
 				],
 				knife: [
@@ -144,6 +147,7 @@ const DEFAULT_PRESETS: IPreset[] = [
 					'mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary "weapon_hkp2000"; mp_t_default_secondary "weapon_glock"',
 					'mp_overtime_enable 1',
 					'say > MATCH CONFIG LOADED <',
+					'say > HF & LG - %TMT_MAP_NUMBER%. map: %TMT_MAP_NAME% <',
 				],
 				end: ['say > MATCH END RCON LOADED <'],
 			},

@@ -36,6 +36,7 @@ Template (remove json comments before usage):
     "rconCommands": {
         "init": [ // these rcon commands will be executed only once: when the match is created
             "game_type 0; game_mode 1; sv_game_mode_flags 0; sv_skirmish_id 0", // normal competitive, see below for other examples
+            "hostname Match: %TMT_TEAM_A_NAME% - %TMT_TEAM_B_NAME%", // %TMT_...% placeholders will be replaced before execution
             "say > RCON INIT LOADED <"
         ],
         "knife": [ // these rcon commands will only be executed at the start of a knife round
@@ -45,7 +46,8 @@ Template (remove json comments before usage):
         "match": [ // these rcon commands will be executed at the start of each match map (after knife or when both teams are ready)
             "mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary \"weapon_hkp2000\"; mp_t_default_secondary \"weapon_glock\"",
             "mp_overtime_enable 1",
-            "say > MATCH CONFIG LOADED <"
+            "say > MATCH CONFIG LOADED <",
+            "say > HF & LG - %TMT_MAP_NUMBER%. map: %TMT_MAP_NAME% <"
         ],
         "end": [ // these rcon commands will be executed only once: after the end of the last map, or when the match has been stopped (by api)
             "say > MATCH END RCON LOADED <"

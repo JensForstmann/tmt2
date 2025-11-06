@@ -17,6 +17,7 @@ const DEFAULT_MAPS = [
 
 const DEFAULT_RCON_INIT = [
 	'game_type 0; game_mode 1; sv_game_mode_flags 0; sv_skirmish_id 0',
+	'hostname Match: %TMT_TEAM_A_NAME% - %TMT_TEAM_B_NAME%',
 	'say > RCON INIT LOADED <',
 ];
 const DEFAULT_RCON_KNIFE = [
@@ -27,6 +28,7 @@ const DEFAULT_RCON_MATCH = [
 	'mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary "weapon_hkp2000"; mp_t_default_secondary "weapon_glock"',
 	'mp_overtime_enable 1',
 	'say > MATCH CONFIG LOADED <',
+	'say > HF & LG - %TMT_MAP_NUMBER%. map: %TMT_MAP_NAME% <',
 ];
 const DEFAULT_RCON_END = ['say > MATCH END RCON LOADED <'];
 

@@ -559,6 +559,15 @@ export const CreateUpdateMatch: Component<
 				<div class="prose pt-4">
 					<h2>{t('RCON Commands')}</h2>
 				</div>
+				<div>
+					Available placeholders:
+					<ul>
+						<li>%TMT_TEAM_A_NAME%</li>
+						<li>%TMT_TEAM_B_NAME%</li>
+						<li>%TMT_MAP_NAME%</li>
+						<li>%TMT_MAP_NUMBER%</li>
+					</ul>
+				</div>
 				<TextArea
 					label={t('Init')}
 					labelTopRight={t('Executed only once: when the match is created')}
