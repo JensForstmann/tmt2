@@ -18,8 +18,6 @@ RUN npm ci
 COPY common ../common
 COPY frontend/src src
 COPY frontend/index.html .
-COPY frontend/postcss.config.js .
-COPY frontend/tailwind.config.js .
 COPY frontend/tsconfig.json .
 COPY frontend/vite.config.mts .
 RUN npm run build
