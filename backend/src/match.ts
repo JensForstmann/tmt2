@@ -316,8 +316,8 @@ export const execRconCommands = async (match: Match, key: keyof IMatch['rconComm
 	const mapNumber = currentMatchMap ? (match.data.currentMap + 1).toString() : '';
 	const commands = match.data.rconCommands[key].map((command) =>
 		command
-			.replaceAll('%TMT_TEAM_A_NAME%', match.data.teamA.name)
-			.replaceAll('%TMT_TEAM_B_NAME%', match.data.teamB.name)
+			.replaceAll('%TMT_TEAM_A_NAME%', escapeRconString(match.data.teamA.name))
+			.replaceAll('%TMT_TEAM_B_NAME%', escapeRconString(match.data.teamB.name))
 			.replaceAll('%TMT_MAP_NAME%', mapName)
 			.replaceAll('%TMT_MAP_NUMBER%', mapNumber)
 	);
