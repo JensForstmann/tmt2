@@ -28,7 +28,7 @@ import { createFetcher, isLoggedIn } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { AddElectionStep, getElectionStepString } from './ElectionStep';
 import { ErrorComponent } from './ErrorComponent';
-import { SelectInput, TextArea, TextInput, ToggleInput } from './Inputs';
+import { SelectInput, TextArea, TextInput, CheckboxInput } from './Inputs';
 import { Modal } from './Modal';
 
 const Presets: Component<{
@@ -318,639 +318,660 @@ export const CreateUpdateMatch: Component<
 						}}
 					/>
 				</Show>
-				<div class="prose pt-4">
-					<h2>{t('Teams')}</h2>
-				</div>
-				<TextInput
-					label={t('Team A Name')}
-					value={dto.teamA.name}
-					class={getChangedClasses(
-						props.match.teamA.name,
-						dto.teamA.name,
-						'input-accent border-2'
-					)}
-					onInput={(e) => setDto('teamA', 'name', e.currentTarget.value)}
-				/>
-				<TextInput
-					label={t('Team B Name')}
-					value={dto.teamB.name}
-					class={getChangedClasses(
-						props.match.teamB.name,
-						dto.teamB.name,
-						'input-accent border-2'
-					)}
-					onInput={(e) => setDto('teamB', 'name', e.currentTarget.value)}
-				/>
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">{t('Teams')}</legend>
+					<TextInput
+						label={t('Team A Name')}
+						value={dto.teamA.name}
+						class={getChangedClasses(
+							props.match.teamA.name,
+							dto.teamA.name,
+							'input-accent border-2'
+						)}
+						onInput={(e) => setDto('teamA', 'name', e.currentTarget.value)}
+					/>
+					<TextInput
+						label={t('Team B Name')}
+						value={dto.teamB.name}
+						class={getChangedClasses(
+							props.match.teamB.name,
+							dto.teamB.name,
+							'input-accent border-2'
+						)}
+						onInput={(e) => setDto('teamB', 'name', e.currentTarget.value)}
+					/>
+				</fieldset>
 			</Show>
 
-			<div class="prose pt-4">
-				<h2>{t('Game Server')}</h2>
-			</div>
-			<Show when={props.mode === 'CREATE'}>
-				<ToggleInput
-					label={t('Use Own Game Server')}
-					checked={dto.gameServer !== null}
-					onInput={(e) =>
-						e.currentTarget.checked
-							? setDto('gameServer', {
-									ip: '',
-									port: 27015,
-									rconPassword: '',
-								})
-							: setDto('gameServer', null)
-					}
+			<fieldset class="fieldset">
+				<legend class="fieldset-legend">{t('Game Server')}</legend>
+				<Show when={props.mode === 'CREATE'}>
+					<CheckboxInput
+						label={t('Use Own Game Server')}
+						checked={dto.gameServer !== null}
+						onInput={(e) =>
+							e.currentTarget.checked
+								? setDto('gameServer', {
+										ip: '',
+										port: 27015,
+										rconPassword: '',
+									})
+								: setDto('gameServer', null)
+						}
+					/>
+				</Show>
+				<TextInput
+					label={t('Game Server IP')}
+					value={dto.gameServer?.ip ?? ''}
+					disabled={dto.gameServer === null}
+					class={getChangedClasses(
+						props.match.gameServer?.ip,
+						dto.gameServer?.ip,
+						'input-accent border-2'
+					)}
+					onInput={(e) => setDto('gameServer', 'ip', e.currentTarget.value)}
 				/>
-			</Show>
-			<TextInput
-				label={t('Game Server IP')}
-				value={dto.gameServer?.ip ?? ''}
-				disabled={dto.gameServer === null}
-				class={getChangedClasses(
-					props.match.gameServer?.ip,
-					dto.gameServer?.ip,
-					'input-accent border-2'
-				)}
-				onInput={(e) => setDto('gameServer', 'ip', e.currentTarget.value)}
-			/>
-			<TextInput
-				label={t('Game Server Port')}
-				type="number"
-				value={dto.gameServer?.port ?? 27015}
-				disabled={dto.gameServer === null}
-				class={getChangedClasses(
-					props.match.gameServer?.port,
-					dto.gameServer?.port,
-					'input-accent border-2'
-				)}
-				onInput={(e) => setDto('gameServer', 'port', parseInt(e.currentTarget.value))}
-			/>
-			<TextInput
-				label={t('Game Server RCON Password')}
-				value={dto.gameServer?.rconPassword ?? ''}
-				disabled={dto.gameServer === null}
-				class={getChangedClasses(
-					props.match.gameServer?.rconPassword,
-					dto.gameServer?.rconPassword,
-					'input-accent border-2'
-				)}
-				onInput={(e) => setDto('gameServer', 'rconPassword', e.currentTarget.value)}
-			/>
+				<TextInput
+					label={t('Game Server Port')}
+					type="number"
+					value={dto.gameServer?.port ?? 27015}
+					disabled={dto.gameServer === null}
+					class={getChangedClasses(
+						props.match.gameServer?.port,
+						dto.gameServer?.port,
+						'input-accent border-2'
+					)}
+					onInput={(e) => setDto('gameServer', 'port', parseInt(e.currentTarget.value))}
+				/>
+				<TextInput
+					label={t('Game Server RCON Password')}
+					value={dto.gameServer?.rconPassword ?? ''}
+					disabled={dto.gameServer === null}
+					class={getChangedClasses(
+						props.match.gameServer?.rconPassword,
+						dto.gameServer?.rconPassword,
+						'input-accent border-2'
+					)}
+					onInput={(e) => setDto('gameServer', 'rconPassword', e.currentTarget.value)}
+				/>
+			</fieldset>
 
 			<Show when={props.match.isStopped !== true}>
-				<div class="prose pt-4 pb-2">
-					<h2>{t('Map Pool')}</h2>
-				</div>
-				<TextArea
-					value={dto.mapPool.join('\n')}
-					class={
-						'border-2 ' +
-						getChangedClasses(
-							props.match.mapPool.join('\n'),
-							dto.mapPool.join('\n'),
-							'input-accent'
-						)
-					}
-					onInput={(e) => setDto('mapPool', e.currentTarget.value.split('\n'))}
-					rows="8"
-				/>
-				<div class="prose pt-4 pb-2">
-					<h2>{t('Election Steps')}</h2>
-				</div>
-				<div class="flex items-baseline">
-					<div class="pr-2">{t('Quick Load:')}</div>
-					<div class="join">
-						<button
-							class="btn btn-sm join-item"
-							onClick={() => {
-								setDto('mapPool', minifyMapPool(dto.mapPool));
-								try {
-									setDto(
-										'electionSteps',
-										getSimpleElectionSteps('BO1', dto.mapPool)
-									);
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">{t('Maps')}</legend>
+					<TextArea
+						value={dto.mapPool.join('\n')}
+						label={t('Map Pool')}
+						class={
+							'border-2 ' +
+							getChangedClasses(
+								props.match.mapPool.join('\n'),
+								dto.mapPool.join('\n'),
+								'input-accent'
+							)
+						}
+						onInput={(e) => setDto('mapPool', e.currentTarget.value.split('\n'))}
+						rows="8"
+					/>
+					<span class="label">{t('Election Steps')}</span>
+					<div class="flex items-baseline">
+						<div class="pr-2">{t('Quick Load:')}</div>
+						<div class="join">
+							<button
+								class="btn btn-sm join-item"
+								onClick={() => {
+									setDto('mapPool', minifyMapPool(dto.mapPool));
+									try {
+										setDto(
+											'electionSteps',
+											getSimpleElectionSteps('BO1', dto.mapPool)
+										);
+										setElectionErrorMessage('');
+									} catch (err) {
+										setElectionErrorMessage(err + '');
+									}
+								}}
+							>
+								{t('Best of 1')}
+							</button>
+							<button
+								class="btn btn-sm join-item"
+								onClick={() => {
+									setDto('mapPool', minifyMapPool(dto.mapPool));
+									try {
+										setDto(
+											'electionSteps',
+											getSimpleElectionSteps('BO3', dto.mapPool)
+										);
+										setElectionErrorMessage('');
+									} catch (err) {
+										setElectionErrorMessage(err + '');
+									}
+								}}
+							>
+								{t('Best of 3')}
+							</button>
+							<button
+								class="btn btn-sm join-item"
+								onClick={() => {
+									setDto('electionSteps', []);
 									setElectionErrorMessage('');
-								} catch (err) {
-									setElectionErrorMessage(err + '');
-								}
-							}}
-						>
-							{t('Best of 1')}
-						</button>
-						<button
-							class="btn btn-sm join-item"
-							onClick={() => {
-								setDto('mapPool', minifyMapPool(dto.mapPool));
-								try {
-									setDto(
-										'electionSteps',
-										getSimpleElectionSteps('BO3', dto.mapPool)
-									);
-									setElectionErrorMessage('');
-								} catch (err) {
-									setElectionErrorMessage(err + '');
-								}
-							}}
-						>
-							{t('Best of 3')}
-						</button>
-						<button
-							class="btn btn-sm join-item"
-							onClick={() => {
-								setDto('electionSteps', []);
-								setElectionErrorMessage('');
-							}}
-						>
-							{t('Empty')}
-						</button>
+								}}
+							>
+								{t('Empty')}
+							</button>
+						</div>
 					</div>
-				</div>
-				<ErrorComponent errorMessage={electionErrorMessage()} />
-				<div
-					class={
-						'space-y-1 pt-4 ' +
-						getChangedClasses(
-							JSON.stringify(props.match.electionSteps),
-							JSON.stringify(dto.electionSteps),
-							'border-2 border-accent'
-						)
-					}
-					ref={electionStepsRef}
-				>
-					<For each={dto.electionSteps}>
-						{(electionStep, index) => (
-							<div class="flex items-center">
-								<div class="join leading-none">
-									<button
-										class="btn btn-square btn-xs join-item"
-										onClick={() => {
-											const newSteps = dto.electionSteps.filter(
-												(step, stepIndex) => stepIndex !== index()
-											);
-											setDto('electionSteps', newSteps);
-										}}
-									>
-										<SvgDelete />
-									</button>
-									<button
-										class="btn btn-square btn-xs join-item"
-										disabled={index() === 0}
-										onClick={() => {
-											const newSteps = [...dto.electionSteps];
-											newSteps.splice(index(), 1);
-											newSteps.splice(index() - 1, 0, electionStep);
-											setDto('electionSteps', newSteps);
-										}}
-									>
-										<SvgKeyboardArrowUp />
-									</button>
-									<button
-										class="btn btn-square btn-xs join-item"
-										disabled={index() === dto.electionSteps.length - 1}
-										onclick={() => {
-											const newSteps = [...dto.electionSteps];
-											newSteps.splice(index(), 1);
-											newSteps.splice(index() + 1, 0, electionStep);
-											setDto('electionSteps', newSteps);
-										}}
-									>
-										<SvgKeyboardArrowDown />
-									</button>
-									<div class="tooltip" data-tip={t('Add new step')}>
+					<ErrorComponent errorMessage={electionErrorMessage()} />
+					<div
+						class={
+							'space-y-1 pt-4 ' +
+							getChangedClasses(
+								JSON.stringify(props.match.electionSteps),
+								JSON.stringify(dto.electionSteps),
+								'border-2 border-accent'
+							)
+						}
+						ref={electionStepsRef}
+					>
+						<For each={dto.electionSteps}>
+							{(electionStep, index) => (
+								<div class="flex items-center">
+									<div class="join leading-none">
 										<button
 											class="btn btn-square btn-xs join-item"
 											onClick={() => {
-												addElectionStepIndex = index() + 1;
-												electionStepModalRef?.showModal();
+												const newSteps = dto.electionSteps.filter(
+													(step, stepIndex) => stepIndex !== index()
+												);
+												setDto('electionSteps', newSteps);
 											}}
 										>
-											<SvgAdd />
+											<SvgDelete />
 										</button>
+										<button
+											class="btn btn-square btn-xs join-item"
+											disabled={index() === 0}
+											onClick={() => {
+												const newSteps = [...dto.electionSteps];
+												newSteps.splice(index(), 1);
+												newSteps.splice(index() - 1, 0, electionStep);
+												setDto('electionSteps', newSteps);
+											}}
+										>
+											<SvgKeyboardArrowUp />
+										</button>
+										<button
+											class="btn btn-square btn-xs join-item"
+											disabled={index() === dto.electionSteps.length - 1}
+											onclick={() => {
+												const newSteps = [...dto.electionSteps];
+												newSteps.splice(index(), 1);
+												newSteps.splice(index() + 1, 0, electionStep);
+												setDto('electionSteps', newSteps);
+											}}
+										>
+											<SvgKeyboardArrowDown />
+										</button>
+										<div class="tooltip" data-tip={t('Add new step')}>
+											<button
+												class="btn btn-square btn-xs join-item"
+												onClick={() => {
+													addElectionStepIndex = index() + 1;
+													electionStepModalRef?.showModal();
+												}}
+											>
+												<SvgAdd />
+											</button>
+										</div>
+									</div>
+									<div class="pl-2 font-light">
+										{getElectionStepString(electionStep)}
 									</div>
 								</div>
-								<div class="pl-2 font-light">
-									{getElectionStepString(electionStep)}
-								</div>
-							</div>
-						)}
-					</For>
-				</div>
-				<Show when={dto.electionSteps.length === 0}>
-					<button
-						class="btn btn-square btn-xs join-item"
-						onClick={() => {
-							addElectionStepIndex = 1;
-							electionStepModalRef?.showModal();
-						}}
-					>
-						<SvgAdd />
-					</button>
-				</Show>
-				<Modal ref={electionStepModalRef} class="bg-base-300">
-					<AddElectionStep
-						index={addElectionStepIndex}
-						add={(step) => {
-							const newSteps = [...dto.electionSteps];
-							newSteps.splice(addElectionStepIndex, 0, step);
-							setDto('electionSteps', newSteps);
-							electionStepModalRef?.close();
-						}}
+							)}
+						</For>
+					</div>
+					<Show when={dto.electionSteps.length === 0}>
+						<button
+							class="btn btn-square btn-xs join-item"
+							onClick={() => {
+								addElectionStepIndex = 1;
+								electionStepModalRef?.showModal();
+							}}
+						>
+							<SvgAdd />
+						</button>
+					</Show>
+					<Modal ref={electionStepModalRef} class="bg-base-300">
+						<AddElectionStep
+							index={addElectionStepIndex}
+							add={(step) => {
+								const newSteps = [...dto.electionSteps];
+								newSteps.splice(addElectionStepIndex, 0, step);
+								setDto('electionSteps', newSteps);
+								electionStepModalRef?.close();
+							}}
+						/>
+					</Modal>
+				</fieldset>
+
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">{t('RCON Commands')}</legend>
+					<div>
+						Available placeholders:
+						<ul>
+							<li>%TMT_TEAM_A_NAME%</li>
+							<li>%TMT_TEAM_B_NAME%</li>
+							<li>%TMT_MAP_NAME%</li>
+							<li>%TMT_MAP_NUMBER%</li>
+						</ul>
+					</div>
+					<TextArea
+						label={t('Init')}
+						labelTopRight={t('Executed only once: when the match is created')}
+						rows="4"
+						value={dto.rconCommands?.init?.join('\n') ?? ''}
+						class={
+							'font-mono border-2 ' +
+							getChangedClasses(
+								props.match.rconCommands?.init?.join('\n'),
+								dto.rconCommands?.init?.join('\n'),
+								'input-accent'
+							)
+						}
+						onInput={(e) =>
+							setDto('rconCommands', 'init', e.currentTarget.value.split('\n'))
+						}
 					/>
-				</Modal>
-				<div class="prose pt-4">
-					<h2>{t('RCON Commands')}</h2>
-				</div>
-				<div>
-					Available placeholders:
-					<ul>
-						<li>%TMT_TEAM_A_NAME%</li>
-						<li>%TMT_TEAM_B_NAME%</li>
-						<li>%TMT_MAP_NAME%</li>
-						<li>%TMT_MAP_NUMBER%</li>
-					</ul>
-				</div>
-				<TextArea
-					label={t('Init')}
-					labelTopRight={t('Executed only once: when the match is created')}
-					rows="4"
-					value={dto.rconCommands?.init?.join('\n') ?? ''}
-					class={
-						'font-mono border-2 ' +
-						getChangedClasses(
-							props.match.rconCommands?.init?.join('\n'),
-							dto.rconCommands?.init?.join('\n'),
-							'input-accent'
-						)
-					}
-					onInput={(e) =>
-						setDto('rconCommands', 'init', e.currentTarget.value.split('\n'))
-					}
-				/>
-				<TextArea
-					label={t('Knife')}
-					labelTopRight={t('Executed at the start of a knife round')}
-					rows="4"
-					value={dto.rconCommands?.knife?.join('\n') ?? ''}
-					class={
-						'font-mono border-2 ' +
-						getChangedClasses(
-							props.match.rconCommands?.knife?.join('\n'),
-							dto.rconCommands?.knife?.join('\n'),
-							'input-accent'
-						)
-					}
-					onInput={(e) =>
-						setDto('rconCommands', 'knife', e.currentTarget.value.split('\n'))
-					}
-				/>
-				<TextArea
-					label={t('Match')}
-					labelTopRight={t('Executed at the start of each match map')}
-					rows="4"
-					value={dto.rconCommands?.match?.join('\n') ?? ''}
-					class={
-						'font-mono border-2 ' +
-						getChangedClasses(
-							props.match.rconCommands?.match?.join('\n'),
-							dto.rconCommands?.match?.join('\n'),
-							'input-accent'
-						)
-					}
-					onInput={(e) =>
-						setDto('rconCommands', 'match', e.currentTarget.value.split('\n'))
-					}
-				/>
-				<TextArea
-					label={t('End')}
-					labelTopRight={t('Executed only once: after the end of the last map')}
-					rows="4"
-					value={dto.rconCommands?.end?.join('\n') ?? ''}
-					class={
-						'font-mono border-2 ' +
-						getChangedClasses(
-							props.match.rconCommands?.end?.join('\n'),
-							dto.rconCommands?.end?.join('\n'),
-							'input-accent'
-						)
-					}
-					onInput={(e) =>
-						setDto('rconCommands', 'end', e.currentTarget.value.split('\n'))
-					}
-				/>
+					<TextArea
+						label={t('Knife')}
+						labelTopRight={t('Executed at the start of a knife round')}
+						rows="4"
+						value={dto.rconCommands?.knife?.join('\n') ?? ''}
+						class={
+							'font-mono border-2 ' +
+							getChangedClasses(
+								props.match.rconCommands?.knife?.join('\n'),
+								dto.rconCommands?.knife?.join('\n'),
+								'input-accent'
+							)
+						}
+						onInput={(e) =>
+							setDto('rconCommands', 'knife', e.currentTarget.value.split('\n'))
+						}
+					/>
+					<TextArea
+						label={t('Match')}
+						labelTopRight={t('Executed at the start of each match map')}
+						rows="4"
+						value={dto.rconCommands?.match?.join('\n') ?? ''}
+						class={
+							'font-mono border-2 ' +
+							getChangedClasses(
+								props.match.rconCommands?.match?.join('\n'),
+								dto.rconCommands?.match?.join('\n'),
+								'input-accent'
+							)
+						}
+						onInput={(e) =>
+							setDto('rconCommands', 'match', e.currentTarget.value.split('\n'))
+						}
+					/>
+					<TextArea
+						label={t('End')}
+						labelTopRight={t('Executed only once: after the end of the last map')}
+						rows="4"
+						value={dto.rconCommands?.end?.join('\n') ?? ''}
+						class={
+							'font-mono border-2 ' +
+							getChangedClasses(
+								props.match.rconCommands?.end?.join('\n'),
+								dto.rconCommands?.end?.join('\n'),
+								'input-accent'
+							)
+						}
+						onInput={(e) =>
+							setDto('rconCommands', 'end', e.currentTarget.value.split('\n'))
+						}
+					/>
+				</fieldset>
 			</Show>
 
-			<div class="prose pt-4 grid grid-cols-[auto_auto_1fr] place-items-center">
-				<h2 class="m-0">{t('Advanced Settings')}</h2>
-				<Switch>
-					<Match when={showAdvanced()}>
-						<button
-							class="ml-1 btn btn-sm btn-ghost"
-							onclick={() => setShowAdvanced(false)}
-						>
-							<SvgVisiblityOff />
-							{t('Hide')}
-						</button>
-					</Match>
-					<Match when={!showAdvanced()}>
-						<button
-							class="ml-1 btn btn-sm btn-ghost"
-							onclick={() => setShowAdvanced(true)}
-						>
-							<SvgVisiblity />
-							{t('Show')}
-						</button>
-					</Match>
-				</Switch>
-			</div>
+			<fieldset class="fieldset">
+				<legend class="fieldset-legend">
+					{t('Advanced Settings')}
+					<Switch>
+						<Match when={showAdvanced()}>
+							<button
+								class="ml-1 btn btn-sm btn-ghost"
+								onclick={() => setShowAdvanced(false)}
+							>
+								<SvgVisiblityOff />
+								{t('Hide')}
+							</button>
+						</Match>
+						<Match when={!showAdvanced()}>
+							<button
+								class="ml-1 btn btn-sm btn-ghost"
+								onclick={() => setShowAdvanced(true)}
+							>
+								<SvgVisiblity />
+								{t('Show')}
+							</button>
+						</Match>
+					</Switch>
+				</legend>
+			</fieldset>
 			<div
 				class={
-					'collapse collapse-arrow border ' +
+					'collapse collapse-arrow ' +
 					(showAdvanced() ? 'collapse-open' : 'collapse-close')
 				}
 			>
-				<div class="collapse-content px-0">
-					<Show when={props.match.isStopped !== true}>
-						<SelectInput
-							label={t('Mode')}
-							class={getChangedClasses(
-								props.match.mode,
-								dto.mode,
-								'input-accent border-2'
-							)}
-							onInput={(e) => setDto('mode', e.currentTarget.value as TMatchMode)}
-						>
-							<option value="SINGLE" selected={dto.mode === 'SINGLE'}>
-								{t('Single match (stops when match is finished)')}
-							</option>
-							<option value="LOOP" selected={dto.mode === 'LOOP'}>
-								{t('Loop mode (starts again after match is finished)')}
-							</option>
-						</SelectInput>
-						<SelectInput
-							label={t('Match End Action')}
-							class={getChangedClasses(
-								props.match.matchEndAction,
-								dto.matchEndAction,
-								'input-accent border-2'
-							)}
-							onInput={(e) =>
-								setDto('matchEndAction', e.currentTarget.value as TMatchEndAction)
-							}
-						>
-							<option value="NONE" selected={dto.matchEndAction === 'NONE'}>
-								{t('None')}
-							</option>
-							<option value="KICK_ALL" selected={dto.matchEndAction === 'KICK_ALL'}>
-								{t('Kick all players after match end')}
-							</option>
-							<option
-								value="QUIT_SERVER"
-								selected={dto.matchEndAction === 'QUIT_SERVER'}
-							>
-								{t('Quit server via RCON after match end')}
-							</option>
-						</SelectInput>
-						<TextInput
-							label={t('TMT Log Address')}
-							labelTopRight={t(
-								'HTTP log receiver from the perspective of the game server'
-							)}
-							value={dto.tmtLogAddress ?? ''}
-							class={getChangedClasses(
-								props.match.tmtLogAddress,
-								dto.tmtLogAddress,
-								'input-accent border-2'
-							)}
-							onInput={(e) => setDto('tmtLogAddress', e.currentTarget.value)}
-						/>
-						<TextInput
-							label={t('Webhook URL')}
-							labelTopRight={t("HTTP address to receive TMT's webhooks")}
-							value={dto.webhookUrl ?? ''}
-							class={getChangedClasses(
-								props.match.webhookUrl,
-								dto.webhookUrl,
-								'input-accent border-2'
-							)}
-							onInput={(e) => setDto('webhookUrl', e.currentTarget.value)}
-						/>
-						<TextArea
-							label={t('Webhook Headers')}
-							labelTopRight={t(
-								'Additional headers that will be added to each webhook request'
-							)}
-							rows="4"
-							value={Object.entries(dto.webhookHeaders ?? {})
-								.map((entry) => entry.join(': '))
-								.join('\n')}
-							class={
-								'font-mono border-2 ' +
-								getChangedClasses(
-									JSON.stringify(props.match.webhookHeaders ?? {}),
-									JSON.stringify(dto.webhookHeaders ?? {}),
-									'input-accent'
-								)
-							}
-							onInput={(e) => {
-								const newWebhookHeaders: IMatchCreateDto['webhookHeaders'] = {};
-								const lines = e.currentTarget.value.split('\n');
-								for (let i = 0; i < lines.length; i++) {
-									const line = lines[i].trim();
-									if (line === '') {
-										continue;
-									}
-									const colonIndex = line.indexOf(':');
-									if (colonIndex === -1) {
-										setWebhookHeadersErrorMessage(
-											'Headers must be in the format of "key: value"'
-										);
-										return;
-									}
-									const key = line.substring(0, colonIndex).trim();
-									const value = line.substring(colonIndex + 1).trimStart();
-									if (newWebhookHeaders[key] !== undefined) {
-										setWebhookHeadersErrorMessage(
-											'Multiple headers with the same key are not possible.'
-										);
-										return;
-									}
-									newWebhookHeaders[key] = value;
-								}
-								setWebhookHeadersErrorMessage('');
-								setDto('webhookHeaders', (prev) => {
-									if (prev) {
-										Object.keys(prev).forEach((key) => {
-											if (newWebhookHeaders[key] === undefined) {
-												newWebhookHeaders[key] = undefined!; // delete previous key/value pair which does exist any more
-											}
-										});
-									}
-									return newWebhookHeaders;
-								});
-							}}
-						/>
-						<ErrorComponent errorMessage={webhookHeadersErrorMessage()} />
-						<TextInput
-							label={t('Match Passthrough')}
-							labelTopRight={t(
-								'Custom value to identify the match in 3rd party tools'
-							)}
-							min={0}
-							value={dto.passthrough ?? ''}
-							class={getChangedClasses(
-								props.match.passthrough,
-								dto.passthrough,
-								'input-accent border-2'
-							)}
-							onInput={(e) => setDto('passthrough', e.currentTarget.value)}
-						/>
-						<TextInput
-							label={t('Team A Advantage')}
-							type="number"
-							min={0}
-							value={dto.teamA.advantage ?? 0}
-							class={getChangedClasses(
-								props.match.teamA.advantage,
-								dto.teamA.advantage,
-								'input-accent border-2'
-							)}
-							onInput={(e) =>
-								setDto('teamA', 'advantage', parseInt(e.currentTarget.value))
-							}
-						/>
-						<TextInput
-							label={t('Team A Passthrough')}
-							labelTopRight={t(
-								'Custom value to identify this team in 3rd party tools'
-							)}
-							min={0}
-							value={dto.teamA.passthrough ?? ''}
-							class={getChangedClasses(
-								props.match.teamA.passthrough,
-								dto.teamA.passthrough,
-								'input-accent border-2'
-							)}
-							onInput={(e) => setDto('teamA', 'passthrough', e.currentTarget.value)}
-						/>
-						<TextArea
-							label={t('Team A Player Steam IDs 64')}
-							labelTopRight={t('Force players by their steam id 64 into team A')}
-							value={dto.teamA.playerSteamIds64?.join('\n')}
-							class={
-								'border-2 ' +
-								getChangedClasses(
-									props.match.teamA.playerSteamIds64?.join('\n'),
-									dto.teamA.playerSteamIds64?.join('\n'),
-									'input-accent'
-								)
-							}
-							onInput={(e) =>
-								setDto(
-									'teamA',
-									'playerSteamIds64',
-									e.currentTarget.value.split('\n')
-								)
-							}
-							rows="5"
-						/>
-						<TextInput
-							label={t('Team B Advantage')}
-							type="number"
-							min={0}
-							value={dto.teamB.advantage ?? 0}
-							class={getChangedClasses(
-								props.match.teamB.advantage,
-								dto.teamB.advantage,
-								'input-accent border-2'
-							)}
-							onInput={(e) =>
-								setDto('teamB', 'advantage', parseInt(e.currentTarget.value))
-							}
-						/>
-						<TextInput
-							label={t('Team B Passthrough')}
-							labelTopRight={t(
-								'Custom value to identify this team in 3rd party tools'
-							)}
-							min={0}
-							value={dto.teamB.passthrough ?? ''}
-							class={getChangedClasses(
-								props.match.teamB.passthrough,
-								dto.teamB.passthrough,
-								'input-accent border-2'
-							)}
-							onInput={(e) => setDto('teamB', 'passthrough', e.currentTarget.value)}
-						/>
-						<TextArea
-							label={t('Team B Player Steam IDs 64')}
-							labelTopRight={t('Force players by their steam id 64 into team B')}
-							value={dto.teamB.playerSteamIds64?.join('\n')}
-							class={
-								'border-2 ' +
-								getChangedClasses(
-									props.match.teamB.playerSteamIds64?.join('\n'),
-									dto.teamB.playerSteamIds64?.join('\n'),
-									'input-accent'
-								)
-							}
-							onInput={(e) =>
-								setDto(
-									'teamB',
-									'playerSteamIds64',
-									e.currentTarget.value.split('\n')
-								)
-							}
-							rows="5"
-						/>
-						<ToggleInput
-							label={t('Can Clinch')}
-							labelTopRight={t(
-								'Ends match series after a map if a winner is determined'
-							)}
-							checked={dto.canClinch}
-							class={getChangedClasses(
-								props.match.canClinch,
-								dto.canClinch,
-								'input-accent border-2'
-							)}
-							onInput={(e) => setDto('canClinch', e.currentTarget.checked)}
-						/>
-						<Show when={props.mode === 'UPDATE'}>
+				<div
+					class={
+						'collapse-content px-0 ' +
+						(showAdvanced() ? 'collapse-open' : 'collapse-close')
+					}
+				>
+					<fieldset class="fieldset">
+						<Show when={props.match.isStopped !== true}>
 							<SelectInput
-								label={t('Match State')}
-								labelTopRight={t(
-									'Overrides the match state (does not execute anything)'
-								)}
+								label={t('Mode')}
 								class={getChangedClasses(
-									props.mode === 'UPDATE' && props.match.state,
-									dto.state,
+									props.match.mode,
+									dto.mode,
 									'input-accent border-2'
 								)}
 								onInput={(e) => setDto('mode', e.currentTarget.value as TMatchMode)}
 							>
-								<option value="ELECTION" selected={dto.state === 'ELECTION'}>
-									{t('Election')}
+								<option value="SINGLE" selected={dto.mode === 'SINGLE'}>
+									{t('Single match (stops when match is finished)')}
 								</option>
-								<option value="MATCH_MAP" selected={dto.state === 'MATCH_MAP'}>
-									{t('Match Map')}
-								</option>
-								<option value="FINISHED" selected={dto.state === 'FINISHED'}>
-									{t('Finished')}
+								<option value="LOOP" selected={dto.mode === 'LOOP'}>
+									{t('Loop mode (starts again after match is finished)')}
 								</option>
 							</SelectInput>
+							<SelectInput
+								label={t('Match End Action')}
+								class={getChangedClasses(
+									props.match.matchEndAction,
+									dto.matchEndAction,
+									'input-accent border-2'
+								)}
+								onInput={(e) =>
+									setDto(
+										'matchEndAction',
+										e.currentTarget.value as TMatchEndAction
+									)
+								}
+							>
+								<option value="NONE" selected={dto.matchEndAction === 'NONE'}>
+									{t('None')}
+								</option>
+								<option
+									value="KICK_ALL"
+									selected={dto.matchEndAction === 'KICK_ALL'}
+								>
+									{t('Kick all players after match end')}
+								</option>
+								<option
+									value="QUIT_SERVER"
+									selected={dto.matchEndAction === 'QUIT_SERVER'}
+								>
+									{t('Quit server via RCON after match end')}
+								</option>
+							</SelectInput>
+							<TextInput
+								label={t('TMT Log Address')}
+								labelTopRight={t(
+									'HTTP log receiver from the perspective of the game server'
+								)}
+								value={dto.tmtLogAddress ?? ''}
+								class={getChangedClasses(
+									props.match.tmtLogAddress,
+									dto.tmtLogAddress,
+									'input-accent border-2'
+								)}
+								onInput={(e) => setDto('tmtLogAddress', e.currentTarget.value)}
+							/>
+							<TextInput
+								label={t('Webhook URL')}
+								labelTopRight={t("HTTP address to receive TMT's webhooks")}
+								value={dto.webhookUrl ?? ''}
+								class={getChangedClasses(
+									props.match.webhookUrl,
+									dto.webhookUrl,
+									'input-accent border-2'
+								)}
+								onInput={(e) => setDto('webhookUrl', e.currentTarget.value)}
+							/>
+							<TextArea
+								label={t('Webhook Headers')}
+								labelTopRight={t(
+									'Additional headers that will be added to each webhook request'
+								)}
+								rows="4"
+								value={Object.entries(dto.webhookHeaders ?? {})
+									.map((entry) => entry.join(': '))
+									.join('\n')}
+								class={
+									'font-mono border-2 ' +
+									getChangedClasses(
+										JSON.stringify(props.match.webhookHeaders ?? {}),
+										JSON.stringify(dto.webhookHeaders ?? {}),
+										'input-accent'
+									)
+								}
+								onInput={(e) => {
+									const newWebhookHeaders: IMatchCreateDto['webhookHeaders'] = {};
+									const lines = e.currentTarget.value.split('\n');
+									for (let i = 0; i < lines.length; i++) {
+										const line = lines[i].trim();
+										if (line === '') {
+											continue;
+										}
+										const colonIndex = line.indexOf(':');
+										if (colonIndex === -1) {
+											setWebhookHeadersErrorMessage(
+												'Headers must be in the format of "key: value"'
+											);
+											return;
+										}
+										const key = line.substring(0, colonIndex).trim();
+										const value = line.substring(colonIndex + 1).trimStart();
+										if (newWebhookHeaders[key] !== undefined) {
+											setWebhookHeadersErrorMessage(
+												'Multiple headers with the same key are not possible.'
+											);
+											return;
+										}
+										newWebhookHeaders[key] = value;
+									}
+									setWebhookHeadersErrorMessage('');
+									setDto('webhookHeaders', (prev) => {
+										if (prev) {
+											Object.keys(prev).forEach((key) => {
+												if (newWebhookHeaders[key] === undefined) {
+													newWebhookHeaders[key] = undefined!; // delete previous key/value pair which does exist any more
+												}
+											});
+										}
+										return newWebhookHeaders;
+									});
+								}}
+							/>
+							<ErrorComponent errorMessage={webhookHeadersErrorMessage()} />
+							<TextInput
+								label={t('Match Passthrough')}
+								labelTopRight={t(
+									'Custom value to identify the match in 3rd party tools'
+								)}
+								min={0}
+								value={dto.passthrough ?? ''}
+								class={getChangedClasses(
+									props.match.passthrough,
+									dto.passthrough,
+									'input-accent border-2'
+								)}
+								onInput={(e) => setDto('passthrough', e.currentTarget.value)}
+							/>
+							<TextInput
+								label={t('Team A Advantage')}
+								type="number"
+								min={0}
+								value={dto.teamA.advantage ?? 0}
+								class={getChangedClasses(
+									props.match.teamA.advantage,
+									dto.teamA.advantage,
+									'input-accent border-2'
+								)}
+								onInput={(e) =>
+									setDto('teamA', 'advantage', parseInt(e.currentTarget.value))
+								}
+							/>
+							<TextInput
+								label={t('Team A Passthrough')}
+								labelTopRight={t(
+									'Custom value to identify this team in 3rd party tools'
+								)}
+								min={0}
+								value={dto.teamA.passthrough ?? ''}
+								class={getChangedClasses(
+									props.match.teamA.passthrough,
+									dto.teamA.passthrough,
+									'input-accent border-2'
+								)}
+								onInput={(e) =>
+									setDto('teamA', 'passthrough', e.currentTarget.value)
+								}
+							/>
+							<TextArea
+								label={t('Team A Player Steam IDs 64')}
+								labelTopRight={t('Force players by their steam id 64 into team A')}
+								value={dto.teamA.playerSteamIds64?.join('\n')}
+								class={
+									'border-2 ' +
+									getChangedClasses(
+										props.match.teamA.playerSteamIds64?.join('\n'),
+										dto.teamA.playerSteamIds64?.join('\n'),
+										'input-accent'
+									)
+								}
+								onInput={(e) =>
+									setDto(
+										'teamA',
+										'playerSteamIds64',
+										e.currentTarget.value.split('\n')
+									)
+								}
+								rows="5"
+							/>
+							<TextInput
+								label={t('Team B Advantage')}
+								type="number"
+								min={0}
+								value={dto.teamB.advantage ?? 0}
+								class={getChangedClasses(
+									props.match.teamB.advantage,
+									dto.teamB.advantage,
+									'input-accent border-2'
+								)}
+								onInput={(e) =>
+									setDto('teamB', 'advantage', parseInt(e.currentTarget.value))
+								}
+							/>
+							<TextInput
+								label={t('Team B Passthrough')}
+								labelTopRight={t(
+									'Custom value to identify this team in 3rd party tools'
+								)}
+								min={0}
+								value={dto.teamB.passthrough ?? ''}
+								class={getChangedClasses(
+									props.match.teamB.passthrough,
+									dto.teamB.passthrough,
+									'input-accent border-2'
+								)}
+								onInput={(e) =>
+									setDto('teamB', 'passthrough', e.currentTarget.value)
+								}
+							/>
+							<TextArea
+								label={t('Team B Player Steam IDs 64')}
+								labelTopRight={t('Force players by their steam id 64 into team B')}
+								value={dto.teamB.playerSteamIds64?.join('\n')}
+								class={
+									'border-2 ' +
+									getChangedClasses(
+										props.match.teamB.playerSteamIds64?.join('\n'),
+										dto.teamB.playerSteamIds64?.join('\n'),
+										'input-accent'
+									)
+								}
+								onInput={(e) =>
+									setDto(
+										'teamB',
+										'playerSteamIds64',
+										e.currentTarget.value.split('\n')
+									)
+								}
+								rows="5"
+							/>
+							<CheckboxInput
+								label={t('Can Clinch')}
+								labelTopRight={t(
+									'Ends match series after a map if a winner is determined'
+								)}
+								checked={dto.canClinch}
+								class={getChangedClasses(
+									props.match.canClinch,
+									dto.canClinch,
+									'input-accent border-2'
+								)}
+								onInput={(e) => setDto('canClinch', e.currentTarget.checked)}
+							/>
+							<Show when={props.mode === 'UPDATE'}>
+								<SelectInput
+									label={t('Match State')}
+									labelTopRight={t(
+										'Overrides the match state (does not execute anything)'
+									)}
+									class={getChangedClasses(
+										props.mode === 'UPDATE' && props.match.state,
+										dto.state,
+										'input-accent border-2'
+									)}
+									onInput={(e) =>
+										setDto('mode', e.currentTarget.value as TMatchMode)
+									}
+								>
+									<option value="ELECTION" selected={dto.state === 'ELECTION'}>
+										{t('Election')}
+									</option>
+									<option value="MATCH_MAP" selected={dto.state === 'MATCH_MAP'}>
+										{t('Match Map')}
+									</option>
+									<option value="FINISHED" selected={dto.state === 'FINISHED'}>
+										{t('Finished')}
+									</option>
+								</SelectInput>
+							</Show>
 						</Show>
-					</Show>
-					<TextArea
-						label={t('JSON Payload')}
-						labelTopRight={
-							props.mode === 'CREATE'
-								? t('This will be used to create the match')
-								: t('This will be used to update the match')
-						}
-						rows="25"
-						value={json()}
-						onInput={(e) => setJson(e.currentTarget.value)}
-						class="font-mono"
-					/>
+						<TextArea
+							label={t('JSON Payload')}
+							labelTopRight={
+								props.mode === 'CREATE'
+									? t('This will be used to create the match')
+									: t('This will be used to update the match')
+							}
+							rows="25"
+							value={json()}
+							onInput={(e) => setJson(e.currentTarget.value)}
+							class="font-mono"
+						/>
+					</fieldset>
 				</div>
 			</div>
 

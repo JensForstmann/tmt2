@@ -9,7 +9,7 @@ import { ManagedGameServerList } from '../components/ManagedGameServerList';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { Card } from '../components/Card';
-import { TextInput, ToggleInput } from '../components/Inputs';
+import { TextInput, CheckboxInput } from '../components/Inputs';
 
 export const GameServersPage: Component = () => {
 	const fetcher = createFetcher();
@@ -79,7 +79,8 @@ export const GameServersPage: Component = () => {
 					<div class="h-8" />
 
 					<Card>
-						<div>
+						<fieldset class="fieldset">
+							<legend class="fieldset-legend">{t('Add Game Server')}</legend>
 							<p>
 								{t(
 									'Game servers managed by TMT can be used to automatically assign them to new matches.'
@@ -88,42 +89,38 @@ export const GameServersPage: Component = () => {
 									'Anonymous (not logged in) users can then also use them for their games.'
 								)}
 							</p>
-						</div>
+							<TextInput
+								label={t('Game Server IP')}
+								value={ip()}
+								onInput={(e) => setIp(e.currentTarget.value)}
+							/>
 
-						<div class="prose pt-4">
-							<h2>{t('Add Game Server')}</h2>
-						</div>
+							<TextInput
+								label={t('Game Server Port')}
+								type="number"
+								value={port()}
+								onInput={(e) => setPort(parseInt(e.currentTarget.value))}
+							/>
 
-						<TextInput
-							label={t('Game Server IP')}
-							value={ip()}
-							onInput={(e) => setIp(e.currentTarget.value)}
-						/>
+							<TextInput
+								label={t('Game Server RCON Password')}
+								value={rconPassword()}
+								onInput={(e) => setRconPassword(e.currentTarget.value)}
+							/>
 
-						<TextInput
-							label={t('Game Server Port')}
-							type="number"
-							value={port()}
-							onInput={(e) => setPort(parseInt(e.currentTarget.value))}
-						/>
+							<CheckboxInput
+								label={t('Can be used for new matches?')}
+								checked={canBeUsed()}
+								onchange={(e) => setCanBeUsed(e.currentTarget.checked)}
+							/>
 
-						<TextInput
-							label={t('Game Server RCON Password')}
-							value={rconPassword()}
-							onInput={(e) => setRconPassword(e.currentTarget.value)}
-						/>
+							<div class="pt-4 text-center">
+								<button class="btn btn-primary" onClick={() => createGameServer()}>
+									{t('Add Game Server')}
+								</button>
+							</div>
 
-						<ToggleInput
-							label={t('Can be used for new matches?')}
-							checked={canBeUsed()}
-							onchange={(e) => setCanBeUsed(e.currentTarget.checked)}
-						/>
-
-						<div class="pt-4 text-center">
-							<button class="btn btn-primary" onClick={() => createGameServer()}>
-								{t('Add Game Server')}
-							</button>
-						</div>
+						</fieldset>
 					</Card>
 				</>
 			)}
