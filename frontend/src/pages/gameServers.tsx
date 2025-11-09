@@ -119,7 +119,6 @@ export const GameServersPage: Component = () => {
 									{t('Add Game Server')}
 								</button>
 							</div>
-
 						</fieldset>
 					</Card>
 				</>
