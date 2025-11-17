@@ -74,6 +74,13 @@ export class Rcon {
 			host: this.config.host,
 			port: this.config.port,
 		}));
+		setTimeout(() => {
+			if (socket.connecting) {
+				socket.emit('error', new Error(`Connection timeout`));
+				socket.end();
+				socket.destroy();
+			}
+		}, 2000);
 
 		try {
 			await new Promise<void>((resolve, reject) => {
@@ -120,8 +127,8 @@ export class Rcon {
 	}
 
 	/**
-      Close the connection to the server.
-    */
+	  Close the connection to the server.
+	*/
 	async end() {
 		if (!this.socket || this.socket.connecting) {
 			throw new Error('Not connected');
@@ -133,11 +140,11 @@ export class Rcon {
 	}
 
 	/**
-      Send a command to the server.
+	  Send a command to the server.
 
-      @param command The command that will be executed on the server.
-      @returns A promise that will be resolved with the command's response from the server.
-    */
+	  @param command The command that will be executed on the server.
+	  @returns A promise that will be resolved with the command's response from the server.
+	*/
 	async send(command: string) {
 		const payload = await this.sendRaw(Buffer.from(command, 'utf-8'));
 		return payload.toString('utf-8');
