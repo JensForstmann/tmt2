@@ -128,14 +128,6 @@ export class MatchesController extends Controller {
 	}
 
 	/**
-	 * Get the last 1000 log lines from a specific match.
-	 */
-	@Get('{id}/logs')
-	async getLogs(id: string, @Request() req: ExpressRequest<IAuthResponse>): Promise<string[]> {
-		return await Match.getLogsTail(id);
-	}
-
-	/**
 	 * Get the last 1000 events from a specific match.
 	 */
 	@Get('{id}/events')

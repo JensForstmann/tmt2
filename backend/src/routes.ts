@@ -1360,47 +1360,6 @@ export function RegisterRoutes(app: Router) {
 		}
 	);
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	const argsMatchesController_getLogs: Record<string, TsoaRoute.ParameterSchema> = {
-		id: { in: 'path', name: 'id', required: true, dataType: 'string' },
-		req: { in: 'request', name: 'req', required: true, dataType: 'object' },
-	};
-	app.get(
-		'/api/matches/:id/logs',
-		authenticateMiddleware([{ bearer_token: [] }]),
-		...fetchMiddlewares<RequestHandler>(MatchesController),
-		...fetchMiddlewares<RequestHandler>(MatchesController.prototype.getLogs),
-
-		async function MatchesController_getLogs(
-			request: ExRequest,
-			response: ExResponse,
-			next: any
-		) {
-			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-			let validatedArgs: any[] = [];
-			try {
-				validatedArgs = templateService.getValidatedArgs({
-					args: argsMatchesController_getLogs,
-					request,
-					response,
-				});
-
-				const controller = new MatchesController();
-
-				await templateService.apiHandler({
-					methodName: 'getLogs',
-					controller,
-					response,
-					next,
-					validatedArgs,
-					successStatus: undefined,
-				});
-			} catch (err) {
-				return next(err);
-			}
-		}
-	);
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	const argsMatchesController_getEvents: Record<string, TsoaRoute.ParameterSchema> = {
 		id: { in: 'path', name: 'id', required: true, dataType: 'string' },
 		req: { in: 'request', name: 'req', required: true, dataType: 'object' },

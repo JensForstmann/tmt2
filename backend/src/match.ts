@@ -29,8 +29,6 @@ import { Settings } from './settings';
 import * as Storage from './storage';
 import * as Team from './team';
 
-const STORAGE_LOGS_PREFIX = 'logs_';
-const STORAGE_LOGS_SUFFIX = '.jsonl';
 const SAY_PREFIX = GameServer.colors.green + Settings.SAY_PREFIX + GameServer.colors.white;
 
 export interface Match {
@@ -132,21 +130,12 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 const createLogger = (match: Match) => (msg: string) => {
 	const ds = new Date().toISOString();
 	msg = GameServer.removeColors(msg);
-	Storage.appendLine(STORAGE_LOGS_PREFIX + match.data.id + STORAGE_LOGS_SUFFIX, `${ds} | ${msg}`);
 	console.info(`${ds} [${match.data.id}] ${msg}`);
 	Events.onLog(match, msg);
 };
 
 const createOnDataChangeHandler = (match: Match) => (path: Array<string | number>, value: any) => {
 	Events.onMatchUpdate(match, path, value);
-};
-
-export const getLogsTail = async (matchId: string, numberOfLines = 1000): Promise<string[]> => {
-	return await Storage.readLines(
-		STORAGE_LOGS_PREFIX + matchId + STORAGE_LOGS_SUFFIX,
-		[],
-		numberOfLines
-	);
 };
 
 const connectToGameServer = async (match: Match): Promise<void> => {
