@@ -449,71 +449,6 @@
 				"type": "string",
 				"enum": ["KICK_ALL", "QUIT_SERVER", "NONE"]
 			},
-			"TLogType": {
-				"type": "string",
-				"enum": ["CHAT", "SYSTEM"]
-			},
-			"ILogChat": {
-				"properties": {
-					"type": {
-						"type": "string",
-						"enum": ["CHAT"],
-						"nullable": false
-					},
-					"timestamp": {
-						"type": "number",
-						"format": "double"
-					},
-					"isTeamChat": {
-						"type": "boolean"
-					},
-					"steamId64": {
-						"type": "string"
-					},
-					"message": {
-						"type": "string"
-					}
-				},
-				"required": ["type", "timestamp", "isTeamChat", "steamId64", "message"],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"TSystemLogCategory": {
-				"type": "string",
-				"enum": ["ERROR", "WARN", "INFO", "DEBUG"]
-			},
-			"ILogSystem": {
-				"properties": {
-					"type": {
-						"type": "string",
-						"enum": ["SYSTEM"],
-						"nullable": false
-					},
-					"timestamp": {
-						"type": "number",
-						"format": "double"
-					},
-					"category": {
-						"$ref": "#/components/schemas/TSystemLogCategory"
-					},
-					"message": {
-						"type": "string"
-					}
-				},
-				"required": ["type", "timestamp", "category", "message"],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"TLogUnion": {
-				"anyOf": [
-					{
-						"$ref": "#/components/schemas/ILogChat"
-					},
-					{
-						"$ref": "#/components/schemas/ILogSystem"
-					}
-				]
-			},
 			"TTeamSides": {
 				"type": "string",
 				"enum": ["CT", "T"]
@@ -674,12 +609,6 @@
 						"$ref": "#/components/schemas/TMatchEndAction",
 						"description": "defaults to NONE"
 					},
-					"logs": {
-						"items": {
-							"$ref": "#/components/schemas/TLogUnion"
-						},
-						"type": "array"
-					},
 					"players": {
 						"items": {
 							"$ref": "#/components/schemas/IPlayer"
@@ -735,7 +664,6 @@
 					"rconCommands",
 					"canClinch",
 					"matchEndAction",
-					"logs",
 					"players",
 					"tmtSecret",
 					"isStopped",
@@ -999,12 +927,6 @@
 						"$ref": "#/components/schemas/TMatchEndAction",
 						"description": "defaults to NONE"
 					},
-					"logs": {
-						"items": {
-							"$ref": "#/components/schemas/TLogUnion"
-						},
-						"type": "array"
-					},
 					"players": {
 						"items": {
 							"$ref": "#/components/schemas/IPlayer"
@@ -1064,7 +986,6 @@
 					"rconCommands",
 					"canClinch",
 					"matchEndAction",
-					"logs",
 					"players",
 					"tmtSecret",
 					"isStopped",

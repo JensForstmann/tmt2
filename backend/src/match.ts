@@ -97,7 +97,6 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		parseIncomingLogs: false,
 		matchMaps: [],
 		currentMap: 0,
-		logs: [],
 		players: [],
 		rconCommands: {
 			init: dto.rconCommands?.init ?? [],

@@ -370,64 +370,6 @@ const models: TsoaRoute.Models = {
 		},
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	TLogType: {
-		dataType: 'refAlias',
-		type: {
-			dataType: 'union',
-			subSchemas: [
-				{ dataType: 'enum', enums: ['CHAT'] },
-				{ dataType: 'enum', enums: ['SYSTEM'] },
-			],
-			validators: {},
-		},
-	},
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	ILogChat: {
-		dataType: 'refObject',
-		properties: {
-			type: { dataType: 'enum', enums: ['CHAT'], required: true },
-			timestamp: { dataType: 'double', required: true },
-			isTeamChat: { dataType: 'boolean', required: true },
-			steamId64: { dataType: 'string', required: true },
-			message: { dataType: 'string', required: true },
-		},
-		additionalProperties: false,
-	},
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	TSystemLogCategory: {
-		dataType: 'refAlias',
-		type: {
-			dataType: 'union',
-			subSchemas: [
-				{ dataType: 'enum', enums: ['ERROR'] },
-				{ dataType: 'enum', enums: ['WARN'] },
-				{ dataType: 'enum', enums: ['INFO'] },
-				{ dataType: 'enum', enums: ['DEBUG'] },
-			],
-			validators: {},
-		},
-	},
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	ILogSystem: {
-		dataType: 'refObject',
-		properties: {
-			type: { dataType: 'enum', enums: ['SYSTEM'], required: true },
-			timestamp: { dataType: 'double', required: true },
-			category: { ref: 'TSystemLogCategory', required: true },
-			message: { dataType: 'string', required: true },
-		},
-		additionalProperties: false,
-	},
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	TLogUnion: {
-		dataType: 'refAlias',
-		type: {
-			dataType: 'union',
-			subSchemas: [{ ref: 'ILogChat' }, { ref: 'ILogSystem' }],
-			validators: {},
-		},
-	},
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	TTeamSides: {
 		dataType: 'refAlias',
 		type: {
@@ -520,11 +462,6 @@ const models: TsoaRoute.Models = {
 			},
 			canClinch: { dataType: 'boolean', required: true },
 			matchEndAction: { ref: 'TMatchEndAction', required: true },
-			logs: {
-				dataType: 'array',
-				array: { dataType: 'refAlias', ref: 'TLogUnion' },
-				required: true,
-			},
 			players: {
 				dataType: 'array',
 				array: { dataType: 'refObject', ref: 'IPlayer' },
@@ -657,11 +594,6 @@ const models: TsoaRoute.Models = {
 			},
 			canClinch: { dataType: 'boolean', required: true },
 			matchEndAction: { ref: 'TMatchEndAction', required: true },
-			logs: {
-				dataType: 'array',
-				array: { dataType: 'refAlias', ref: 'TLogUnion' },
-				required: true,
-			},
 			players: {
 				dataType: 'array',
 				array: { dataType: 'refObject', ref: 'IPlayer' },

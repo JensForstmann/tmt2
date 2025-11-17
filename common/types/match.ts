@@ -1,7 +1,6 @@
 import { IElection } from './election';
 import { IElectionStep, IElectionStepAdd, IElectionStepSkip } from './electionStep';
 import { IGameServer } from './gameServer';
-import { TLogUnion } from './log';
 import { IMatchMap } from './matchMap';
 import { IPlayer } from './player';
 import { ITeam, ITeamCreateDto } from './team';
@@ -96,7 +95,6 @@ export interface IMatch {
 	canClinch: boolean;
 	/** defaults to NONE */
 	matchEndAction: TMatchEndAction;
-	logs: TLogUnion[];
 	players: IPlayer[];
 	/** Access token to be used in the API. */
 	tmtSecret: string;
