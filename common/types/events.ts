@@ -1,8 +1,7 @@
 import { TMapMode, TSideMode } from './electionStep';
 import { IMatchResponse } from './match';
 import { IPlayer } from './player';
-import { TTeamSides } from './stuff';
-import { ITeam, TTeamString } from './team';
+import { ITeam, TTeamSides, TTeamString } from './team';
 
 export type EventType =
 	| 'CHAT'

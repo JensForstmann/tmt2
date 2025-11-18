@@ -35,3 +35,5 @@ export interface ITeamCreateDto {
 export type TTeamString = 'Unassigned' | 'CT' | 'TERRORIST' | '' | 'Spectator';
 
 export type TTeamAB = 'TEAM_A' | 'TEAM_B';
+
+export type TTeamSides = 'CT' | 'T';

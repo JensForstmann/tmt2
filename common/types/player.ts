@@ -1,5 +1,4 @@
-import { TTeamSides } from './stuff';
-import { TTeamAB } from './team';
+import { TTeamAB, TTeamSides } from './team';
 
 /**
  * Player.
