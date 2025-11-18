@@ -8,6 +8,8 @@ export const create = (match: Match.Match, steamId: string, name: string): IPlay
 		name: name,
 		steamId64: steamId64,
 		team: getForcedTeam(match, steamId64),
+		side: null,
+		online: null,
 	};
 };
 
@@ -15,13 +17,13 @@ export const getSteamID64 = (steamId: string) => {
 	return new SteamID(steamId).getSteamID64();
 };
 
-export const getForcedTeam = (match: Match.Match, steamId64: string): TTeamAB | undefined => {
+export const getForcedTeam = (match: Match.Match, steamId64: string): TTeamAB | null => {
 	const isTeamA = match.data.teamA.playerSteamIds64?.includes(steamId64);
 	const isTeamB = match.data.teamB.playerSteamIds64?.includes(steamId64);
 	if (isTeamA === isTeamB) {
 		// either: configured for no teams
 		// or: configured for both teams
-		return undefined;
+		return null;
 	}
 	return isTeamA ? 'TEAM_A' : 'TEAM_B';
 };

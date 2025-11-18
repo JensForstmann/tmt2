@@ -21,7 +21,10 @@ export const removeColors = (string: string) => {
 	return string;
 };
 
-export const create = async (dto: IGameServer, log: (msg: string) => void): Promise<Rcon> => {
+export const create = async (
+	dto: Pick<IGameServer, 'ip' | 'port' | 'rconPassword'>,
+	log: (msg: string) => void
+): Promise<Rcon> => {
 	const rcon = new Rcon({
 		host: dto.ip,
 		port: dto.port,
@@ -120,6 +123,6 @@ export const disconnect = async (match: Match.Match) => {
 	}
 };
 
-export const formatMapName = (mapName: string | undefined) => {
+export const formatMapName = (mapName: string | null | undefined) => {
 	return colors.grey + parseMapParts(mapName ?? '').external + colors.white;
 };

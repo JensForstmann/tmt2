@@ -29,10 +29,10 @@ export const create = (
 		state: 'NOT_STARTED',
 		currentStep: 0,
 		currentSubStep: 'MAP',
-		teamX: undefined,
-		teamY: undefined,
+		teamX: null,
+		teamY: null,
 		remainingMaps: mapPool.map((map) => map.toLowerCase()),
-		currentStepMap: undefined,
+		currentStepMap: null,
 		currentAgree: {
 			teamA: null,
 			teamB: null,
@@ -306,7 +306,7 @@ const ensureTeamXY = (match: Match.Match, who: TWho, teamAB: TTeamAB) => {
 /**
  * returns undefined if both teams are valid
  */
-const getValidTeamAB = (match: Match.Match, who: TWho): TTeamAB | undefined => {
+const getValidTeamAB = (match: Match.Match, who: TWho): TTeamAB | null => {
 	switch (who) {
 		case 'TEAM_A':
 			return 'TEAM_A';
@@ -348,7 +348,7 @@ const onAgreeCommand: commands.CommandHandler = async (e) => {
 				match.data.election.currentAgree.teamB !== null &&
 				match.data.election.currentAgree.teamA === match.data.election.currentAgree.teamB
 			) {
-				match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
+				match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap]!;
 				match.data.election.currentAgree.teamA = null;
 				match.data.election.currentAgree.teamB = null;
 				match.data.election.remainingMaps.splice(matchMap, 1);
@@ -623,7 +623,7 @@ export const auto = async (match: Match.Match) => {
 const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) => {
 	if (currentElectionStep.map.mode === 'FIXED') {
 		match.data.election.currentStepMap = currentElectionStep.map.fixed;
-		Events.onElectionMapStep(match, 'FIXED', match.data.election.currentStepMap);
+		Events.onElectionMapStep(match, 'FIXED', match.data.election.currentStepMap, null);
 		await Match.say(
 			match,
 			`${match.data.matchMaps.length + 1}. MAP: ${formatMapName(
@@ -643,11 +643,12 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 			match.data.election.remainingMaps.length
 		);
 		if (currentElectionStep.map.mode === 'RANDOM_PICK') {
-			match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap];
+			match.data.election.currentStepMap = match.data.election.remainingMaps[matchMap]!;
 			Events.onElectionMapStep(
 				match,
 				'RANDOM_PICK',
-				match.data.election.remainingMaps[matchMap]!
+				match.data.election.remainingMaps[matchMap]!,
+				null
 			);
 			await Match.say(
 				match,
@@ -659,7 +660,8 @@ const autoMap = async (match: Match.Match, currentElectionStep: IElectionStep) =
 			Events.onElectionMapStep(
 				match,
 				'RANDOM_BAN',
-				match.data.election.remainingMaps[matchMap]!
+				match.data.election.remainingMaps[matchMap]!,
+				null
 			);
 			await Match.say(
 				match,
@@ -685,6 +687,8 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 			Events.onElectionSideStep(match, 'FIXED', {
 				ctTeam: Match.getTeamByAB(match, 'TEAM_A'),
 				tTeam: Match.getTeamByAB(match, 'TEAM_B'),
+				pickerTeam: null,
+				pickerSide: null,
 			});
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, 'TEAM_A'));
 			await Match.say(
@@ -701,6 +705,8 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 			Events.onElectionSideStep(match, 'FIXED', {
 				ctTeam: Match.getTeamByAB(match, 'TEAM_B'),
 				tTeam: Match.getTeamByAB(match, 'TEAM_A'),
+				pickerTeam: null,
+				pickerSide: null,
 			});
 			match.data.matchMaps.push(MatchMap.create(currentStepMap, false, 'TEAM_B'));
 			await Match.say(
@@ -718,6 +724,8 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 				Events.onElectionSideStep(match, 'FIXED', {
 					ctTeam: Match.getTeamByAB(match, match.data.election.teamX),
 					tTeam: Match.getTeamByAB(match, match.data.election.teamY),
+					pickerTeam: null,
+					pickerSide: null,
 				});
 				match.data.matchMaps.push(
 					MatchMap.create(currentStepMap, false, match.data.election.teamX)
@@ -738,6 +746,8 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 				Events.onElectionSideStep(match, 'FIXED', {
 					ctTeam: Match.getTeamByAB(match, match.data.election.teamY),
 					tTeam: Match.getTeamByAB(match, match.data.election.teamX),
+					pickerTeam: null,
+					pickerSide: null,
 				});
 				match.data.matchMaps.push(
 					MatchMap.create(currentStepMap, false, match.data.election.teamY)
@@ -757,7 +767,7 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 	}
 
 	if (currentElectionStep.side.mode === 'KNIFE') {
-		Events.onElectionSideStep(match, 'KNIFE');
+		Events.onElectionSideStep(match, 'KNIFE', null);
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, true));
 		await Match.say(
 			match,
@@ -774,6 +784,8 @@ const autoSide = async (match: Match.Match, currentElectionStep: IElectionStep) 
 		Events.onElectionSideStep(match, 'RANDOM', {
 			ctTeam: Match.getTeamByAB(match, startAsCtTeam),
 			tTeam: Match.getTeamByAB(match, getOtherTeamAB(startAsCtTeam)),
+			pickerTeam: null,
+			pickerSide: null,
 		});
 		match.data.matchMaps.push(MatchMap.create(currentStepMap, false, startAsCtTeam));
 		await Match.say(

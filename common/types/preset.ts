@@ -2,7 +2,7 @@ import { IMatchCreateDto } from './match';
 
 export interface IPresetCreateDto {
 	name: string;
-	isPublic?: boolean;
+	isPublic?: boolean | null;
 	data: IMatchCreateDto;
 }
 

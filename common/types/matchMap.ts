@@ -24,7 +24,7 @@ export interface IMatchMap {
 	startAsCtTeam: TTeamAB;
 	state: TMatchMapSate;
 	/** Winner of the knife round which is able to or already has picked a starting side. */
-	knifeWinner?: TTeamAB;
+	knifeWinner: TTeamAB | null;
 	readyTeams: {
 		teamA: boolean;
 		teamB: boolean;
@@ -51,7 +51,7 @@ export interface IMatchMap {
  */
 export interface IMatchMapUpdateDto extends Partial<IMatchMap> {
 	/** reads and refreshes mp_overtime_enable, mp_overtime_maxrounds and mp_maxrounds from rcon */
-	_refreshOvertimeAndMaxRoundsSettings?: boolean;
+	_refreshOvertimeAndMaxRoundsSettings?: boolean | null;
 	/** switch team internals, i.e. swap team names (and internal score) */
-	_switchTeamInternals?: boolean;
+	_switchTeamInternals?: boolean | null;
 }

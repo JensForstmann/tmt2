@@ -17,6 +17,7 @@
 				"properties": {
 					"passthrough": {
 						"type": "string",
+						"nullable": true,
 						"description": "Passthrough data to identify team in other systems.\nWill be present in every response/webhook."
 					},
 					"name": {
@@ -36,7 +37,7 @@
 						"description": "Steam ids of players in \"Steam ID 64\" format. Will be forced into this team."
 					}
 				},
-				"required": ["name", "advantage"],
+				"required": ["passthrough", "name", "advantage", "playerSteamIds64"],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -256,10 +257,20 @@
 						"$ref": "#/components/schemas/TElectionState"
 					},
 					"teamX": {
-						"$ref": "#/components/schemas/TTeamAB"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TTeamAB"
+							}
+						],
+						"nullable": true
 					},
 					"teamY": {
-						"$ref": "#/components/schemas/TTeamAB"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TTeamAB"
+							}
+						],
+						"nullable": true
 					},
 					"remainingMaps": {
 						"items": {
@@ -279,6 +290,7 @@
 					},
 					"currentStepMap": {
 						"type": "string",
+						"nullable": true,
 						"description": "Current set map of the current selection step."
 					},
 					"currentAgree": {
@@ -312,9 +324,12 @@
 				},
 				"required": [
 					"state",
+					"teamX",
+					"teamY",
 					"remainingMaps",
 					"currentStep",
 					"currentSubStep",
+					"currentStepMap",
 					"currentAgree",
 					"currentRestart"
 				],
@@ -338,7 +353,7 @@
 						"description": "If plebs (client without an admin token) create a match the hideRconPassword attribute is set to true.\nThis will prevent executing rcon commands from the frontend by the (unauthorized) user."
 					}
 				},
-				"required": ["ip", "port", "rconPassword"],
+				"required": ["ip", "port", "rconPassword", "hideRconPassword"],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -373,7 +388,12 @@
 						"$ref": "#/components/schemas/TMatchMapSate"
 					},
 					"knifeWinner": {
-						"$ref": "#/components/schemas/TTeamAB",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TTeamAB"
+							}
+						],
+						"nullable": true,
 						"description": "Winner of the knife round which is able to or already has picked a starting side."
 					},
 					"readyTeams": {
@@ -435,6 +455,7 @@
 					"knifeForSide",
 					"startAsCtTeam",
 					"state",
+					"knifeWinner",
 					"readyTeams",
 					"knifeRestart",
 					"score",
@@ -465,7 +486,12 @@
 						"description": "Name."
 					},
 					"team": {
-						"$ref": "#/components/schemas/TTeamAB",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TTeamAB"
+							}
+						],
+						"nullable": true,
 						"description": "Current team as they joined with `.team`.\nIf the player's steam id is in the team's `playerSteamIds64`\nthis cannot be changed and is always set to the team."
 					},
 					"side": {
@@ -479,10 +505,11 @@
 					},
 					"online": {
 						"type": "boolean",
+						"nullable": true,
 						"description": "Player currently on the game server (online)?"
 					}
 				},
-				"required": ["steamId64", "name"],
+				"required": ["steamId64", "name", "team", "side", "online"],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -502,6 +529,7 @@
 					},
 					"passthrough": {
 						"type": "string",
+						"nullable": true,
 						"description": "e.g. remote identifier, will be present in every response/webhook"
 					},
 					"mapPool": {
@@ -629,6 +657,7 @@
 					},
 					"tmtLogAddress": {
 						"type": "string",
+						"nullable": true,
 						"description": "if set will be used to register the target logaddress for the game server"
 					},
 					"createdAt": {
@@ -639,6 +668,7 @@
 					"lastSavedAt": {
 						"type": "number",
 						"format": "double",
+						"nullable": true,
 						"description": "Last time the match was saved to disk (unix time in milliseconds since midnight, January 1, 1970 UTC)"
 					},
 					"mode": {
@@ -649,6 +679,7 @@
 				"required": [
 					"id",
 					"state",
+					"passthrough",
 					"mapPool",
 					"teamA",
 					"teamB",
@@ -668,7 +699,9 @@
 					"tmtSecret",
 					"isStopped",
 					"serverPassword",
+					"tmtLogAddress",
 					"createdAt",
+					"lastSavedAt",
 					"mode"
 				],
 				"type": "object",
@@ -682,11 +715,13 @@
 					},
 					"passthrough": {
 						"type": "string",
+						"nullable": true,
 						"description": "Passthrough data to identify team in other systems.\nWill be present in every response/webhook."
 					},
 					"advantage": {
 						"type": "number",
 						"format": "double",
+						"nullable": true,
 						"description": "Advantage in map wins, useful for double elimination tournament finals."
 					},
 					"playerSteamIds64": {
@@ -694,6 +729,7 @@
 							"type": "string"
 						},
 						"type": "array",
+						"nullable": true,
 						"description": "Steam ids of players in \"Steam ID 64\" format. Will be forced into this team."
 					}
 				},
@@ -705,6 +741,7 @@
 				"properties": {
 					"passthrough": {
 						"type": "string",
+						"nullable": true,
 						"description": "e.g. remote identifier, will be present in every response/webhook"
 					},
 					"mapPool": {
@@ -762,6 +799,7 @@
 									"type": "string"
 								},
 								"type": "array",
+								"nullable": true,
 								"description": "executed after last match map"
 							},
 							"match": {
@@ -769,6 +807,7 @@
 									"type": "string"
 								},
 								"type": "array",
+								"nullable": true,
 								"description": "executed before every match map start"
 							},
 							"knife": {
@@ -776,6 +815,7 @@
 									"type": "string"
 								},
 								"type": "array",
+								"nullable": true,
 								"description": "executed before every knife round"
 							},
 							"init": {
@@ -783,6 +823,7 @@
 									"type": "string"
 								},
 								"type": "array",
+								"nullable": true,
 								"description": "executed exactly once on match init"
 							}
 						},
@@ -790,18 +831,30 @@
 					},
 					"canClinch": {
 						"type": "boolean",
+						"nullable": true,
 						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
 					},
 					"matchEndAction": {
-						"$ref": "#/components/schemas/TMatchEndAction",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TMatchEndAction"
+							}
+						],
+						"nullable": true,
 						"description": "defaults to NONE"
 					},
 					"tmtLogAddress": {
 						"type": "string",
+						"nullable": true,
 						"description": "if set will be used to register the target logaddress for the game server"
 					},
 					"mode": {
-						"$ref": "#/components/schemas/TMatchMode",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TMatchMode"
+							}
+						],
+						"nullable": true,
 						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
 					}
 				},
@@ -820,6 +873,7 @@
 					},
 					"passthrough": {
 						"type": "string",
+						"nullable": true,
 						"description": "e.g. remote identifier, will be present in every response/webhook"
 					},
 					"mapPool": {
@@ -947,6 +1001,7 @@
 					},
 					"tmtLogAddress": {
 						"type": "string",
+						"nullable": true,
 						"description": "if set will be used to register the target logaddress for the game server"
 					},
 					"createdAt": {
@@ -957,6 +1012,7 @@
 					"lastSavedAt": {
 						"type": "number",
 						"format": "double",
+						"nullable": true,
 						"description": "Last time the match was saved to disk (unix time in milliseconds since midnight, January 1, 1970 UTC)"
 					},
 					"mode": {
@@ -971,6 +1027,7 @@
 				"required": [
 					"id",
 					"state",
+					"passthrough",
 					"mapPool",
 					"teamA",
 					"teamB",
@@ -990,7 +1047,9 @@
 					"tmtSecret",
 					"isStopped",
 					"serverPassword",
+					"tmtLogAddress",
 					"createdAt",
+					"lastSavedAt",
 					"mode",
 					"isLive"
 				],
@@ -1063,7 +1122,12 @@
 						"type": "boolean"
 					},
 					"teamString": {
-						"$ref": "#/components/schemas/TTeamString"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TTeamString"
+							}
+						],
+						"nullable": true
 					}
 				},
 				"required": [
@@ -1074,7 +1138,8 @@
 					"player",
 					"playerTeam",
 					"message",
-					"isTeamChat"
+					"isTeamChat",
+					"teamString"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1461,10 +1526,23 @@
 						"type": "string"
 					},
 					"pickerTeam": {
-						"$ref": "#/components/schemas/ITeam"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ITeam"
+							}
+						],
+						"nullable": true
 					}
 				},
-				"required": ["timestamp", "matchId", "matchPassthrough", "type", "mode", "mapName"],
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mode",
+					"mapName",
+					"pickerTeam"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1495,19 +1573,49 @@
 						"$ref": "#/components/schemas/TSideMode"
 					},
 					"pickerTeam": {
-						"$ref": "#/components/schemas/ITeam"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ITeam"
+							}
+						],
+						"nullable": true
 					},
 					"pickerSide": {
-						"$ref": "#/components/schemas/TTeamSides"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TTeamSides"
+							}
+						],
+						"nullable": true
 					},
 					"ctTeam": {
-						"$ref": "#/components/schemas/ITeam"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ITeam"
+							}
+						],
+						"nullable": true
 					},
 					"tTeam": {
-						"$ref": "#/components/schemas/ITeam"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ITeam"
+							}
+						],
+						"nullable": true
 					}
 				},
-				"required": ["timestamp", "matchId", "matchPassthrough", "type", "mode"],
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mode",
+					"pickerTeam",
+					"pickerSide",
+					"ctTeam",
+					"tTeam"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1735,33 +1843,45 @@
 						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
 					},
 					"state": {
-						"$ref": "#/components/schemas/TMatchState",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TMatchState"
+							}
+						],
+						"nullable": true,
 						"description": "Overwrite the match state.\nOnly sets the state. Does not execute any code/logic."
 					},
 					"logSecret": {
 						"type": "string",
+						"nullable": true,
 						"description": "updates the server's log address automatically"
 					},
 					"currentMap": {
 						"type": "number",
 						"format": "double",
+						"nullable": true,
 						"description": "Change to this match map (0-based index)."
 					},
 					"_restartElection": {
 						"type": "boolean",
+						"nullable": true,
 						"description": "Restart the complete match.\nWill restart the election process as well.\nMust be executed when the election steps were changed after the match was created."
 					},
 					"_execRconCommandsInit": {
-						"type": "boolean"
+						"type": "boolean",
+						"nullable": true
 					},
 					"_execRconCommandsKnife": {
-						"type": "boolean"
+						"type": "boolean",
+						"nullable": true
 					},
 					"_execRconCommandsMatch": {
-						"type": "boolean"
+						"type": "boolean",
+						"nullable": true
 					},
 					"_execRconCommandsEnd": {
-						"type": "boolean"
+						"type": "boolean",
+						"nullable": true
 					}
 				},
 				"type": "object",
@@ -1843,10 +1963,12 @@
 					},
 					"_refreshOvertimeAndMaxRoundsSettings": {
 						"type": "boolean",
+						"nullable": true,
 						"description": "reads and refreshes mp_overtime_enable, mp_overtime_maxrounds and mp_maxrounds from rcon"
 					},
 					"_switchTeamInternals": {
 						"type": "boolean",
+						"nullable": true,
 						"description": "switch team internals, i.e. swap team names (and internal score)"
 					}
 				},
@@ -1864,10 +1986,6 @@
 					},
 					"rconPassword": {
 						"type": "string"
-					},
-					"hideRconPassword": {
-						"type": "boolean",
-						"description": "If plebs (client without an admin token) create a match the hideRconPassword attribute is set to true.\nThis will prevent executing rcon commands from the frontend by the (unauthorized) user."
 					},
 					"canBeUsed": {
 						"type": "boolean",
@@ -1895,12 +2013,9 @@
 					"rconPassword": {
 						"type": "string"
 					},
-					"hideRconPassword": {
-						"type": "boolean",
-						"description": "If plebs (client without an admin token) create a match the hideRconPassword attribute is set to true.\nThis will prevent executing rcon commands from the frontend by the (unauthorized) user."
-					},
 					"canBeUsed": {
 						"type": "boolean",
+						"nullable": true,
 						"description": "Can the server be used for new matches?"
 					}
 				},
@@ -2004,7 +2119,8 @@
 						"type": "string"
 					},
 					"isPublic": {
-						"type": "boolean"
+						"type": "boolean",
+						"nullable": true
 					},
 					"data": {
 						"$ref": "#/components/schemas/IMatchCreateDto"
@@ -2023,7 +2139,8 @@
 						"type": "string"
 					},
 					"isPublic": {
-						"type": "boolean"
+						"type": "boolean",
+						"nullable": true
 					},
 					"data": {
 						"$ref": "#/components/schemas/IMatchCreateDto"

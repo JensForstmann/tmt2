@@ -9,5 +9,7 @@ export const createFromCreateDto = (dto: ITeamCreateDto): ITeam => {
 	return {
 		...dto,
 		advantage: dto.advantage ?? 0,
+		passthrough: dto.passthrough ?? null,
+		playerSteamIds64: dto.playerSteamIds64 ?? [],
 	};
 };

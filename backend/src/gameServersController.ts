@@ -35,8 +35,8 @@ export class GameServersController extends Controller {
 		@Body() requestBody: IManagedGameServerCreateDto
 	): Promise<IManagedGameServer> {
 		const managedGameServer: IManagedGameServer = {
-			canBeUsed: true,
 			...requestBody,
+			canBeUsed: requestBody.canBeUsed ?? true,
 			usedBy: null,
 		};
 		if (!requestBody.ip) {

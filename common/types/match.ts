@@ -24,7 +24,7 @@ export interface IMatch {
 	id: string;
 	state: TMatchState;
 	/** e.g. remote identifier, will be present in every response/webhook */
-	passthrough?: string;
+	passthrough: string | null;
 	/**
 	 * The maps the players can pick or ban.
 	 * Will also be used if a map is chosen randomly.
@@ -103,11 +103,11 @@ export interface IMatch {
 	/** Server password, periodically fetched from game server */
 	serverPassword: string;
 	/** if set will be used to register the target logaddress for the game server */
-	tmtLogAddress?: string;
+	tmtLogAddress: string | null;
 	/** Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC) */
 	createdAt: number;
 	/** Last time the match was saved to disk (unix time in milliseconds since midnight, January 1, 1970 UTC) */
-	lastSavedAt?: number;
+	lastSavedAt: number | null;
 	/** Match mode (single: stops when match is finished, loop: starts again after match is finished) */
 	mode: TMatchMode;
 }
@@ -119,7 +119,7 @@ export interface IMatchResponse extends IMatch {
 
 export interface IMatchCreateDto {
 	/** e.g. remote identifier, will be present in every response/webhook */
-	passthrough?: string;
+	passthrough?: string | null;
 	/**
 	 * The maps the players can pick or ban.
 	 * Will also be used if a map is chosen randomly.
@@ -152,22 +152,22 @@ export interface IMatchCreateDto {
 	webhookHeaders?: { [key: string]: string } | null;
 	rconCommands?: {
 		/** executed exactly once on match init */
-		init?: string[];
+		init?: string[] | null;
 		/** executed before every knife round */
-		knife?: string[];
+		knife?: string[] | null;
 		/** executed before every match map start */
-		match?: string[];
+		match?: string[] | null;
 		/** executed after last match map */
-		end?: string[];
+		end?: string[] | null;
 	};
 	/** defaults to true, means that possibly not all maps will be played if the winner is determined before */
-	canClinch?: boolean;
+	canClinch?: boolean | null;
 	/** defaults to NONE */
-	matchEndAction?: TMatchEndAction;
+	matchEndAction?: TMatchEndAction | null;
 	/** if set will be used to register the target logaddress for the game server */
-	tmtLogAddress?: string;
+	tmtLogAddress?: string | null;
 	/** Match mode (single: stops when match is finished, loop: starts again after match is finished) */
-	mode?: TMatchMode;
+	mode?: TMatchMode | null;
 }
 
 export interface IMatchUpdateDto extends Partial<IMatchCreateDto> {
@@ -175,22 +175,22 @@ export interface IMatchUpdateDto extends Partial<IMatchCreateDto> {
 	 * Overwrite the match state.
 	 * Only sets the state. Does not execute any code/logic.
 	 */
-	state?: TMatchState;
+	state?: TMatchState | null;
 	/** updates the server's log address automatically */
-	logSecret?: string;
+	logSecret?: string | null;
 	/**
 	 * Change to this match map (0-based index).
 	 */
-	currentMap?: number;
+	currentMap?: number | null;
 
 	/**
 	 * Restart the complete match.
 	 * Will restart the election process as well.
 	 * Must be executed when the election steps were changed after the match was created.
 	 */
-	_restartElection?: boolean;
-	_execRconCommandsInit?: boolean;
-	_execRconCommandsKnife?: boolean;
-	_execRconCommandsMatch?: boolean;
-	_execRconCommandsEnd?: boolean;
+	_restartElection?: boolean | null;
+	_execRconCommandsInit?: boolean | null;
+	_execRconCommandsKnife?: boolean | null;
+	_execRconCommandsMatch?: boolean | null;
+	_execRconCommandsEnd?: boolean | null;
 }

@@ -37,7 +37,7 @@ export interface ChatEvent extends BaseEvent {
 	playerTeam: ITeam | null;
 	message: string;
 	isTeamChat: boolean;
-	teamString?: TTeamString;
+	teamString: TTeamString | null;
 }
 
 export interface ElectionEndEvent extends BaseEvent {
@@ -114,16 +114,16 @@ export interface ElectionMapStep extends BaseEvent {
 	type: 'ELECTION_MAP_STEP';
 	mode: TMapMode;
 	mapName: string;
-	pickerTeam?: ITeam;
+	pickerTeam: ITeam | null;
 }
 
 export interface ElectionSideStep extends BaseEvent {
 	type: 'ELECTION_SIDE_STEP';
 	mode: TSideMode;
-	pickerTeam?: ITeam;
-	pickerSide?: TTeamSides;
-	ctTeam?: ITeam;
-	tTeam?: ITeam;
+	pickerTeam: ITeam | null;
+	pickerSide: TTeamSides | null;
+	ctTeam: ITeam | null;
+	tTeam: ITeam | null;
 }
 
 export interface MatchCreateEvent extends BaseEvent {

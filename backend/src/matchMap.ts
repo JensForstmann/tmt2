@@ -22,6 +22,7 @@ export const create = (
 ): IMatchMap => {
 	return {
 		knifeForSide: knifeForSide,
+		knifeWinner: null,
 		knifeRestart: {
 			teamA: false,
 			teamB: false,
@@ -210,7 +211,7 @@ export const loadMap = async (match: Match.Match, matchMap: IMatchMap, useDefaul
 	matchMap.knifeRestart.teamB = false;
 	matchMap.score.teamA = 0;
 	matchMap.score.teamB = 0;
-	matchMap.knifeWinner = undefined;
+	matchMap.knifeWinner = null;
 
 	MatchService.scheduleSave(match);
 };
@@ -296,7 +297,7 @@ const startKnifeRound = async (match: Match.Match, matchMap: IMatchMap) => {
 	matchMap.state = 'KNIFE';
 	matchMap.knifeRestart.teamA = false;
 	matchMap.knifeRestart.teamB = false;
-	matchMap.knifeWinner = undefined;
+	matchMap.knifeWinner = null;
 	MatchService.scheduleSave(match);
 	match.log('Start knife round');
 	await Match.execRconCommands(match, 'knife');

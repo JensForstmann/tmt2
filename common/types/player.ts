@@ -14,9 +14,9 @@ export interface IPlayer {
 	 * If the player's steam id is in the team's `playerSteamIds64`
 	 * this cannot be changed and is always set to the team.
 	 */
-	team?: TTeamAB;
+	team: TTeamAB | null;
 	/** Current ingame side. */
-	side?: TTeamSides | null;
+	side: TTeamSides | null;
 	/** Player currently on the game server (online)? */
-	online?: boolean;
+	online: boolean | null;
 }

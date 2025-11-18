@@ -924,7 +924,7 @@ export const CreateUpdateMatch: Component<
 								labelTopRight={t(
 									'Ends match series after a map if a winner is determined'
 								)}
-								checked={dto.canClinch}
+								checked={dto.canClinch ?? undefined}
 								class={getChangedClasses(
 									props.match.canClinch,
 									dto.canClinch,

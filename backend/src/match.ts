@@ -88,6 +88,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		...dto,
 		gameServer: gameServer,
 		id: id,
+		passthrough: dto.passthrough ?? null,
 		teamA: Team.createFromCreateDto(dto.teamA),
 		teamB: Team.createFromCreateDto(dto.teamB),
 		state: 'ELECTION',
@@ -108,7 +109,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		isStopped: false,
 		tmtSecret: shortUuid(),
 		serverPassword: '',
-		tmtLogAddress: dto.tmtLogAddress,
+		tmtLogAddress: dto.tmtLogAddress ?? null,
 		createdAt: Date.now(),
 		lastSavedAt: 0,
 		webhookUrl: dto.webhookUrl ?? null,
@@ -1116,7 +1117,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		await ensureLogAddressIsRegistered(match);
 	}
 
-	if (dto.currentMap !== undefined && dto.currentMap !== match.data.currentMap) {
+	if (typeof dto.currentMap === 'number' && dto.currentMap !== match.data.currentMap) {
 		const nextMap = match.data.matchMaps[dto.currentMap];
 		if (nextMap) {
 			match.data.currentMap = dto.currentMap;
@@ -1149,7 +1150,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		match.data.rconCommands.end = dto.rconCommands.end;
 	}
 
-	if (dto.canClinch !== undefined) {
+	if (typeof dto.canClinch === 'boolean') {
 		match.data.canClinch = dto.canClinch;
 		if (isMatchEnd(match)) {
 			await onMatchEnd(match);

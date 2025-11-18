@@ -45,10 +45,14 @@ const models: TsoaRoute.Models = {
 	ITeam: {
 		dataType: 'refObject',
 		properties: {
-			passthrough: { dataType: 'string' },
+			passthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			name: { dataType: 'string', required: true },
 			advantage: { dataType: 'double', required: true },
-			playerSteamIds64: { dataType: 'array', array: { dataType: 'string' } },
+			playerSteamIds64: { dataType: 'array', array: { dataType: 'string' }, required: true },
 		},
 		additionalProperties: false,
 	},
@@ -255,12 +259,24 @@ const models: TsoaRoute.Models = {
 		dataType: 'refObject',
 		properties: {
 			state: { ref: 'TElectionState', required: true },
-			teamX: { ref: 'TTeamAB' },
-			teamY: { ref: 'TTeamAB' },
+			teamX: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TTeamAB' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			teamY: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TTeamAB' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			remainingMaps: { dataType: 'array', array: { dataType: 'string' }, required: true },
 			currentStep: { dataType: 'double', required: true },
 			currentSubStep: { ref: 'TStep', required: true },
-			currentStepMap: { dataType: 'string' },
+			currentStepMap: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			currentAgree: {
 				dataType: 'nestedObjectLiteral',
 				nestedProperties: {
@@ -295,7 +311,7 @@ const models: TsoaRoute.Models = {
 			ip: { dataType: 'string', required: true },
 			port: { dataType: 'double', required: true },
 			rconPassword: { dataType: 'string', required: true },
-			hideRconPassword: { dataType: 'boolean' },
+			hideRconPassword: { dataType: 'boolean', required: true },
 		},
 		additionalProperties: false,
 	},
@@ -325,7 +341,11 @@ const models: TsoaRoute.Models = {
 			knifeForSide: { dataType: 'boolean', required: true },
 			startAsCtTeam: { ref: 'TTeamAB', required: true },
 			state: { ref: 'TMatchMapSate', required: true },
-			knifeWinner: { ref: 'TTeamAB' },
+			knifeWinner: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TTeamAB' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			readyTeams: {
 				dataType: 'nestedObjectLiteral',
 				nestedProperties: {
@@ -387,12 +407,21 @@ const models: TsoaRoute.Models = {
 		properties: {
 			steamId64: { dataType: 'string', required: true },
 			name: { dataType: 'string', required: true },
-			team: { ref: 'TTeamAB' },
+			team: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TTeamAB' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			side: {
 				dataType: 'union',
 				subSchemas: [{ ref: 'TTeamSides' }, { dataType: 'enum', enums: [null] }],
+				required: true,
 			},
-			online: { dataType: 'boolean' },
+			online: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 		},
 		additionalProperties: false,
 	},
@@ -414,7 +443,11 @@ const models: TsoaRoute.Models = {
 		properties: {
 			id: { dataType: 'string', required: true },
 			state: { ref: 'TMatchState', required: true },
-			passthrough: { dataType: 'string' },
+			passthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			mapPool: { dataType: 'array', array: { dataType: 'string' }, required: true },
 			teamA: { ref: 'ITeam', required: true },
 			teamB: { ref: 'ITeam', required: true },
@@ -470,9 +503,17 @@ const models: TsoaRoute.Models = {
 			tmtSecret: { dataType: 'string', required: true },
 			isStopped: { dataType: 'boolean', required: true },
 			serverPassword: { dataType: 'string', required: true },
-			tmtLogAddress: { dataType: 'string' },
+			tmtLogAddress: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			createdAt: { dataType: 'double', required: true },
-			lastSavedAt: { dataType: 'double' },
+			lastSavedAt: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'double' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			mode: { ref: 'TMatchMode', required: true },
 		},
 		additionalProperties: false,
@@ -482,9 +523,21 @@ const models: TsoaRoute.Models = {
 		dataType: 'refObject',
 		properties: {
 			name: { dataType: 'string', required: true },
-			passthrough: { dataType: 'string' },
-			advantage: { dataType: 'double' },
-			playerSteamIds64: { dataType: 'array', array: { dataType: 'string' } },
+			passthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+			},
+			advantage: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'double' }, { dataType: 'enum', enums: [null] }],
+			},
+			playerSteamIds64: {
+				dataType: 'union',
+				subSchemas: [
+					{ dataType: 'array', array: { dataType: 'string' } },
+					{ dataType: 'enum', enums: [null] },
+				],
+			},
 		},
 		additionalProperties: false,
 	},
@@ -492,7 +545,10 @@ const models: TsoaRoute.Models = {
 	IMatchCreateDto: {
 		dataType: 'refObject',
 		properties: {
-			passthrough: { dataType: 'string' },
+			passthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+			},
 			mapPool: { dataType: 'array', array: { dataType: 'string' }, required: true },
 			teamA: { ref: 'ITeamCreateDto', required: true },
 			teamB: { ref: 'ITeamCreateDto', required: true },
@@ -527,16 +583,52 @@ const models: TsoaRoute.Models = {
 			rconCommands: {
 				dataType: 'nestedObjectLiteral',
 				nestedProperties: {
-					end: { dataType: 'array', array: { dataType: 'string' } },
-					match: { dataType: 'array', array: { dataType: 'string' } },
-					knife: { dataType: 'array', array: { dataType: 'string' } },
-					init: { dataType: 'array', array: { dataType: 'string' } },
+					end: {
+						dataType: 'union',
+						subSchemas: [
+							{ dataType: 'array', array: { dataType: 'string' } },
+							{ dataType: 'enum', enums: [null] },
+						],
+					},
+					match: {
+						dataType: 'union',
+						subSchemas: [
+							{ dataType: 'array', array: { dataType: 'string' } },
+							{ dataType: 'enum', enums: [null] },
+						],
+					},
+					knife: {
+						dataType: 'union',
+						subSchemas: [
+							{ dataType: 'array', array: { dataType: 'string' } },
+							{ dataType: 'enum', enums: [null] },
+						],
+					},
+					init: {
+						dataType: 'union',
+						subSchemas: [
+							{ dataType: 'array', array: { dataType: 'string' } },
+							{ dataType: 'enum', enums: [null] },
+						],
+					},
 				},
 			},
-			canClinch: { dataType: 'boolean' },
-			matchEndAction: { ref: 'TMatchEndAction' },
-			tmtLogAddress: { dataType: 'string' },
-			mode: { ref: 'TMatchMode' },
+			canClinch: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
+			matchEndAction: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TMatchEndAction' }, { dataType: 'enum', enums: [null] }],
+			},
+			tmtLogAddress: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+			},
+			mode: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TMatchMode' }, { dataType: 'enum', enums: [null] }],
+			},
 		},
 		additionalProperties: false,
 	},
@@ -546,7 +638,11 @@ const models: TsoaRoute.Models = {
 		properties: {
 			id: { dataType: 'string', required: true },
 			state: { ref: 'TMatchState', required: true },
-			passthrough: { dataType: 'string' },
+			passthrough: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			mapPool: { dataType: 'array', array: { dataType: 'string' }, required: true },
 			teamA: { ref: 'ITeam', required: true },
 			teamB: { ref: 'ITeam', required: true },
@@ -602,9 +698,17 @@ const models: TsoaRoute.Models = {
 			tmtSecret: { dataType: 'string', required: true },
 			isStopped: { dataType: 'boolean', required: true },
 			serverPassword: { dataType: 'string', required: true },
-			tmtLogAddress: { dataType: 'string' },
+			tmtLogAddress: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			createdAt: { dataType: 'double', required: true },
-			lastSavedAt: { dataType: 'double' },
+			lastSavedAt: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'double' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			mode: { ref: 'TMatchMode', required: true },
 			isLive: { dataType: 'boolean', required: true },
 		},
@@ -672,7 +776,11 @@ const models: TsoaRoute.Models = {
 			},
 			message: { dataType: 'string', required: true },
 			isTeamChat: { dataType: 'boolean', required: true },
-			teamString: { ref: 'TTeamString' },
+			teamString: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TTeamString' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 		},
 		additionalProperties: false,
 	},
@@ -861,7 +969,11 @@ const models: TsoaRoute.Models = {
 			type: { dataType: 'enum', enums: ['ELECTION_MAP_STEP'], required: true },
 			mode: { ref: 'TMapMode', required: true },
 			mapName: { dataType: 'string', required: true },
-			pickerTeam: { ref: 'ITeam' },
+			pickerTeam: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'ITeam' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 		},
 		additionalProperties: false,
 	},
@@ -892,10 +1004,26 @@ const models: TsoaRoute.Models = {
 			},
 			type: { dataType: 'enum', enums: ['ELECTION_SIDE_STEP'], required: true },
 			mode: { ref: 'TSideMode', required: true },
-			pickerTeam: { ref: 'ITeam' },
-			pickerSide: { ref: 'TTeamSides' },
-			ctTeam: { ref: 'ITeam' },
-			tTeam: { ref: 'ITeam' },
+			pickerTeam: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'ITeam' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			pickerSide: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TTeamSides' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			ctTeam: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'ITeam' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			tTeam: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'ITeam' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 		},
 		additionalProperties: false,
 	},
@@ -1019,14 +1147,38 @@ const models: TsoaRoute.Models = {
 			},
 			tmtLogAddress: { dataType: 'string' },
 			mode: { ref: 'TMatchMode' },
-			state: { ref: 'TMatchState' },
-			logSecret: { dataType: 'string' },
-			currentMap: { dataType: 'double' },
-			_restartElection: { dataType: 'boolean' },
-			_execRconCommandsInit: { dataType: 'boolean' },
-			_execRconCommandsKnife: { dataType: 'boolean' },
-			_execRconCommandsMatch: { dataType: 'boolean' },
-			_execRconCommandsEnd: { dataType: 'boolean' },
+			state: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TMatchState' }, { dataType: 'enum', enums: [null] }],
+			},
+			logSecret: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'string' }, { dataType: 'enum', enums: [null] }],
+			},
+			currentMap: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'double' }, { dataType: 'enum', enums: [null] }],
+			},
+			_restartElection: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
+			_execRconCommandsInit: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
+			_execRconCommandsKnife: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
+			_execRconCommandsMatch: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
+			_execRconCommandsEnd: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
 		},
 		additionalProperties: false,
 	},
@@ -1063,8 +1215,14 @@ const models: TsoaRoute.Models = {
 			overTimeEnabled: { dataType: 'boolean' },
 			overTimeMaxRounds: { dataType: 'double' },
 			maxRounds: { dataType: 'double' },
-			_refreshOvertimeAndMaxRoundsSettings: { dataType: 'boolean' },
-			_switchTeamInternals: { dataType: 'boolean' },
+			_refreshOvertimeAndMaxRoundsSettings: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
+			_switchTeamInternals: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
 		},
 		additionalProperties: false,
 	},
@@ -1075,7 +1233,6 @@ const models: TsoaRoute.Models = {
 			ip: { dataType: 'string', required: true },
 			port: { dataType: 'double', required: true },
 			rconPassword: { dataType: 'string', required: true },
-			hideRconPassword: { dataType: 'boolean' },
 			canBeUsed: { dataType: 'boolean', required: true },
 			usedBy: {
 				dataType: 'union',
@@ -1092,8 +1249,10 @@ const models: TsoaRoute.Models = {
 			ip: { dataType: 'string', required: true },
 			port: { dataType: 'double', required: true },
 			rconPassword: { dataType: 'string', required: true },
-			hideRconPassword: { dataType: 'boolean' },
-			canBeUsed: { dataType: 'boolean' },
+			canBeUsed: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
 		},
 		additionalProperties: false,
 	},
@@ -1164,7 +1323,10 @@ const models: TsoaRoute.Models = {
 		dataType: 'refObject',
 		properties: {
 			name: { dataType: 'string', required: true },
-			isPublic: { dataType: 'boolean' },
+			isPublic: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
 			data: { ref: 'IMatchCreateDto', required: true },
 			id: { dataType: 'string', required: true },
 		},
@@ -1175,7 +1337,10 @@ const models: TsoaRoute.Models = {
 		dataType: 'refObject',
 		properties: {
 			name: { dataType: 'string', required: true },
-			isPublic: { dataType: 'boolean' },
+			isPublic: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
+			},
 			data: { ref: 'IMatchCreateDto', required: true },
 		},
 		additionalProperties: false,

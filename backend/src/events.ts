@@ -88,7 +88,7 @@ export const onElectionMapStep = (
 	match: Match.Match,
 	mode: TMapMode,
 	mapName: string,
-	pickerTeam?: ITeam
+	pickerTeam: ITeam | null
 ) => {
 	const data: ElectionMapStep = {
 		...getBaseEvent(match, 'ELECTION_MAP_STEP'),
@@ -102,14 +102,15 @@ export const onElectionMapStep = (
 export const onElectionSideStep = (
 	match: Match.Match,
 	mode: TSideMode,
-	options?: Omit<ElectionSideStep, 'mode' | 'type' | keyof BaseEvent>
+	options: Omit<ElectionSideStep, 'mode' | 'type' | keyof BaseEvent> | null
 ) => {
 	const data: ElectionSideStep = {
 		...getBaseEvent(match, 'ELECTION_SIDE_STEP'),
 		mode: mode,
-		pickerTeam: options?.pickerTeam,
-		ctTeam: options?.ctTeam,
-		tTeam: options?.tTeam,
+		pickerTeam: options?.pickerTeam ?? null,
+		pickerSide: options?.pickerSide ?? null,
+		ctTeam: options?.ctTeam ?? null,
+		tTeam: options?.tTeam ?? null,
 	};
 	send(match, data);
 };
@@ -163,6 +164,7 @@ export const onConsoleSay = (match: Match.Match, message: string) => {
 		playerTeam: null,
 		message: message,
 		isTeamChat: false,
+		teamString: null,
 	};
 	send(match, data);
 };

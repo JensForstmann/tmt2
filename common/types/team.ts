@@ -6,13 +6,13 @@ export interface ITeam {
 	 * Passthrough data to identify team in other systems.
 	 * Will be present in every response/webhook.
 	 */
-	passthrough?: string;
+	passthrough: string | null;
 	/** Team name. */
 	name: string;
 	/** Advantage in map wins, useful for double elimination tournament finals. */
 	advantage: number;
 	/** Steam ids of players in "Steam ID 64" format. Will be forced into this team.*/
-	playerSteamIds64?: string[];
+	playerSteamIds64: string[];
 }
 
 /**
@@ -24,11 +24,11 @@ export interface ITeamCreateDto {
 	 * Passthrough data to identify team in other systems.
 	 * Will be present in every response/webhook.
 	 */
-	passthrough?: string;
+	passthrough?: string | null;
 	/** Advantage in map wins, useful for double elimination tournament finals. */
-	advantage?: number;
+	advantage?: number | null;
 	/** Steam ids of players in "Steam ID 64" format. Will be forced into this team.*/
-	playerSteamIds64?: string[];
+	playerSteamIds64?: string[] | null;
 }
 
 /** Possible ingame sides of a player. */
