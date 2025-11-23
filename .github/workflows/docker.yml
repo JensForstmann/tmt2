@@ -46,4 +46,4 @@ jobs:
             TMT_COMMIT_SHA=${{ github.sha }}
           tags: |
             jensforstmann/tmt2:${{ github.sha }}
-            jensforstmann/tmt2:latest
+            jensforstmann/tmt2:dev
