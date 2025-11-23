@@ -80,7 +80,7 @@ export interface IMatch {
 	/** Send various events to this url (HTTP POST) */
 	webhookUrl: string | null;
 	/** Additional headers that will be added to each webhook request */
-	webhookHeaders: { [key: string]: string } | null;
+	webhookHeaders: { [key: string]: string };
 	rconCommands: {
 		/** executed exactly once on match init */
 		init: string[];
@@ -145,7 +145,11 @@ export interface IMatchCreateDto {
 	teamA: ITeamCreateDto;
 	teamB: ITeamCreateDto;
 	electionSteps: Array<IElectionStepAdd | IElectionStepSkip>;
-	gameServer: IGameServer | null;
+	gameServer: {
+		ip: string;
+		port: number;
+		rconPassword: string;
+	} | null;
 	/** Send various events to this url (HTTP POST) */
 	webhookUrl?: string | null;
 	/** Additional headers that will be added to each webhook request */

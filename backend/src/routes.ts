@@ -472,15 +472,9 @@ const models: TsoaRoute.Models = {
 				required: true,
 			},
 			webhookHeaders: {
-				dataType: 'union',
-				subSchemas: [
-					{
-						dataType: 'nestedObjectLiteral',
-						nestedProperties: {},
-						additionalProperties: { dataType: 'string' },
-					},
-					{ dataType: 'enum', enums: [null] },
-				],
+				dataType: 'nestedObjectLiteral',
+				nestedProperties: {},
+				additionalProperties: { dataType: 'string' },
 				required: true,
 			},
 			rconCommands: {
@@ -562,7 +556,17 @@ const models: TsoaRoute.Models = {
 			},
 			gameServer: {
 				dataType: 'union',
-				subSchemas: [{ ref: 'IGameServer' }, { dataType: 'enum', enums: [null] }],
+				subSchemas: [
+					{
+						dataType: 'nestedObjectLiteral',
+						nestedProperties: {
+							rconPassword: { dataType: 'string', required: true },
+							port: { dataType: 'double', required: true },
+							ip: { dataType: 'string', required: true },
+						},
+					},
+					{ dataType: 'enum', enums: [null] },
+				],
 				required: true,
 			},
 			webhookUrl: {
@@ -667,15 +671,9 @@ const models: TsoaRoute.Models = {
 				required: true,
 			},
 			webhookHeaders: {
-				dataType: 'union',
-				subSchemas: [
-					{
-						dataType: 'nestedObjectLiteral',
-						nestedProperties: {},
-						additionalProperties: { dataType: 'string' },
-					},
-					{ dataType: 'enum', enums: [null] },
-				],
+				dataType: 'nestedObjectLiteral',
+				nestedProperties: {},
+				additionalProperties: { dataType: 'string' },
 				required: true,
 			},
 			rconCommands: {
@@ -1120,7 +1118,14 @@ const models: TsoaRoute.Models = {
 					subSchemas: [{ ref: 'IElectionStepAdd' }, { ref: 'IElectionStepSkip' }],
 				},
 			},
-			gameServer: { ref: 'IGameServer' },
+			gameServer: {
+				dataType: 'nestedObjectLiteral',
+				nestedProperties: {
+					rconPassword: { dataType: 'string', required: true },
+					port: { dataType: 'double', required: true },
+					ip: { dataType: 'string', required: true },
+				},
+			},
 			webhookUrl: { dataType: 'string' },
 			webhookHeaders: {
 				dataType: 'nestedObjectLiteral',

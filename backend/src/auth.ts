@@ -77,7 +77,7 @@ export const isValidMatchToken = async (token?: string, matchId?: string) => {
 		return match.data.tmtSecret === token;
 	}
 
-	const matchFromStorage = await MatchService.getFromStorage(matchId);
+	const matchFromStorage = MatchService.getMatchFromDatabase(matchId);
 	if (matchFromStorage) {
 		return matchFromStorage.tmtSecret === token;
 	}

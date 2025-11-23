@@ -42,7 +42,7 @@ export class GameServersController extends Controller {
 		if (!requestBody.ip) {
 			throw 'invalid ip';
 		}
-		await ManagedGameServers.add(managedGameServer);
+		ManagedGameServers.add(managedGameServer);
 		return managedGameServer;
 	}
 
@@ -55,7 +55,7 @@ export class GameServersController extends Controller {
 		ip: string,
 		port: number
 	): Promise<IManagedGameServer> {
-		return await ManagedGameServers.update(requestBody);
+		return ManagedGameServers.update(requestBody);
 	}
 
 	/**
@@ -63,7 +63,7 @@ export class GameServersController extends Controller {
 	 */
 	@Delete('{ip}/{port}')
 	async deleteGameServer(ip: string, port: number): Promise<void> {
-		await ManagedGameServers.remove({
+		ManagedGameServers.remove({
 			ip: ip,
 			port: port,
 		});

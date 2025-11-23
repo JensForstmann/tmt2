@@ -2,11 +2,16 @@ import { ValidateError } from '@tsoa/runtime';
 import { generate as shortUuid } from 'short-uuid';
 import { COMMIT_SHA, IMAGE_BUILD_TIMESTAMP, TMT_LOG_ADDRESS, VERSION } from '.';
 import {
+	IElectionStep,
+	IGameServer,
 	IMatch,
 	IMatchCreateDto,
 	IMatchUpdateDto,
 	IPlayer,
 	ITeam,
+	TMatchEndAction,
+	TMatchMode,
+	TMatchState,
 	TTeamAB,
 	TTeamString,
 	escapeRconSayString,
@@ -26,10 +31,10 @@ import * as MatchService from './matchService';
 import * as Player from './player';
 import { Rcon } from './rcon-client';
 import { Settings } from './settings';
-import * as Storage from './storage';
 import * as Team from './team';
+import { db } from './database';
 
-const SAY_PREFIX = GameServer.colors.green + Settings.SAY_PREFIX + GameServer.colors.white;
+const SAY_PREFIX = () => GameServer.colors.green + Settings.SAY_PREFIX + GameServer.colors.white;
 
 export interface Match {
 	data: IMatch;
@@ -52,6 +57,7 @@ export const createFromData = async (data: IMatch, logMessage?: string) => {
 		warnAboutWrongTeam: true,
 	};
 	match.data = addChangeListener(data, createOnDataChangeHandler(match));
+	await MatchService.save(data);
 	match.log = createLogger(match);
 	if (logMessage) {
 		match.log(logMessage);
@@ -80,7 +86,12 @@ export const createFromData = async (data: IMatch, logMessage?: string) => {
 };
 
 export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logSecret: string) => {
-	const gameServer = dto.gameServer ?? (await ManagedGameServers.getFree(id));
+	const gameServer = dto.gameServer
+		? {
+				...dto.gameServer,
+				hideRconPassword: false,
+			}
+		: ManagedGameServers.getFree(id);
 	if (!gameServer) {
 		throw 'no free game server available';
 	}
@@ -113,7 +124,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		createdAt: Date.now(),
 		lastSavedAt: 0,
 		webhookUrl: dto.webhookUrl ?? null,
-		webhookHeaders: dto.webhookHeaders ?? null,
+		webhookHeaders: dto.webhookHeaders ?? {},
 		mode: dto.mode ?? 'SINGLE',
 	};
 	try {
@@ -121,8 +132,8 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		return match;
 	} catch (err) {
 		if (!dto.gameServer) {
-			await ManagedGameServers.free(gameServer, id);
-			await ManagedGameServers.update({ ...gameServer, canBeUsed: false });
+			ManagedGameServers.free(gameServer, id);
+			ManagedGameServers.update({ ...gameServer, canBeUsed: false });
 		}
 		throw err;
 	}
@@ -314,7 +325,7 @@ export const execRconCommands = async (match: Match, key: keyof IMatch['rconComm
 };
 
 export const say = async (match: Match, message: string) => {
-	message = escapeRconSayString(SAY_PREFIX + message);
+	message = escapeRconSayString(SAY_PREFIX() + message);
 	await execRcon(match, `say ${message}`);
 };
 
@@ -708,7 +719,7 @@ const onPlayerSay = async (
 
 const onConsoleSay = async (match: Match, message: string) => {
 	message = message.trim();
-	if (!message.startsWith(SAY_PREFIX)) {
+	if (!message.startsWith(SAY_PREFIX())) {
 		message = GameServer.removeColors(message);
 		Events.onConsoleSay(match, message);
 	}
@@ -975,7 +986,7 @@ export const stop = async (match: Match) => {
 	});
 	await say(match, `TMT IS OFFLINE`).catch(() => {});
 	await GameServer.disconnect(match);
-	await ManagedGameServers.free(match.data.gameServer, match.data.id);
+	ManagedGameServers.free(match.data.gameServer, match.data.id);
 	Events.onMatchStop(match);
 };
 
@@ -1070,8 +1081,12 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	if (dto.gameServer) {
-		await ManagedGameServers.free(match.data.gameServer, match.data.id);
-		match.data.gameServer = dto.gameServer;
+		ManagedGameServers.free(match.data.gameServer, match.data.id);
+		const gameServer: IGameServer = {
+			...dto.gameServer,
+			hideRconPassword: match.data.gameServer.hideRconPassword,
+		};
+		match.data.gameServer = gameServer;
 		match.rconConnection?.end().catch((err) => {
 			match.log(`Error end rcon connection ${err}`);
 		});
@@ -1086,7 +1101,7 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		match.data.webhookUrl = dto.webhookUrl;
 	}
 
-	if (dto.webhookHeaders !== undefined) {
+	if (dto.webhookHeaders) {
 		match.data.webhookHeaders = dto.webhookHeaders;
 	}
 
@@ -1182,4 +1197,243 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	}
 
 	MatchService.scheduleSave(match);
+};
+
+export type TDbMatch = {
+	id: string;
+	state: string;
+	passthrough: string | null;
+	mapPool: string;
+	teamAPassthrough: string | null;
+	teamAName: string;
+	teamAAdvantage: number;
+	teamAPlayerSteamIds64: string;
+	teamBPassthrough: string | null;
+	teamBName: string;
+	teamBAdvantage: number;
+	teamBPlayerSteamIds64: string;
+	electionSteps: string;
+	gameServerIp: string;
+	gameServerPort: number;
+	gameServerRconPassword: string;
+	gameServerHideRconPassword: number;
+	logSecret: string;
+	currentMap: number;
+	webhookUrl: string | null;
+	webhookHeaders: string;
+	rconCommandsInit: string;
+	rconCommandsKnife: string;
+	rconCommandsMatch: string;
+	rconCommandsEnd: string;
+	canClinch: number;
+	matchEndAction: string;
+	tmtSecret: string;
+	isStopped: number;
+	tmtLogAddress: string | null;
+	createdAt: number;
+	lastSavedAt: number;
+	mode: string;
+};
+
+const matchToDb = (match: IMatch): TDbMatch => {
+	return {
+		id: match.id,
+		state: match.state,
+		passthrough: match.passthrough,
+		mapPool: JSON.stringify(match.mapPool),
+		teamAPassthrough: match.teamA.passthrough,
+		teamAName: match.teamA.name,
+		teamAAdvantage: match.teamA.advantage,
+		teamAPlayerSteamIds64: JSON.stringify(match.teamA.playerSteamIds64),
+		teamBPassthrough: match.teamB.passthrough,
+		teamBName: match.teamB.name,
+		teamBAdvantage: match.teamB.advantage,
+		teamBPlayerSteamIds64: JSON.stringify(match.teamB.playerSteamIds64),
+		electionSteps: JSON.stringify(match.electionSteps),
+		gameServerIp: match.gameServer.ip,
+		gameServerPort: match.gameServer.port,
+		gameServerRconPassword: match.gameServer.rconPassword,
+		gameServerHideRconPassword: match.gameServer.hideRconPassword ? 1 : 0,
+		logSecret: match.logSecret,
+		currentMap: match.currentMap,
+		webhookUrl: match.webhookUrl,
+		webhookHeaders: JSON.stringify(match.webhookHeaders),
+		rconCommandsInit: JSON.stringify(match.rconCommands.init),
+		rconCommandsKnife: JSON.stringify(match.rconCommands.knife),
+		rconCommandsMatch: JSON.stringify(match.rconCommands.match),
+		rconCommandsEnd: JSON.stringify(match.rconCommands.end),
+		canClinch: match.canClinch ? 1 : 0,
+		matchEndAction: match.matchEndAction,
+		tmtSecret: match.tmtSecret,
+		isStopped: match.isStopped ? 1 : 0,
+		tmtLogAddress: match.tmtLogAddress,
+		createdAt: match.createdAt,
+		lastSavedAt: match.lastSavedAt ?? Date.now(),
+		mode: match.mode,
+	};
+};
+
+export const matchFromDb = (
+	dbMatch: TDbMatch,
+	dbMatchMaps: MatchMap.TDbMatchMap[],
+	dbMatchPlayers: Player.TDbMatchPlayer[]
+): IMatch => {
+	const mapPool = JSON.parse(dbMatch.mapPool) as string[];
+	const electionSteps = JSON.parse(dbMatch.electionSteps) as IElectionStep[];
+	return {
+		id: dbMatch.id,
+		state: dbMatch.state as TMatchState,
+		passthrough: dbMatch.passthrough,
+		mapPool: mapPool,
+		teamA: {
+			passthrough: dbMatch.teamAPassthrough,
+			name: dbMatch.teamAName,
+			advantage: dbMatch.teamAAdvantage,
+			playerSteamIds64: JSON.parse(dbMatch.teamAPlayerSteamIds64) as string[],
+		},
+		teamB: {
+			passthrough: dbMatch.teamBPassthrough,
+			name: dbMatch.teamBName,
+			advantage: dbMatch.teamBAdvantage,
+			playerSteamIds64: JSON.parse(dbMatch.teamBPlayerSteamIds64) as string[],
+		},
+		parseIncomingLogs: false,
+		matchMaps: dbMatchMaps.map(MatchMap.matchMapFromDb),
+		players: dbMatchPlayers.map(Player.matchPlayerFromDb),
+		electionSteps: electionSteps,
+		election: Election.create(mapPool, electionSteps),
+		gameServer: {
+			ip: dbMatch.gameServerIp,
+			port: dbMatch.gameServerPort,
+			rconPassword: dbMatch.gameServerRconPassword,
+			hideRconPassword: !!dbMatch.gameServerHideRconPassword,
+		},
+		logSecret: dbMatch.logSecret,
+		currentMap: dbMatch.currentMap,
+		webhookUrl: dbMatch.webhookUrl,
+		webhookHeaders: JSON.parse(dbMatch.webhookHeaders) as { [key: string]: string },
+		rconCommands: {
+			init: JSON.parse(dbMatch.rconCommandsInit) as string[],
+			knife: JSON.parse(dbMatch.rconCommandsKnife) as string[],
+			match: JSON.parse(dbMatch.rconCommandsMatch) as string[],
+			end: JSON.parse(dbMatch.rconCommandsEnd) as string[],
+		},
+		canClinch: !!dbMatch.canClinch,
+		matchEndAction: dbMatch.matchEndAction as TMatchEndAction,
+		tmtSecret: dbMatch.tmtSecret,
+		isStopped: !!dbMatch.isStopped,
+		tmtLogAddress: dbMatch.tmtLogAddress,
+		createdAt: dbMatch.createdAt,
+		mode: dbMatch.mode as TMatchMode,
+		serverPassword: '',
+		lastSavedAt: 0,
+	};
+};
+
+export const saveMatchToDb = (match: IMatch) => {
+	db.prepare<TDbMatch>(
+		`INSERT INTO match (
+				id,
+				state,
+				passthrough,
+				mapPool,
+				teamAPassthrough,
+				teamAName,
+				teamAAdvantage,
+				teamAPlayerSteamIds64,
+				teamBPassthrough,
+				teamBName,
+				teamBAdvantage,
+				teamBPlayerSteamIds64,
+				electionSteps,
+				gameServerIp,
+				gameServerPort,
+				gameServerRconPassword,
+				gameServerHideRconPassword,
+				logSecret,
+				currentMap,
+				webhookUrl,
+				webhookHeaders,
+				rconCommandsInit,
+				rconCommandsKnife,
+				rconCommandsMatch,
+				rconCommandsEnd,
+				canClinch,
+				matchEndAction,
+				tmtSecret,
+				isStopped,
+				tmtLogAddress,
+				createdAt,
+				lastSavedAt,
+				mode
+			) VALUES (
+				:id,
+				:state,
+				:passthrough,
+				:mapPool,
+				:teamAPassthrough,
+				:teamAName,
+				:teamAAdvantage,
+				:teamAPlayerSteamIds64,
+				:teamBPassthrough,
+				:teamBName,
+				:teamBAdvantage,
+				:teamBPlayerSteamIds64,
+				:electionSteps,
+				:gameServerIp,
+				:gameServerPort,
+				:gameServerRconPassword,
+				:gameServerHideRconPassword,
+				:logSecret,
+				:currentMap,
+				:webhookUrl,
+				:webhookHeaders,
+				:rconCommandsInit,
+				:rconCommandsKnife,
+				:rconCommandsMatch,
+				:rconCommandsEnd,
+				:canClinch,
+				:matchEndAction,
+				:tmtSecret,
+				:isStopped,
+				:tmtLogAddress,
+				:createdAt,
+				:lastSavedAt,
+				:mode
+			) ON CONFLICT (id) DO UPDATE SET
+				state = :state,
+				passthrough = :passthrough,
+				mapPool = :mapPool,
+				teamAPassthrough = :teamAPassthrough,
+				teamAName = :teamAName,
+				teamAAdvantage = :teamAAdvantage,
+				teamAPlayerSteamIds64 = :teamAPlayerSteamIds64,
+				teamBPassthrough = :teamBPassthrough,
+				teamBName = :teamBName,
+				teamBAdvantage = :teamBAdvantage,
+				teamBPlayerSteamIds64 = :teamBPlayerSteamIds64,
+				electionSteps = :electionSteps,
+				gameServerIp = :gameServerIp,
+				gameServerPort = :gameServerPort,
+				gameServerRconPassword = :gameServerRconPassword,
+				gameServerHideRconPassword = :gameServerHideRconPassword,
+				logSecret = :logSecret,
+				currentMap = :currentMap,
+				webhookUrl = :webhookUrl,
+				webhookHeaders = :webhookHeaders,
+				rconCommandsInit = :rconCommandsInit,
+				rconCommandsKnife = :rconCommandsKnife,
+				rconCommandsMatch = :rconCommandsMatch,
+				rconCommandsEnd = :rconCommandsEnd,
+				canClinch = :canClinch,
+				matchEndAction = :matchEndAction,
+				tmtSecret = :tmtSecret,
+				isStopped = :isStopped,
+				tmtLogAddress = :tmtLogAddress,
+				createdAt = :createdAt,
+				lastSavedAt = :lastSavedAt,
+				mode = :mode
+			WHERE id = :id
+			`
+	).run(matchToDb(match));
 };

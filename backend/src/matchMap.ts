@@ -10,6 +10,7 @@ import {
 	TTeamSides,
 } from '../../common';
 import * as commands from './commands';
+import { db } from './database';
 import * as Events from './events';
 import { colors, formatMapName } from './gameServer';
 import * as Match from './match';
@@ -643,4 +644,110 @@ export const update = async (
 	}
 
 	MatchService.scheduleSave(match);
+};
+
+export type TDbMatchMap = {
+	matchId: string;
+	index: number;
+	name: string;
+	knifeForSide: number;
+	startAsCtTeam: string;
+	state: string;
+	knifeWinner: string | null;
+	readyTeamA: number;
+	readyTeamB: number;
+	knifeRestartTeamA: number;
+	knifeRestartTeamB: number;
+	scoreTeamA: number;
+	scoreTeamB: number;
+};
+
+const matchMapToDb = (matchId: string, matchMap: IMatchMap, index: number): TDbMatchMap => {
+	return {
+		matchId: matchId,
+		index: index,
+		name: matchMap.name,
+		knifeForSide: matchMap.knifeForSide ? 1 : 0,
+		startAsCtTeam: matchMap.startAsCtTeam,
+		state: matchMap.state,
+		knifeWinner: matchMap.knifeWinner,
+		readyTeamA: matchMap.readyTeams.teamA ? 1 : 0,
+		readyTeamB: matchMap.readyTeams.teamB ? 1 : 0,
+		knifeRestartTeamA: matchMap.knifeRestart.teamA ? 1 : 0,
+		knifeRestartTeamB: matchMap.knifeRestart.teamB ? 1 : 0,
+		scoreTeamA: matchMap.score.teamA,
+		scoreTeamB: matchMap.score.teamB,
+	};
+};
+
+export const matchMapFromDb = (dbMatchMap: TDbMatchMap): IMatchMap => {
+	return {
+		name: dbMatchMap.name,
+		knifeForSide: !!dbMatchMap.knifeForSide,
+		startAsCtTeam: dbMatchMap.startAsCtTeam as TTeamAB,
+		state: dbMatchMap.state as TMatchMapSate,
+		knifeWinner: dbMatchMap.knifeWinner as TTeamAB | null,
+		readyTeams: {
+			teamA: !!dbMatchMap.readyTeamA,
+			teamB: !!dbMatchMap.readyTeamB,
+		},
+		knifeRestart: {
+			teamA: !!dbMatchMap.knifeRestartTeamA,
+			teamB: !!dbMatchMap.knifeRestartTeamB,
+		},
+		score: {
+			teamA: dbMatchMap.scoreTeamA,
+			teamB: dbMatchMap.scoreTeamB,
+		},
+		overTimeEnabled: true,
+		overTimeMaxRounds: 6,
+		maxRounds: 30,
+	};
+};
+
+export const saveMatchMapToDb = (matchId: string, matchMap: IMatchMap, index: number) => {
+	db.prepare<TDbMatchMap>(
+		`INSERT INTO matchMap (
+					matchId,
+					"index",
+					name,
+					knifeForSide,
+					startAsCtTeam,
+					state,
+					knifeWinner,
+					readyTeamA,
+					readyTeamB,
+					knifeRestartTeamA,
+					knifeRestartTeamB,
+					scoreTeamA,
+					scoreTeamB
+				) VALUES (
+					:matchId,
+					:index,
+					:name,
+					:knifeForSide,
+					:startAsCtTeam,
+					:state,
+					:knifeWinner,
+					:readyTeamA,
+					:readyTeamB,
+					:knifeRestartTeamA,
+					:knifeRestartTeamB,
+					:scoreTeamA,
+					:scoreTeamB
+				) ON CONFLICT (matchId, "index") DO UPDATE SET
+					name = :name,
+					knifeForSide = :knifeForSide,
+					startAsCtTeam = :startAsCtTeam,
+					state = :state,
+					knifeWinner = :knifeWinner,
+					readyTeamA = :readyTeamA,
+					readyTeamB = :readyTeamB,
+					knifeRestartTeamA = :knifeRestartTeamA,
+					knifeRestartTeamB = :knifeRestartTeamB,
+					scoreTeamA = :scoreTeamA,
+					scoreTeamB = :scoreTeamB
+				WHERE matchId = :matchId AND "index" = :index
+				`
+	).run(matchMapToDb(matchId, matchMap, index));
 };

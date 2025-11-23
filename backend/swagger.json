@@ -592,7 +592,6 @@
 							"type": "string"
 						},
 						"type": "object",
-						"nullable": true,
 						"description": "Additional headers that will be added to each webhook request"
 					},
 					"rconCommands": {
@@ -771,11 +770,20 @@
 						"type": "array"
 					},
 					"gameServer": {
-						"allOf": [
-							{
-								"$ref": "#/components/schemas/IGameServer"
+						"properties": {
+							"rconPassword": {
+								"type": "string"
+							},
+							"port": {
+								"type": "number",
+								"format": "double"
+							},
+							"ip": {
+								"type": "string"
 							}
-						],
+						},
+						"required": ["rconPassword", "port", "ip"],
+						"type": "object",
 						"nullable": true
 					},
 					"webhookUrl": {
@@ -936,7 +944,6 @@
 							"type": "string"
 						},
 						"type": "object",
-						"nullable": true,
 						"description": "Additional headers that will be added to each webhook request"
 					},
 					"rconCommands": {
@@ -1782,7 +1789,20 @@
 						"type": "array"
 					},
 					"gameServer": {
-						"$ref": "#/components/schemas/IGameServer"
+						"properties": {
+							"rconPassword": {
+								"type": "string"
+							},
+							"port": {
+								"type": "number",
+								"format": "double"
+							},
+							"ip": {
+								"type": "string"
+							}
+						},
+						"required": ["rconPassword", "port", "ip"],
+						"type": "object"
 					},
 					"webhookUrl": {
 						"type": "string",

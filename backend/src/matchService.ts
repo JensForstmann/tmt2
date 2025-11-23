@@ -2,10 +2,9 @@ import { generate as shortUuid } from 'short-uuid';
 import { IGameServer, IMatch, IMatchCreateDto, IMatchResponse } from '../../common';
 import * as Events from './events';
 import * as Match from './match';
-import * as Storage from './storage';
-
-const STORAGE_PREFIX = 'match_';
-const STORAGE_SUFFIX = '.json';
+import { db } from './database';
+import { saveMatchMapToDb, TDbMatchMap } from './matchMap';
+import { savePlayerToDb, TDbMatchPlayer } from './player';
 
 const matches: Map<string, Match.Match> = new Map();
 
@@ -21,7 +20,7 @@ const matchesToSave: Set<string> = new Set();
 let timeout: NodeJS.Timeout;
 
 export const setup = async () => {
-	const matchesFromStorage = await getAllFromStorage();
+	const matchesFromStorage = getAllMatchesFromDatabase();
 
 	// begin with recent matches so when there are multiple matches
 	// with the same game server we recreate the correct (most recent) one
@@ -108,34 +107,13 @@ export const get = (id: string) => {
 	return matches.get(id);
 };
 
-export const getFromStorage = async (id: string) => {
-	const matchData: IMatch | undefined = await Storage.read(STORAGE_PREFIX + id + STORAGE_SUFFIX);
-	return matchData;
-};
-
 export const getAllLive = () => {
 	return Array.from(matches.values()).map((match) => match.data);
 };
 
-export const getAllFromStorage = async () => {
-	const matchesFromStorage = await Storage.list(STORAGE_PREFIX, STORAGE_SUFFIX);
-
-	const matches: IMatch[] = [];
-
-	for (let i = 0; i < matchesFromStorage.length; i++) {
-		const fileName = matchesFromStorage[i]!;
-		const matchData: IMatch | undefined = await Storage.read(fileName);
-		if (matchData && fileName === STORAGE_PREFIX + matchData.id + STORAGE_SUFFIX) {
-			matches.push(matchData);
-		}
-	}
-
-	return matches;
-};
-
 export const getAll = async () => {
 	const live = getAllLive();
-	const storage = await getAllFromStorage();
+	const storage = getAllMatchesFromDatabase();
 	const notLive = storage.filter((match) => !live.find((m) => match.id === m.id));
 	return {
 		live,
@@ -156,7 +134,7 @@ export const remove = async (id: string) => {
 };
 
 export const removeStopped = async (id: string) => {
-	const matchFromStorage = await getFromStorage(id);
+	const matchFromStorage = getMatchFromDatabase(id);
 	if (!matchFromStorage) {
 		return false;
 	}
@@ -170,7 +148,7 @@ export const revive = async (id: string) => {
 	if (match) {
 		return false;
 	}
-	const matchFromStorage = await getFromStorage(id);
+	const matchFromStorage = getMatchFromDatabase(id);
 	if (!matchFromStorage) {
 		return false;
 	}
@@ -183,7 +161,11 @@ export const save = async (matchData: IMatch) => {
 	const previousLastSavedAt = matchData.lastSavedAt;
 	matchData.lastSavedAt = Date.now();
 	try {
-		await Storage.write(STORAGE_PREFIX + matchData.id + STORAGE_SUFFIX, matchData);
+		Match.saveMatchToDb(matchData);
+		matchData.matchMaps.forEach((matchMap, index) =>
+			saveMatchMapToDb(matchData.id, matchMap, index)
+		);
+		matchData.players.forEach((player) => savePlayerToDb(matchData.id, player));
 	} catch (err) {
 		matchData.lastSavedAt = previousLastSavedAt;
 		throw err;
@@ -222,4 +204,46 @@ export const getLiveMatchesByGameServer = (gameServer: IGameServer) => {
 		(match) =>
 			match.gameServer.ip === gameServer.ip && match.gameServer.port === gameServer.port
 	);
+};
+
+export const getMatchFromDatabase = (id: string): IMatch | undefined => {
+	const matchRow = db
+		.prepare<{ id: string }, Match.TDbMatch>('SELECT * FROM match WHERE id = :id')
+		.get({ id: id });
+	if (!matchRow) {
+		return undefined;
+	}
+	const matchMapRows = db
+		.prepare<
+			{ matchId: string },
+			TDbMatchMap
+		>('SELECT * FROM matchMap WHERE matchId = :matchId')
+		.all({ matchId: id });
+	const matchPlayerRows = db
+		.prepare<
+			{ matchId: string },
+			TDbMatchPlayer
+		>('SELECT * FROM matchPlayer WHERE matchId = :matchId')
+		.all({ matchId: id });
+	return Match.matchFromDb(matchRow, matchMapRows, matchPlayerRows);
+};
+
+export const getAllMatchesFromDatabase = () => {
+	const matchRows = db.prepare<[], Match.TDbMatch>('SELECT * FROM match').all();
+	const matchMapRows = db.prepare<[], TDbMatchMap>('SELECT * FROM matchMap').all();
+	const matchPlayerRows = db.prepare<[], TDbMatchPlayer>('SELECT * FROM matchPlayer').all();
+
+	const matches: IMatch[] = [];
+
+	for (let i = 0; i < matchRows.length; i++) {
+		const matchRow = matchRows[i] as any;
+		const match = Match.matchFromDb(
+			matchRow,
+			matchMapRows.filter((row: any) => row.matchId === matchRow.id),
+			matchPlayerRows.filter((row: any) => row.matchId === matchRow.id)
+		);
+		matches.push(match);
+	}
+
+	return matches;
 };

@@ -14,6 +14,8 @@ import * as Presets from './presets';
 import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
 import * as WebSocket from './webSocket';
+import * as Database from './database';
+Database.runMigrations();
 
 export const TMT_LOG_ADDRESS: string | null = (() => {
 	if (!process.env['TMT_LOG_ADDRESS']) {
@@ -127,7 +129,7 @@ const main = async () => {
 	await Storage.setup();
 	await Auth.setup();
 	await WebSocket.setup(httpServer);
-	await ManagedGameServers.setup();
+	ManagedGameServers.setup();
 	await Presets.setup();
 	Match.registerCommandHandlers();
 	MatchMap.registerCommandHandlers();

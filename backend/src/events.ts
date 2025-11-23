@@ -22,18 +22,15 @@ import {
 	TSideMode,
 	TTeamString,
 } from '../../common';
+import { db } from './database';
 import * as Match from './match';
 import * as MatchService from './matchService';
 import { Settings } from './settings';
-import * as Storage from './storage';
 import * as WebSocket from './webSocket';
-
-const STORAGE_EVENTS_PREFIX = 'events_';
-const STORAGE_EVENTS_SUFFIX = '.jsonl';
 
 const send = (match: Match.Match, data: Event, isSystemEvent?: boolean) => {
 	// Storage
-	Storage.appendLine(STORAGE_EVENTS_PREFIX + match.data.id + STORAGE_EVENTS_SUFFIX, data);
+	saveEventToDb(data);
 
 	// WebSocket
 	WebSocket.publish(data, isSystemEvent);
@@ -54,14 +51,6 @@ const send = (match: Match.Match, data: Event, isSystemEvent?: boolean) => {
 			);
 		});
 	}
-};
-
-export const getEventsTail = async (matchId: string, numberOfLines = 1000): Promise<Event[]> => {
-	return await Storage.readLines(
-		STORAGE_EVENTS_PREFIX + matchId + STORAGE_EVENTS_SUFFIX,
-		[],
-		numberOfLines
-	);
 };
 
 const getBaseEvent = <T extends EventType>(
@@ -259,4 +248,66 @@ export const onMatchUpdate = (match: Match.Match, path: Array<string | number>, 
 export const onMatchStop = (match: Match.Match) => {
 	const data: MatchStopEvent = getBaseEvent(match, 'MATCH_STOP');
 	send(match, data);
+};
+
+const eventToDb = (event: Event): TDbEvent => {
+	const copy: any = { ...event };
+	delete copy.timestamp;
+	delete copy.matchId;
+	delete copy.matchPassthrough;
+	delete copy.type;
+	const payload = JSON.stringify(copy);
+	return {
+		timestamp: event.timestamp,
+		matchId: event.matchId,
+		matchPassthrough: event.matchPassthrough,
+		type: event.type,
+		payload: payload,
+	};
+};
+
+const eventFromDb = (dbEvent: TDbEvent): Event => {
+	return {
+		...JSON.parse((dbEvent as any).payload),
+		timestamp: dbEvent.timestamp,
+		matchId: dbEvent.matchId,
+		matchPassthrough: dbEvent.matchPassthrough,
+		type: dbEvent.type,
+	};
+};
+
+type TDbEvent = {
+	timestamp: string;
+	matchId: string;
+	matchPassthrough: string | null;
+	type: string;
+	payload: string;
+};
+
+export const saveEventToDb = (event: Event) => {
+	db.prepare<TDbEvent>(
+		`INSERT INTO event (
+			timestamp,
+			matchId,
+			matchPassthrough,
+			type,
+			payload
+		) VALUEs (
+			:timestamp,
+			:matchId,
+			:matchPassthrough,
+			:type,
+			:payload
+	)`
+	).run(eventToDb(event));
+};
+
+export const getLatestEventsFromDatabase = (matchId: string, numberOfEvents = 1000): Event[] => {
+	const rows = db
+		.prepare<
+			{ matchId: string; numberOfEvents: number },
+			TDbEvent
+		>(`SELECT * FROM event WHERE matchId = :matchId ORDER BY id DESC LIMIT :numberOfEvents`)
+		.all({ matchId: matchId, numberOfEvents: numberOfEvents });
+	return rows.map(eventFromDb).reverse();
 };

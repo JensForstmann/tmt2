@@ -21,10 +21,10 @@ import {
 	IMatchUpdateDto,
 } from '../../common';
 import { ExpressRequest, IAuthResponse, IAuthResponseOptional } from './auth';
-import * as Events from './events';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
+import { getLatestEventsFromDatabase } from './events';
 
 const checkRconCommands = (
 	rconCommands: IMatchCreateDto['rconCommands'] | IMatchUpdateDto['rconCommands'] | string[],
@@ -84,7 +84,7 @@ export class MatchesController extends Controller {
 		@Query('isLive') isLive?: boolean
 	): Promise<IMatchResponse[]> {
 		const live = MatchService.getAllLive();
-		const storage = isLive === true ? [] : await MatchService.getAllFromStorage();
+		const storage = isLive === true ? [] : MatchService.getAllMatchesFromDatabase();
 		const notLive = storage.filter((match) => !live.find((m) => match.id === m.id));
 		return [...live, ...notLive]
 			.map((m) => ({ ...m, isLive: !!live.find((l) => l.id === m.id) }))
@@ -115,7 +115,7 @@ export class MatchesController extends Controller {
 			};
 		}
 
-		const matchFromStorage = await MatchService.getFromStorage(id);
+		const matchFromStorage = MatchService.getMatchFromDatabase(id);
 		if (matchFromStorage) {
 			return {
 				...MatchService.hideRconPassword(matchFromStorage, req.user.type === 'GLOBAL'),
@@ -132,7 +132,7 @@ export class MatchesController extends Controller {
 	 */
 	@Get('{id}/events')
 	async getEvents(id: string, @Request() req: ExpressRequest<IAuthResponse>): Promise<Event[]> {
-		return await Events.getEventsTail(id);
+		return getLatestEventsFromDatabase(id);
 	}
 
 	/**
@@ -195,11 +195,13 @@ export class MatchesController extends Controller {
 			await Match.update(match, requestBody);
 		} else if (requestBody.gameServer) {
 			// for offline matches only allow to update game server to get match running again
-			const offlineMatch = await MatchService.getFromStorage(id);
+			const offlineMatch = MatchService.getMatchFromDatabase(id);
 			if (offlineMatch) {
-				const hideRconPassword = offlineMatch.gameServer.hideRconPassword;
-				offlineMatch.gameServer = requestBody.gameServer;
-				offlineMatch.gameServer.hideRconPassword = hideRconPassword;
+				const gameServer = {
+					...requestBody.gameServer,
+					hideRconPassword: offlineMatch.gameServer.hideRconPassword,
+				};
+				offlineMatch.gameServer = gameServer;
 				await MatchService.save(offlineMatch);
 			}
 		} else {
