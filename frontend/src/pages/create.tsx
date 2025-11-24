@@ -28,7 +28,7 @@ const DEFAULT_RCON_MATCH = [
 	'mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary "weapon_hkp2000"; mp_t_default_secondary "weapon_glock"',
 	'mp_overtime_enable 1',
 	'say > MATCH CONFIG LOADED <',
-	'say > HF & LG - %TMT_MAP_NUMBER%. map: %TMT_MAP_NAME% <',
+	'say > HF & GL - %TMT_MAP_NUMBER%. map: %TMT_MAP_NAME% <',
 ];
 const DEFAULT_RCON_END = ['say > MATCH END RCON LOADED <'];
 

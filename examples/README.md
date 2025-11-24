@@ -47,7 +47,7 @@ Template (remove json comments before usage):
             "mp_give_player_c4 1; mp_startmoney 800; mp_ct_default_secondary \"weapon_hkp2000\"; mp_t_default_secondary \"weapon_glock\"",
             "mp_overtime_enable 1",
             "say > MATCH CONFIG LOADED <",
-            "say > HF & LG - %TMT_MAP_NUMBER%. map: %TMT_MAP_NAME% <"
+            "say > HF & GL - %TMT_MAP_NUMBER%. map: %TMT_MAP_NAME% <"
         ],
         "end": [ // these rcon commands will be executed only once: after the end of the last map, or when the match has been stopped (by api)
             "say > MATCH END RCON LOADED <"
