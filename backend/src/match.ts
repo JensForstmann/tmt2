@@ -551,6 +551,24 @@ const onLogLine = async (match: Match, line: string) => {
 			match.warnAboutWrongTeam = true;
 			return;
 		}
+
+		// Match pause is disabled - TimeOutCTs
+		// Match pause is disabled - TimeOutTs
+		const matchPauseDisabledPattern = /Match pause is disabled.*/;
+		const matchPauseDisabledMatch = line.match(
+			new RegExp(dateTimePattern.source + matchPauseDisabledPattern.source)
+		);
+		if (matchPauseDisabledMatch) {
+			// Workaround: Match map being in wrong (paused) state when ingame vote for tactical timeout is used together with TMT's `.pause` command.
+			const currentMatchMap = getCurrentMatchMap(match);
+			if (currentMatchMap && currentMatchMap.state === 'PAUSED') {
+				currentMatchMap.readyTeams.teamA = false;
+				currentMatchMap.readyTeams.teamB = false;
+				currentMatchMap.state = 'IN_PROGRESS';
+				MatchService.scheduleSave(match);
+			}
+			return;
+		}
 	} catch (err) {
 		match.log('Error in onLogLine' + err);
 	}
