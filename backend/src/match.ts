@@ -126,6 +126,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		webhookUrl: dto.webhookUrl ?? null,
 		webhookHeaders: dto.webhookHeaders ?? {},
 		mode: dto.mode ?? 'SINGLE',
+		needsAttentionSince: null,
 	};
 	try {
 		const match = await createFromData(data, 'Create new match');
@@ -744,9 +745,15 @@ const onConsoleSay = async (match: Match, message: string) => {
 };
 
 export const registerCommandHandlers = () => {
+	commands.registerHandler('ADMIN', onAdminCommand);
 	commands.registerHandler('TEAM', onTeamCommand);
 	commands.registerHandler('VERSION', onVersionCommand);
 	commands.registerHandler('*', onEveryCommand);
+};
+
+const onAdminCommand: commands.CommandHandler = async (e) => {
+	e.match.data.needsAttentionSince = Date.now();
+	MatchService.scheduleSave(e.match);
 };
 
 const onVersionCommand: commands.CommandHandler = async (e) => {
@@ -1194,6 +1201,10 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 		match.data.matchEndAction = dto.matchEndAction;
 	}
 
+	if (dto.needsAttentionSince !== undefined) {
+		match.data.needsAttentionSince = dto.needsAttentionSince;
+	}
+
 	if (dto._restartElection) {
 		await restartElection(match);
 	}
@@ -1213,8 +1224,6 @@ export const update = async (match: Match, dto: IMatchUpdateDto) => {
 	if (dto._execRconCommandsEnd) {
 		await execRconCommands(match, 'end');
 	}
-
-	MatchService.scheduleSave(match);
 };
 
 export type TDbMatch = {
@@ -1251,6 +1260,7 @@ export type TDbMatch = {
 	createdAt: number;
 	lastSavedAt: number;
 	mode: string;
+	needsAttentionSince: number | null;
 };
 
 const matchToDb = (match: IMatch): TDbMatch => {
@@ -1288,6 +1298,7 @@ const matchToDb = (match: IMatch): TDbMatch => {
 		createdAt: match.createdAt,
 		lastSavedAt: match.lastSavedAt ?? Date.now(),
 		mode: match.mode,
+		needsAttentionSince: match.needsAttentionSince,
 	};
 };
 
@@ -1345,6 +1356,7 @@ export const matchFromDb = (
 		mode: dbMatch.mode as TMatchMode,
 		serverPassword: '',
 		lastSavedAt: 0,
+		needsAttentionSince: dbMatch.needsAttentionSince,
 	};
 };
 
@@ -1383,7 +1395,8 @@ export const saveMatchToDb = (match: IMatch) => {
 				tmtLogAddress,
 				createdAt,
 				lastSavedAt,
-				mode
+				mode,
+				needsAttentionSince
 			) VALUES (
 				:id,
 				:state,
@@ -1417,7 +1430,8 @@ export const saveMatchToDb = (match: IMatch) => {
 				:tmtLogAddress,
 				:createdAt,
 				:lastSavedAt,
-				:mode
+				:mode,
+				:needsAttentionSince
 			) ON CONFLICT (id) DO UPDATE SET
 				state = :state,
 				passthrough = :passthrough,
@@ -1450,7 +1464,8 @@ export const saveMatchToDb = (match: IMatch) => {
 				tmtLogAddress = :tmtLogAddress,
 				createdAt = :createdAt,
 				lastSavedAt = :lastSavedAt,
-				mode = :mode
+				mode = :mode,
+				needsAttentionSince = :needsAttentionSince
 			WHERE id = :id
 			`
 	).run(matchToDb(match));

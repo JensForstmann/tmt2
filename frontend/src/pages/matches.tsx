@@ -36,6 +36,12 @@ type FilterOption = {
 	/** indicates, if new matches should be appended to the table */
 	includeNewMatches: boolean;
 };
+export const MatchesNeedingAttention: FilterOption = {
+	title: t('Matches needing Attention'),
+	search: '?isLive=true&needsAttention=true',
+	label: t('Show matches which needs attention'),
+	includeNewMatches: false,
+};
 const filterOptions: FilterOption[] = [
 	{
 		title: t('Live Matches'),
@@ -55,6 +61,7 @@ const filterOptions: FilterOption[] = [
 		label: t('Only show offline matches which have not been properly stopped'),
 		includeNewMatches: false,
 	},
+	MatchesNeedingAttention,
 ];
 
 export const MatchesPage: Component = () => {

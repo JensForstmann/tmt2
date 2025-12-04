@@ -509,6 +509,11 @@ const models: TsoaRoute.Models = {
 				required: true,
 			},
 			mode: { ref: 'TMatchMode', required: true },
+			needsAttentionSince: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'double' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 		},
 		additionalProperties: false,
 	},
@@ -708,6 +713,11 @@ const models: TsoaRoute.Models = {
 				required: true,
 			},
 			mode: { ref: 'TMatchMode', required: true },
+			needsAttentionSince: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'double' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 			isLive: { dataType: 'boolean', required: true },
 		},
 		additionalProperties: false,
@@ -1184,6 +1194,10 @@ const models: TsoaRoute.Models = {
 				dataType: 'union',
 				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
 			},
+			needsAttentionSince: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'double' }, { dataType: 'enum', enums: [null] }],
+			},
 		},
 		additionalProperties: false,
 	},
@@ -1451,6 +1465,7 @@ export function RegisterRoutes(app: Router) {
 		},
 		isStopped: { in: 'query', name: 'isStopped', dataType: 'boolean' },
 		isLive: { in: 'query', name: 'isLive', dataType: 'boolean' },
+		needsAttention: { in: 'query', name: 'needsAttention', dataType: 'boolean' },
 	};
 	app.get(
 		'/api/matches',

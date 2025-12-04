@@ -81,7 +81,8 @@ export class MatchesController extends Controller {
 		@Query('state') state?: string[],
 		@Query('passthrough') passthrough?: string[],
 		@Query('isStopped') isStopped?: boolean,
-		@Query('isLive') isLive?: boolean
+		@Query('isLive') isLive?: boolean,
+		@Query('needsAttention') needsAttention?: boolean
 	): Promise<IMatchResponse[]> {
 		const live = MatchService.getAllLive();
 		const storage = isLive === true ? [] : MatchService.getAllMatchesFromDatabase();
@@ -96,6 +97,11 @@ export class MatchesController extends Controller {
 			)
 			.filter((m) => isStopped === undefined || m.isStopped === isStopped)
 			.filter((m) => isLive === undefined || m.isLive === isLive)
+			.filter(
+				(m) =>
+					needsAttention === undefined ||
+					needsAttention === (m.needsAttentionSince !== null)
+			)
 			.map((m) => MatchService.hideRconPassword(m, req.user.type === 'GLOBAL'));
 	}
 
@@ -192,7 +198,11 @@ export class MatchesController extends Controller {
 			if (match.data.gameServer.hideRconPassword) {
 				checkRconCommands(requestBody.rconCommands, req.user.type === 'GLOBAL');
 			}
-			await Match.update(match, requestBody);
+			try {
+				await Match.update(match, requestBody);
+			} finally {
+				MatchService.scheduleSave(match);
+			}
 		} else if (requestBody.gameServer) {
 			// for offline matches only allow to update game server to get match running again
 			const offlineMatch = MatchService.getMatchFromDatabase(id);

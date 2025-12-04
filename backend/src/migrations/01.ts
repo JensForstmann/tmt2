@@ -47,7 +47,8 @@ const migrateMatches = () => {
         tmtLogAddress TEXT,
         createdAt INTEGER NOT NULL,
         lastSavedAt INTEGER NOT NULL,
-        mode TEXT NOT NULL
+        mode TEXT NOT NULL,
+        needsAttentionSince INTEGER
     ) STRICT`
 	).run();
 	const insertMatchStatement = db.prepare(`INSERT INTO match (
@@ -83,7 +84,8 @@ const migrateMatches = () => {
         tmtLogAddress,
         createdAt,
         lastSavedAt,
-        mode
+        mode,
+        needsAttentionSince
     ) VALUES (
         :id,
         :state,
@@ -117,7 +119,8 @@ const migrateMatches = () => {
         :tmtLogAddress,
         :createdAt,
         :lastSavedAt,
-        :mode
+        :mode,
+        :needsAttentionSince
     )`);
 
 	db.prepare(
@@ -239,6 +242,7 @@ const migrateMatches = () => {
 				createdAt: match.createdAt,
 				lastSavedAt: match.lastSavedAt,
 				mode: match.mode,
+				needsAttentionSince: null,
 			};
 			insertMatchStatement.run(params);
 

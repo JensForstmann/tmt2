@@ -13,6 +13,7 @@ import { PlayerListCard } from '../components/PlayerListCard';
 import { Rcon } from '../components/Rcon';
 import { createFetcher } from '../utils/fetcher';
 import { createWebSocket } from '../utils/webSocket';
+import { NeedsAttentionCard } from '../components/NeedsAttentionCard';
 
 export const MatchPage: Component = () => {
 	const params = useParams();
@@ -87,6 +88,9 @@ export const MatchPage: Component = () => {
 				<div class="space-y-5">
 					<Show when={!match().isLive}>
 						<NotLiveCard match={match()} />
+					</Show>
+					<Show when={match().isLive && match().needsAttentionSince !== null}>
+						<NeedsAttentionCard match={match()} />
 					</Show>
 					<MatchCard match={match()} />
 					<For each={match().matchMaps}>

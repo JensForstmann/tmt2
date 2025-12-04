@@ -8,8 +8,10 @@ export const updateDarkClasses = () => {
 	}
 };
 
-const [currentTheme, setCurrentTheme] = createSignal<'light' | 'dark' | 'system'>(
-	(localStorage.getItem('theme') as 'light' | 'dark' | null) ?? 'system'
+type Theme = 'light' | 'dark' | 'system';
+
+const [currentTheme, setCurrentTheme] = createSignal<Theme>(
+	(localStorage.getItem('theme') as Theme | null) ?? 'system'
 );
 export { currentTheme };
 
@@ -17,9 +19,9 @@ const systemWantsDark = () => window.matchMedia('(prefers-color-scheme: dark)').
 
 // if system wants dark:  system -> light -> dark  ->
 // if system wants light: system -> dark  -> light ->
-export const cycleDarkMode = () => {
+export const cycleTheme = () => {
 	const swd = systemWantsDark();
-	let next: 'light' | 'dark' | 'system';
+	let next: Theme;
 	const ct = currentTheme();
 
 	if (swd && ct === 'system') {
@@ -37,8 +39,12 @@ export const cycleDarkMode = () => {
 	} else {
 		next = 'system';
 	}
-	setCurrentTheme(next);
-	localStorage.setItem('theme', next);
+	setTheme(next);
+};
+
+export const setTheme = (theme: Theme) => {
+	setCurrentTheme(theme);
+	localStorage.setItem('theme', theme);
 	updateDarkClasses();
 };
 

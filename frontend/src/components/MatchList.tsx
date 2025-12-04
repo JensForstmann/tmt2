@@ -9,6 +9,7 @@ export const MatchTableColumns = [
 	'TEAM_B',
 	'ONLINE_PLAYER_COUNT',
 	'AGE',
+	'NEEDS_ATTENTION',
 	'BEST_OF',
 	'MATCH_STATE',
 	'CURRENT_MAP',
@@ -23,6 +24,7 @@ export const MatchTableColumnLabels: Record<TMatchTableColumns, string> = {
 	TEAM_B: t('Team B'),
 	ONLINE_PLAYER_COUNT: t('Online Players'),
 	AGE: t('Age'),
+	NEEDS_ATTENTION: t('Needs Attention'),
 	BEST_OF: t('Best of'),
 	MATCH_STATE: t('Match State'),
 	CURRENT_MAP: t('Current Map'),
@@ -36,7 +38,7 @@ export type TMatchTableColumns = (typeof MatchTableColumns)[number];
 
 export type TColumnsToShow = Partial<Record<TMatchTableColumns, boolean>>;
 
-const diffString = (createdAt: number) => {
+const diffString = (createdAt: number | null) => {
 	if (createdAt) {
 		return Math.round((Date.now() - createdAt) / 1000 / 60) + 'min';
 	}
@@ -58,6 +60,7 @@ export const MatchList: Component<{ matches: IMatchResponse[]; columnsToShow: TC
 						<th>{MatchTableColumnLabels.ONLINE_PLAYER_COUNT}</th>
 					)}
 					{cts().AGE && <th>{MatchTableColumnLabels.AGE}</th>}
+					{cts().NEEDS_ATTENTION && <th>{MatchTableColumnLabels.NEEDS_ATTENTION}</th>}
 					{cts().BEST_OF && <th>{MatchTableColumnLabels.BEST_OF}</th>}
 					{cts().MATCH_STATE && <th>{MatchTableColumnLabels.MATCH_STATE}</th>}
 					{cts().CURRENT_MAP && <th>{MatchTableColumnLabels.CURRENT_MAP}</th>}
@@ -82,6 +85,9 @@ export const MatchList: Component<{ matches: IMatchResponse[]; columnsToShow: TC
 								</td>
 							)}
 							{cts().AGE && <td>{diffString(match.createdAt)}</td>}
+							{cts().NEEDS_ATTENTION && (
+								<td>{diffString(match.needsAttentionSince)}</td>
+							)}
 							{cts().BEST_OF && <td>{getTotalNumberOfMaps(match.electionSteps)}</td>}
 							{cts().MATCH_STATE && <td>{match.state}</td>}
 							{cts().CURRENT_MAP && (

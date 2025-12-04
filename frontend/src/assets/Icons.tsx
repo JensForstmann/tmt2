@@ -1,6 +1,6 @@
 import type { Component, ComponentProps } from 'solid-js';
 
-// icons from: https://fonts.google.com/icons?icon.set=Material+Icons --> download as svg
+// icons from: https://fonts.google.com/icons?icon.set=Material+Icons --> copy button (or download as svg)
 
 export const SvgLightMode: Component<ComponentProps<'svg'>> = (props) => (
 	<svg
@@ -303,5 +303,94 @@ export const SvgTerminal: Component<ComponentProps<'svg'>> = (props) => (
 		<g>
 			<path d="M20,4H4C2.89,4,2,4.9,2,6v12c0,1.1,0.89,2,2,2h16c1.1,0,2-0.9,2-2V6C22,4.9,21.11,4,20,4z M20,18H4V8h16V18z M18,17h-6v-2 h6V17z M7.5,17l-1.41-1.41L8.67,13l-2.59-2.59L7.5,9l4,4L7.5,17z" />
 		</g>
+	</svg>
+);
+
+// https://fonts.google.com/icons?icon.set=Material+Icons&selected=Material+Icons+Outlined:login:&icon.query=login&icon.size=24&icon.color=%23e3e3e3
+export const SvgLogin: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		enable-background="new 0 0 24 24"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<g>
+			<rect fill="none" height="24" width="24" />
+		</g>
+		<g>
+			<path d="M11,7L9.6,8.4l2.6,2.6H2v2h10.2l-2.6,2.6L11,17l5-5L11,7z M20,19h-8v2h8c1.1,0,2-0.9,2-2V5c0-1.1-0.9-2-2-2h-8v2h8V19z" />
+		</g>
+	</svg>
+);
+
+// https://fonts.google.com/icons?icon.set=Material+Icons&selected=Material+Icons+Outlined:logout:&icon.query=logout&icon.size=24&icon.color=%23e3e3e3
+export const SvgLogout: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		enable-background="new 0 0 24 24"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<g>
+			<path d="M0,0h24v24H0V0z" fill="none" />
+		</g>
+		<g>
+			<path d="M17,8l-1.41,1.41L17.17,11H9v2h8.17l-1.58,1.58L17,16l4-4L17,8z M5,5h7V3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h7v-2H5V5z" />
+		</g>
+	</svg>
+);
+
+// https://fonts.google.com/icons?icon.set=Material+Icons&selected=Material+Icons+Outlined:color_lens:&icon.query=color&icon.size=24&icon.color=%23e3e3e3
+export const SvgTheme: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<path d="M0 0h24v24H0z" fill="none" />
+		<path d="M12 22C6.49 22 2 17.51 2 12S6.49 2 12 2s10 4.04 10 9c0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67 0 1.38-1.12 2.5-2.5 2.5zm0-18c-4.41 0-8 3.59-8 8s3.59 8 8 8c.28 0 .5-.22.5-.5 0-.16-.08-.28-.14-.35-.41-.46-.63-1.05-.63-1.65 0-1.38 1.12-2.5 2.5-2.5H16c2.21 0 4-1.79 4-4 0-3.86-3.59-7-8-7z" />
+		<circle cx="6.5" cy="11.5" r="1.5" />
+		<circle cx="9.5" cy="7.5" r="1.5" />
+		<circle cx="14.5" cy="7.5" r="1.5" />
+		<circle cx="17.5" cy="11.5" r="1.5" />
+	</svg>
+);
+
+// https://fonts.google.com/icons?icon.set=Material+Icons&selected=Material+Icons+Outlined:info:&icon.query=info&icon.size=24&icon.color=%23e3e3e3
+export const SvgInfo: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<path d="M0 0h24v24H0V0z" fill="none" />
+		<path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+	</svg>
+);
+
+// https://fonts.google.com/icons?icon.set=Material+Icons&selected=Material+Icons+Outlined:notifications:&icon.query=notifications&icon.size=24&icon.color=%23e3e3e3
+export const SvgNotifications: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<path d="M0 0h24v24H0V0z" fill="none" />
+		<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" />
 	</svg>
 );

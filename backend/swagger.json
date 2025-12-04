@@ -673,6 +673,12 @@
 					"mode": {
 						"$ref": "#/components/schemas/TMatchMode",
 						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
+					},
+					"needsAttentionSince": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "Since when (unix time in milliseconds) does the match needs attention (set via ingame `.admin` command)."
 					}
 				},
 				"required": [
@@ -701,7 +707,8 @@
 					"tmtLogAddress",
 					"createdAt",
 					"lastSavedAt",
-					"mode"
+					"mode",
+					"needsAttentionSince"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1026,6 +1033,12 @@
 						"$ref": "#/components/schemas/TMatchMode",
 						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
 					},
+					"needsAttentionSince": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "Since when (unix time in milliseconds) does the match needs attention (set via ingame `.admin` command)."
+					},
 					"isLive": {
 						"type": "boolean",
 						"description": "Match is currently supervised."
@@ -1058,6 +1071,7 @@
 					"createdAt",
 					"lastSavedAt",
 					"mode",
+					"needsAttentionSince",
 					"isLive"
 				],
 				"type": "object",
@@ -1902,6 +1916,12 @@
 					"_execRconCommandsEnd": {
 						"type": "boolean",
 						"nullable": true
+					},
+					"needsAttentionSince": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "Set to `null` to reset attention timestamp."
 					}
 				},
 				"type": "object",
@@ -2304,6 +2324,14 @@
 						"description": "Filter for only live (currently active) matches, or the opposite.",
 						"in": "query",
 						"name": "isLive",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "needsAttention",
 						"required": false,
 						"schema": {
 							"type": "boolean"

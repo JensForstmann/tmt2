@@ -7,11 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `.admin` ingame command which sets the new `needsAttentionSince` property on the match data.
+- Add predefined match list filter to frontend to show all live matches which needs attention.
+- Add notification bell to frontend to indicate how many matches need attention.
+
 ### Changed
 
 - **BREAKING:** Remove `logs` field from match data API responses. It was never used but an empty array instead.
 - **BREAKING:** Remove HTTP `logs` endpoint for a specific match in favor of the `events` endpoint (which also contains logs).
 - **BREAKING:** All optional fields in API responses are now always present and might be `null` instead of being not there at all.
+- Move some navbar buttons to a new settings menu in the frontend: Login/logout, theme selection and hyperlink to info page.
 
 ### Fixed
 

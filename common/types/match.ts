@@ -110,6 +110,8 @@ export interface IMatch {
 	lastSavedAt: number | null;
 	/** Match mode (single: stops when match is finished, loop: starts again after match is finished) */
 	mode: TMatchMode;
+	/** Since when (unix time in milliseconds) does the match needs attention (set via ingame `.admin` command). */
+	needsAttentionSince: number | null;
 }
 
 export interface IMatchResponse extends IMatch {
@@ -197,4 +199,9 @@ export interface IMatchUpdateDto extends Partial<IMatchCreateDto> {
 	_execRconCommandsKnife?: boolean | null;
 	_execRconCommandsMatch?: boolean | null;
 	_execRconCommandsEnd?: boolean | null;
+
+	/**
+	 * Set to `null` to reset attention timestamp.
+	 */
+	needsAttentionSince?: number | null;
 }
