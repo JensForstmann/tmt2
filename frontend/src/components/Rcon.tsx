@@ -1,5 +1,5 @@
 import { Component, createSignal } from 'solid-js';
-import { IMatchResponse } from '../../../common';
+import { IMatch } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
@@ -85,7 +85,7 @@ const RconCard: Component<{
 };
 
 export const Rcon: Component<{
-	match: IMatchResponse;
+	match: IMatch;
 }> = (props) => {
 	const fetcher = createFetcher(props.match.tmtSecret);
 	return (

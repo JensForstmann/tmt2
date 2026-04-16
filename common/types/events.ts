@@ -1,5 +1,5 @@
 import { TMapMode, TSideMode } from './electionStep';
-import { IMatchResponse } from './match';
+import { IMatch } from './match';
 import { IPlayer } from './player';
 import { ITeam, TTeamSides, TTeamString } from './team';
 
@@ -127,7 +127,7 @@ export interface ElectionSideStep extends BaseEvent {
 
 export interface MatchCreateEvent extends BaseEvent {
 	type: 'MATCH_CREATE';
-	match: IMatchResponse;
+	match: IMatch;
 }
 
 export interface MatchUpdateEvent extends BaseEvent {

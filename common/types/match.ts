@@ -112,9 +112,6 @@ export interface IMatch {
 	mode: TMatchMode;
 	/** Since when (unix time in milliseconds) does the match needs attention (set via ingame `.admin` command). */
 	needsAttentionSince: number | null;
-}
-
-export interface IMatchResponse extends IMatch {
 	/** Match is currently supervised. */
 	isLive: boolean;
 }

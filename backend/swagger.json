@@ -679,6 +679,10 @@
 						"format": "double",
 						"nullable": true,
 						"description": "Since when (unix time in milliseconds) does the match needs attention (set via ingame `.admin` command)."
+					},
+					"isLive": {
+						"type": "boolean",
+						"description": "Match is currently supervised."
 					}
 				},
 				"required": [
@@ -708,7 +712,8 @@
 					"createdAt",
 					"lastSavedAt",
 					"mode",
-					"needsAttentionSince"
+					"needsAttentionSince",
+					"isLive"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -874,206 +879,6 @@
 					}
 				},
 				"required": ["mapPool", "teamA", "teamB", "electionSteps", "gameServer"],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"IMatchResponse": {
-				"properties": {
-					"id": {
-						"type": "string",
-						"description": "tmt2 identifier for this match"
-					},
-					"state": {
-						"$ref": "#/components/schemas/TMatchState"
-					},
-					"passthrough": {
-						"type": "string",
-						"nullable": true,
-						"description": "e.g. remote identifier, will be present in every response/webhook"
-					},
-					"mapPool": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array",
-						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool.\nWorkshop maps are possible (contain numbers only).\nFriendly names for players when picking/banning maps can be added after a \"/\" delimiter and is advised for workshop maps.\n\nExample:\n```\n[\n   \"de_ancient\",\n   \"de_anubis/anubis\",\n   \"de_inferno\",\n   \"de_mirage\",\n   \"de_nuke\",\n   \"de_overpass\",\n   \"de_vertigo\",\n   \"3070923343/fy_pool_day\"\n]\n```"
-					},
-					"teamA": {
-						"$ref": "#/components/schemas/ITeam",
-						"description": "Team A for this match.\nTeam A will always be Team A in responses and webhooks.\nNo matter on which side (CT/T) it is currently."
-					},
-					"teamB": {
-						"$ref": "#/components/schemas/ITeam",
-						"description": "Team B for this match.\nTeam B will always be Team B in responses and webhooks.\nNo matter on which side (CT/T) it is currently."
-					},
-					"electionSteps": {
-						"items": {
-							"$ref": "#/components/schemas/IElectionStep"
-						},
-						"type": "array",
-						"description": "List of election steps to determine the played map(s)."
-					},
-					"election": {
-						"$ref": "#/components/schemas/IElection",
-						"description": "Data for the election process."
-					},
-					"gameServer": {
-						"$ref": "#/components/schemas/IGameServer"
-					},
-					"logSecret": {
-						"type": "string",
-						"description": "Log secret that is given as part of the url to the CS2 server as a log receiver (logaddress_add_http)."
-					},
-					"parseIncomingLogs": {
-						"type": "boolean",
-						"description": "Indicates if incoming logs from the CS2 server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
-					},
-					"matchMaps": {
-						"items": {
-							"$ref": "#/components/schemas/IMatchMap"
-						},
-						"type": "array",
-						"description": "The maps which will be played. If match state is still ELECTION than this is not final."
-					},
-					"currentMap": {
-						"type": "number",
-						"format": "double",
-						"description": "Index of the matchMaps array indicating the current map."
-					},
-					"webhookUrl": {
-						"type": "string",
-						"nullable": true,
-						"description": "Send various events to this url (HTTP POST)"
-					},
-					"webhookHeaders": {
-						"properties": {},
-						"additionalProperties": {
-							"type": "string"
-						},
-						"type": "object",
-						"description": "Additional headers that will be added to each webhook request"
-					},
-					"rconCommands": {
-						"properties": {
-							"end": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array",
-								"description": "executed after last match map"
-							},
-							"match": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array",
-								"description": "executed before every match map start"
-							},
-							"knife": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array",
-								"description": "executed before every knife round"
-							},
-							"init": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array",
-								"description": "executed exactly once on match init"
-							}
-						},
-						"required": ["end", "match", "knife", "init"],
-						"type": "object"
-					},
-					"canClinch": {
-						"type": "boolean",
-						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
-					},
-					"matchEndAction": {
-						"$ref": "#/components/schemas/TMatchEndAction",
-						"description": "defaults to NONE"
-					},
-					"players": {
-						"items": {
-							"$ref": "#/components/schemas/IPlayer"
-						},
-						"type": "array"
-					},
-					"tmtSecret": {
-						"type": "string",
-						"description": "Access token to be used in the API."
-					},
-					"isStopped": {
-						"type": "boolean",
-						"description": "If match is finished or if the match was stopped/deleted this is true."
-					},
-					"serverPassword": {
-						"type": "string",
-						"description": "Server password, periodically fetched from game server"
-					},
-					"tmtLogAddress": {
-						"type": "string",
-						"nullable": true,
-						"description": "if set will be used to register the target logaddress for the game server"
-					},
-					"createdAt": {
-						"type": "number",
-						"format": "double",
-						"description": "Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC)"
-					},
-					"lastSavedAt": {
-						"type": "number",
-						"format": "double",
-						"nullable": true,
-						"description": "Last time the match was saved to disk (unix time in milliseconds since midnight, January 1, 1970 UTC)"
-					},
-					"mode": {
-						"$ref": "#/components/schemas/TMatchMode",
-						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
-					},
-					"needsAttentionSince": {
-						"type": "number",
-						"format": "double",
-						"nullable": true,
-						"description": "Since when (unix time in milliseconds) does the match needs attention (set via ingame `.admin` command)."
-					},
-					"isLive": {
-						"type": "boolean",
-						"description": "Match is currently supervised."
-					}
-				},
-				"required": [
-					"id",
-					"state",
-					"passthrough",
-					"mapPool",
-					"teamA",
-					"teamB",
-					"electionSteps",
-					"election",
-					"gameServer",
-					"logSecret",
-					"parseIncomingLogs",
-					"matchMaps",
-					"currentMap",
-					"webhookUrl",
-					"webhookHeaders",
-					"rconCommands",
-					"canClinch",
-					"matchEndAction",
-					"players",
-					"tmtSecret",
-					"isStopped",
-					"serverPassword",
-					"tmtLogAddress",
-					"createdAt",
-					"lastSavedAt",
-					"mode",
-					"needsAttentionSince",
-					"isLive"
-				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1659,7 +1464,7 @@
 						"nullable": false
 					},
 					"match": {
-						"$ref": "#/components/schemas/IMatchResponse"
+						"$ref": "#/components/schemas/IMatch"
 					}
 				},
 				"required": ["timestamp", "matchId", "matchPassthrough", "type", "match"],
@@ -2272,7 +2077,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/IMatchResponse"
+										"$ref": "#/components/schemas/IMatch"
 									},
 									"type": "array"
 								}
@@ -2351,7 +2156,7 @@
 								"schema": {
 									"anyOf": [
 										{
-											"$ref": "#/components/schemas/IMatchResponse"
+											"$ref": "#/components/schemas/IMatch"
 										},
 										{}
 									]

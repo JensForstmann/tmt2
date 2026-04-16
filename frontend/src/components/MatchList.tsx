@@ -1,6 +1,6 @@
 import { A } from '@solidjs/router';
 import { Component, For, Show } from 'solid-js';
-import { IMatchResponse, getTotalNumberOfMaps } from '../../../common';
+import { getTotalNumberOfMaps, IMatch } from '../../../common';
 import { SvgNavigateNext } from '../assets/Icons';
 import { t } from '../utils/locale';
 
@@ -45,7 +45,7 @@ const diffString = (createdAt: number | null) => {
 	return '';
 };
 
-export const MatchList: Component<{ matches: IMatchResponse[]; columnsToShow: TColumnsToShow }> = (
+export const MatchList: Component<{ matches: IMatch[]; columnsToShow: TColumnsToShow }> = (
 	props
 ) => {
 	const cts = () => props.columnsToShow;

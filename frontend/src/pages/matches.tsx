@@ -1,9 +1,9 @@
 import { useSearchParams } from '@solidjs/router';
-import { Component, createEffect, createSignal, For, onCleanup, Show } from 'solid-js';
-import { createStore } from 'solid-js/store';
-import { Event, IMatchResponse } from '../../../common';
+import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import { connectionState, fetchMatches, globalStore } from '../App';
 import { SvgSettings } from '../assets/Icons';
 import { Card } from '../components/Card';
+import { ErrorComponent } from '../components/ErrorComponent';
 import { SelectInput } from '../components/Inputs';
 import {
 	MatchList,
@@ -11,9 +11,7 @@ import {
 	MatchTableColumns,
 	TColumnsToShow,
 } from '../components/MatchList';
-import { createFetcher, getToken } from '../utils/fetcher';
 import { t } from '../utils/locale';
-import { createWebSocket } from '../utils/webSocket';
 
 const defaultColumns: TColumnsToShow = {
 	TEAM_A: true,
@@ -31,64 +29,46 @@ const defaultColumns: TColumnsToShow = {
 
 type FilterOption = {
 	title: string;
-	search: string;
+	filter: string;
 	label: string;
-	/** indicates, if new matches should be appended to the table */
-	includeNewMatches: boolean;
 };
 export const MatchesNeedingAttention: FilterOption = {
 	title: t('Matches needing Attention'),
-	search: '?isLive=true&needsAttention=true',
+	filter: 'isLive=true&needsAttention=true',
 	label: t('Show matches which needs attention'),
-	includeNewMatches: false,
 };
 const filterOptions: FilterOption[] = [
 	{
 		title: t('Live Matches'),
-		search: '?isLive=true',
+		filter: 'isLive=true',
 		label: t('Only show matches that are currently being supervised'),
-		includeNewMatches: true,
 	},
 	{
 		title: t('Not Live'),
-		search: '?isLive=false',
+		filter: 'isLive=false',
 		label: t('Only show offline matches (not supervised)'),
-		includeNewMatches: false,
 	},
 	{
 		title: t('Dangling Matches'),
-		search: '?isLive=false&isStopped=false&state=ELECTION&state=MATCH_MAP',
+		filter: 'isLive=false&isStopped=false&states=ELECTION,MATCH_MAP',
 		label: t('Only show offline matches which have not been properly stopped'),
-		includeNewMatches: false,
 	},
 	MatchesNeedingAttention,
 ];
+const DEFAULT_FILTER = filterOptions[0];
 
 export const MatchesPage: Component = () => {
 	const [searchParams, setSearchParams] = useSearchParams<{
-		searchString?: string;
+		filter?: string;
 		columns?: string;
-		includeNewMatches?: string;
 	}>();
-	const fetcher = createFetcher();
-	const [data, setData] = createStore<{
-		matches?: IMatchResponse[];
-	}>({});
 	const [filterLabel, setFilterLabel] = createSignal('');
+	const [errorMessage, setErrorMessage] = createSignal('');
 
 	const getCurrentFilterOption = () =>
-		!searchParams.searchString
-			? filterOptions[0]
-			: filterOptions.find((fo) => fo.search === searchParams.searchString);
-
-	createEffect(() => {
-		fetcher<IMatchResponse[]>(
-			'GET',
-			`/api/matches${searchParams.searchString || filterOptions[0].search}`
-		).then((matches) => {
-			setData('matches', matches);
-		});
-	});
+		!searchParams.filter
+			? DEFAULT_FILTER
+			: filterOptions.find((fo) => fo.filter === searchParams.filter);
 
 	createEffect(() => {
 		const filterOption = getCurrentFilterOption();
@@ -98,6 +78,28 @@ export const MatchesPage: Component = () => {
 			setFilterLabel(t('A custom filter from the URL is used'));
 		}
 	});
+
+	const matchesToShow = () => {
+		const filter = new URLSearchParams(searchParams.filter ?? DEFAULT_FILTER.filter);
+		const wantedStates = filter.get('states')?.split(',') ?? [];
+		const convertToBoolean = (value: string | null) => {
+			return value === 'true' ? true : value === 'false' ? false : undefined;
+		};
+		const isLive = convertToBoolean(filter.get('isLive'));
+		const isStopped = convertToBoolean(filter.get('isStopped'));
+		const needsAttention = convertToBoolean(filter.get('needsAttention'));
+		return globalStore.matches?.filter((m) => {
+			return (
+				(wantedStates.length === 0 || wantedStates.includes(m.data.state)) &&
+				(isLive === undefined || m.data.isLive === isLive) &&
+				(isStopped === undefined || m.data.isStopped === isStopped) &&
+				(needsAttention === undefined ||
+					(needsAttention === true
+						? m.data.needsAttentionSince !== null
+						: m.data.needsAttentionSince === null))
+			);
+		});
+	};
 
 	const columnsToShow = (): TColumnsToShow => {
 		const fromStorage = localStorage.getItem('columns');
@@ -114,7 +116,7 @@ export const MatchesPage: Component = () => {
 	};
 
 	const updateColumnsSearchParam = (columnsToShow: TColumnsToShow) => {
-		const columns: string[] = [' '];
+		const columns: string[] = [];
 		MatchTableColumns.forEach((mtc) => {
 			if (columnsToShow[mtc]) {
 				columns.push(mtc);
@@ -125,68 +127,20 @@ export const MatchesPage: Component = () => {
 		setSearchParams({ columns: str }, { replace: true });
 	};
 
-	const onWsMsg = (msg: Event) => {
-		if (msg.type === 'MATCH_UPDATE') {
-			const mapIndex = data.matches?.findIndex((match) => match.id === msg.matchId);
-			if (mapIndex !== undefined && mapIndex >= 0) {
-				(setData as any)('matches', mapIndex, ...msg.path, msg.value);
-			}
-		} else if (msg.type === 'MATCH_CREATE') {
-			if (
-				searchParams.includeNewMatches === 'true' ||
-				getCurrentFilterOption()?.includeNewMatches
-			) {
-				setData('matches', (existing) => [...(existing ?? []), msg.match]);
-			}
-		}
-	};
-
-	const { state, subscribe, subscribeSys, unsubscribe, disconnect } = createWebSocket(onWsMsg, {
-		autoReconnect: true,
-		connect: true,
-	});
-
 	createEffect(() => {
-		const token = getToken();
-		if (state() === 'OPEN' && token) {
-			subscribeSys(token);
+		const matches = globalStore.matches;
+		const state = connectionState();
+		if (!matches && state === 'AUTHED') {
+			fetchMatches(undefined).catch((err) => setErrorMessage(err + ''));
 		}
 	});
-
-	createEffect((previousSubs?: string[]): string[] => {
-		const subs = previousSubs ?? [];
-		if (state() === 'OPEN') {
-			// unsubscribe
-			subs.forEach((matchId) => {
-				if (!data.matches?.find((match) => match.id === matchId)) {
-					console.info(`Unsub from ${matchId}`);
-					unsubscribe(matchId);
-				}
-			});
-			// subscribe
-			data.matches?.forEach((match) => {
-				if (!subs.includes(match.id)) {
-					console.info(`Sub to ${match.id}`);
-					subscribe({
-						matchId: match.id,
-						token: match.tmtSecret,
-					});
-				}
-			});
-			// update subscription list
-			return data.matches?.map((match) => match.id) ?? [];
-		}
-		return [];
-	});
-
-	onCleanup(() => disconnect());
 
 	return (
 		<Card>
 			<div class="flex w-full flex-row space-x-8 place-items-end">
 				<SelectInput
 					onInput={(e) =>
-						setSearchParams({ searchString: e.currentTarget.value }, { replace: true })
+						setSearchParams({ filter: e.currentTarget.value }, { replace: true })
 					}
 					labelBottomLeft={filterLabel()}
 				>
@@ -196,10 +150,10 @@ export const MatchesPage: Component = () => {
 						</option>
 					</Show>
 					<For each={filterOptions}>
-						{(filterOption) => (
+						{(filterOption, i) => (
 							<option
-								value={filterOption.search}
-								selected={searchParams.searchString === filterOption.search}
+								value={filterOption.filter}
+								selected={searchParams.filter === filterOption.filter}
 							>
 								{filterOption.title}
 							</option>
@@ -242,8 +196,14 @@ export const MatchesPage: Component = () => {
 					</div>
 				</div>
 			</div>
-			<Show when={data.matches}>
-				{(matches) => <MatchList matches={matches()} columnsToShow={columnsToShow()} />}
+			<ErrorComponent errorMessage={errorMessage()} />
+			<Show when={matchesToShow()}>
+				{(matches) => (
+					<MatchList
+						matches={matches().map((m) => m.data)}
+						columnsToShow={columnsToShow()}
+					/>
+				)}
 			</Show>
 		</Card>
 	);

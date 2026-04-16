@@ -1,12 +1,12 @@
 import { Component, createSignal, Show } from 'solid-js';
-import { IMatchResponse } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { Card } from './Card';
 import { ErrorComponent } from './ErrorComponent';
+import { IMatch } from '../../../common';
 
 export const NotLiveCard: Component<{
-	match: IMatchResponse;
+	match: IMatch;
 }> = (props) => {
 	const fetcher = createFetcher(props.match.tmtSecret);
 	const reload = () => location.reload();

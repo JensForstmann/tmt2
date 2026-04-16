@@ -118,7 +118,7 @@ export class Rcon {
 			this.sendQueue.pause();
 			this.socket.destroy();
 			this.socket = null;
-			throw new Error('Authentication failed');
+			throw new Error('Rcon authentication failed');
 		}
 
 		this.authenticated = true;

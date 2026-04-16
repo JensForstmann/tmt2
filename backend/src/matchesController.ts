@@ -12,19 +12,12 @@ import {
 	Security,
 	SuccessResponse,
 } from '@tsoa/runtime';
-import {
-	Event,
-	IMatch,
-	IMatchCreateDto,
-	IMatchMapUpdateDto,
-	IMatchResponse,
-	IMatchUpdateDto,
-} from '../../common';
+import { Event, IMatch, IMatchCreateDto, IMatchMapUpdateDto, IMatchUpdateDto } from '../../common';
 import { ExpressRequest, IAuthResponse, IAuthResponseOptional } from './auth';
+import { getLatestEventsFromDatabase } from './events';
 import * as Match from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
-import { getLatestEventsFromDatabase } from './events';
 
 const checkRconCommands = (
 	rconCommands: IMatchCreateDto['rconCommands'] | IMatchUpdateDto['rconCommands'] | string[],
@@ -83,7 +76,7 @@ export class MatchesController extends Controller {
 		@Query('isStopped') isStopped?: boolean,
 		@Query('isLive') isLive?: boolean,
 		@Query('needsAttention') needsAttention?: boolean
-	): Promise<IMatchResponse[]> {
+	): Promise<IMatch[]> {
 		const live = MatchService.getAllLive();
 		const storage = isLive === true ? [] : MatchService.getAllMatchesFromDatabase();
 		const notLive = storage.filter((match) => !live.find((m) => match.id === m.id));
@@ -112,12 +105,11 @@ export class MatchesController extends Controller {
 	async getMatch(
 		id: string,
 		@Request() req: ExpressRequest<IAuthResponse>
-	): Promise<IMatchResponse | void> {
+	): Promise<IMatch | void> {
 		const match = MatchService.get(id);
 		if (match) {
 			return {
 				...MatchService.hideRconPassword(match.data, req.user.type === 'GLOBAL'),
-				isLive: true,
 			};
 		}
 
@@ -125,7 +117,6 @@ export class MatchesController extends Controller {
 		if (matchFromStorage) {
 			return {
 				...MatchService.hideRconPassword(matchFromStorage, req.user.type === 'GLOBAL'),
-				isLive: false,
 			};
 		}
 
@@ -138,7 +129,7 @@ export class MatchesController extends Controller {
 	 */
 	@Get('{id}/events')
 	async getEvents(id: string, @Request() req: ExpressRequest<IAuthResponse>): Promise<Event[]> {
-		return getLatestEventsFromDatabase(id);
+		return getLatestEventsFromDatabase(id, 1000);
 	}
 
 	/**

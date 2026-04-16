@@ -6,6 +6,7 @@ import {
 	ElectionSideStep,
 	Event,
 	EventType,
+	IGameServer,
 	IMatchMap,
 	IPlayer,
 	ITeam,
@@ -28,14 +29,11 @@ import * as MatchService from './matchService';
 import { Settings } from './settings';
 import * as WebSocket from './webSocket';
 
-const send = (match: Match.Match, data: Event, isSystemEvent?: boolean) => {
-	// Storage
+const send = (match: Match.Match, data: Event) => {
 	saveEventToDb(data);
 
-	// WebSocket
-	WebSocket.publish(data, isSystemEvent);
+	WebSocket.publish(data);
 
-	// WebHook
 	const url = match.data.webhookUrl;
 	if (url?.startsWith('http') && Settings.WEBHOOK_EVENTS.includes(data.type)) {
 		fetch(url, {
@@ -228,21 +226,31 @@ export const onMatchCreate = (match: Match.Match) => {
 		...getBaseEvent(match, 'MATCH_CREATE'),
 		match: {
 			...MatchService.hideRconPassword(match.data, false),
-			isLive: true,
 		},
 	};
-	send(match, data, true);
+	send(match, data);
 };
 
 export const onMatchUpdate = (match: Match.Match, path: Array<string | number>, value: any) => {
+	// change value if it's a rconPassword and the hideRconPassword flag is set
+	const firstPath = path[0] as keyof Match.Match['data'] | undefined;
+	const secondPath = path[1] as keyof Match.Match['data']['gameServer'] | undefined;
+	if (match.data.gameServer.hideRconPassword) {
+		if (firstPath === 'gameServer' && secondPath === 'rconPassword') {
+			// only exactly the rconPassword is updated
+			(value as IGameServer['rconPassword']) = '';
+		} else if (firstPath === 'gameServer' && secondPath === undefined) {
+			// complete gameServer object is updated
+			(value as IGameServer).rconPassword = '';
+		}
+	}
+
 	const data: MatchUpdateEvent = {
 		...getBaseEvent(match, 'MATCH_UPDATE'),
 		path: path,
 		value: value,
 	};
-	// send as a system event if the match was created less than 10 seconds ago
-	const sendAsSysEvent = match.data.createdAt + 10000 > Date.now();
-	send(match, data, sendAsSysEvent);
+	send(match, data);
 };
 
 export const onMatchStop = (match: Match.Match) => {
@@ -305,9 +313,9 @@ export const saveEventToDb = (event: Event) => {
 export const getLatestEventsFromDatabase = (matchId: string, numberOfEvents = 1000): Event[] => {
 	const rows = db
 		.prepare<
-			{ matchId: string; numberOfEvents: number },
+			{ matchId: string; notType: EventType; numberOfEvents: number },
 			TDbEvent
-		>(`SELECT * FROM event WHERE matchId = :matchId ORDER BY id DESC LIMIT :numberOfEvents`)
-		.all({ matchId: matchId, numberOfEvents: numberOfEvents });
+		>(`SELECT * FROM event WHERE matchId = :matchId AND type != :notType ORDER BY id DESC LIMIT :numberOfEvents`)
+		.all({ matchId: matchId, notType: 'MATCH_UPDATE', numberOfEvents: numberOfEvents });
 	return rows.map(eventFromDb).reverse();
 };

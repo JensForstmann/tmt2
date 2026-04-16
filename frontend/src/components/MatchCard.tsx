@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from '@solidjs/router';
 import { Component, Show } from 'solid-js';
-import { IMatchResponse, IMatchUpdateDto, getMapDraws, getMapScore } from '../../../common';
+import { IMatch, IMatchUpdateDto, getMapDraws, getMapScore } from '../../../common';
 import { SvgCopyAll } from '../assets/Icons';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { createFetcher } from '../utils/fetcher';
@@ -12,7 +12,7 @@ import { TextInput } from './Inputs';
 import { Modal } from './Modal';
 
 export const MatchCard: Component<{
-	match: IMatchResponse;
+	match: IMatch;
 }> = (props) => {
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();

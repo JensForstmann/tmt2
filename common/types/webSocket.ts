@@ -1,35 +1,58 @@
-export type WebSocketMessageType =
-	| 'SUBSCRIBE'
-	| 'SUBSCRIBE_SYS'
-	| 'UNSUBSCRIBE'
-	| 'UNSUBSCRIBE_SYS';
+import { Event } from './events';
+import { IMatch } from './match';
 
-export interface BaseWebSocketMessage {
-	type: WebSocketMessageType;
-}
+export type Message<T = Payload> = {
+	type: 'REQUEST' | 'RESPONSE' | 'EVENT';
+	/**
+	 * Set by requester, response will have the same message id.
+	 */
+	msgId?: number;
+	error?: string;
+	payload?: T;
+};
 
-export interface SubscribeMessage extends BaseWebSocketMessage {
-	type: 'SUBSCRIBE';
-	matchId: string;
+export type Payload =
+	| AuthRequest
+	| AckResponse
+	| GetMatchesRequest
+	| GetMatchesResponse
+	| GetEventsRequest
+	| GetEventsResponse
+	| Event;
+
+export type AuthRequest = {
+	request: 'AUTH';
 	token: string;
-}
+};
 
-export interface UnsubscribeMessage extends BaseWebSocketMessage {
+// export type SubRequest = {
+//     request: "SUB";
+//     matchId: string;
+//     secret: string;
+// };
+
+export type AckResponse = {
+	type: 'ACK';
+};
+
+export type GetMatchesRequest = {
+	request: 'GET_MATCHES';
+	matches?: {
+		id: string;
+		secret?: string;
+	}[];
+};
+
+export type GetMatchesResponse = {
+	matches: IMatch[];
+};
+
+export type GetEventsRequest = {
+	request: 'GET_EVENTS';
 	matchId: string;
-	type: 'UNSUBSCRIBE';
-}
+	eventTypes: Event['type'][];
+};
 
-export interface SubscribeSysMessage extends BaseWebSocketMessage {
-	type: 'SUBSCRIBE_SYS';
-	token: string;
-}
-
-export interface UnsubscribeSysMessage extends BaseWebSocketMessage {
-	type: 'UNSUBSCRIBE_SYS';
-}
-
-export type WebSocketMessage =
-	| SubscribeMessage
-	| UnsubscribeMessage
-	| SubscribeSysMessage
-	| UnsubscribeSysMessage;
+export type GetEventsResponse = {
+	events: Event[];
+};

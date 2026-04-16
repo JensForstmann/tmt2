@@ -1,5 +1,5 @@
 import { generate as shortUuid } from 'short-uuid';
-import { IGameServer, IMatch, IMatchCreateDto, IMatchResponse } from '../../common';
+import { IGameServer, IMatch, IMatchCreateDto } from '../../common';
 import * as Events from './events';
 import * as Match from './match';
 import { db } from './database';
@@ -53,6 +53,7 @@ const loadMatchFromStorage = async (matchData: IMatch, logMessageSuffix?: string
 			matchData,
 			`Load match from storage ${logMessageSuffix ?? ''}`.trim()
 		);
+		match.data.isLive = true;
 		matches.set(match.data.id, match);
 		await save(match.data);
 	} finally {
@@ -65,7 +66,8 @@ export const create = async (dto: IMatchCreateDto) => {
 	try {
 		const logSecret = shortUuid();
 		startingMatches.add(id);
-		const match = await Match.createFromCreateDto(dto, id, logSecret);
+		const match = await Match.createNew(dto, id, logSecret);
+		match.data.isLive = true;
 		matches.set(match.data.id, match);
 		await save(match.data);
 		Events.onMatchCreate(match);
@@ -111,20 +113,18 @@ export const getAllLive = () => {
 	return Array.from(matches.values()).map((match) => match.data);
 };
 
-export const getAll = async () => {
+export const getAll = (): IMatch[] => {
 	const live = getAllLive();
 	const storage = getAllMatchesFromDatabase();
 	const notLive = storage.filter((match) => !live.find((m) => match.id === m.id));
-	return {
-		live,
-		notLive,
-	};
+	return [...live, ...notLive];
 };
 
 export const remove = async (id: string) => {
 	const match = matches.get(id);
 	if (match) {
 		await Match.stop(match);
+		match.data.isLive = false;
 		matches.delete(id);
 		save(match.data);
 		return true;
@@ -183,10 +183,7 @@ export const isStartingMatch = (id: string) => {
 	return startingMatches.has(id);
 };
 
-export const hideRconPassword = <T extends IMatch | IMatchResponse>(
-	match: T,
-	isLoggedIn: boolean
-): T => {
+export const hideRconPassword = (match: IMatch, isLoggedIn: boolean): IMatch => {
 	return {
 		...match,
 		gameServer: {

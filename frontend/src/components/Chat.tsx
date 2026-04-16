@@ -1,5 +1,6 @@
 import { Component, createSignal } from 'solid-js';
-import { ChatEvent } from '../../../common';
+import { ChatEvent, escapeRconSayString } from '../../../common';
+import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
 import { Card } from './Card';
@@ -9,9 +10,15 @@ import { ScrollArea } from './ScrollArea';
 
 export const Chat: Component<{
 	messages: ChatEvent[];
-	sendMessage: (msg: string) => Promise<any>;
+	matchId: string;
+	secret?: string;
 }> = (props) => {
 	const [errorMessage, setErrorMessage] = createSignal('');
+	const fetcher = createFetcher(props.secret);
+	const sendChatMessage = (msg: string) =>
+		fetcher('POST', `/api/matches/${props.matchId}/server/rcon`, [
+			`say ${escapeRconSayString(msg)}`,
+		]);
 	return (
 		<Card class="text-center">
 			<h2 class="text-lg font-bold">{t('Chat')}</h2>
@@ -23,8 +30,7 @@ export const Chat: Component<{
 					const input = e.currentTarget;
 					const msg = input.value.trim();
 					if (msg) {
-						props
-							.sendMessage(msg)
+						sendChatMessage(msg)
 							.then(() => {
 								input.value = '';
 								setErrorMessage('');

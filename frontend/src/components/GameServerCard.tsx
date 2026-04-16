@@ -1,5 +1,5 @@
 import { Component } from 'solid-js';
-import { IMatchResponse } from '../../../common';
+import { IMatch } from '../../../common';
 import { SvgCopyAll, SvgOpenInNew } from '../assets/Icons';
 import { t } from '../utils/locale';
 import { Card } from './Card';
@@ -32,7 +32,7 @@ export const GameServerCard: Component<{
 };
 
 export const MatchGameServerCard: Component<{
-	match: IMatchResponse;
+	match: IMatch;
 }> = (props) => {
 	return (
 		<GameServerCard

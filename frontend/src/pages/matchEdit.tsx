@@ -1,7 +1,7 @@
 import { A, useNavigate, useParams, useSearchParams } from '@solidjs/router';
 import { Component, Show, onMount } from 'solid-js';
 import { createStore } from 'solid-js/store';
-import { IMatchCreateDto, IMatchResponse, IMatchUpdateDto } from '../../../common';
+import { IMatchCreateDto, IMatch, IMatchUpdateDto } from '../../../common';
 import { SvgNavigateBefore } from '../assets/Icons';
 import { Card } from '../components/Card';
 import { CreateUpdateMatch } from '../components/CreateUpdateMatch';
@@ -17,11 +17,8 @@ const getUpdateDtoAttribute = <T,>(pre: T, post: T): T | undefined => {
 	return pre !== post ? post : undefined;
 };
 
-const getUpdateDto = (
-	match: IMatchResponse,
-	dto: IMatchCreateDto & IMatchUpdateDto
-): IMatchUpdateDto => {
-	const newDto = {
+const getUpdateDto = (match: IMatch, dto: IMatchCreateDto & IMatchUpdateDto): IMatchUpdateDto => {
+	const newDto: IMatchUpdateDto = {
 		passthrough: getUpdateDtoAttribute(match.passthrough, dto.passthrough),
 		mapPool: getUpdateDtoAttribute(match.mapPool, dto.mapPool),
 		teamA: getUpdateDtoAttribute(match.teamA, dto.teamA),
@@ -62,11 +59,11 @@ export const MatchEditPage: Component = () => {
 		typeof searchParams.secret === 'string' ? searchParams.secret : undefined
 	);
 	const [data, setData] = createStore<{
-		match?: IMatchResponse;
+		match?: IMatch;
 	}>({});
 
 	onMount(async () => {
-		fetcher<IMatchResponse>('GET', `/api/matches/${params.id}`).then((match) => {
+		fetcher<IMatch>('GET', `/api/matches/${params.id}`).then((match) => {
 			setData('match', match);
 		});
 	});
@@ -92,11 +89,7 @@ export const MatchEditPage: Component = () => {
 								mode="UPDATE"
 								match={match()}
 								callback={async (dto) => {
-									await fetcher(
-										'PATCH',
-										`/api/matches/${params.id}`,
-										getUpdateDto(match(), dto)
-									);
+									await fetcher('PATCH', `/api/matches/${params.id}`, dto);
 									navigate(matchLink());
 								}}
 								getFinalDto={(dto) =>

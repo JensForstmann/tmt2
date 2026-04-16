@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router';
-import { Component, createSignal } from 'solid-js';
+import { Component } from 'solid-js';
 import { IMatch } from '../../../common';
 import { Card } from '../components/Card';
 import { CreateUpdateMatch, getSimpleElectionSteps } from '../components/CreateUpdateMatch';

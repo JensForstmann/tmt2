@@ -1,26 +1,40 @@
-import { createEffect, createSignal } from 'solid-js';
-import {
-	Event,
-	SubscribeMessage,
-	SubscribeSysMessage,
-	UnsubscribeMessage,
-	UnsubscribeSysMessage,
-} from '../../../common';
+import { createSignal } from 'solid-js';
+import { Event, Message, Payload } from '../../../common';
 
 const WS_HOST = import.meta.env.DEV
 	? `${window.location.protocol.replace('http', 'ws')}//${window.location.hostname}:8080`
 	: `${window.location.protocol.replace('http', 'ws')}//${window.location.host}`;
 
 type Options = {
+	onEvent?: (event: Event) => void;
+	afterConnect?: () => void;
 	connect?: boolean;
 	autoReconnect?: boolean;
 };
-export const createWebSocket = (onMsg: (msg: Event) => void, options?: Options) => {
+
+type Requests = Map<
+	number,
+	{
+		resolve: (result: any) => void;
+		reject: (result: any) => void;
+	}
+>;
+
+export const createWebSocket = (options?: Options) => {
+	const requests: Requests = new Map();
 	let ws: WebSocket | undefined;
+	let msgId = 0;
 
 	const [state, setState] = createSignal<'CLOSED' | 'CLOSING' | 'CONNECTING' | 'OPEN' | 'NEW'>(
 		'NEW'
 	);
+
+	const onClose = () => {
+		setState('CLOSED');
+		if (options?.autoReconnect) {
+			setTimeout(() => reconnect(), 1_000);
+		}
+	};
 
 	const reconnect = () => {
 		if (ws) {
@@ -32,52 +46,28 @@ export const createWebSocket = (onMsg: (msg: Event) => void, options?: Options) 
 		}
 		setState('CONNECTING');
 		const newWs = new WebSocket(`${WS_HOST}/ws`);
-		newWs.onclose = () => setState('CLOSED');
-		newWs.onerror = () => setState('CLOSED');
-		newWs.onopen = () => setState('OPEN');
+		newWs.onclose = () => onClose();
+		newWs.onerror = () => onClose();
+		newWs.onopen = () => {
+			setState('OPEN');
+			options?.afterConnect?.();
+		};
 		newWs.onmessage = (ev) => {
-			let msg: Event | undefined;
+			let msg: Message | undefined;
 			try {
 				msg = JSON.parse(ev.data);
-			} catch (err) {
+			} catch (err) {}
+			if (!msg) {
 				console.warn('Could not parse webSocket message');
-			}
-			if (msg) {
-				onMsg(msg);
+			} else if (msg.type === 'RESPONSE') {
+				onResponse(msg);
+			} else if (msg.type === 'EVENT') {
+				options?.onEvent?.(msg.payload as Event);
+			} else {
+				console.warn(`WebSocket type ${msg.type} is not implemented`);
 			}
 		};
 		ws = newWs;
-	};
-
-	const subscribe = (msg: Omit<SubscribeMessage, 'type'>) => {
-		const m: SubscribeMessage = {
-			...msg,
-			type: 'SUBSCRIBE',
-		};
-		ws?.send(JSON.stringify(m));
-	};
-
-	const subscribeSys = (token: string) => {
-		const m: SubscribeSysMessage = {
-			type: 'SUBSCRIBE_SYS',
-			token: token,
-		};
-		ws?.send(JSON.stringify(m));
-	};
-
-	const unsubscribe = (matchId: string) => {
-		const m: UnsubscribeMessage = {
-			matchId: matchId,
-			type: 'UNSUBSCRIBE',
-		};
-		ws?.send(JSON.stringify(m));
-	};
-
-	const unsubscribeSys = () => {
-		const m: UnsubscribeSysMessage = {
-			type: 'UNSUBSCRIBE_SYS',
-		};
-		ws?.send(JSON.stringify(m));
 	};
 
 	const disconnect = () => {
@@ -89,20 +79,44 @@ export const createWebSocket = (onMsg: (msg: Event) => void, options?: Options) 
 		reconnect();
 	}
 
-	createEffect(() => {
-		if (state() === 'CLOSED' && options?.autoReconnect) {
-			reconnect();
+	const sendRequest = <RequestPayload extends Payload, ResponsePayload extends Payload = Payload>(
+		payload: RequestPayload
+	): Promise<ResponsePayload> => {
+		return new Promise((resolve, reject) => {
+			if (!ws || state() !== 'OPEN') {
+				reject('WebSocket is not ready');
+			}
+			const message = {
+				type: 'REQUEST',
+				msgId: msgId++,
+				payload: payload,
+			} satisfies Message;
+			requests.set(message.msgId, {
+				resolve: resolve,
+				reject: reject,
+			});
+			ws?.send(JSON.stringify(message));
+		});
+	};
+
+	const onResponse = (response: Message) => {
+		const request = requests.get(response.msgId!);
+		if (!request) {
+			console.error(`Request with message id ${response.msgId} could not be found`);
+			return;
 		}
-	});
+		if (response.error) {
+			request.reject(response.error);
+		} else {
+			request.resolve(response.payload);
+		}
+	};
 
 	return {
 		state,
-		subscribe,
-		subscribeSys,
-		unsubscribe,
-		unsubscribeSys,
 		disconnect,
 		reconnect,
 		connect: reconnect,
+		sendRequest,
 	};
 };

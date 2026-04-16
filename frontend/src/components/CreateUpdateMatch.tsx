@@ -4,8 +4,8 @@ import { createStore } from 'solid-js/store';
 import {
 	IConfig,
 	IElectionStep,
+	IMatch,
 	IMatchCreateDto,
-	IMatchResponse,
 	IMatchUpdateDto,
 	IPreset,
 	IPresetCreateDto,
@@ -24,12 +24,13 @@ import {
 	SvgVisiblityOff,
 } from '../assets/Icons';
 import { copyObject } from '../utils/copyObject';
-import { createFetcher, isLoggedIn } from '../utils/fetcher';
+import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { AddElectionStep, getElectionStepString } from './ElectionStep';
 import { ErrorComponent } from './ErrorComponent';
 import { SelectInput, TextArea, TextInput, CheckboxInput } from './Inputs';
 import { Modal } from './Modal';
+import { isLoggedIn } from '../utils/auth';
 
 const Presets: Component<{
 	onSelect: (preset: IMatchCreateDto) => void;
@@ -247,7 +248,7 @@ export const CreateUpdateMatch: Component<
 		  }
 		| {
 				mode: 'UPDATE';
-				match: IMatchResponse & { isStopped?: boolean };
+				match: IMatch;
 		  }
 	) & {
 		callback: (data: IMatchUpdateDto & IMatchCreateDto) => Promise<void>;

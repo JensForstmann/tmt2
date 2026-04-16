@@ -1,5 +1,5 @@
 import { Component, createSignal, For, Show } from 'solid-js';
-import { IMatchResponse } from '../../../common';
+import { IMatch } from '../../../common';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { mustConfirm } from '../utils/mustConfirm';
@@ -7,7 +7,7 @@ import { Loader } from './Loader';
 import { SelectInput } from './Inputs';
 
 export const RoundBackups: Component<{
-	match: IMatchResponse;
+	match: IMatch;
 	roundBackupFiles?: string[];
 	onClose?: () => void;
 }> = (props) => {

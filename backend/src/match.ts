@@ -85,7 +85,7 @@ export const createFromData = async (data: IMatch, logMessage?: string) => {
 	return match;
 };
 
-export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logSecret: string) => {
+export const createNew = async (dto: IMatchCreateDto, id: string, logSecret: string) => {
 	const gameServer = dto.gameServer
 		? {
 				...dto.gameServer,
@@ -127,6 +127,7 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 		webhookHeaders: dto.webhookHeaders ?? {},
 		mode: dto.mode ?? 'SINGLE',
 		needsAttentionSince: null,
+		isLive: false,
 	};
 	try {
 		const match = await createFromData(data, 'Create new match');
@@ -136,6 +137,8 @@ export const createFromCreateDto = async (dto: IMatchCreateDto, id: string, logS
 			ManagedGameServers.free(gameServer, id);
 			ManagedGameServers.update({ ...gameServer, canBeUsed: false });
 		}
+		data.isStopped = true;
+		saveMatchToDb(data);
 		throw err;
 	}
 };
@@ -752,8 +755,18 @@ export const registerCommandHandlers = () => {
 };
 
 const onAdminCommand: commands.CommandHandler = async (e) => {
-	e.match.data.needsAttentionSince = Date.now();
-	MatchService.scheduleSave(e.match);
+	if (e.match.data.needsAttentionSince !== null) {
+		await say(e.match, 'ADMIN WAS ALREADY NOTIFIED');
+	} else {
+		e.match.data.needsAttentionSince = Date.now();
+		MatchService.scheduleSave(e.match);
+		await say(e.match, `${GameServer.colors.red}ADMIN NOTIFIED`);
+	}
+
+	const currentMatchMap = getCurrentMatchMap(e.match);
+	if (currentMatchMap && currentMatchMap.state !== 'PAUSED') {
+		await say(e.match, `YOU CAN ${commands.formatFirstIngameCommand('PAUSE')} IF NEEDED	`);
+	}
 };
 
 const onVersionCommand: commands.CommandHandler = async (e) => {
@@ -1048,15 +1061,11 @@ const restartElection = async (match: Match) => {
 const loopMatch = async (match: Match) => {
 	match.log('Loop mode is set, restart match');
 	await restartElection(match);
-	sleep(1000)
-		.then(() => {
-			// delay, because there might still be events left
-			match.log('Clear player list');
-			match.data.players = [];
-		})
-		.catch(() => {
-			// shouldn't throw
-		});
+	sleep(1000).then(() => {
+		// delay, because there might still be events left
+		match.log('Clear player list');
+		match.data.players = [];
+	});
 };
 
 /**
@@ -1357,6 +1366,7 @@ export const matchFromDb = (
 		serverPassword: '',
 		lastSavedAt: 0,
 		needsAttentionSince: dbMatch.needsAttentionSince,
+		isLive: false,
 	};
 };
 

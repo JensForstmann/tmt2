@@ -64,7 +64,7 @@ export const getGlobalToken = (token?: string) => {
 	return tokens.get(token);
 };
 
-export const isValidMatchToken = async (token?: string, matchId?: string) => {
+export const isValidMatchToken = (token?: string, matchId?: string) => {
 	if (!token || !matchId) {
 		return;
 	}
@@ -92,7 +92,7 @@ export const expressAuthentication = async (
 ): Promise<IAuthResponse | IAuthResponseOptional> => {
 	if (securityName === 'bearer_token' || securityName === 'bearer_token_optional') {
 		const bearerToken = req.get('Authorization');
-		const result = await isAuthorized(bearerToken, req.params['id']);
+		const result = isAuthorized(bearerToken, req.params['id']);
 		if (result) {
 			return Promise.resolve(result);
 		}
@@ -107,10 +107,7 @@ export const expressAuthentication = async (
 	return Promise.reject({});
 };
 
-export const isAuthorized = async (
-	token?: string,
-	matchId?: string
-): Promise<IAuthResponse | false> => {
+export const isAuthorized = (token?: string, matchId?: string): IAuthResponse | false => {
 	const t = getGlobalToken(token);
 	if (t) {
 		return {
@@ -119,7 +116,7 @@ export const isAuthorized = async (
 		};
 	}
 
-	if (await isValidMatchToken(token, matchId)) {
+	if (isValidMatchToken(token, matchId)) {
 		return {
 			type: 'MATCH',
 		};

@@ -1,9 +1,9 @@
 import { useNavigate, useSearchParams } from '@solidjs/router';
 import { Component, createSignal } from 'solid-js';
-import { getToken, login } from '../utils/fetcher';
-import { t } from '../utils/locale';
 import { Card } from '../components/Card';
 import { TextInput } from '../components/Inputs';
+import { getToken, login } from '../utils/auth';
+import { t } from '../utils/locale';
 
 export const LoginPage: Component = () => {
 	const [searchParams] = useSearchParams();

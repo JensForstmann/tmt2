@@ -87,21 +87,21 @@ export const periodicJob = async (match: Match.Match, matchMap: IMatchMap) => {
 const getAvailableCommandsEnums = (state: TMatchMapSate): commands.TCommand[] => {
 	switch (state) {
 		case 'AFTER_KNIFE':
-			return ['RESTART', 'CT', 'T', 'STAY', 'SWITCH'];
+			return ['RESTART', 'CT', 'T', 'STAY', 'SWITCH', 'ADMIN'];
 		case 'FINISHED':
 			return [];
 		case 'IN_PROGRESS':
-			return ['PAUSE', 'TACTICAL'];
+			return ['PAUSE', 'TACTICAL', 'ADMIN'];
 		case 'KNIFE':
-			return ['RESTART'];
+			return ['RESTART', 'ADMIN'];
 		case 'MAP_CHANGE':
 			return [];
 		case 'PAUSED':
-			return ['READY', 'UNREADY'];
+			return ['READY', 'UNREADY', 'ADMIN'];
 		case 'PENDING':
 			return [];
 		case 'WARMUP':
-			return ['READY', 'UNREADY'];
+			return ['READY', 'UNREADY', 'ADMIN'];
 	}
 };
 

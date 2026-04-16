@@ -1,8 +1,8 @@
 import { Component, createSignal } from 'solid-js';
 import {
+	IMatch,
 	IMatchMap,
 	IMatchMapUpdateDto,
-	IMatchResponse,
 	IMatchUpdateDto,
 	TMatchMapSate,
 	TTeamAB,
@@ -18,7 +18,7 @@ import { Modal } from './Modal';
 import { RoundBackups } from './RoundBackups';
 
 export const MatchMapCard: Component<{
-	match: IMatchResponse;
+	match: IMatch;
 	map: IMatchMap;
 	mapIndex: number;
 }> = (props) => {

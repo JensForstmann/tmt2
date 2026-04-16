@@ -1,10 +1,10 @@
 import { Component, For, Show } from 'solid-js';
-import { IMatchResponse, IPlayer } from '../../../common';
+import { IMatch, IPlayer } from '../../../common';
 import { t } from '../utils/locale';
 import { Card } from './Card';
 
 export const PlayerListCard: Component<{
-	match: IMatchResponse;
+	match: IMatch;
 }> = (props) => {
 	return (
 		<Card>
