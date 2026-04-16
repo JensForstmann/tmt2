@@ -30,11 +30,11 @@ export const MatchPage: Component = () => {
 		if ((m && l) || !canFetch) {
 			return;
 		}
-		if (!m) {
+		if (!m && params.id) {
 			fetchMatch(params.id, s);
 			return;
 		}
-		if (!l) {
+		if (!l && params.id) {
 			fetchMatchEvents(params.id);
 		}
 	});

@@ -8,9 +8,9 @@ import { t } from '../utils/locale';
 
 export const GameServerPage: Component = () => {
 	const params = useParams();
-	const parts = params.ipPort.split(':', 2);
-	const ip = parts[0];
-	const port = Number.parseInt(parts[1]);
+	const parts = params.ipPort?.split(':', 2);
+	const ip = parts?.[0];
+	const port = parts?.[1];
 	const [serverPassword, setServerPassword] = createSignal('');
 	const fetcher = createFetcher();
 
@@ -26,7 +26,7 @@ export const GameServerPage: Component = () => {
 		);
 	});
 
-	return Number.isNaN(port) ? (
+	return !ip || !port ? (
 		<ErrorComponent errorMessage={t('ip: port invalid')} />
 	) : (
 		<div class="space-y-5">

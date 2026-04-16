@@ -99,7 +99,7 @@ export const Rcon: Component<{
 
 export const RconServer: Component<{
 	ip: string;
-	port: number;
+	port: number | string;
 }> = (props) => {
 	const fetcher = createFetcher();
 	return (

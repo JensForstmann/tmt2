@@ -12,23 +12,23 @@
 	},
 	"dependencies": {
 		"@tsoa/runtime": "^6.6.0",
-		"better-sqlite3": "^12.4.1",
-		"express": "^5.1.0",
-		"short-uuid": "^5.2.0",
+		"better-sqlite3": "^12.9.0",
+		"express": "^5.2.1",
+		"short-uuid": "^6.0.3",
 		"steamid": "^2.1.0",
 		"typed-emitter": "^2.1.0",
-		"ws": "^8.18.3"
+		"ws": "^8.20.0"
 	},
 	"devDependencies": {
 		"@tsoa/cli": "^6.6.0",
 		"@types/better-sqlite3": "^7.6.13",
-		"@types/debug": "^4.1.12",
-		"@types/express": "^5.0.5",
-		"@types/node": "^24.10.0",
+		"@types/debug": "^4.1.13",
+		"@types/express": "^5.0.6",
+		"@types/node": "^25.6.0",
 		"@types/steamid": "^2.0.4",
 		"@types/ws": "^8.18.1",
-		"nodemon": "^3.1.10",
+		"nodemon": "^3.1.14",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.9.3"
+		"typescript": "^6.0.2"
 	}
 }
