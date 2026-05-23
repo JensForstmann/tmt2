@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add scoreboard with live stats on match detail page.
 - Add `.admin` ingame command which sets the new `needsAttentionSince` property on the match data.
 - Add predefined match list filter to frontend to show all live matches which needs attention.
 - Add notification bell to frontend to indicate how many matches need attention.
