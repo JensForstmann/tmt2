@@ -334,6 +334,53 @@ const models: TsoaRoute.Models = {
 		},
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	TTeamSides: {
+		dataType: 'refAlias',
+		type: {
+			dataType: 'union',
+			subSchemas: [
+				{ dataType: 'enum', enums: ['CT'] },
+				{ dataType: 'enum', enums: ['T'] },
+			],
+			validators: {},
+		},
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	PlayerStats: {
+		dataType: 'refObject',
+		properties: {
+			steamId64: { dataType: 'string', required: true },
+			side: {
+				dataType: 'union',
+				subSchemas: [{ ref: 'TTeamSides' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			state: {
+				dataType: 'union',
+				subSchemas: [
+					{ dataType: 'enum', enums: ['ALIVE'] },
+					{ dataType: 'enum', enums: ['DEAD'] },
+					{ dataType: 'enum', enums: ['DISCONNECTED'] },
+					{ dataType: 'enum', enums: [null] },
+				],
+				required: true,
+			},
+			money: { dataType: 'double', required: true },
+			kills: { dataType: 'double', required: true },
+			deaths: { dataType: 'double', required: true },
+			assists: { dataType: 'double', required: true },
+			damage: { dataType: 'double', required: true },
+			utilityDamage: { dataType: 'double', required: true },
+			enemiesFlashed: { dataType: 'double', required: true },
+			averageDamagePerRound: { dataType: 'double', required: true },
+			health: { dataType: 'double', required: true },
+			armor: { dataType: 'double', required: true },
+			headshots: { dataType: 'double', required: true },
+			items: { dataType: 'array', array: { dataType: 'string' }, required: true },
+		},
+		additionalProperties: false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	IMatchMap: {
 		dataType: 'refObject',
 		properties: {
@@ -373,6 +420,21 @@ const models: TsoaRoute.Models = {
 			overTimeEnabled: { dataType: 'boolean', required: true },
 			overTimeMaxRounds: { dataType: 'double', required: true },
 			maxRounds: { dataType: 'double', required: true },
+			playerStats: {
+				dataType: 'array',
+				array: { dataType: 'refObject', ref: 'PlayerStats' },
+				required: true,
+			},
+			currentRoundNumber: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'double' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
+			lastRoundStart: {
+				dataType: 'union',
+				subSchemas: [{ dataType: 'double' }, { dataType: 'enum', enums: [null] }],
+				required: true,
+			},
 		},
 		additionalProperties: false,
 	},
@@ -385,18 +447,6 @@ const models: TsoaRoute.Models = {
 				{ dataType: 'enum', enums: ['KICK_ALL'] },
 				{ dataType: 'enum', enums: ['QUIT_SERVER'] },
 				{ dataType: 'enum', enums: ['NONE'] },
-			],
-			validators: {},
-		},
-	},
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	TTeamSides: {
-		dataType: 'refAlias',
-		type: {
-			dataType: 'union',
-			subSchemas: [
-				{ dataType: 'enum', enums: ['CT'] },
-				{ dataType: 'enum', enums: ['T'] },
 			],
 			validators: {},
 		},
@@ -422,6 +472,7 @@ const models: TsoaRoute.Models = {
 				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],
 				required: true,
 			},
+			isBot: { dataType: 'boolean', required: true },
 		},
 		additionalProperties: false,
 	},
@@ -1154,6 +1205,12 @@ const models: TsoaRoute.Models = {
 			overTimeEnabled: { dataType: 'boolean' },
 			overTimeMaxRounds: { dataType: 'double' },
 			maxRounds: { dataType: 'double' },
+			playerStats: {
+				dataType: 'array',
+				array: { dataType: 'refObject', ref: 'PlayerStats' },
+			},
+			currentRoundNumber: { dataType: 'double' },
+			lastRoundStart: { dataType: 'double' },
 			_refreshOvertimeAndMaxRoundsSettings: {
 				dataType: 'union',
 				subSchemas: [{ dataType: 'boolean' }, { dataType: 'enum', enums: [null] }],

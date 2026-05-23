@@ -300,13 +300,13 @@ export const saveEventToDb = (event: Event) => {
 			matchPassthrough,
 			type,
 			payload
-		) VALUEs (
+		) VALUES (
 			:timestamp,
 			:matchId,
 			:matchPassthrough,
 			:type,
 			:payload
-	)`
+		)`
 	).run(eventToDb(event));
 };
 

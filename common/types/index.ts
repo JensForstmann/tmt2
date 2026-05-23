@@ -7,6 +7,8 @@ export * from './gameServer';
 export * from './match';
 export * from './matchMap';
 export * from './player';
+export * from './playerEvent';
+export * from './playerStats';
 export * from './preset';
 export * from './team';
 export * from './webSocket';

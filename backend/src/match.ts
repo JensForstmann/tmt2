@@ -22,6 +22,7 @@ import {
 } from '../../common';
 import { addChangeListener } from './changeListener';
 import * as commands from './commands';
+import { db } from './database';
 import * as Election from './election';
 import * as Events from './events';
 import * as GameServer from './gameServer';
@@ -29,10 +30,10 @@ import * as ManagedGameServers from './managedGameServers';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
 import * as Player from './player';
+import * as PlayerEvent from './playerEvent';
 import { Rcon } from './rcon-client';
 import { Settings } from './settings';
 import * as Team from './team';
-import { db } from './database';
 
 const SAY_PREFIX = () => GameServer.colors.green + Settings.SAY_PREFIX + GameServer.colors.white;
 
@@ -43,7 +44,7 @@ export interface Match {
 	periodicJobCounter: number;
 	logBuffer: string[];
 	log: (msg: string) => void;
-	warnAboutWrongTeam: boolean;
+	freezePeriodStarted: boolean;
 }
 
 export class GameServerInUseError extends Error {}
@@ -54,7 +55,7 @@ export const createFromData = async (data: IMatch, logMessage?: string) => {
 		periodicJobCounter: 0,
 		logBuffer: [],
 		log: () => {},
-		warnAboutWrongTeam: true,
+		freezePeriodStarted: false,
 	};
 	match.data = addChangeListener(data, createOnDataChangeHandler(match));
 	await MatchService.save(data);
@@ -227,6 +228,9 @@ const setup = async (match: Match) => {
 	await setTeamNames(match);
 
 	await execRcon(match, 'log on');
+	await execRcon(match, 'mp_logdetail 3'); // Logs attacks (0=off, 1=enemy, 2=teammate, 3=both).
+	await execRcon(match, 'mp_logdetail_items true'); // Logs a line any time a player acquires or loses an item. (Not correct: Losing an item gives no log.)
+	await execRcon(match, 'mp_logmoney true'); // Enables money logging.
 	await execRcon(match, 'mp_warmuptime 600');
 	await execRcon(match, 'mp_warmup_pausetimer 1');
 	await execRcon(match, 'mp_autokick 0');
@@ -481,6 +485,7 @@ const onLogLine = async (match: Match, line: string) => {
 	try {
 		//09/14/2020 - 15:11:58.307 - "PlayerName<2><[U:1:12345678]><TERRORIST>" say "Hello World"
 		// console.debug('line:', line);
+		// (await import('node:fs')).appendFileSync('log.txt', '---\n' + line + '\n');
 		const dateTimePattern = /^\d\d\/\d\d\/\d\d\d\d - \d\d:\d\d:\d\d\.\d\d\d - /;
 
 		const consolePattern = /"Console<0>" (.*)$/;
@@ -523,6 +528,118 @@ const onLogLine = async (match: Match, line: string) => {
 			return;
 		}
 
+		// comes even if mp_freezetime = 0
+		// comes when match is paused or round backup is loaded
+		// Starting Freeze period
+		const startingFreezeTimePattern = /Starting Freeze period/;
+		const startingFreezeTimeMatch = line.match(
+			new RegExp(dateTimePattern.source + startingFreezeTimePattern.source)
+		);
+		if (startingFreezeTimeMatch) {
+			match.freezePeriodStarted = true;
+			const currentMatchMap = getCurrentMatchMap(match);
+			if (currentMatchMap) {
+				currentMatchMap.playerStats.forEach((ps) => {
+					const player = match.data.players.find((p) => p.steamId64 === ps.steamId64);
+					ps.state = !player ? null : player.online ? 'ALIVE' : 'DISCONNECTED';
+					ps.health = 100;
+				});
+			}
+			return;
+		}
+
+		// MatchStatus: Score: 0:0 on map "de_nuke" RoundsPlayed: -1
+		// MatchStatus: Score: 0:0 on map "de_nuke" RoundsPlayed: 0
+		// MatchStatus: Score: 3:2 on map "de_nuke" RoundsPlayed: 5
+		// comes twice:
+		// 1. at round end (time is up, bomb exploded, bomb defused, team dead) (after 'World triggered "Round_End"')
+		// 2. at freeze time start (but after 'Starting Freeze period')
+		const matchStatusPattern =
+			/MatchStatus: Score: (\d+):(\d+) on map "(.*)" RoundsPlayed: (-?\d+)/;
+		const matchStatusMatch = line.match(
+			new RegExp(dateTimePattern.source + matchStatusPattern.source)
+		);
+		if (matchStatusMatch) {
+			const score1 = Number.parseInt(matchStatusMatch[1]!);
+			const score2 = Number.parseInt(matchStatusMatch[2]!);
+			const roundsPlayed = Number.parseInt(matchStatusMatch[4]!);
+			if (score1 + score2 === roundsPlayed) {
+				// ignore "RoundsPlayed: -1" matches
+				const currentMatchMap = getCurrentMatchMap(match);
+				if (currentMatchMap) {
+					if (match.freezePeriodStarted) {
+						currentMatchMap.currentRoundNumber = roundsPlayed;
+					}
+					// Update player stats at end of round AND at freeze time start.
+					// So the end-of-map player stats are correct (there is no freeze time atfer the last round).
+					currentMatchMap.playerStats.forEach((ps) => {
+						const player = match.data.players.find((p) => p.steamId64 === ps.steamId64);
+						ps.side = player?.side ?? null;
+						ps.averageDamagePerRound =
+							roundsPlayed === 0 ? 0 : Math.round(ps.damage / roundsPlayed);
+					});
+					MatchService.scheduleSave(match);
+				}
+			}
+			if (match.freezePeriodStarted) {
+				match.freezePeriodStarted = false;
+			}
+		}
+
+		// World triggered "Round_Start"
+		// end of freezetime, players can move
+		const roundStartPattern = /World triggered "Round_Start"/;
+		const roundStartMatch = line.match(
+			new RegExp(dateTimePattern.source + roundStartPattern.source)
+		);
+		if (roundStartMatch) {
+			const currentMatchMap = getCurrentMatchMap(match);
+			if (currentMatchMap && currentMatchMap.currentRoundNumber !== null) {
+				currentMatchMap.lastRoundStart = Date.now();
+				const tables = [
+					'matchPlayerEventAttack',
+					'matchPlayerEventKill',
+					'matchPlayerEventSuicide',
+					'matchPlayerEventAssist',
+					'matchPlayerEventBlind',
+				];
+				let deletedRows = 0;
+				const params = {
+					matchId: match.data.id,
+					mapIndex: match.data.currentMap,
+					roundNumber: currentMatchMap.currentRoundNumber,
+				};
+				tables.forEach((table) => {
+					const result = db
+						.prepare(
+							`DELETE FROM ${table} WHERE matchId = :matchId AND mapIndex = :mapIndex AND roundNumber >= :roundNumber`
+						)
+						.run(params);
+					deletedRows += result.changes;
+				});
+				if (deletedRows > 0) {
+					const result = db
+						.prepare(
+							'DELETE FROM matchPlayerEventRound WHERE matchId = :matchId AND mapIndex = :mapIndex AND roundNumber >= :roundNumber'
+						)
+						.run(params);
+					deletedRows += result.changes;
+					match.log(
+						`Deleted ${deletedRows} old player events from database. Assuming round backup was loaded. Recalculate player stats.`
+					);
+					PlayerEvent.recalculatePlayerStats(match, currentMatchMap);
+				}
+			}
+		}
+
+		// comes directly after mp_backup_restore_load_file
+		// World triggered "Match_Reloaded" on "de_dust2"
+
+		// Team "CT" triggered "SFUI_Notice_Target_Saved" (CT "1") (T "1")
+		// Team "CT" triggered "SFUI_Notice_Bomb_Defused" (CT "2") (T "8")
+		// Team "TERRORIST" triggered "SFUI_Notice_Target_Bombed" (CT "8") (T "11")
+		// Team "TERRORIST" triggered "SFUI_Notice_Terrorists_Win" (CT "8") (T "12")
+		// Team "CT" triggered "SFUI_Notice_CTs_Win" (CT "3") (T "8")
 		const roundEndPattern =
 			/Team "(CT|TERRORIST)" triggered "([a-zA-Z_]+)" \(CT "(\d+)"\) \(T "(\d+)"\)/;
 		const roundEndMatch = line.match(
@@ -540,7 +657,8 @@ const onLogLine = async (match: Match, line: string) => {
 					currentMatchMap,
 					ctScore,
 					tScore,
-					winningTeam === 'CT' ? 'CT' : 'T'
+					winningTeam === 'CT' ? 'CT' : 'T',
+					winningReason
 				);
 			}
 			return;
@@ -552,7 +670,6 @@ const onLogLine = async (match: Match, line: string) => {
 			new RegExp(dateTimePattern.source + matchStartPattern.source)
 		);
 		if (matchStartMatch) {
-			match.warnAboutWrongTeam = true;
 			return;
 		}
 
@@ -573,6 +690,8 @@ const onLogLine = async (match: Match, line: string) => {
 			}
 			return;
 		}
+
+		// Molotov projectile spawned at -1280.607178 -1253.184326 -298.145630, velocity -621.257690 263.833771 -7.461185
 	} catch (err) {
 		match.log('Error in onLogLine' + err);
 	}
@@ -611,6 +730,41 @@ const updatePlayerSide = (
 	}
 };
 
+export const getOrCreatePlayer = (
+	match: Match,
+	name: string,
+	steamId: string,
+	teamString: TTeamString
+): IPlayer => {
+	const isBot = steamId === 'BOT';
+	const steamId64 = isBot ? 'BOT_' + name : Player.getSteamID64(steamId);
+	let player = match.data.players.find((p) => p.steamId64 === steamId64);
+	if (player) {
+		if (player.name !== name) {
+			match.log(`Player ${player.steamId64} (${player.name}) renamed to: ${name}`);
+			player.name = name;
+			MatchService.scheduleSave(match);
+		}
+		return player;
+	}
+
+	match.data.players.push({
+		name: name,
+		steamId64: steamId64,
+		team: Player.getForcedTeam(match, steamId64),
+		side: Player.getSideFromTeamString(teamString),
+		online: true,
+		isBot: isBot,
+	});
+
+	// return object from match.data to access it via ProxyHandler (changeListener)
+	player = match.data.players[match.data.players.length - 1]!;
+
+	match.log(`Player ${player.steamId64} (${name}) created`);
+	MatchService.scheduleSave(match);
+	return player;
+};
+
 const onPlayerLogLine = async (
 	match: Match,
 	name: string,
@@ -619,31 +773,10 @@ const onPlayerLogLine = async (
 	teamString: TTeamString,
 	remainingLine: string
 ) => {
-	let player: IPlayer | undefined = undefined;
-	if (steamId !== 'BOT' && steamId !== 'Console') {
-		const steamId64 = Player.getSteamID64(steamId);
-		player = match.data.players.find((p) => p.steamId64 === steamId64);
-		if (!player) {
-			player = Player.create(match, steamId, name);
-			match.log(`Player ${player.steamId64} (${name}) created`);
-			match.data.players.push(player);
-			player = match.data.players[match.data.players.length - 1]!; // re-assign to work nicely with changeListener (ProxyHandler)
-			MatchService.scheduleSave(match);
-		}
-		if (player.name !== name) {
-			match.log(`Player ${player.steamId64} (${player.name}) renamed to: ${name}`);
-			player.name = name;
-			MatchService.scheduleSave(match);
-		}
-	}
-
-	if (!player) {
-		// Console or BOT
-		return;
-	}
+	const player = getOrCreatePlayer(match, name, steamId, teamString);
 
 	if (player.online !== true && !remainingLine.includes('committed suicide with "world"')) {
-		// "committed suicide" log line comes after "disconnected"
+		// "committed suicide" log line comes after "disconnected" log line
 		player.online = true;
 		MatchService.scheduleSave(match);
 	}
@@ -659,6 +792,10 @@ const onPlayerLogLine = async (
 			`Player ${player.steamId64} (${player.name}) changed side from '${fromTeam}' to '${toTeam}'`
 		);
 		updatePlayerSide(match, player, toTeam, false, true);
+		const currentMatchMap = getCurrentMatchMap(match);
+		if (currentMatchMap) {
+			MatchMap.getOrCreatePlayerStats(match, currentMatchMap, player).side = player.side;
+		}
 		teamString = toTeam;
 		await checkPlayerTeamAssignment(match, player, teamString);
 		return;
@@ -681,6 +818,12 @@ const onPlayerLogLine = async (
 		match.log(`Player ${player.steamId64} (${player.name}) disconnected`);
 		player.online = false;
 		MatchService.scheduleSave(match);
+
+		const currentMatchMap = getCurrentMatchMap(match);
+		if (currentMatchMap) {
+			MatchMap.getOrCreatePlayerStats(match, currentMatchMap, player).state = 'DISCONNECTED';
+		}
+
 		if (match.data.mode === 'LOOP') {
 			const players = await GameServer.getPlayers(match);
 			if (players.length === 0) {
@@ -698,6 +841,8 @@ const onPlayerLogLine = async (
 		await onPlayerSay(match, player, message, isTeamChat, teamString);
 		return;
 	}
+
+	await PlayerEvent.onPlayerLogLine(match, player, remainingLine);
 };
 
 const onPlayerSay = async (
@@ -823,9 +968,17 @@ const sayWrongTeamOrSide = async (
 	currentSite: 'CT' | 'TERRORIST',
 	currentTeamAB: TTeamAB
 ) => {
-	if (!match.warnAboutWrongTeam) {
+	const currentMatchMap = getCurrentMatchMap(match);
+	const mms = currentMatchMap?.state;
+	if (
+		match.data.state !== 'ELECTION' &&
+		mms !== 'WARMUP' &&
+		mms !== 'KNIFE' &&
+		mms !== 'AFTER_KNIFE'
+	) {
 		return;
 	}
+
 	const currentTeam = getTeamByAB(match, currentTeamAB);
 	const otherTeam = getTeamByAB(match, getOtherTeamAB(currentTeamAB));
 	await say(
@@ -1063,8 +1216,9 @@ const loopMatch = async (match: Match) => {
 	await restartElection(match);
 	sleep(1000).then(() => {
 		// delay, because there might still be events left
-		match.log('Clear player list');
+		match.log('Clear player list & player stats');
 		match.data.players = [];
+		match.data.matchMaps.forEach((mm) => (mm.playerStats = []));
 	});
 };
 
@@ -1314,7 +1468,8 @@ const matchToDb = (match: IMatch): TDbMatch => {
 export const matchFromDb = (
 	dbMatch: TDbMatch,
 	dbMatchMaps: MatchMap.TDbMatchMap[],
-	dbMatchPlayers: Player.TDbMatchPlayer[]
+	dbMatchPlayers: Player.TDbMatchPlayer[],
+	dbMatchPlayerStats: PlayerEvent.TDbPlayerStats[]
 ): IMatch => {
 	const mapPool = JSON.parse(dbMatch.mapPool) as string[];
 	const electionSteps = JSON.parse(dbMatch.electionSteps) as IElectionStep[];
@@ -1336,7 +1491,12 @@ export const matchFromDb = (
 			playerSteamIds64: JSON.parse(dbMatch.teamBPlayerSteamIds64) as string[],
 		},
 		parseIncomingLogs: false,
-		matchMaps: dbMatchMaps.map(MatchMap.matchMapFromDb),
+		matchMaps: dbMatchMaps.map((dbMatchMap) =>
+			MatchMap.matchMapFromDb(
+				dbMatchMap,
+				dbMatchPlayerStats.filter((x) => x.mapIndex === dbMatchMap.index)
+			)
+		),
 		players: dbMatchPlayers.map(Player.matchPlayerFromDb),
 		electionSteps: electionSteps,
 		election: Election.create(mapPool, electionSteps),

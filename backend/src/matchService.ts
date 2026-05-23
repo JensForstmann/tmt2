@@ -1,10 +1,11 @@
 import { generate as shortUuid } from 'short-uuid';
 import { IGameServer, IMatch, IMatchCreateDto } from '../../common';
+import { db } from './database';
 import * as Events from './events';
 import * as Match from './match';
-import { db } from './database';
 import { saveMatchMapToDb, TDbMatchMap } from './matchMap';
 import { savePlayerToDb, TDbMatchPlayer } from './player';
+import { saveMatchPlayerStatsToDb, TDbPlayerStats } from './playerEvent';
 
 const matches: Map<string, Match.Match> = new Map();
 
@@ -162,10 +163,13 @@ export const save = async (matchData: IMatch) => {
 	matchData.lastSavedAt = Date.now();
 	try {
 		Match.saveMatchToDb(matchData);
-		matchData.matchMaps.forEach((matchMap, index) =>
-			saveMatchMapToDb(matchData.id, matchMap, index)
-		);
 		matchData.players.forEach((player) => savePlayerToDb(matchData.id, player));
+		matchData.matchMaps.forEach((matchMap, index) => {
+			saveMatchMapToDb(matchData.id, matchMap, index);
+			matchMap.playerStats.forEach((playerStats) =>
+				saveMatchPlayerStatsToDb(matchData.id, index, playerStats)
+			);
+		});
 	} catch (err) {
 		matchData.lastSavedAt = previousLastSavedAt;
 		throw err;
@@ -214,7 +218,7 @@ export const getMatchFromDatabase = (id: string): IMatch | undefined => {
 		.prepare<
 			{ matchId: string },
 			TDbMatchMap
-		>('SELECT * FROM matchMap WHERE matchId = :matchId')
+		>('SELECT * FROM matchMap WHERE matchId = :matchId ORDER BY "index"')
 		.all({ matchId: id });
 	const matchPlayerRows = db
 		.prepare<
@@ -222,13 +226,24 @@ export const getMatchFromDatabase = (id: string): IMatch | undefined => {
 			TDbMatchPlayer
 		>('SELECT * FROM matchPlayer WHERE matchId = :matchId')
 		.all({ matchId: id });
-	return Match.matchFromDb(matchRow, matchMapRows, matchPlayerRows);
+	const matchPlayerStats = db
+		.prepare<
+			{ matchId: string },
+			TDbPlayerStats
+		>('SELECT * FROM matchPlayerStats WHERE matchId = :matchId ORDER BY mapIndex')
+		.all({ matchId: id });
+	return Match.matchFromDb(matchRow, matchMapRows, matchPlayerRows, matchPlayerStats);
 };
 
 export const getAllMatchesFromDatabase = () => {
 	const matchRows = db.prepare<[], Match.TDbMatch>('SELECT * FROM match').all();
-	const matchMapRows = db.prepare<[], TDbMatchMap>('SELECT * FROM matchMap').all();
+	const matchMapRows = db
+		.prepare<[], TDbMatchMap>('SELECT * FROM matchMap ORDER BY "index"')
+		.all();
 	const matchPlayerRows = db.prepare<[], TDbMatchPlayer>('SELECT * FROM matchPlayer').all();
+	const matchPlayerStats = db
+		.prepare<[], TDbPlayerStats>('SELECT * FROM matchPlayerStats ORDER BY mapIndex')
+		.all();
 
 	const matches: IMatch[] = [];
 
@@ -236,8 +251,9 @@ export const getAllMatchesFromDatabase = () => {
 		const matchRow = matchRows[i] as any;
 		const match = Match.matchFromDb(
 			matchRow,
-			matchMapRows.filter((row: any) => row.matchId === matchRow.id),
-			matchPlayerRows.filter((row: any) => row.matchId === matchRow.id)
+			matchMapRows.filter((row) => row.matchId === matchRow.id),
+			matchPlayerRows.filter((row) => row.matchId === matchRow.id),
+			matchPlayerStats.filter((row) => row.matchId === matchRow.id)
 		);
 		matches.push(match);
 	}

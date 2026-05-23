@@ -1,5 +1,6 @@
 import { Component, createSignal } from 'solid-js';
 import { ChatEvent, escapeRconSayString } from '../../../common';
+import { SvgSend } from '../assets/Icons';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
@@ -13,33 +14,42 @@ export const Chat: Component<{
 	matchId: string;
 	secret?: string;
 }> = (props) => {
+	const [chatMessage, setChatMessage] = createSignal('');
 	const [errorMessage, setErrorMessage] = createSignal('');
 	const fetcher = createFetcher(props.secret);
-	const sendChatMessage = (msg: string) =>
+	const sendChatMessage = () => {
+		if (chatMessage().trim() === '') {
+			return;
+		}
 		fetcher('POST', `/api/matches/${props.matchId}/server/rcon`, [
-			`say ${escapeRconSayString(msg)}`,
-		]);
+			`say ${escapeRconSayString(chatMessage().trim())}`,
+		])
+			.then(() => {
+				setChatMessage('');
+				setErrorMessage('');
+			})
+			.catch((err) => setErrorMessage(err + ''));
+	};
+
 	return (
 		<Card class="text-center">
 			<h2 class="text-lg font-bold">{t('Chat')}</h2>
 			<ScrollArea scroll>{props.messages.map(formatChatEvent)}</ScrollArea>
 			<div class="h-4"></div>
-			<TextInput
-				type="text"
-				onKeyDown={onEnter((e) => {
-					const input = e.currentTarget;
-					const msg = input.value.trim();
-					if (msg) {
-						sendChatMessage(msg)
-							.then(() => {
-								input.value = '';
-								setErrorMessage('');
-							})
-							.catch((err) => setErrorMessage(err + ''));
-					}
-				})}
-				placeholder={t('Send chat message...')}
-			/>
+			<div class="flex">
+				<TextInput
+					type="text"
+					containerClass="grow"
+					value={chatMessage()}
+					onInput={(e) => setChatMessage(e.currentTarget.value)}
+					onKeyDown={onEnter(() => sendChatMessage())}
+					placeholder={t('Send chat message...')}
+				/>
+				<button class="ml-2 btn" onClick={() => sendChatMessage()}>
+					<SvgSend />
+					{t('Send')}
+				</button>
+			</div>
 			<ErrorComponent errorMessage={errorMessage()} />
 		</Card>
 	);

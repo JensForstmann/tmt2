@@ -4,6 +4,8 @@ import {
 	getOtherTeamAB,
 	IMatchMap,
 	IMatchMapUpdateDto,
+	IPlayer,
+	PlayerStats,
 	sleep,
 	TMatchMapSate,
 	TTeamAB,
@@ -15,6 +17,7 @@ import * as Events from './events';
 import { colors, formatMapName } from './gameServer';
 import * as Match from './match';
 import * as MatchService from './matchService';
+import * as PlayerEvent from './playerEvent';
 
 export const create = (
 	map: string,
@@ -42,6 +45,9 @@ export const create = (
 		},
 		startAsCtTeam: startAsCtTeam,
 		state: 'PENDING',
+		playerStats: [],
+		currentRoundNumber: null,
+		lastRoundStart: null,
 	};
 };
 
@@ -130,7 +136,8 @@ export const onRoundEnd = async (
 	matchMap: IMatchMap,
 	ctScore: number,
 	tScore: number,
-	winningTeamSide: TTeamSides
+	winningTeamSide: TTeamSides,
+	winningReason: string
 ) => {
 	/** Contains the state without the new score (without the just finished round). */
 	const magic = getCurrentTeamSideAndRoundSwitch(matchMap);
@@ -502,7 +509,6 @@ const onSwitchCommand: commands.CommandHandler = async (e) => {
 	await Match.say(match, `${escapeRconString(team.name)} WANTS TO SWITCH SIDES`);
 	match.log(`${teamAB} (${team.name} - ${player.name}) wants to switch sides`);
 	await Match.execRcon(match, 'mp_swapteams');
-	match.warnAboutWrongTeam = false; // temporarily disable warning about wrong team, will be set to true again after match start
 	matchMap.startAsCtTeam = getOtherTeamAB(matchMap.startAsCtTeam);
 	MatchService.scheduleSave(match);
 	await startMatch(match, matchMap);
@@ -596,6 +602,46 @@ export const getWinner = (matchMap: IMatchMap) => {
 	return matchMap.score.teamA > matchMap.score.teamB ? 'TEAM_A' : 'TEAM_B';
 };
 
+export const getOrCreatePlayerStats = (
+	match: Match.Match,
+	matchMap: IMatchMap,
+	player: IPlayer
+): PlayerStats => {
+	PlayerEvent.savePlayerEventRoundToDb({
+		timestamp: new Date().toISOString(),
+		matchId: match.data.id,
+		mapIndex: match.data.currentMap,
+		roundNumber: matchMap.score.teamA + matchMap.score.teamB,
+		playerSteamId64: player.steamId64,
+	});
+
+	let playerStats = matchMap.playerStats.find((ps) => ps.steamId64 === player.steamId64);
+	if (playerStats) {
+		return playerStats;
+	}
+	matchMap.playerStats.push({
+		steamId64: player.steamId64,
+		side: player.side,
+		state: 'ALIVE',
+		money: 0,
+		kills: 0,
+		deaths: 0,
+		assists: 0,
+		damage: 0,
+		utilityDamage: 0,
+		enemiesFlashed: 0,
+		averageDamagePerRound: 0,
+		health: 100,
+		armor: 0,
+		headshots: 0,
+		items: [],
+	});
+
+	// return object from match.data to access it via ProxyHandler (changeListener)
+	playerStats = matchMap.playerStats[matchMap.playerStats.length - 1]!;
+	return playerStats;
+};
+
 export const update = async (
 	match: Match.Match,
 	matchMap: IMatchMap,
@@ -660,6 +706,8 @@ export type TDbMatchMap = {
 	knifeRestartTeamB: number;
 	scoreTeamA: number;
 	scoreTeamB: number;
+	currentRoundNumber: number | null;
+	lastRoundStart: number | null;
 };
 
 const matchMapToDb = (matchId: string, matchMap: IMatchMap, index: number): TDbMatchMap => {
@@ -677,10 +725,15 @@ const matchMapToDb = (matchId: string, matchMap: IMatchMap, index: number): TDbM
 		knifeRestartTeamB: matchMap.knifeRestart.teamB ? 1 : 0,
 		scoreTeamA: matchMap.score.teamA,
 		scoreTeamB: matchMap.score.teamB,
+		currentRoundNumber: matchMap.currentRoundNumber,
+		lastRoundStart: matchMap.lastRoundStart,
 	};
 };
 
-export const matchMapFromDb = (dbMatchMap: TDbMatchMap): IMatchMap => {
+export const matchMapFromDb = (
+	dbMatchMap: TDbMatchMap,
+	dbMatchPlayerStats: PlayerEvent.TDbPlayerStats[]
+): IMatchMap => {
 	return {
 		name: dbMatchMap.name,
 		knifeForSide: !!dbMatchMap.knifeForSide,
@@ -702,52 +755,60 @@ export const matchMapFromDb = (dbMatchMap: TDbMatchMap): IMatchMap => {
 		overTimeEnabled: true,
 		overTimeMaxRounds: 6,
 		maxRounds: 30,
+		playerStats: dbMatchPlayerStats.map((row) => PlayerEvent.playerStatsFromDb(row)),
+		currentRoundNumber: dbMatchMap.currentRoundNumber,
+		lastRoundStart: dbMatchMap.lastRoundStart,
 	};
 };
 
 export const saveMatchMapToDb = (matchId: string, matchMap: IMatchMap, index: number) => {
 	db.prepare<TDbMatchMap>(
 		`INSERT INTO matchMap (
-					matchId,
-					"index",
-					name,
-					knifeForSide,
-					startAsCtTeam,
-					state,
-					knifeWinner,
-					readyTeamA,
-					readyTeamB,
-					knifeRestartTeamA,
-					knifeRestartTeamB,
-					scoreTeamA,
-					scoreTeamB
-				) VALUES (
-					:matchId,
-					:index,
-					:name,
-					:knifeForSide,
-					:startAsCtTeam,
-					:state,
-					:knifeWinner,
-					:readyTeamA,
-					:readyTeamB,
-					:knifeRestartTeamA,
-					:knifeRestartTeamB,
-					:scoreTeamA,
-					:scoreTeamB
-				) ON CONFLICT (matchId, "index") DO UPDATE SET
-					name = :name,
-					knifeForSide = :knifeForSide,
-					startAsCtTeam = :startAsCtTeam,
-					state = :state,
-					knifeWinner = :knifeWinner,
-					readyTeamA = :readyTeamA,
-					readyTeamB = :readyTeamB,
-					knifeRestartTeamA = :knifeRestartTeamA,
-					knifeRestartTeamB = :knifeRestartTeamB,
-					scoreTeamA = :scoreTeamA,
-					scoreTeamB = :scoreTeamB
-				WHERE matchId = :matchId AND "index" = :index
-				`
+			matchId,
+			"index",
+			name,
+			knifeForSide,
+			startAsCtTeam,
+			state,
+			knifeWinner,
+			readyTeamA,
+			readyTeamB,
+			knifeRestartTeamA,
+			knifeRestartTeamB,
+			scoreTeamA,
+			scoreTeamB,
+			currentRoundNumber,
+			lastRoundStart
+		) VALUES (
+			:matchId,
+			:index,
+			:name,
+			:knifeForSide,
+			:startAsCtTeam,
+			:state,
+			:knifeWinner,
+			:readyTeamA,
+			:readyTeamB,
+			:knifeRestartTeamA,
+			:knifeRestartTeamB,
+			:scoreTeamA,
+			:scoreTeamB,
+			:currentRoundNumber,
+			:lastRoundStart
+		) ON CONFLICT (matchId, "index") DO UPDATE SET
+			name = :name,
+			knifeForSide = :knifeForSide,
+			startAsCtTeam = :startAsCtTeam,
+			state = :state,
+			knifeWinner = :knifeWinner,
+			readyTeamA = :readyTeamA,
+			readyTeamB = :readyTeamB,
+			knifeRestartTeamA = :knifeRestartTeamA,
+			knifeRestartTeamB = :knifeRestartTeamB,
+			scoreTeamA = :scoreTeamA,
+			scoreTeamB = :scoreTeamB,
+			currentRoundNumber = :currentRoundNumber,
+			lastRoundStart = :lastRoundStart
+		WHERE matchId = :matchId AND "index" = :index`
 	).run(matchMapToDb(matchId, matchMap, index));
 };

@@ -7,6 +7,7 @@ import {
 	SvgLogin,
 	SvgLogout,
 	SvgNotifications,
+	SvgServer,
 	SvgSettings,
 	SvgTheme,
 } from '../assets/Icons';
@@ -30,21 +31,18 @@ export const NavBar: Component = () => {
 	return (
 		<nav class="bg-base-300 flex items-center justify-center space-x-1 p-2 lg:space-x-10">
 			<div class="w-1 lg:w-20"></div>
-			<div>
-				<img class="mr-1 inline-block h-10 w-auto align-middle" src={logo} alt="Logo" />
-				<div class="inline-block align-middle text-xs lg:hidden">TMT</div>
-				<div class="hidden align-middle text-xs lg:inline-block">
-					Tournament
-					<br />
-					MatchTracker
+			<A href="/">
+				<div>
+					<img class="mr-1 inline-block h-10 w-auto align-middle" src={logo} alt="Logo" />
+					<div class="inline-block align-middle text-xs lg:hidden">TMT</div>
+					<div class="hidden align-middle text-xs lg:inline-block w-0">
+						{/* w-0 leads to a line break in the title. But copy & paste will produce a space. */}
+						Tournament MatchTracker
+					</div>
 				</div>
-			</div>
+			</A>
 			<div class="grow"></div>
-			<NavLink href="/create">{t('Create')}</NavLink>
 			<NavLink href="/matches">{t('Matches')}</NavLink>
-			<Show when={isLoggedIn() === true}>
-				<NavLink href="/gameservers">{t('Game Servers')}</NavLink>
-			</Show>
 			<div class="grow"></div>
 			<A
 				tabindex="0"
@@ -109,6 +107,14 @@ export const NavBar: Component = () => {
 							</ul>
 						</details>
 					</li>
+					<Show when={isLoggedIn() === true}>
+						<li>
+							<A href="/gameservers">
+								<SvgServer />
+								{t('Game Servers')}
+							</A>
+						</li>
+					</Show>
 					<li>
 						<a href="/debug">
 							<SvgInfo />

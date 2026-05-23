@@ -1,5 +1,6 @@
 import { Component, createSignal } from 'solid-js';
 import { IMatch } from '../../../common';
+import { SvgSend } from '../assets/Icons';
 import { createFetcher } from '../utils/fetcher';
 import { t } from '../utils/locale';
 import { onEnter } from '../utils/onEnter';
@@ -12,23 +13,81 @@ const formatRconResponse = (response: string): string[] => {
 	return response.trim().split('\n');
 };
 
+const commandHistory = () => {
+	/** Do not store more commands than this number: */
+	const limit = 100;
+	let idx = -1;
+
+	const getAll = (): string[] => {
+		try {
+			return JSON.parse(localStorage.getItem('rconHistory') ?? '[]');
+		} catch (err) {
+			return [];
+		}
+	};
+
+	const get = () => {
+		const all = getAll();
+		console.log('pre idx', idx);
+		if (idx < -1) {
+			idx = -1;
+		} else if (idx >= all.length) {
+			idx = all.length - 1;
+		}
+		console.log('post idx', idx);
+		return all[idx] ?? '';
+	};
+
+	const prev = () => {
+		idx++;
+		return get();
+	};
+
+	const next = () => {
+		idx--;
+		return get();
+	};
+
+	const add = (cmd: string) => {
+		const deduplicated = getAll().filter((c) => c !== cmd);
+		deduplicated.unshift(cmd);
+		if (deduplicated.length > limit) {
+			deduplicated.length = limit;
+		}
+		localStorage.setItem('rconHistory', JSON.stringify(deduplicated));
+		idx = -1;
+	};
+
+	return {
+		add,
+		prev,
+		next,
+	};
+};
+
 const RconCard: Component<{
 	exec: (commands: string[]) => Promise<string[] | undefined>;
 }> = (props) => {
-	const execRcon = async (command: string) => {
-		setHistory([command, ...history()].filter((v, i, arr) => arr.indexOf(v) === i));
-		setHistoryIndex(-1);
-		setNotSent('');
+	const hist = commandHistory();
+
+	const execRcon = async () => {
+		const cmd = command().trim();
+		if (cmd.trim() === '') {
+			return;
+		}
+
 		setErrorMessage('');
 		try {
-			const response = await props.exec([command]);
+			const response = await props.exec([cmd]);
 			if (response) {
+				hist.add(cmd);
+				setCommand('');
 				const newLines = response.reduce((pv: string[], cv) => {
 					return [...pv, ...formatRconResponse(cv)];
 				}, []);
-				setOutput([...output(), command, ...newLines]);
+				setOutput([...output(), cmd, ...newLines]);
 			} else {
-				setOutput([...output(), command, 'error']);
+				setOutput([...output(), cmd, 'error']);
 			}
 		} catch (err) {
 			if (typeof err === 'string') {
@@ -37,48 +96,39 @@ const RconCard: Component<{
 		}
 	};
 	const [output, setOutput] = createSignal<string[]>([]);
-	const [history, setHistory] = createSignal<string[]>([]);
-	const [historyIndex, setHistoryIndex] = createSignal(-1);
-	const [notSent, setNotSent] = createSignal('');
+	const [command, setCommand] = createSignal('');
 	const [errorMessage, setErrorMessage] = createSignal('');
-
-	const saveNotSent = (value: string) => {
-		if (historyIndex() === -1) {
-			setNotSent(value);
-		}
-	};
 
 	return (
 		<Card class="text-center">
 			<h2 class="text-lg font-bold">{t('RCON')}</h2>
 			<ScrollArea scroll>{output()}</ScrollArea>
 			<div class="h-4"></div>
-			<TextInput
-				type="text"
-				onKeyDown={onEnter(
-					(e) => {
-						const command = e.currentTarget.value.trim();
-						if (command) {
-							execRcon(command);
-							e.currentTarget.value = '';
+			<div class="flex">
+				<TextInput
+					containerClass="grow"
+					type="text"
+					value={command()}
+					onInput={(e) => setCommand(e.currentTarget.value)}
+					onKeyDown={onEnter(
+						() => execRcon(),
+						(e) => {
+							if (e.key === 'ArrowUp') {
+								e.preventDefault();
+								setCommand(hist.prev());
+							} else if (e.key === 'ArrowDown') {
+								e.preventDefault();
+								setCommand(hist.next());
+							}
 						}
-					},
-					(e) => {
-						if (e.key === 'ArrowUp') {
-							saveNotSent(e.currentTarget.value);
-							setHistoryIndex(Math.min(history().length - 1, historyIndex() + 1));
-							e.currentTarget.value = history()[historyIndex()];
-							e.preventDefault();
-						} else if (e.key === 'ArrowDown') {
-							saveNotSent(e.currentTarget.value);
-							setHistoryIndex(Math.max(-1, historyIndex() - 1));
-							e.currentTarget.value = history()[historyIndex()] ?? notSent();
-							e.preventDefault();
-						}
-					}
-				)}
-				placeholder={t('Execute RCON command...')}
-			/>
+					)}
+					placeholder={t('Execute RCON command...')}
+				/>
+				<button class="ml-2 btn" onClick={() => execRcon()}>
+					<SvgSend />
+					{t('Send')}
+				</button>
+			</div>
 			<ErrorComponent errorMessage={errorMessage()} />
 		</Card>
 	);

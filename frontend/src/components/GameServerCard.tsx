@@ -1,9 +1,9 @@
 import { Component } from 'solid-js';
 import { IMatch } from '../../../common';
 import { SvgCopyAll, SvgOpenInNew } from '../assets/Icons';
+import { copyToClipboard } from '../utils/copyToClipboard';
 import { t } from '../utils/locale';
 import { Card } from './Card';
-import { copyToClipboard } from '../utils/copyToClipboard';
 
 export const GameServerCard: Component<{
 	ipPort: string;
@@ -23,7 +23,7 @@ export const GameServerCard: Component<{
 				</a>
 				<br />
 				<span class="align-middle">{command()}</span>
-				<button class="ml-1 align-middle" onClick={() => copyToClipboard(command())}>
+				<button class="btn ml-1 align-middle" onClick={() => copyToClipboard(command())}>
 					<SvgCopyAll />
 				</button>
 			</p>

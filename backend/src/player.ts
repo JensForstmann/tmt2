@@ -1,20 +1,9 @@
 import SteamID from 'steamid';
 import { IPlayer, TTeamAB, TTeamSides, TTeamString } from '../../common';
-import * as Match from './match';
 import { db } from './database';
+import * as Match from './match';
 
-export const create = (match: Match.Match, steamId: string, name: string): IPlayer => {
-	const steamId64 = getSteamID64(steamId);
-	return {
-		name: name,
-		steamId64: steamId64,
-		team: getForcedTeam(match, steamId64),
-		side: null,
-		online: null,
-	};
-};
-
-export const getSteamID64 = (steamId: string) => {
+export const getSteamID64 = (steamId: string, name?: string) => {
 	return new SteamID(steamId).getSteamID64();
 };
 
@@ -50,11 +39,8 @@ export const getSideFromTeamString = (teamString: TTeamString): TTeamSides | nul
 			return 'CT';
 		case 'TERRORIST':
 			return 'T';
-		case '':
-		case 'Spectator':
-		case 'Unassigned':
-			return null;
 	}
+	return null;
 };
 
 export type TDbMatchPlayer = {
@@ -64,6 +50,7 @@ export type TDbMatchPlayer = {
 	team: string | null;
 	side: string | null;
 	online: number | null;
+	isBot: number;
 };
 
 export const matchPlayerToDb = (matchId: string, player: IPlayer): TDbMatchPlayer => {
@@ -74,6 +61,7 @@ export const matchPlayerToDb = (matchId: string, player: IPlayer): TDbMatchPlaye
 		team: player.team,
 		side: player.side,
 		online: player.online ? 1 : 0,
+		isBot: player.isBot ? 1 : 0,
 	};
 };
 
@@ -84,6 +72,7 @@ export const matchPlayerFromDb = (dbMatchPlayer: TDbMatchPlayer): IPlayer => {
 		team: dbMatchPlayer.team as TTeamAB | null,
 		side: dbMatchPlayer.side as TTeamSides | null,
 		online: dbMatchPlayer.online === null ? null : !!dbMatchPlayer.online,
+		isBot: !!dbMatchPlayer.isBot,
 	};
 };
 
@@ -95,21 +84,24 @@ export const savePlayerToDb = (matchId: string, player: IPlayer) => {
 					name,
 					team,
 					side,
-					online
+					online,
+					isBot
 				) VALUES (
 					:matchId,
 					:steamId64,
 					:name,
 					:team,
 					:side,
-					:online
+					:online,
+					:isBot
 				) ON CONFLICT (matchId, steamId64) DO UPDATE SET
 					matchId = :matchId,
 					steamId64 = :steamId64,
 					name = :name,
 					team = :team,
 					side = :side,
-					online = :online
+					online = :online,
+					isBot = :isBot
 				WHERE matchId = :matchId AND steamId64 = :steamId64
 				`
 	).run(matchPlayerToDb(matchId, player));

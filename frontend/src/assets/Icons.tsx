@@ -394,3 +394,31 @@ export const SvgNotifications: Component<ComponentProps<'svg'>> = (props) => (
 		<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" />
 	</svg>
 );
+
+export const SvgServer: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<path d="M0 0h24v24H0V0z" fill="none" />
+		<path d="M19 15v4H5v-4h14m1-2H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zM7 18.5c-.82 0-1.5-.67-1.5-1.5s.68-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM19 5v4H5V5h14m1-2H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zM7 8.5c-.82 0-1.5-.67-1.5-1.5S6.18 5.5 7 5.5s1.5.68 1.5 1.5S7.83 8.5 7 8.5z" />
+	</svg>
+);
+
+export const SvgSend: Component<ComponentProps<'svg'>> = (props) => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="currentColor"
+		{...props}
+	>
+		<path d="M0 0h24v24H0V0z" fill="none" />
+		<path d="M3.4 20.4l17.45-7.48c.81-.35.81-1.49 0-1.84L3.4 3.6c-.66-.29-1.39.2-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z" />
+	</svg>
+);

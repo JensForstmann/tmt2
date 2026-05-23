@@ -16,6 +16,7 @@ import { Card } from './Card';
 import { CardMenu } from './CardMenu';
 import { Modal } from './Modal';
 import { RoundBackups } from './RoundBackups';
+import { Scoreboard } from './Scoreboard';
 
 export const MatchMapCard: Component<{
 	match: IMatch;
@@ -110,6 +111,8 @@ export const MatchMapCard: Component<{
 			<p>
 				<span>{t(props.map.state)}</span>
 			</p>
+			<div class="h-4"></div>
+			<Scoreboard match={props.match} map={props.map} />
 			<Modal ref={modalRef} onClose={() => setRoundBackupFiles(undefined)}>
 				<h4>{t('Load Round Backup')}</h4>
 				<div class="text-left">

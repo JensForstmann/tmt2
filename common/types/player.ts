@@ -18,4 +18,6 @@ export interface IPlayer {
 	side: TTeamSides | null;
 	/** Player currently on the game server (online)? */
 	online: boolean | null;
+	/** Is this player a bot? */
+	isBot: boolean;
 }

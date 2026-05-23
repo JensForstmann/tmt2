@@ -1,9 +1,8 @@
-type EventType = KeyboardEvent & {
-	currentTarget: HTMLInputElement;
-	target: Element;
-};
+import { HTMLInputKeyboardEvent } from '../components/Inputs';
+
 export const onEnter =
-	(fn: (e: EventType) => void, next?: (e: EventType) => void) => (e: EventType) => {
+	(fn: (e: HTMLInputKeyboardEvent) => void, next?: (e: HTMLInputKeyboardEvent) => void) =>
+	(e: HTMLInputKeyboardEvent) => {
 		if (e.key === 'Enter') {
 			fn(e);
 		} else {

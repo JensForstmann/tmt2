@@ -10,12 +10,13 @@ import * as Match from './match';
 import { checkAndNormalizeLogAddress } from './match';
 import * as MatchMap from './matchMap';
 import * as MatchService from './matchService';
+import { runMigrations } from './migrations/migrations';
 import * as Presets from './presets';
 import { RegisterRoutes } from './routes';
 import * as Storage from './storage';
 import * as WebSocket from './webSocket';
-import * as Database from './database';
-Database.runMigrations();
+
+runMigrations();
 
 export const TMT_LOG_ADDRESS: string | null = (() => {
 	if (!process.env['TMT_LOG_ADDRESS']) {

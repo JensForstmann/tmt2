@@ -32,7 +32,7 @@ export const createWebSocket = (options?: Options) => {
 	const onClose = () => {
 		setState('CLOSED');
 		if (options?.autoReconnect) {
-			setTimeout(() => reconnect(), 1_000);
+			setTimeout(() => reconnect(), 5_000);
 		}
 	};
 

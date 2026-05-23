@@ -1,4 +1,4 @@
-import { Component, ComponentProps, JSXElement, Show, splitProps } from 'solid-js';
+import { Component, ComponentProps, JSXElement, splitProps } from 'solid-js';
 
 export const CheckboxInput: Component<
 	ComponentProps<'input'> & {
@@ -15,6 +15,11 @@ export const CheckboxInput: Component<
 			</label>
 		</div>
 	);
+};
+
+export type HTMLInputKeyboardEvent = KeyboardEvent & {
+	currentTarget: HTMLInputElement;
+	target: Element;
 };
 
 export const TextInput: Component<

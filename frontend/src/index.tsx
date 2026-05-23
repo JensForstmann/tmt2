@@ -16,14 +16,14 @@ import { NotFoundPage } from './pages/notFound';
 render(
 	() => (
 		<Router root={App}>
-			<Route path="/matches" component={MatchesPage} />
+			<Route path={['/', '/matches']} component={MatchesPage} />
+			<Route path="/matches/create" component={CreatePage} />
 			<Route path="/matches/:id" component={MatchPage} />
 			<Route path="/matches/:id/edit" component={MatchEditPage} />
 			<Route path="/gameservers/:ipPort" component={GameServerPage} />
 			<Route path="/gameservers" component={GameServersPage} />
 			<Route path="/login" component={LoginPage} />
 			<Route path="/logout" component={LogoutPage} />
-			<Route path={['/', '/create']} component={CreatePage} />
 			<Route path="/debug" component={DebugPage} />
 			<Route path="/*" component={NotFoundPage} />
 		</Router>

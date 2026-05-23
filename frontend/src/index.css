@@ -2,6 +2,12 @@
 @plugin "daisyui";
 @plugin "@tailwindcss/typography";
 
+@theme {
+	--color-ct: #b6d4ee;
+	--color-t: #ead28b;
+	--color-spec: #aaaaaa;
+}
+
 a:hover {
 	text-decoration: underline;
 }

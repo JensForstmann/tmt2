@@ -1,7 +1,7 @@
-import { useSearchParams } from '@solidjs/router';
+import { A, useSearchParams } from '@solidjs/router';
 import { Component, createEffect, createSignal, For, Show } from 'solid-js';
 import { connectionState, fetchMatches, globalStore } from '../App';
-import { SvgSettings } from '../assets/Icons';
+import { SvgAdd, SvgSettings } from '../assets/Icons';
 import { Card } from '../components/Card';
 import { ErrorComponent } from '../components/ErrorComponent';
 import { SelectInput } from '../components/Inputs';
@@ -137,7 +137,7 @@ export const MatchesPage: Component = () => {
 
 	return (
 		<Card>
-			<div class="flex w-full flex-row space-x-8 place-items-end">
+			<div class="flex w-full flex-col lg:flex-row lg:place-items-end">
 				<SelectInput
 					onInput={(e) =>
 						setSearchParams({ filter: e.currentTarget.value }, { replace: true })
@@ -163,37 +163,44 @@ export const MatchesPage: Component = () => {
 
 				<div class="flex-grow"></div>
 
-				<div class="dropdown dropdown-end">
-					<label tabindex="0" class="btn btn-ghost m-1">
-						<SvgSettings />
-						{t('Column Settings')}
-					</label>
-					<div
-						tabindex="0"
-						class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
-					>
-						<For each={MatchTableColumns}>
-							{(column) => (
-								<div>
-									<label class="label justify-normal cursor-pointer space-x-2">
-										<input
-											type="checkbox"
-											checked={columnsToShow()[column]}
-											onInput={(e) => {
-												const cts = columnsToShow();
-												cts[column] = e.currentTarget.checked;
-												updateColumnsSearchParam(cts);
-											}}
-											class="checkbox"
-										/>
-										<span class="label-text">
-											{MatchTableColumnLabels[column]}
-										</span>
-									</label>
-								</div>
-							)}
-						</For>
+				<div class="flex flex-row place-items-center">
+					<div class="dropdown dropdown-end w-1/2 lg:w-auto">
+						<label tabindex="0" class="btn m-1 w-full">
+							<SvgSettings />
+							{t('Column Settings')}
+						</label>
+						<div
+							tabindex="0"
+							class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+						>
+							<For each={MatchTableColumns}>
+								{(column) => (
+									<div>
+										<label class="label justify-normal cursor-pointer space-x-2">
+											<input
+												type="checkbox"
+												checked={columnsToShow()[column]}
+												onInput={(e) => {
+													const cts = columnsToShow();
+													cts[column] = e.currentTarget.checked;
+													updateColumnsSearchParam(cts);
+												}}
+												class="checkbox"
+											/>
+											<span class="label-text">
+												{MatchTableColumnLabels[column]}
+											</span>
+										</label>
+									</div>
+								)}
+							</For>
+						</div>
 					</div>
+					<div class="w-4"></div>
+					<A href="/matches/create" class="btn btn-primary align-right w-1/2 lg:w-auto">
+						<SvgAdd />
+						{t('Create new Match')}
+					</A>
 				</div>
 			</div>
 			<ErrorComponent errorMessage={errorMessage()} />

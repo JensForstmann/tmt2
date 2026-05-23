@@ -371,6 +371,101 @@
 				],
 				"description": "Possible match map states."
 			},
+			"TTeamSides": {
+				"type": "string",
+				"enum": ["CT", "T"]
+			},
+			"PlayerStats": {
+				"properties": {
+					"steamId64": {
+						"type": "string"
+					},
+					"side": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TTeamSides"
+							}
+						],
+						"nullable": true
+					},
+					"state": {
+						"type": "string",
+						"enum": ["ALIVE", "DEAD", "DISCONNECTED", null],
+						"nullable": true
+					},
+					"money": {
+						"type": "number",
+						"format": "double"
+					},
+					"kills": {
+						"type": "number",
+						"format": "double"
+					},
+					"deaths": {
+						"type": "number",
+						"format": "double"
+					},
+					"assists": {
+						"type": "number",
+						"format": "double"
+					},
+					"damage": {
+						"type": "number",
+						"format": "double"
+					},
+					"utilityDamage": {
+						"type": "number",
+						"format": "double"
+					},
+					"enemiesFlashed": {
+						"type": "number",
+						"format": "double"
+					},
+					"averageDamagePerRound": {
+						"type": "number",
+						"format": "double"
+					},
+					"health": {
+						"type": "number",
+						"format": "double",
+						"description": "Health (could be lower in game, because the server doesn't send data for fall damage)"
+					},
+					"armor": {
+						"type": "number",
+						"format": "double"
+					},
+					"headshots": {
+						"type": "number",
+						"format": "double"
+					},
+					"items": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "All items this player has (\"C4\", \"DEFUSER\", weapons, grenades, kevlar, helmet).\n\nAlways uppercase.\n\nMight be incorrect, because the server only sends data for picked up items, not dropped ones."
+					}
+				},
+				"required": [
+					"steamId64",
+					"side",
+					"state",
+					"money",
+					"kills",
+					"deaths",
+					"assists",
+					"damage",
+					"utilityDamage",
+					"enemiesFlashed",
+					"averageDamagePerRound",
+					"health",
+					"armor",
+					"headshots",
+					"items"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"IMatchMap": {
 				"properties": {
 					"name": {
@@ -448,6 +543,25 @@
 						"type": "number",
 						"format": "double",
 						"description": "Max rounds (mp_maxrounds)."
+					},
+					"playerStats": {
+						"items": {
+							"$ref": "#/components/schemas/PlayerStats"
+						},
+						"type": "array",
+						"description": "Current player stats."
+					},
+					"currentRoundNumber": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "Current round number. Will update on start of the freeze time.\n\n0-based (first round = 0)"
+					},
+					"lastRoundStart": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "Timestamp when the current round was started (end of freeze time when players can move).\n\n(unix time in milliseconds)"
 					}
 				},
 				"required": [
@@ -461,7 +575,10 @@
 					"score",
 					"overTimeEnabled",
 					"overTimeMaxRounds",
-					"maxRounds"
+					"maxRounds",
+					"playerStats",
+					"currentRoundNumber",
+					"lastRoundStart"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -469,10 +586,6 @@
 			"TMatchEndAction": {
 				"type": "string",
 				"enum": ["KICK_ALL", "QUIT_SERVER", "NONE"]
-			},
-			"TTeamSides": {
-				"type": "string",
-				"enum": ["CT", "T"]
 			},
 			"IPlayer": {
 				"description": "Player.",
@@ -507,9 +620,13 @@
 						"type": "boolean",
 						"nullable": true,
 						"description": "Player currently on the game server (online)?"
+					},
+					"isBot": {
+						"type": "boolean",
+						"description": "Is this player a bot?"
 					}
 				},
-				"required": ["steamId64", "name", "team", "side", "online"],
+				"required": ["steamId64", "name", "team", "side", "online", "isBot"],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1806,6 +1923,23 @@
 						"format": "double",
 						"description": "Max rounds (mp_maxrounds)."
 					},
+					"playerStats": {
+						"items": {
+							"$ref": "#/components/schemas/PlayerStats"
+						},
+						"type": "array",
+						"description": "Current player stats."
+					},
+					"currentRoundNumber": {
+						"type": "number",
+						"format": "double",
+						"description": "Current round number. Will update on start of the freeze time.\n\n0-based (first round = 0)"
+					},
+					"lastRoundStart": {
+						"type": "number",
+						"format": "double",
+						"description": "Timestamp when the current round was started (end of freeze time when players can move).\n\n(unix time in milliseconds)"
+					},
 					"_refreshOvertimeAndMaxRoundsSettings": {
 						"type": "boolean",
 						"nullable": true,
@@ -2009,7 +2143,7 @@
 	},
 	"info": {
 		"title": "tmt2-backend",
-		"version": "2.0.0",
+		"version": "3.0.0",
 		"license": {
 			"name": "MIT"
 		},

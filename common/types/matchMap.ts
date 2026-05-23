@@ -1,3 +1,4 @@
+import { PlayerStats } from './playerStats';
 import { TTeamAB } from './team';
 
 /**
@@ -44,6 +45,20 @@ export interface IMatchMap {
 	overTimeMaxRounds: number;
 	/** Max rounds (mp_maxrounds). */
 	maxRounds: number;
+	/** Current player stats. */
+	playerStats: PlayerStats[];
+	/**
+	 * Current round number. Will update on start of the freeze time.
+	 *
+	 * 0-based (first round = 0)
+	 */
+	currentRoundNumber: number | null;
+	/**
+	 * Timestamp when the current round was started (end of freeze time when players can move).
+	 *
+	 * (unix time in milliseconds)
+	 */
+	lastRoundStart: number | null;
 }
 
 /**

@@ -15,7 +15,11 @@ export const PlayerListCard: Component<{
 						<h4 class="text-sm font-bold">{props.match.teamA.name}</h4>
 						<div></div>
 						<div></div>
-						<For each={props.match.players.filter((p) => p.team === 'TEAM_A')}>
+						<For
+							each={props.match.players.filter(
+								(p) => !p.isBot && p.team === 'TEAM_A'
+							)}
+						>
 							{(player) => (
 								<>
 									<Player player={player} />
@@ -31,7 +35,11 @@ export const PlayerListCard: Component<{
 						<div></div>
 						<div></div>
 						<h4 class="text-sm font-bold">{props.match.teamB.name}</h4>
-						<For each={props.match.players.filter((p) => p.team === 'TEAM_B')}>
+						<For
+							each={props.match.players.filter(
+								(p) => !p.isBot && p.team === 'TEAM_B'
+							)}
+						>
 							{(player) => (
 								<>
 									<Online player={player} />
@@ -45,7 +53,7 @@ export const PlayerListCard: Component<{
 				<div class="text-center col-span-2 pt-4">
 					<div class="inline-grid grid-cols-[auto_auto_auto] items-baseline gap-x-2">
 						<h4 class="text-sm font-bold col-span-3">{t('Not Assigned')}</h4>
-						<For each={props.match.players.filter((p) => !p.team)}>
+						<For each={props.match.players.filter((p) => !p.isBot && !p.team)}>
 							{(player) => (
 								<>
 									<Online player={player} />
