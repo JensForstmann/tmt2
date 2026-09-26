@@ -48,11 +48,9 @@ export const fetchMatches = async (matches: GetMatchesRequest['matches']) => {
 			[];
 		return [
 			...existingWithoutNew,
-			...res.matches.map(
-				(r): GlobalStoreMatch => ({
-					data: r,
-				})
-			),
+			...res.matches.map((r): GlobalStoreMatch => ({
+				data: r,
+			})),
 		];
 	});
 	return res.matches;

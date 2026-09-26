@@ -215,22 +215,19 @@ export const getMatchFromDatabase = (id: string): IMatch | undefined => {
 		return undefined;
 	}
 	const matchMapRows = db
-		.prepare<
-			{ matchId: string },
-			TDbMatchMap
-		>('SELECT * FROM matchMap WHERE matchId = :matchId ORDER BY "index"')
+		.prepare<{ matchId: string }, TDbMatchMap>(
+			'SELECT * FROM matchMap WHERE matchId = :matchId ORDER BY "index"'
+		)
 		.all({ matchId: id });
 	const matchPlayerRows = db
-		.prepare<
-			{ matchId: string },
-			TDbMatchPlayer
-		>('SELECT * FROM matchPlayer WHERE matchId = :matchId')
+		.prepare<{ matchId: string }, TDbMatchPlayer>(
+			'SELECT * FROM matchPlayer WHERE matchId = :matchId'
+		)
 		.all({ matchId: id });
 	const matchPlayerStats = db
-		.prepare<
-			{ matchId: string },
-			TDbPlayerStats
-		>('SELECT * FROM matchPlayerStats WHERE matchId = :matchId ORDER BY mapIndex')
+		.prepare<{ matchId: string }, TDbPlayerStats>(
+			'SELECT * FROM matchPlayerStats WHERE matchId = :matchId ORDER BY mapIndex'
+		)
 		.all({ matchId: id });
 	return Match.matchFromDb(matchRow, matchMapRows, matchPlayerRows, matchPlayerStats);
 };

@@ -312,10 +312,9 @@ export const saveEventToDb = (event: Event) => {
 
 export const getLatestEventsFromDatabase = (matchId: string, numberOfEvents = 1000): Event[] => {
 	const rows = db
-		.prepare<
-			{ matchId: string; notType: EventType; numberOfEvents: number },
-			TDbEvent
-		>(`SELECT * FROM event WHERE matchId = :matchId AND type != :notType ORDER BY id DESC LIMIT :numberOfEvents`)
+		.prepare<{ matchId: string; notType: EventType; numberOfEvents: number }, TDbEvent>(
+			`SELECT * FROM event WHERE matchId = :matchId AND type != :notType ORDER BY id DESC LIMIT :numberOfEvents`
+		)
 		.all({ matchId: matchId, notType: 'MATCH_UPDATE', numberOfEvents: numberOfEvents });
 	return rows.map(eventFromDb).reverse();
 };

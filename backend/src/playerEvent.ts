@@ -918,34 +918,29 @@ export const recalculatePlayerStats = (match: Match.Match, matchMap: IMatchMap) 
 		mapIndex: match.data.currentMap,
 	};
 	const attacks = db
-		.prepare<
-			{ matchId: string; mapIndex: number },
-			TDbPlayerEventAttack
-		>('SELECT * FROM matchPlayerEventAttack WHERE matchId = :matchId AND mapIndex = :mapIndex')
+		.prepare<{ matchId: string; mapIndex: number }, TDbPlayerEventAttack>(
+			'SELECT * FROM matchPlayerEventAttack WHERE matchId = :matchId AND mapIndex = :mapIndex'
+		)
 		.all(params);
 	const kills = db
-		.prepare<
-			{ matchId: string; mapIndex: number },
-			TDbPlayerEventKill
-		>('SELECT * FROM matchPlayerEventKill WHERE matchId = :matchId AND mapIndex = :mapIndex')
+		.prepare<{ matchId: string; mapIndex: number }, TDbPlayerEventKill>(
+			'SELECT * FROM matchPlayerEventKill WHERE matchId = :matchId AND mapIndex = :mapIndex'
+		)
 		.all(params);
 	const suicides = db
-		.prepare<
-			{ matchId: string; mapIndex: number },
-			TDbPlayerEventSuicide
-		>('SELECT * FROM matchPlayerEventSuicide WHERE matchId = :matchId AND mapIndex = :mapIndex')
+		.prepare<{ matchId: string; mapIndex: number }, TDbPlayerEventSuicide>(
+			'SELECT * FROM matchPlayerEventSuicide WHERE matchId = :matchId AND mapIndex = :mapIndex'
+		)
 		.all(params);
 	const assists = db
-		.prepare<
-			{ matchId: string; mapIndex: number },
-			TDbPlayerEventAssist
-		>('SELECT * FROM matchPlayerEventAssist WHERE matchId = :matchId AND mapIndex = :mapIndex')
+		.prepare<{ matchId: string; mapIndex: number }, TDbPlayerEventAssist>(
+			'SELECT * FROM matchPlayerEventAssist WHERE matchId = :matchId AND mapIndex = :mapIndex'
+		)
 		.all(params);
 	const blinds = db
-		.prepare<
-			{ matchId: string; mapIndex: number },
-			TDbPlayerEventBlind
-		>('SELECT * FROM matchPlayerEventBlind WHERE matchId = :matchId AND mapIndex = :mapIndex')
+		.prepare<{ matchId: string; mapIndex: number }, TDbPlayerEventBlind>(
+			'SELECT * FROM matchPlayerEventBlind WHERE matchId = :matchId AND mapIndex = :mapIndex'
+		)
 		.all(params);
 
 	matchMap.playerStats = match.data.players.map((player) => ({
