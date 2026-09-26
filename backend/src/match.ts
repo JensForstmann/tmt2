@@ -1070,21 +1070,25 @@ const onMapEnd = async (match: Match) => {
 	}
 
 	const currentMatchMap = getCurrentMatchMap(match);
-	if (currentMatchMap) {
-		await MatchMap.onMapEnd(match, currentMatchMap);
-		if (isMatchEnd(match)) {
-			match.log('Match finished');
-			await onMatchEnd(match);
+	if (!currentMatchMap) {
+		return;
+	}
+	if (currentMatchMap.state !== 'IN_PROGRESS' && currentMatchMap.state !== 'PAUSED') {
+		return;
+	}
+	await MatchMap.onMapEnd(match, currentMatchMap);
+	if (isMatchEnd(match)) {
+		match.log('Match finished');
+		await onMatchEnd(match);
+	} else {
+		match.data.currentMap++;
+		MatchService.scheduleSave(match);
+		const nextMap = getCurrentMatchMap(match);
+		if (nextMap) {
+			await MatchMap.loadMap(match, nextMap);
 		} else {
-			match.data.currentMap++;
-			MatchService.scheduleSave(match);
-			const nextMap = getCurrentMatchMap(match);
-			if (nextMap) {
-				await MatchMap.loadMap(match, nextMap);
-			} else {
-				match.log('No more maps to play, finish match');
-				await onMatchEnd(match);
-			}
+			match.log('No more maps to play, finish match');
+			await onMatchEnd(match);
 		}
 	}
 };

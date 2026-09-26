@@ -279,10 +279,6 @@ const refreshOvertimeAndMaxRoundsSettings = async (match: Match.Match, matchMap:
 };
 
 export const onMapEnd = async (match: Match.Match, matchMap: IMatchMap) => {
-	if (matchMap.state !== 'IN_PROGRESS' && matchMap.state !== 'PAUSED') {
-		return;
-	}
-
 	matchMap.state = 'FINISHED';
 	MatchService.scheduleSave(match);
 	Events.onMapEnd(match, matchMap);
